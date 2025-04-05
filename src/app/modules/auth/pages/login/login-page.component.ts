@@ -5,7 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './login-page.component.html'
 })
 
-export default class LoginPageComponent {
-
-
+export class LoginPageComponent {
 }

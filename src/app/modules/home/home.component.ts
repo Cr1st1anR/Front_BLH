@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import DashboardComponent from '../../shared/components/dashboard/dashboard.component';
+import { DashBoardComponent } from '../../shared/components/dash-board/dash-board.component';
 
 @Component({
   selector: 'app-home',
   imports: [
     RouterModule,
-    DashboardComponent
+    DashBoardComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

@@ -1,0 +1,142 @@
+<app-header />
+
+<app-new-register (nuevoRegistro)="agregarFilaVacia()" />
+
+<app-month-picker (dateChange)="filtrarPorFecha($event)" />
+
+<div class="card">
+  <p-table [value]="filteredCustomers" [scrollable]="true" scrollHeight="400px">
+    <ng-template pTemplate="header">
+      <tr>
+        <th rowspan="2" style="min-width: 200px">REMITE</th>
+        <th rowspan="2" style="min-width: 200px">NOMBRES</th>
+        <th rowspan="2" style="min-width: 200px">APELLIDOS</th>
+        <th rowspan="2" style="min-width: 200px">FECHA PARTO</th>
+        <th rowspan="2" style="min-width: 200px">NO. DOC</th>
+        <th rowspan="2" style="min-width: 200px">EDAD</th>
+        <th rowspan="2" style="min-width: 200px">TELEFONO</th>
+        <th rowspan="2" style="min-width: 200px">BARRIO</th>
+        <th rowspan="2" style="min-width: 200px">DIRECCION</th>
+        <th rowspan="2" style="min-width: 200px">EDUCACION PRESENCIAL</th>
+        <th rowspan="2" style="min-width: 200px">FECHA LLAMADA</th>
+        <th colspan="2" style="min-width: 400px; text-align: center">
+          LLAMADA
+        </th>
+        <th rowspan="2" style="min-width: 200px">RESPONSABLE</th>
+        <th colspan="2" style="min-width: 400px; text-align: center">
+          RECIBE ASESORIA
+        </th>
+        <th colspan="2" style="min-width: 400px; text-align: center">
+          POSIBLE DONANTE
+        </th>
+        <th rowspan="2" style="min-width: 200px">FECHA VISITA</th>
+        <th rowspan="2" style="min-width: 200px">OBSERVACIONES</th>
+        <th rowspan="2" style="min-width: 200px">ACCIONES</th>
+      </tr>
+      <tr>
+        <th style="min-width: 200px">ENTRANTE</th>
+        <th style="min-width: 200px">SALIENTE</th>
+        <th style="min-width: 200px">SI</th>
+        <th style="min-width: 200px">NO</th>
+        <th style="min-width: 200px">SI</th>
+        <th style="min-width: 200px">NO</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-customer>
+      <tr>
+        @if (editingRow === customer) {
+        <td><input [(ngModel)]="customer.remite" /></td>
+        <td><input [(ngModel)]="customer.nombres" /></td>
+        <td><input [(ngModel)]="customer.apellidos" /></td>
+        <td><input type="date" [(ngModel)]="customer.fecha_parto" /></td>
+        <td><input [(ngModel)]="customer.no_doc" /></td>
+        <td><input type="number" [(ngModel)]="customer.edad" /></td>
+        <td><input [(ngModel)]="customer.telefono" /></td>
+        <td><input [(ngModel)]="customer.barrio" /></td>
+        <td><input [(ngModel)]="customer.direccion" /></td>
+        <td><input [(ngModel)]="customer.educacion_presencial" /></td>
+        <td><input type="date" [(ngModel)]="customer.fecha_llamada" /></td>
+
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.llamada_entrante" />
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.llamada_saliente" />
+        </td>
+        <td><input [(ngModel)]="customer.responsable" /></td>
+
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.recibe_asesoria_si" />
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.recibe_asesoria_no" />
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.posible_donante_si" />
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="customer.posible_donante_no" />
+        </td>
+
+        <td><input type="date" [(ngModel)]="customer.fecha_visita" /></td>
+        <td><input [(ngModel)]="customer.observaciones" /></td>
+        <td>
+          <button (click)="guardarFila()">💾</button>
+          <button (click)="cancelarEdicion()">❌</button>
+        </td>
+        } @else {
+        <td>{{ customer.remite }}</td>
+        <td>{{ customer.nombres }}</td>
+        <td>{{ customer.apellidos }}</td>
+        <td>{{ customer.fecha_parto }}</td>
+        <td>{{ customer.no_doc }}</td>
+        <td>{{ customer.edad }}</td>
+        <td>{{ customer.telefono }}</td>
+        <td>{{ customer.barrio }}</td>
+        <td>{{ customer.direccion }}</td>
+        <td>{{ customer.educacion_presencial }}</td>
+        <td>{{ customer.fecha_llamada }}</td>
+        <td>{{ customer.llamada_entrante ? "✔️" : "" }}</td>
+        <td>{{ customer.llamada_saliente ? "✔️" : "" }}</td>
+        <td>{{ customer.responsable }}</td>
+        <td>{{ customer.recibe_asesoria_si ? "✔️" : "" }}</td>
+        <td>{{ customer.recibe_asesoria_no ? "✔️" : "" }}</td>
+        <td>{{ customer.posible_donante_si ? "✔️" : "" }}</td>
+        <td>{{ customer.posible_donante_no ? "✔️" : "" }}</td>
+        <td>{{ customer.fecha_visita }}</td>
+        <td>{{ customer.observaciones }}</td>
+        <td>
+          <button (click)="editarFila(customer)">✏️</button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td style="min-width: 200px">REMITE</td>
+        <td style="min-width: 200px">NOMBRES</td>
+        <td style="min-width: 200px">APELLIDOS</td>
+        <td style="min-width: 200px">FECHA PARTO</td>
+        <td style="min-width: 200px">NO. DOC</td>
+        <td style="min-width: 200px">EDAD</td>
+        <td style="min-width: 200px">TELEFONO</td>
+        <td style="min-width: 200px">BARRIO</td>
+        <td style="min-width: 200px">DIRECCION</td>
+        <td style="min-width: 200px">EDUCACION PRESENCIAL</td>
+        <td style="min-width: 200px">FECHA LLAMADA</td>
+        <td style="min-width: 200px">ENTRANTE</td>
+        <td style="min-width: 200px">SALIENTE</td>
+        <td style="min-width: 200px">RESPONSABLE</td>
+        <td style="min-width: 200px">SI</td>
+        <td style="min-width: 200px">NO</td>
+        <td style="min-width: 200px">SI</td>
+        <td style="min-width: 200px">NO</td>
+        <td style="min-width: 200px">FECHA VISITA</td>
+        <td style="min-width: 200px">OBSERVACIONES</td>
+        <td style="min-width: 200px">ACCIONES</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

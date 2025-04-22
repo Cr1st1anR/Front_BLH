@@ -1,9 +1,17 @@
 import { Routes } from "@angular/router";
-import { CaptacionListComponent } from "./pages/captacion-list/captacion-list.component";
+
 
 export const CAPTACION_ROUTES: Routes = [
   {
-    path:'',
-    component: CaptacionListComponent,
-  }
+    path:'registro-linea-amiga',
+    loadComponent: () => import('./friam-041/components/table-list/table-list.component').then((c) => c.TableListComponent)
+  },
+  // {
+  //   path:'',
+  //   component: CaptacionListComponent,
+  // },
+  // {
+  //   path:'',
+  //   component: CaptacionListComponent,
+  // },
 ];

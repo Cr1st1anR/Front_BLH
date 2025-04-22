@@ -1,49 +1,51 @@
 <app-header />
 
-<app-new-register (nuevoRegistro)="agregarFilaVacia()" />
 
-<app-month-picker (dateChange)="filtrarPorFecha($event)" />
+<div class="flex justify-between items-center mx-4">
+  <app-new-register (nuevoRegistro)="agregarFilaVacia()" />
+  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
+</div>
 
-<div class="card">
-  <p-table [value]="filteredCustomers" [scrollable]="true" scrollHeight="400px">
-    <ng-template pTemplate="header">
+
+<div class="container-table">
+  <p-table [value]="filteredCustomers" [scrollable]="true" scrollHeight="500px" [columns]="headersTableLineaAmiga">
+    <ng-template #header let-columns>
       <tr>
-        <th rowspan="2" style="min-width: 200px">REMITE</th>
-        <th rowspan="2" style="min-width: 200px">NOMBRES</th>
-        <th rowspan="2" style="min-width: 200px">APELLIDOS</th>
-        <th rowspan="2" style="min-width: 200px">FECHA PARTO</th>
-        <th rowspan="2" style="min-width: 200px">NO. DOC</th>
-        <th rowspan="2" style="min-width: 200px">EDAD</th>
-        <th rowspan="2" style="min-width: 200px">TELEFONO</th>
-        <th rowspan="2" style="min-width: 200px">BARRIO</th>
-        <th rowspan="2" style="min-width: 200px">DIRECCION</th>
-        <th rowspan="2" style="min-width: 200px">EDUCACION PRESENCIAL</th>
-        <th rowspan="2" style="min-width: 200px">FECHA LLAMADA</th>
-        <th colspan="2" style="min-width: 400px; text-align: center">
-          LLAMADA
+        @for (col of columns; track $index) {
+        @if ( col.field == "remite" || col.field == "documento") {
+        <th [ngStyle]="{'background': '#F5F6FA'}" >
+          <p-columnFilter type="text" field="name" placeholder="Search by name"
+            ariaLabel="Filter Name"></p-columnFilter>
         </th>
-        <th rowspan="2" style="min-width: 200px">RESPONSABLE</th>
-        <th colspan="2" style="min-width: 400px; text-align: center">
-          RECIBE ASESORIA
-        </th>
-        <th colspan="2" style="min-width: 400px; text-align: center">
-          POSIBLE DONANTE
-        </th>
-        <th rowspan="2" style="min-width: 200px">FECHA VISITA</th>
-        <th rowspan="2" style="min-width: 200px">OBSERVACIONES</th>
-        <th rowspan="2" style="min-width: 200px">ACCIONES</th>
+        }
+        @else {
+        <th [attr.colspan]="col.colspan" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
       </tr>
       <tr>
-        <th style="min-width: 200px">ENTRANTE</th>
+        @for (col of columns; track $index) {
+        <th [ngStyle]="{'min-width': col.width}" [attr.colspan]="col.colspan" [attr.rowspan]="col.rowspan" class="grid-lines">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+      <tr>
+        @for (subCol of subeHeaderTable; track $index) {
+          <th class="grid-lines" style="min-width: 200px">{{subCol.header}}</th>
+        }
+
+        <!-- <th style="min-width: 200px">ENTRANTE</th>
         <th style="min-width: 200px">SALIENTE</th>
         <th style="min-width: 200px">SI</th>
         <th style="min-width: 200px">NO</th>
         <th style="min-width: 200px">SI</th>
-        <th style="min-width: 200px">NO</th>
+        <th style="min-width: 200px">NO</th> -->
       </tr>
+
     </ng-template>
 
-    <ng-template pTemplate="body" let-customer>
+    <ng-template #body let-customer>
       <tr>
         @if (editingRow === customer) {
         <td><input [(ngModel)]="customer.remite" /></td>
@@ -113,7 +115,7 @@
       </tr>
     </ng-template>
 
-    <ng-template pTemplate="footer">
+    <!-- <ng-template pTemplate="footer">
       <tr>
         <td style="min-width: 200px">REMITE</td>
         <td style="min-width: 200px">NOMBRES</td>
@@ -137,6 +139,6 @@
         <td style="min-width: 200px">OBSERVACIONES</td>
         <td style="min-width: 200px">ACCIONES</td>
       </tr>
-    </ng-template>
+    </ng-template> -->
   </p-table>
 </div>

@@ -20,8 +20,12 @@
 }
 
 //
+body {
+    background-color: #F5F6FA;
+}
+
 * {
-  font-family: "Poppins", "Font Awesome 6 Free", "Font Awesome 6 Brands", "primeicons" !important; 
+    font-family: "Poppins", "Font Awesome 6 Free", "Font Awesome 6 Brands", "primeicons" !important;
 }
 
 // Custom styles for p-drawer
@@ -75,6 +79,7 @@
 // Custom styles for menu-bar
 p-menubar {
     border-radius: 0px;
+
     .p-button {
         background-color: transparent;
         color: #222222;
@@ -100,4 +105,106 @@ p-menubar {
             color: #222222;
         }
     }
+}
+
+p-datepicker {
+    .p-datepicker {
+        width: 100%;
+        max-width: 15vw;
+        .p-inputtext:enabled:focus{
+            border: 1px solid #224186;
+        }
+        .p-datepicker-panel {
+            background: white;
+            .p-datepicker-calendar {
+                .p-datepicker-header {
+                    p-button {
+                        .p-button-text {
+                            color: #224186;
+
+                            &:not(:disabled):hover {
+                                background-color: #224186;
+                                color: white
+                            }
+                        }
+                    }
+
+                    .p-datepicker-title>* {
+                        &:not(:disabled):hover {
+                            color: white;
+                            background-color: #224186;
+                        }
+                    }
+                }
+
+
+            }
+
+            .p-datepicker-month-view {
+                span {
+                    &.p-datepicker-month-selected {
+                        background-color: #224186;
+                        color: white;
+                    }
+                }
+            }
+
+            .p-datepicker-year-view {
+                span {
+                    &.p-datepicker-year-selected {
+                        background-color: #224186;
+                        color: white;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.p-inputtext {
+    &:focus {
+        border: 1px solid #224186;
+    }
+}
+
+p-table{
+    width: 100%;
+    .p-datatable-table-container {
+        .p-datatable-thead {
+            tr {
+                th {
+                    background-color: #224186;
+                    color: white;
+                    text-align: center;
+                    white-space: nowrap;
+                   
+
+                    &:first-child {
+                        border-radius: 8px 0px 0px 0px;
+                    }
+    
+                    &:last-child {
+                        border-radius: 0px 8px 0px 0px;
+                    }
+    
+                    &:nth-child(n + 2):not(:last-child) {
+                        border-radius: 0;
+                    }
+                }
+            }
+        }
+
+        .p-datatable-tbody {
+            tr {
+                td{
+                    text-align: center;
+                    height: 10vh;
+                    white-space: nowrap;
+                    border: 1px solid #D0D7E4;
+                }
+            }
+        }
+
+    }
+
 }

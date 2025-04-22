@@ -3,7 +3,7 @@ import { TableModule } from 'primeng/table';
 import { HttpClientModule } from '@angular/common/http';
 import { Customer } from './interfaces/customer';
 import { CustomerService } from './services/customerservice';
-import { HeaderComponent } from '../header/header.component';
+import { HeaderComponent } from '../../../../../shared/components/header/header.component';
 import { NewRegisterComponent } from '../new-register/new-register.component';
 import { MonthPickerComponent } from '../month-picker/month-picker.component';
 import { FormsModule } from '@angular/forms';
@@ -29,8 +29,36 @@ export class TableListComponent implements OnInit {
   filteredCustomers: Customer[] = []; // Nueva propiedad para los datos filtrados
   editingRow: Customer | null = null;
   clonedCustomer: Customer | null = null;
+  headersTableLineaAmiga: any[] = [
+    { header: 'REMITE', field: 'remite', rowspan: 2, width: '200px' },
+    { header: 'NOMBRES', field: 'nombres', rowspan: 2, width: '200px' },
+    { header: 'APELLIDOS', field: 'apellidos', rowspan: 2, width: '200px' },
+    { header: 'FECHA PARTO', field: 'fechaParto', rowspan: 2, width: '200px' },
+    { header: 'NO. DOC', field: 'documento', rowspan: 2, width: '200px' },
+    { header: 'EDAD', field: 'edad', rowspan: 2, width: '200px' },
+    { header: 'TELEFONO', field: 'telefono', rowspan: 2, width: '200px' },
+    { header: 'BARRIO', field: 'barrio', rowspan: 2, width: '200px' },
+    { header: 'DIRECCION', field: 'direccion', rowspan: 2, width: '200px' },
+    { header: 'EDUCACION PRESENCIAL', field: 'educacion', rowspan: 2, width: '200px' },
+    { header: 'FECHA LLAMADA', field: 'fechaLlamada', rowspan: 2, width: '200px' },
+    { header: 'LLAMADA', colspan: 2, align: 'center', width: '400px' },
+    { header: 'RESPONSABLE', field: 'responsable', rowspan: 2, width: '200px' },
+    { header: 'RECIBE ASESORIA', colspan: 2, align: 'center', width: '400px' },
+    { header: 'POSIBLE DONANTE', colspan: 2, align: 'center', width: '400px' },
+    { header: 'FECHA VISITA', field: 'fechaVisita', rowspan: 2, width: '200px' },
+    { header: 'OBSERVACIONES', field: 'observaciones', rowspan: 2, width: '200px' },
+    { header: 'ACCIONES', field: 'acciones', rowspan: 2, width: '200px' }
+  ];
+  subeHeaderTable:any[] = [
+    { header: 'ENTRANTE', field: 'llamadaSI' },
+    { header: 'SALIENTE', field: 'llamadaNO' },
+    { header: 'SI', field: 'asesoriaSI' },
+    { header: 'NO', field: 'asesoriaNO' },
+    { header: 'SI', field: 'donanteSI' },
+    { header: 'NO', field: 'donanteNO' },
+  ]
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService) { }
 
   ngOnInit() {
     this.customerService.getCustomersMedium().then((data: Customer[]) => {

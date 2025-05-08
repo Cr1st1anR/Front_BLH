@@ -7,7 +7,7 @@ import { MonthPickerComponent } from '../month-picker/month-picker.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LineaAmigaService } from './services/linea-amiga.service';
-import { empleados, entidades, lineaAmigaData } from './interfaces/linea-amiga.interface';
+import { ApiResponse, empleados, entidades, lineaAmigaData } from './interfaces/linea-amiga.interface';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { RippleModule } from 'primeng/ripple';
@@ -17,6 +17,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 
 @Component({
   selector: 'app-table-list',
@@ -93,62 +94,78 @@ export class TableListComponent implements OnInit {
     const mesActual = fechaActual.getMonth() + 1;
     const anioActual = fechaActual.getFullYear();
 
-    this.loadDataEmpleados();
-    this.loadDataEntidades();
-    this.loadDataLieneaAmiga(mesActual, anioActual);
+    of(null).pipe(
+      concatMap(() => this.loadDataEmpleados()),
+      concatMap(() => this.loadDataEntidades()),
+      concatMap(() => this.loadDataLieneaAmiga(mesActual, anioActual))
+    ).subscribe({
+      complete: () => {
+        console.log('Todas las peticiones se ejecutaron en orden correctamente');
+      },
+      error: (err) => {
+        console.error('Error en la secuencia de peticiones', err);
+      }
+    });
   }
 
-  loadDataEntidades() {
-    this._lineaAmigaService.getDataEntidades().subscribe({
-      next: (data) => {
+  loadDataEntidades(): Observable<ApiResponse> {
+    return this._lineaAmigaService.getDataEntidades().pipe(
+      tap((data) => {
         if (data) {
           this.headersTableLineaAmiga[0].options = data.data;
-        }
-        else {
+        } else {
           this.entidadesOpt = [];
         }
-      },
-      error: (error) => {
-        console.error('Error al obtener los datos de la API entidades:', error);
-      },
-    })
+      })
+    );
   }
 
-  loadDataEmpleados() {
-    this._lineaAmigaService.getDataEmpleados().subscribe({
-      next: (data) => {
+  loadDataEmpleados(): Observable<ApiResponse> {
+    return this._lineaAmigaService.getDataEmpleados().pipe(
+      tap((data) => {
         if (data) {
           this.headersTableLineaAmiga[12].options = data.data;
         }
-        else {
-          // this.empleadosOpt = [];
-        }
-      },
-      error: (error) => {
-        console.error('Error al obtener los datos de la API empleados:', error);
-      },
-    })
+      })
+    );
   }
 
 
-  loadDataLieneaAmiga(mes: number, anio: number) {
-    this._lineaAmigaService.getDataFriam041(mes, anio).subscribe({
-      next: (data) => {
+  loadDataLieneaAmiga(mes: number, anio: number): Observable<ApiResponse | null> {
+    return this._lineaAmigaService.getDataFriam041(mes, anio).pipe(
+      tap((data) => {
         if (data) {
           this.dataTableLienaAmiga = this.formatData(data.data);
-          this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos cargados para la fecha seleccionada', key: 'tr', life: 3000 });
-        }
-        else {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos cargados para la fecha seleccionada',
+            key: 'tr',
+            life: 3000
+          });
+        } else {
           this.dataTableLienaAmiga = [];
-          this.messageService.add({ severity: 'info', summary: 'Informacion', detail: 'No hay datos para la fecha seleccionada', key: 'tr', life: 3000 });
-
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Información',
+            detail: 'No hay datos para la fecha seleccionada',
+            key: 'tr',
+            life: 3000
+          });
         }
-      },
-      error: (error) => {
-        this.messageService.add({ severity: 'danger', summary: 'Errort', detail: 'Hubo un error', key: 'tr', life: 3000 });
-        console.error('Error al obtener los datos de la API:', error);
-      },
-    })
+      }),
+      catchError((error) => {
+        this.messageService.add({
+          severity: 'danger',
+          summary: 'Error',
+          detail: 'Hubo un error al obtener datos',
+          key: 'tr',
+          life: 3000
+        });
+        console.error('Error en getDataFriam041:', error);
+        return of(null);
+      })
+    );
   }
 
   onRowEditInit(dataRow: lineaAmigaData): void {
@@ -172,7 +189,7 @@ export class TableListComponent implements OnInit {
     const newDataRow = Object.assign({}, dataRow,
       {
         fechaParto: dataRow.fechaParto ? ((new Date(dataRow.fechaParto)).toISOString()).split('T')[0] : null,
-        fechaNacimiento: dataRow.fechaNacimiento ? ((new Date(dataRow.fechaNacimiento)).toISOString()).split('T')[0] : null,
+        fechaNacimiento: dataRow.fechaNacAux ? ((new Date(dataRow.fechaNacAux)).toISOString()).split('T')[0] : null,
         fechaLlamada: dataRow.fechaLlamada ? ((new Date(dataRow.fechaLlamada)).toISOString()).split('T')[0] : null,
         fechaVisita: dataRow.fechaVisita ? ((new Date(dataRow.fechaVisita)).toISOString()).split('T')[0] : null
       }
@@ -196,6 +213,7 @@ export class TableListComponent implements OnInit {
       this._lineaAmigaService.putDataLineaAmiga(body).subscribe({
         next: (data) => {
           this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos actualizados', key: 'tr', life: 3000 });
+          dataRow.fechaNacimiento = this.ageCalculate((newDataRow.fechaNacimiento as Date));
           this.table.saveRowEdit(dataRow, rowElement);
         },
         error: (error) => {
@@ -243,8 +261,7 @@ export class TableListComponent implements OnInit {
   }
 
   filtrarPorFecha(filtro: { year: number; month: number }): void {
-    
-    this.loadDataLieneaAmiga(filtro.month, filtro.year);
+    this.loadDataLieneaAmiga(filtro.month, filtro.year).subscribe();
   }
 
   formatData(data: lineaAmigaData[]): lineaAmigaData[] {
@@ -255,6 +272,7 @@ export class TableListComponent implements OnInit {
         fechaLlamada: item.fechaLlamada ? new Date(item.fechaLlamada) : null,
         fechaVisita: item.fechaVisita ? new Date(item.fechaVisita) : null,
         fechaNacimiento: item.fechaNacimiento ? this.ageCalculate(item.fechaNacimiento as Date) : null,
+        fechaNacAux : new Date( item.fechaNacimiento as Date),
         entidad: this.headersTableLineaAmiga[0].options.find((entidad: entidades) => entidad.nombre === item.entidad) || '',
         responsable: this.headersTableLineaAmiga[12].options.find((empleado: empleados) => empleado.nombre === item.responsable) || '',
       };

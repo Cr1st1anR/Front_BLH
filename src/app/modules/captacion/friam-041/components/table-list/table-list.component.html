@@ -28,7 +28,7 @@
           <p-columnFilter field="entidad" matchMode="in" [showMenu]="false">
             <ng-template #filter let-value let-filter="filterCallback">
               <p-multiselect [(ngModel)]="selectedEntidades" [options]="headersTableLineaAmiga[0].options"
-                placeholder="Any" (onChange)="filter($event.value)" optionLabel="nombre" class="filter-entidades">
+                placeholder="Seleccionar entidad" (onChange)="filter($event.value)" optionLabel="nombre">
                 <ng-template #filter let-value let-filter="filterCallback">
                   <ng-template let-option #item>
                     <div class="flex items-center gap-2">
@@ -74,8 +74,13 @@
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("date") {
-              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-                inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                @if (col.field == 'fechaNacimiento') {
+                  <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'" [showIcon]="true"
+                    inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                }@else {
+                  <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                }
               }
               @case ("checkbox") {
               <div class="flex flex-wrap gap-4 justify-center">

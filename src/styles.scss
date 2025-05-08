@@ -121,7 +121,6 @@ p-datepicker {
         }
 
         .p-datepicker-panel {
-            background: white;
 
             .p-datepicker-calendar {
                 .p-datepicker-header {
@@ -143,8 +142,6 @@ p-datepicker {
                         }
                     }
                 }
-
-
             }
 
             .p-datepicker-month-view {
@@ -164,14 +161,71 @@ p-datepicker {
                     }
                 }
             }
+
         }
     }
 }
 
+.p-datepicker-panel {
+    .p-datepicker-calendar {
+        .p-datepicker-header {
+            p-button{
+                .p-button-text {
+                    color: #224186;
+
+                    &:not(:disabled):hover {
+                        background-color: #224186;
+                        color: white
+                    }
+                }
+
+                .p-datepicker-title>* {
+                    &:not(:disabled):hover {
+                        color: white;
+                        background-color: #224186;
+                    }
+                }
+            }
+        }
+    }
+
+    .p-datepicker-month-view {
+        span {
+            &.p-datepicker-month-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+    .p-datepicker-year-view {
+        span {
+            &.p-datepicker-year-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+    .p-datepicker-day-view {
+        span {
+            &.p-datepicker-day-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+}
+
 // Custom sytles p-inputtext
 .p-inputtext {
-    &:focus {
-        border: 1px solid #224186;
+    &:enabled:focus {
+        border: 1px solid #224186 !important;
+    }
+
+    &:hover {
+        border: 1px solid #224186 !important;
     }
 }
 
@@ -232,4 +286,43 @@ p-radiobutton {
         // }
     }
 
+}
+
+// Custom styles p-select
+p-select {
+    &:hover:not(.p-disabled) {
+        border: 1px solid #224186 !important;
+    }
+
+    &:not(.p-disabled).p-focus {
+        border: 1px solid #224186 !important;
+    }
+}
+
+// Custom styles p-multiselect
+.p-multiselect {
+    &:hover:not(.p-disabled) {
+        border: 1px solid #224186 !important;
+    }
+
+    &:not(.p-disabled).p-focus {
+        border: 1px solid #224186 !important;
+    }
+
+    .p-multiselect-overlay {
+        p-multiselect-item li {
+
+            p-checkbox .p-checkbox-box {
+                border: 2px solid #224186;
+            }
+
+            p-checkbox .p-checkbox-checked .p-checkbox-box {
+                background: #224186;
+            }
+
+            // &.p-multiselect-option:not(.p-multiselect-option-selected):not(.p-disabled).p-focus {
+            //     background: #224186;
+            // }
+        }
+    }
 }

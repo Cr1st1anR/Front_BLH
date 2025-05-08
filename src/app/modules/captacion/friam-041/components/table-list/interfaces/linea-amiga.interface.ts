@@ -7,6 +7,7 @@ export interface lineaAmigaData {
     fechaParto: Date | null | string;
     documento: string;
     fechaNacimiento: Date | null | number;
+    fechaNacAux?: Date | null | number;
     telefono: string;
     barrio: string;
     direccion: string;

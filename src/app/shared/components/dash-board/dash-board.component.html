@@ -1,0 +1,67 @@
+<p-menubar>
+  <ng-template pTemplate="start" let-item>
+    <p-button (click)="visible = true" icon="pi pi-bars" />
+  </ng-template>
+  <ng-template #end>
+    <p-avatar icon="pi pi-user" class="mr-2" shape="circle"></p-avatar>
+    <p-button icon="pi pi-sign-out" label="Salir"></p-button>
+  </ng-template>
+</p-menubar>
+<p-drawer [(visible)]="visible">
+  <ng-template #headless>
+    <div class="flex flex-col h-full">
+      <div class="flex items-center justify-center px-6 pt-4">
+        <img src="assets/logoBLH.svg" alt="" />
+        <!-- <span>
+                    <p-button type="button" (click)="closeCallback($event)" icon="pi pi-times" rounded="true" outlined="true" styleClass="h-8 w-8"></p-button>
+                </span> -->
+      </div>
+      <div class="overflow-y-auto">
+        <ul class="p-4 overflow-hidden">
+          @for (item of menuBarItems; track $index) {
+          <li>
+            <a
+              pRipple
+              pStyleClass="@next"
+              toggleClass="hidden"
+              enterFromClass="hidden"
+              enterActiveClass="animate-slidedown"
+              leaveToClass="hidden"
+              leaveActiveClass="animate-slideup"
+              class="flex items-center cursor-pointer w-full"
+              [routerLink]="item.route"
+            >
+              <i class="{{ item.icon }}"></i>
+              <span class="ml-2">{{ item.label }}</span>
+              @if (item.items && item.items.length) {
+              <i class="pi pi-chevron-down ml-auto"></i>
+              }
+              <!-- <i class="pi pi-chart-line"></i> -->
+            </a>
+            <!-- @if (item.items.length) -->
+            @if (item.items && item.items.length) {
+            <ul
+              class="hidden overflow-y-hidden transition-all duration-300 ease-in-out"
+            >
+              @for (subItem of item.items; track $index) {
+              <li class="">
+                <a
+                  class="flex items-center cursor-pointer"
+                  [routerLink]="subItem.route"
+                  routerLinkActive="active"
+                  >
+                  <!-- (click)="onSelect(item)"
+                  [class.active]="selectedItem === item" -->
+                  <span class="">{{ subItem.label }}</span>
+                </a>
+              </li>
+              }
+            </ul>
+            }
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </ng-template>
+</p-drawer>

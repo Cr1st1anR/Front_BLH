@@ -1,23 +1,18 @@
 import { Routes } from '@angular/router';
+import { HOMEROUTES } from './modules/home/home.routes';
+
 
 export const routes: Routes = [
   {
+    path: '',
+    children: HOMEROUTES
+  },
+  {
     path: 'login',
-    loadComponent: () => import('./modules/auth/pages/login/login-page.component')// Carga perezosa del módulo Home
+    loadComponent: () => import('./modules/auth/pages/login/login-page.component').then((c) => c.LoginPageComponent)
   },
-
-  {
-    path: 'dashboard',
-    loadComponent: () => import('./shared/components/dashboard/dashboard.component')// Carga perezosa del módulo Home
-  },
-
-  {
-    path: 'menubar',
-    loadComponent: () => import('./shared/components/menubar/menubar.component')// Carga perezosa del módulo Home
-  },
-
   {
     path: '**',
     redirectTo: ''
-  } // Redirección en caso de ruta no encontrada
+  } 
 ];

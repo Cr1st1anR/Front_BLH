@@ -1,0 +1,10 @@
+<app-dash-board />
+<router-outlet />
+
+
+@if (router.url === '/') {
+  <div class="relative h-[90vh] flex items-center justify-center">
+    <img src="assets/logoBLH.svg" alt="Logo Watermark" class="absolute opacity-20 w-[25vw] h-auto" />
+    <div class="absolute top-4 right-4"></div>
+  </div>
+}

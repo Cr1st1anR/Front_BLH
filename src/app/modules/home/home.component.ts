@@ -1,16 +1,19 @@
 import { Component } from '@angular/core';
-import { provideRouter, RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { DashBoardComponent } from '../../shared/components/dash-board/dash-board.component';
+import { Router } from '@angular/router';
 
-const homeRoutes: Routes = [
-  // { path: '', component: DashboardComponent }, // Ruta por defecto en Home
-  // { path: 'profile', component: ProfileComponent },
-  { path: 'login', loadComponent: () => import('../auth/pages/login/login-page.component') }
-];
 
 @Component({
   selector: 'app-home',
-  imports: [RouterModule],
-  template: `<p>home works!</p>`,
-  // styleUrl: './home.component.css',
+  imports: [
+    RouterModule,
+    DashBoardComponent,
+],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
 })
-export default class HomeComponent { }
+export class HomeComponent {
+  constructor(public router: Router) {}
+
+}

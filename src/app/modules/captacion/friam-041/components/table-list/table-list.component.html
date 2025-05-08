@@ -1,0 +1,171 @@
+<p-toast position="top-right" key="tr" />
+
+<app-header />
+
+
+<div class="flex justify-between items-center mx-4">
+  <app-new-register (nuevoRegistro)="agregarFilaVacia()" />
+  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
+</div>
+
+
+<div class="container-table">
+  <p-table #tableVap [value]="dataTableLienaAmiga" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersTableLineaAmiga" editMode="row" [tableStyle]="{'min-width': '50rem'}" dataKey="idMadrePotencial"
+    [globalFilterFields]="['entidad.nombre', 'documento']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field == "documento") {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="documento" [placeholder]="'Buscar '+col.field" [showMenu]="false"
+            ariaLabel="Filter Name"></p-columnFilter>
+        </th>
+        }
+        @else if (col.field == "entidad") {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter field="entidad" matchMode="in" [showMenu]="false">
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-multiselect [(ngModel)]="selectedEntidades" [options]="headersTableLineaAmiga[0].options"
+                placeholder="Seleccionar entidad" (onChange)="filter($event.value)" optionLabel="nombre">
+                <ng-template #filter let-value let-filter="filterCallback">
+                  <ng-template let-option #item>
+                    <div class="flex items-center gap-2">
+                      <span>{{ option.nombre }}</span>
+                    </div>
+                  </ng-template>
+                </ng-template>
+              </p-multiselect>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        }
+        @else {
+        <th [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [ngStyle]="{'min-width': col.width}" [attr.rowspan]="col.rowspan" class="grid-lines">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        @if (col.field != "acciones") {
+        <td>
+          <p-cellEditor>
+            <ng-template #input>
+              @switch (col.tipo) {
+              @case ("select") {
+              <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
+                [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
+                [placeholder]="col.placeholder" class="w-full md:w-56"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("text") {
+              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("date") {
+                @if (col.field == 'fechaNacimiento') {
+                  <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'" [showIcon]="true"
+                    inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                }@else {
+                  <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                }
+              }
+              @case ("checkbox") {
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  @if (col.field == "educacionPresencial" || col.field == "asesoria" || col.field == "donanteEfectiva")
+                  {
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="1" inputId="Opt1" />
+                  <label for="Opt1" class="ml-2">Si</label>
+                  }
+                  @else() {
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="'entrante'" inputId="Opt1" />
+                  <label for="Opt1" class="ml-2">Entrante</label>
+                  }
+                </div>
+                <div class="flex items-center">
+                  @if (col.field == "educacionPresencial" || col.field == "asesoria" || col.field == "donanteEfectiva")
+                  {
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="0" inputId="Opt2" />
+                  <label for="Opt2" class="ml-2">No</label>
+                  }@else {
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="'saliente'" inputId="Opt2" />
+                  <label for="Opt2" class="ml-2">Saliente</label>
+                  }
+                </div>
+              </div>
+              }
+              }
+            </ng-template>
+            <ng-template #output>
+              @if (col.field === "entidad" || col.field === "responsable" ) {
+              {{ rowData[col.field]?.nombre || '' }}
+              }@else if (col.field == "educacionPresencial" || col.field == "asesoria" || col.field ==
+              "donanteEfectiva") {
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="1" inputId="Opt1"
+                    [disabled]="true" />
+                  <label for="Opt1" class="ml-2">Si</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="0" inputId="Opt2"
+                    [disabled]="true" />
+                  <label for="Opt2" class="ml-2">No</label>
+                </div>
+              </div>
+              }@else if(col.field == "llamada"){
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="'entrante'" inputId="Opt1"
+                    [disabled]="true" />
+                  <label for="Opt1" class="ml-2">Entrante</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radiobutton name="opt" [(ngModel)]="rowData[col.field]" [value]="'saliente'" inputId="Opt2"
+                    [disabled]="true" />
+                  <label for="Opt2" class="ml-2">Saliente</label>
+                </div>
+              </div>
+              }@else if (col.tipo == "date" && col.field != "fechaNacimiento") {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                [disabled]="true" inputId="icondisplay" />
+              }
+              @else {
+              {{rowData[col.field]}}
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+        @else if (col.field === "acciones") {
+        <td>
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)"></button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData,ri,$event)"></button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, ri)"></button>
+          </div>
+        </td>
+        }
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

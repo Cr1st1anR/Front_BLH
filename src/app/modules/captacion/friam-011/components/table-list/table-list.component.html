@@ -1,0 +1,263 @@
+<app-header [title]="'RUTA DE RECOLECCIÓN DE LECHE HUMANA CRUDA (FRIAM 011)'" />
+
+<div class="flex justify-between items-center mx-4">
+  <app-new-route (nuevaRuta)="agregarFilaVacia()" />
+  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
+</div>
+
+<!-- <principal-table /> -->
+<div class="container-table">
+  <p-table
+    [value]="filteredCustomers"
+    [scrollable]="true"
+    scrollHeight="500px"
+    scrollWidth="100%"
+    [columns]="headersTableLineaAmiga"
+    selectionMode="single"
+    [(selection)]="selectedRow"
+    (onRowSelect)="onRowSelect($event)"
+    dataKey="id"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <!-- Encabezado de la tabla -->
+    <ng-template #header let-columns>
+      <tr>
+        <th *ngFor="let col of columns" [ngStyle]="{ 'min-width': col.width }">
+          {{ col.header }}
+        </th>
+      </tr>
+    </ng-template>
+
+    <!-- Cuerpo de la tabla -->
+    <ng-template #body let-customer>
+      <tr [pSelectableRow]="customer">
+        <!-- Si la fila está en modo edición -->
+        <ng-container *ngIf="editingRow === customer; else viewMode">
+          <td><input [(ngModel)]="customer.fecha" /></td>
+          <td><input [(ngModel)]="customer.ruta" /></td>
+          <td><input [(ngModel)]="customer.placaVehiculo" /></td>
+          <td><input [(ngModel)]="customer.conductor" /></td>
+          <td><input type="number" [(ngModel)]="customer.kmInicial" /></td>
+          <td><input type="number" [(ngModel)]="customer.kmFinal" /></td>
+          <td><input [(ngModel)]="customer.horaSalida" /></td>
+          <td><input [(ngModel)]="customer.horaLlegada" /></td>
+          <td><input [(ngModel)]="customer.responsableTecnico" /></td>
+          <td><input [(ngModel)]="customer.cargo" /></td>
+          <td><input type="number" [(ngModel)]="customer.totalVisitas" /></td>
+          <td>
+            <input
+              type="number"
+              [(ngModel)]="customer.volumenLecheRecolectada"
+            />
+          </td>
+          <td>
+            <button (click)="guardarFila()">💾</button>
+            <button (click)="cancelarEdicion()">❌</button>
+          </td>
+        </ng-container>
+
+        <!-- Modo de visualización -->
+        <ng-template #viewMode>
+          <td>{{ customer.fecha }}</td>
+          <td>{{ customer.ruta }}</td>
+          <td>{{ customer.placaVehiculo }}</td>
+          <td>{{ customer.conductor }}</td>
+          <td>{{ customer.kmInicial }}</td>
+          <td>{{ customer.kmFinal }}</td>
+          <td>{{ customer.horaSalida }}</td>
+          <td>{{ customer.horaLlegada }}</td>
+          <td>{{ customer.responsableTecnico }}</td>
+          <td>{{ customer.cargo }}</td>
+          <td>{{ customer.totalVisitas }}</td>
+          <td>{{ customer.volumenLecheRecolectada }}</td>
+          <td>
+            <button (click)="editarFila(customer)">✏️</button>
+          </td>
+        </ng-template>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  header="REGISTRO DE TEMPERATURA TERMOS/CAJAS ISOTERMICAS"
+  [resizable]="false"
+  [modal]="true"
+  [maximizable]="true"
+  appendTo="body"
+  [(visible)]="dialogVisible"
+  [style]="{ width: '75vw' }"
+  [contentStyle]="{ height: '300px' }"
+  [draggable]="false"
+>
+  <!-- NUEVO REGISTRO -->
+  <new-register-temperatura (nuevaColumna)="agregarColumna($event)" />
+
+  <!-- TABLA DENTRO DEL DIALOG -->
+  <p-table
+    [value]="[dialogRow]"
+    [scrollable]="true"
+    scrollHeight="flex"
+    scrollWidth="100%"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>NO. CAJA</th>
+        <th>HORA DE SALIDA</th>
+        <th>T° DE SALIDA</th>
+        <th *ngFor="let col of dynamicColumns">{{ col }}</th>
+        <th>ACCIONES</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-customer>
+      <tr>
+        <!-- Si la fila está en modo edición -->
+        @if (editingRow === customer) {
+        <td><input type="number" [(ngModel)]="customer.noCaja" /></td>
+        <td><input type="number" [(ngModel)]="customer.tSalida" /></td>
+        <td><input type="string" [(ngModel)]="customer.hSalida" /></td>
+        <td *ngFor="let col of dynamicColumns">
+          <input type="number" [(ngModel)]="customer[col]" />
+        </td>
+        <td>
+          <button (click)="guardarFila()">💾</button>
+          <button (click)="cancelarEdicion()">❌</button>
+        </td>
+        } @else {
+        <!-- Si la fila no está en modo edición -->
+        <td>{{ customer.noCaja }}</td>
+        <td>{{ customer.tSalida }}</td>
+        <td>{{ customer.hSalida }}</td>
+        <td *ngFor="let col of dynamicColumns">
+          {{ customer[col] }}
+        </td>
+        <td>
+          <button (click)="editarFila(customer)">✏️</button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- NUEVO REGISTRO CASA -->
+  <new-register-casa
+    (nuevoRegistro)="crearNuevoRegistroCasa()"
+  ></new-register-casa>
+  <!-- NUEVA TABLA DIALOG -->
+  <p-table
+    [value]="secondaryTableData"
+    [scrollable]="true"
+    scrollHeight="flex"
+    scrollWidth="100%"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    selectionMode="single"
+    [(selection)]="selectedSecondaryRow"
+    (onRowSelect)="onSecondaryRowSelect($event)"
+    dataKey="casaNo"
+  >
+    <ng-template #header>
+      <tr>
+        <th>CASA No.</th>
+        <th>CODIGO</th>
+        <th>NOMBRE</th>
+        <th>DIRECCION</th>
+        <th>TELEFONO 1</th>
+        <th>TELEFONO 2</th>
+        <th>OBSERVACIONES</th>
+        <th>ACCIONES</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr [pSelectableRow]="row">
+        @if (editingSecondaryRow === row) {
+        <td><input [(ngModel)]="row.casaNo" /></td>
+        <td><input [(ngModel)]="row.codigo" /></td>
+        <td><input [(ngModel)]="row.nombre" /></td>
+        <td><input [(ngModel)]="row.direccion" /></td>
+        <td><input [(ngModel)]="row.telefono1" /></td>
+        <td><input [(ngModel)]="row.telefono2" /></td>
+        <td><input [(ngModel)]="row.observaciones" /></td>
+        <td>
+          <button (click)="guardarFilaSecondary()">💾</button>
+          <button (click)="cancelarEdicionSecondary()">❌</button>
+        </td>
+        } @else {
+        <td>{{ row.casaNo }}</td>
+        <td>{{ row.codigo }}</td>
+        <td>{{ row.nombre }}</td>
+        <td>{{ row.direccion }}</td>
+        <td>{{ row.telefono1 }}</td>
+        <td>{{ row.telefono2 }}</td>
+        <td>{{ row.observaciones }}</td>
+        <td>
+          <button (click)="editarFilaSecondary(row)">✏️</button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>
+
+<!-- Nuevo Dialog -->
+<p-dialog
+  header="Detalles de Frascos"
+  [(visible)]="tercerDialogVisible"
+  [modal]="true"
+  [resizable]="false"
+  [maximizable]="true"
+  appendTo="body"
+  [style]="{ width: '75vw' }"
+  [contentStyle]="{ height: '300px' }"
+  (onHide)="tercerDialogVisible = false"
+>
+    <new-register-frasco
+    (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()" />
+  <p-table
+    [value]="frascosData"
+    [scrollable]="true"
+    scrollHeight="flex"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>No. Frasco</th>
+        <th>Volumen Estimado</th>
+        <th>Fecha de Extracción</th>
+        <th>Tipo de Frasco</th>
+        <th>N° de Termo</th>
+        <th>Congelador</th>
+        <th>Gaveta</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-frasco>
+      <tr>
+        @if (editingFrascoRow === frasco) {
+        <td><input [(ngModel)]="frasco.noFrasco" /></td>
+        <td><input [(ngModel)]="frasco.volumenEstimado" /></td>
+        <td><input type="date" [(ngModel)]="frasco.fechaExtraccion" /></td>
+        <td><input [(ngModel)]="frasco.tipoFrasco" /></td>
+        <td><input [(ngModel)]="frasco.noTermo" /></td>
+        <td><input [(ngModel)]="frasco.congelador" /></td>
+        <td><input [(ngModel)]="frasco.gaveta" /></td>
+        <td>
+          <button (click)="guardarFrasco()">💾</button>
+          <button (click)="cancelarEdicionFrasco()">❌</button>
+        </td>
+        } @else {
+        <td>{{ frasco.noFrasco }}</td>
+        <td>{{ frasco.volumenEstimado }}</td>
+        <td>{{ frasco.fechaExtraccion }}</td>
+        <td>{{ frasco.tipoFrasco }}</td>
+        <td>{{ frasco.noTermo }}</td>
+        <td>{{ frasco.congelador }}</td>
+        <td>{{ frasco.gaveta }}</td>
+        <td>
+          <button (click)="editarFrasco(frasco)">✏️</button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

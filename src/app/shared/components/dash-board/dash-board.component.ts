@@ -1,13 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { Drawer, DrawerModule } from 'primeng/drawer';
 import { MenubarModule } from 'primeng/menubar';
 import { RippleModule } from 'primeng/ripple';
 import { StyleClassModule } from 'primeng/styleclass';
-
-
 interface MenuBarItems {
   icon?: string;
   label: string;
@@ -41,26 +39,25 @@ export class DashBoardComponent {
     {
       label: 'Inicio',
       icon: 'fa-solid fa-house',
-      route: '',
+      route: '/blh',
       items: []
     },
     {
       label: 'Captacion',
       icon: 'fa-solid fa-users-viewfinder',
-      route: '/captacion',
       items: [
         {
           label: 'Registro de linea amiga',
           subLabel: '(FRIAM-041)',
-          route: '/captacion/registro-linea-amiga'
+          route: '/blh/captacion/registro-linea-amiga'
         },
         { label: 'Ruta de recolección de leche humana cruda',
           subLabel: '(FRIAM-011)',
-          route: '/captacion/recoleccion-leche-humana-cruda'
+          route: '/blh/captacion/recoleccion-leche-humana-cruda'
         },
         { label: 'Registro de donante del banco de leche humana',
           subLabel: '(FRIAM-018)',
-          route: '/captacion/registro-donante-blh'
+          route: '/blh/captacion/registro-donante-blh'
         }
       ]
     },
@@ -79,11 +76,24 @@ export class DashBoardComponent {
 
   ]
 
+  constructor(
+    private router:Router
+  ){
+
+  }
+
   closeCallback(e:any): void {
+    console.log(e);
+    
     this.drawerRef.close(e);
   }
   onSelect(item: any) {
     this.selectedItem = item;
+  }
+
+  singOut(){
+    localStorage.removeItem('token');
+    this.router.navigate(['/']);
   }
 
 }

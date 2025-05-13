@@ -1,5 +1,12 @@
 <p-toast position="top-right" key="tr" />
 
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
 <app-header />
 
 
@@ -74,13 +81,14 @@
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("date") {
-                @if (col.field == 'fechaNacimiento') {
-                  <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'" [showIcon]="true"
-                    inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
-                }@else {
-                  <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-                  inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
-                }
+              @if (col.field == 'fechaNacimiento') {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'"
+                [showIcon]="true" inputId="icondisplay"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }@else {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
               }
               @case ("checkbox") {
               <div class="flex flex-wrap gap-4 justify-center">

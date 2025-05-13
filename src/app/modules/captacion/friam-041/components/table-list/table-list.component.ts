@@ -1,6 +1,5 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, ViewChild } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
-import { CustomerService } from './services/customerservice';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
 import { NewRegisterComponent } from '../new-register/new-register.component';
 import { MonthPickerComponent } from '../month-picker/month-picker.component';
@@ -17,6 +16,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 
 @Component({
@@ -35,7 +35,8 @@ import { catchError, concatMap, Observable, of, tap } from 'rxjs';
     InputTextModule,
     RadioButtonModule,
     ToastModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ProgressSpinnerModule
 
   ],
   templateUrl: './table-list.component.html',
@@ -53,6 +54,7 @@ export class TableListComponent implements OnInit {
   filtroActual: { year: number; month: number } | null = null;
   entidadesOpt: entidades[] = [];
   selectedEntidades: any[] = [];
+  loading:boolean = false;
 
   headersTableLineaAmiga: any[] = [
     {
@@ -89,23 +91,29 @@ export class TableListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-
+    this.loading = true;
     const fechaActual = new Date();
     const mesActual = fechaActual.getMonth() + 1;
     const anioActual = fechaActual.getFullYear();
-
-    of(null).pipe(
-      concatMap(() => this.loadDataEmpleados()),
-      concatMap(() => this.loadDataEntidades()),
-      concatMap(() => this.loadDataLieneaAmiga(mesActual, anioActual))
-    ).subscribe({
-      complete: () => {
-        console.log('Todas las peticiones se ejecutaron en orden correctamente');
-      },
-      error: (err) => {
-        console.error('Error en la secuencia de peticiones', err);
-      }
-    });
+    
+    // setTimeout(() => {
+      of(null).pipe(
+        concatMap(() => this.loadDataEmpleados()),
+        concatMap(() => this.loadDataEntidades()),
+        concatMap(() => this.loadDataLieneaAmiga(mesActual, anioActual))
+      ).subscribe({
+        complete: () => {
+          setTimeout(() => {
+            this.loading = false;
+          }, 2000);
+          // console.log('Todas las peticiones se ejecutaron');
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error('Error en la secuencia de peticiones', err);
+        }
+      });
+    // }, 2000);
   }
 
   loadDataEntidades(): Observable<ApiResponse> {

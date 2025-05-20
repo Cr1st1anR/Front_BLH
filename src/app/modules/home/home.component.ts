@@ -14,6 +14,9 @@ import { Router } from '@angular/router';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  constructor(public router: Router) {}
+  constructor(public router: Router) {
+    console.log("INICIE");
+    
+  }
 
 }

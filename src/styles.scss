@@ -11,6 +11,9 @@
 // Importing custom components and utilities
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+// Importing icons PrimeIcons
+@import "primeicons/primeicons.css";
+
 //Functions
 @mixin font ($font-weight, $font-size, $font-line, $color) {
     font-weight: $font-weight;
@@ -107,15 +110,18 @@ p-menubar {
     }
 }
 
+// Custom styles p-datepicker
 p-datepicker {
     .p-datepicker {
         width: 100%;
         max-width: 15vw;
-        .p-inputtext:enabled:focus{
+
+        .p-inputtext:enabled:focus {
             border: 1px solid #224186;
         }
+
         .p-datepicker-panel {
-            background: white;
+
             .p-datepicker-calendar {
                 .p-datepicker-header {
                     p-button {
@@ -136,8 +142,6 @@ p-datepicker {
                         }
                     }
                 }
-
-
             }
 
             .p-datepicker-month-view {
@@ -157,18 +161,78 @@ p-datepicker {
                     }
                 }
             }
+
         }
     }
 }
 
+.p-datepicker-panel {
+    .p-datepicker-calendar {
+        .p-datepicker-header {
+            p-button{
+                .p-button-text {
+                    color: #224186;
+
+                    &:not(:disabled):hover {
+                        background-color: #224186;
+                        color: white
+                    }
+                }
+
+                .p-datepicker-title>* {
+                    &:not(:disabled):hover {
+                        color: white;
+                        background-color: #224186;
+                    }
+                }
+            }
+        }
+    }
+
+    .p-datepicker-month-view {
+        span {
+            &.p-datepicker-month-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+    .p-datepicker-year-view {
+        span {
+            &.p-datepicker-year-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+    .p-datepicker-day-view {
+        span {
+            &.p-datepicker-day-selected {
+                background-color: #224186;
+                color: white;
+            }
+        }
+    }
+
+}
+
+// Custom sytles p-inputtext
 .p-inputtext {
-    &:focus {
-        border: 1px solid #224186;
+    &:enabled:focus {
+        border: 1px solid #224186 !important;
+    }
+
+    &:hover {
+        border: 1px solid #224186 !important;
     }
 }
 
-p-table{
+// Custom styles p-table
+p-table {
     width: 100%;
+
     .p-datatable-table-container {
         .p-datatable-thead {
             tr {
@@ -177,16 +241,17 @@ p-table{
                     color: white;
                     text-align: center;
                     white-space: nowrap;
-                   
+                    height: 5rem;
+
 
                     &:first-child {
                         border-radius: 8px 0px 0px 0px;
                     }
-    
+
                     &:last-child {
                         border-radius: 0px 8px 0px 0px;
                     }
-    
+
                     &:nth-child(n + 2):not(:last-child) {
                         border-radius: 0;
                     }
@@ -196,7 +261,7 @@ p-table{
 
         .p-datatable-tbody {
             tr {
-                td{
+                td {
                     text-align: center;
                     height: 10vh;
                     white-space: nowrap;
@@ -207,4 +272,57 @@ p-table{
 
     }
 
+}
+
+// Custom styles radiobuttom
+p-radiobutton {
+
+    .p-radiobutton-checked .p-radiobutton-box {
+        background-color: #224186;
+        border: 1px solid #224186;
+        // :hover{
+        //     background-color: #224186;
+        //     border: 1px solid #224186;
+        // }
+    }
+
+}
+
+// Custom styles p-select
+p-select {
+    &:hover:not(.p-disabled) {
+        border: 1px solid #224186 !important;
+    }
+
+    &:not(.p-disabled).p-focus {
+        border: 1px solid #224186 !important;
+    }
+}
+
+// Custom styles p-multiselect
+.p-multiselect {
+    &:hover:not(.p-disabled) {
+        border: 1px solid #224186 !important;
+    }
+
+    &:not(.p-disabled).p-focus {
+        border: 1px solid #224186 !important;
+    }
+
+    .p-multiselect-overlay {
+        p-multiselect-item li {
+
+            p-checkbox .p-checkbox-box {
+                border: 2px solid #224186;
+            }
+
+            p-checkbox .p-checkbox-checked .p-checkbox-box {
+                background: #224186;
+            }
+
+            // &.p-multiselect-option:not(.p-multiselect-option-selected):not(.p-disabled).p-focus {
+            //     background: #224186;
+            // }
+        }
+    }
 }

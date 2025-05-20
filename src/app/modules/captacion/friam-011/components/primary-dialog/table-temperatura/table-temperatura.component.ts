@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { Customer } from '../../interfaces/customer';
 import { CommonModule } from '@angular/common';
+import { Customer } from '../../table-list/interfaces/customer';
 
 @Component({
   selector: 'table-temperatura',

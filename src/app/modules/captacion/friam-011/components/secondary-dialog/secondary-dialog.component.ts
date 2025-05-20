@@ -2,7 +2,8 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { DialogModule } from 'primeng/dialog';
 import { TableFrascoComponent } from './table-frasco/table-frasco.component';
 import { NewRegisterFrascoComponent } from './new-register-frasco/new-register-frasco.component';
-import { CustomerService } from '../services/customerservice';
+import { CustomerService } from '../table-list/services/customerservice';
+
 
 @Component({
   selector: 'secondary-dialog',

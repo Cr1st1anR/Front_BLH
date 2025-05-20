@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { NewRegisterTemperaturaComponent } from './new-register-temperatura/new-register-temperatura.component';
-import { Customer } from '../interfaces/customer';
 import { TableTemperaturaComponent } from './table-temperatura/table-temperatura.component';
 import { NewRegisterCasaComponent } from './new-register-casa/new-register-casa.component';
 import { TableCasaComponent } from "./table-casa/table-casa.component";
-import { CustomerService } from '../services/customerservice';
 import { SecondaryDialogComponent } from '../secondary-dialog/secondary-dialog.component';
+import { Customer } from '../table-list/interfaces/customer';
+import { CustomerService } from '../table-list/services/customerservice';
 
 @Component({
   selector: 'primary-dialog',

@@ -1,0 +1,131 @@
+<div class="container-table">
+  <p-table #tableVap [value]="filteredCustomers" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersRutaRecoleccion" editMode="row" selectionMode="single" [(selection)]="selectedRow"
+    (onRowSelect)="onRowSelect($event)" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        @if (col.field != "acciones") {
+        <td>
+          <p-cellEditor>
+            <ng-template #input>
+              @switch (col.tipo) {
+              @case ("select") {
+              <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
+                [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
+                [placeholder]="col.placeholder" class="w-full md:w-56"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("text") {
+              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("number") {
+              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("date") {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'"
+                [showIcon]="true" inputId="icondisplay"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @case ("time") {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'"
+                [showIcon]="true" inputId="icondisplay" [timeOnly]="true"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              }
+            </ng-template>
+            <ng-template #output>
+              @if (col.field === "responsable" ) {
+              {{ rowData[col.field]?.nombre || '' }}
+              }
+              @else if (col.tipo == "date") {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                [disabled]="true" inputId="icondisplay" />
+              }
+              @else {
+              {{rowData[col.field]}}
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+        @else if (col.field === "acciones") {
+        <td>
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)"></button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData,ri,$event)"></button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, ri)"></button>
+          </div>
+        </td>
+        }
+        }
+
+      </tr>
+    </ng-template>
+
+
+    <!-- Cuerpo de la tabla -->
+    <!-- <ng-template pTemplate="body" let-customer let-rowIndex="rowIndex">
+
+
+
+      
+      <tr [pSelectableRow]="editingRow === null ? customer : null">
+        <ng-container *ngIf="editingRow === customer; else viewMode">
+          <td><input [(ngModel)]="customer.fecha" /></td>
+          <td><input [(ngModel)]="customer.ruta" /></td>
+          <td><input [(ngModel)]="customer.placaVehiculo" /></td>
+          <td><input [(ngModel)]="customer.conductor" /></td>
+          <td><input type="number" [(ngModel)]="customer.kmInicial" /></td>
+          <td><input type="number" [(ngModel)]="customer.kmFinal" /></td>
+          <td><input [(ngModel)]="customer.horaSalida" /></td>
+          <td><input [(ngModel)]="customer.horaLlegada" /></td>
+          <td><input [(ngModel)]="customer.responsableTecnico" /></td>
+          <td><input [(ngModel)]="customer.cargo" /></td>
+          <td><input type="number" [(ngModel)]="customer.totalVisitas" /></td>
+          <td>
+            <input type="number" [(ngModel)]="customer.volumenLecheRecolectada" />
+          </td>
+          <td>
+            <button (click)="guardarFila()">💾</button>
+            <button (click)="cancelarEdicion()">❌</button>
+          </td>
+        </ng-container>
+  
+        <ng-template #viewMode>
+          <td>{{ customer.fecha }}</td>
+          <td>{{ customer.ruta }}</td>
+          <td>{{ customer.placaVehiculo }}</td>
+          <td>{{ customer.conductor }}</td>
+          <td>{{ customer.kmInicial }}</td>
+          <td>{{ customer.kmFinal }}</td>
+          <td>{{ customer.horaSalida }}</td>
+          <td>{{ customer.horaLlegada }}</td>
+          <td>{{ customer.responsableTecnico }}</td>
+          <td>{{ customer.cargo }}</td>
+          <td>{{ customer.totalVisitas }}</td>
+          <td>{{ customer.volumenLecheRecolectada }}</td>
+          <td>
+            <button (click)="editarFila(customer)">✏️</button>
+          </td>
+        </ng-template>
+      </tr>
+    </ng-template> -->
+  </p-table>
+</div>

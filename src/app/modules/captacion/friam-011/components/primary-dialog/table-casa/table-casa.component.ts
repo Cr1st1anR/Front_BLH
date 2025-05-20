@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { CustomerService } from '../../services/customerservice';
+import { CustomerService } from '../../table-list/services/customerservice';
+
 
 @Component({
   selector: 'table-casa',

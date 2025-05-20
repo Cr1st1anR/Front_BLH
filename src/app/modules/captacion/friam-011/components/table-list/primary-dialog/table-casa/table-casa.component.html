@@ -1,1 +1,60 @@
-<p>table-casa works!</p>,
+<div class="container-table">
+  <p-table
+    [value]="secondaryTableData"
+    [scrollable]="true"
+    scrollHeight="flex"
+    scrollWidth="100%"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    (onRowSelect)="onRowSelect($event)"
+    [selectionMode]="editingSecondaryRow ? null : 'single'"
+    dataKey="casaNo"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>CASA No.</th>
+        <th>CODIGO</th>
+        <th>NOMBRE</th>
+        <th>DIRECCION</th>
+        <th>TELEFONO 1</th>
+        <th>TELEFONO 2</th>
+        <th>OBSERVACIONES</th>
+        <th>ACCIONES</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr [pSelectableRow]="row">
+        <!-- Si la fila está en modo edición -->
+        <ng-container *ngIf="editingSecondaryRow === row; else viewModeSecondary">
+          <td><input [(ngModel)]="row.casaNo" /></td>
+          <td><input [(ngModel)]="row.codigo" /></td>
+          <td><input [(ngModel)]="row.nombre" /></td>
+          <td><input [(ngModel)]="row.direccion" /></td>
+          <td><input [(ngModel)]="row.telefono1" /></td>
+          <td><input [(ngModel)]="row.telefono2" /></td>
+          <td><input [(ngModel)]="row.observaciones" /></td>
+          <td>
+            <button (click)="guardarFilaSecondary()">💾</button>
+            <button (click)="cancelarEdicionSecondary()">❌</button>
+          </td>
+        </ng-container>
+
+        <!-- Si la fila no está en modo edición -->
+        <ng-template #viewModeSecondary>
+          <td>{{ row.casaNo }}</td>
+          <td>{{ row.codigo }}</td>
+          <td>{{ row.nombre }}</td>
+          <td>{{ row.direccion }}</td>
+          <td>{{ row.telefono1 }}</td>
+          <td>{{ row.telefono2 }}</td>
+          <td>{{ row.observaciones }}</td>
+          <td>
+            <button (click)="editarFilaSecondary(row)">✏️</button>
+          </td>
+        </ng-template>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+<div *ngIf="secondaryTableData.length === 0" class="p-4 text-center text-gray-500">
+  No hay datos disponibles
+</div>

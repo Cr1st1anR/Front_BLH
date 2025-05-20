@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'app-new-route',
+  selector: 'new-route',
   imports: [ButtonModule],
   templateUrl: './new-route.component.html',
   styleUrl: './new-route.component.scss',

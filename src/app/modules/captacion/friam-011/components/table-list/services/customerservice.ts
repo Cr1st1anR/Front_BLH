@@ -6,6 +6,7 @@ export class CustomerService {
   getData() {
     return [
       {
+        id: 1,
         fecha: '15/05/2024',
         ruta: 'Recoleccion de leche humana (mañana)',
         placaVehiculo: 'OAK296',
@@ -23,7 +24,6 @@ export class CustomerService {
         hSalida: '4:39',
         tSalida: -19.1,
         tCasa1: -21.5,
-        id: 1,
 
         casaNo: 1,
         codigo: 1711,
@@ -42,6 +42,7 @@ export class CustomerService {
         // gaveta: 1,
       },
       {
+        id: 2,
         fecha: '15/05/2024',
         ruta: 'Recoleccion de leche humana (mañana)',
         placaVehiculo: 'OAK296',
@@ -59,7 +60,6 @@ export class CustomerService {
         tSalida: -19.4,
         hSalida: '4:30',
         tCasa1: -21,
-        id: 2,
 
         casaNo: 2,
         codigo: 1234,
@@ -78,7 +78,8 @@ export class CustomerService {
         // gaveta: 2,
       },
       {
-        fecha: '15/05/2024',
+        id: 3,
+        fecha: '20/06/2024',
         ruta: 'Recoleccion de leche humana (mañana)',
         placaVehiculo: 'OAK296',
         conductor: 'Armando Jaramillo',
@@ -92,10 +93,9 @@ export class CustomerService {
         volumenLecheRecolectada: 1870,
 
         noCaja: 1,
-        tSalida: -19.4,
-        hSalida: '4:30',
-        tCasa1: -21,
-        id: 3,
+        tSalida: -18.9,
+        hSalida: '5:00',
+        tCasa1: -20.5,
 
         casaNo: 3,
         codigo: 7987,
@@ -114,7 +114,8 @@ export class CustomerService {
         // gaveta: 2,
       },
       {
-        fecha: '15/05/2024',
+        id: 4,
+        fecha: '10/07/2024',
         ruta: 'Recoleccion de leche humana (mañana)',
         placaVehiculo: 'OAK296',
         conductor: 'Armando Jaramillo',
@@ -127,11 +128,11 @@ export class CustomerService {
         totalVisitas: 6,
         volumenLecheRecolectada: 1870,
 
+
         noCaja: 1,
-        tSalida: -19.4,
-        hSalida: '4:30',
-        tCasa1: -21,
-        id: 4,
+        tSalida: -19.8,
+        hSalida: '4:45',
+        tCasa1: -22.1,
 
         casaNo: 4,
         codigo: 9991,
@@ -181,6 +182,7 @@ export class CustomerService {
         noTermo: 1,
         congelador: 'A',
         gaveta: 1,
+        casaNo: 1
       },
       {
         noFrasco: 1,
@@ -190,10 +192,30 @@ export class CustomerService {
         noTermo: 2,
         congelador: 'B',
         gaveta: 2,
+        casaNo: 1
       },
-      // Más datos de ejemplo...
+      {
+        noFrasco: 1,
+        volumenEstimado: 400,
+        fechaExtraccion: '2025-05-03',
+        tipoFrasco: 'Vidrio',
+        noTermo: 1,
+        congelador: 'A',
+        gaveta: 3,
+        casaNo: 2
+      },
+      {
+        noFrasco: 1,
+        volumenEstimado: 600,
+        fechaExtraccion: '2025-05-04',
+        tipoFrasco: 'Plástico',
+        noTermo: 2,
+        congelador: 'B',
+        gaveta: 4,
+        casaNo: 2
+      }
     ];
-    return Promise.resolve(frascos.filter((f) => f.noTermo === casaNo)); // Filtra por casaNo
+    return Promise.resolve(frascos.filter((f) => f.casaNo === casaNo)); // Filtra por casaNo
   }
 
   constructor(private http: HttpClient) {}

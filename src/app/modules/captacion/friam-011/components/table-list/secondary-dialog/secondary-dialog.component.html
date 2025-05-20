@@ -1,1 +1,21 @@
-<p>secondary-dialog works!</p>,
+<p-dialog
+  header="Detalles de Frascos"
+  [(visible)]="visible"
+  [modal]="true"
+  [resizable]="false"
+  [maximizable]="true"
+  appendTo="body"
+  [style]="{ width: '75vw' }"
+  [contentStyle]="{ height: '300px' }"
+  (onHide)="onDialogHide()"
+  [draggable]="false"
+>
+  <new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()" />
+  <table-frasco
+    [frascosData]="frascosData"
+    [editingFrascoRow]="editingFrascoRow"
+    (editarFrasco)="editarFrasco($event)"
+    (guardarFrasco)="guardarFrasco()"
+    (cancelarEdicionFrasco)="cancelarEdicionFrasco()"
+  />
+</p-dialog>

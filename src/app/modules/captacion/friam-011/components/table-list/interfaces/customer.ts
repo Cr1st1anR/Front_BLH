@@ -1,4 +1,5 @@
 export interface Customer {
+  id?: number;
   fecha?: string | Date;
   ruta?: string;
   placaVehiculo?: string;
@@ -28,6 +29,7 @@ export interface Customer {
   direccion?: string;
   telefono1?: number;
   telefono2?: number;
+  observaciones?: string;
 
   // noFrasco?: number;
   // volumenEstimado?: number;

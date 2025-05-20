@@ -1,1 +1,47 @@
-<p>table-frasco works!</p>,
+  <p-table
+    [value]="frascosData"
+    [scrollable]="true"
+    scrollHeight="flex"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>No. Frasco</th>
+        <th>Volumen Estimado</th>
+        <th>Fecha de Extracción</th>
+        <th>Tipo de Frasco</th>
+        <th>N° de Termo</th>
+        <th>Congelador</th>
+        <th>Gaveta</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-frasco>
+      <tr>
+        @if (editingFrascoRow === frasco) {
+        <td><input [(ngModel)]="frasco.noFrasco" /></td>
+        <td><input [(ngModel)]="frasco.volumenEstimado" /></td>
+        <td><input type="date" [(ngModel)]="frasco.fechaExtraccion" /></td>
+        <td><input [(ngModel)]="frasco.tipoFrasco" /></td>
+        <td><input [(ngModel)]="frasco.noTermo" /></td>
+        <td><input [(ngModel)]="frasco.congelador" /></td>
+        <td><input [(ngModel)]="frasco.gaveta" /></td>
+        <td>
+          <button (click)="onGuardarFrasco()">💾</button>
+          <button (click)="onCancelarEdicionFrasco()">❌</button>
+        </td>
+        } @else {
+        <td>{{ frasco.noFrasco }}</td>
+        <td>{{ frasco.volumenEstimado }}</td>
+        <td>{{ frasco.fechaExtraccion }}</td>
+        <td>{{ frasco.tipoFrasco }}</td>
+        <td>{{ frasco.noTermo }}</td>
+        <td>{{ frasco.congelador }}</td>
+        <td>{{ frasco.gaveta }}</td>
+        <td>
+          <button (click)="onEditarFrasco(frasco)">✏️</button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>

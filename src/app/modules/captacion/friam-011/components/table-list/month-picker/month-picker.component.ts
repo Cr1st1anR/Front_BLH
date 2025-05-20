@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
 
@@ -8,10 +8,15 @@ import { DatePicker } from 'primeng/datepicker';
   templateUrl: './month-picker.component.html',
   styleUrl: './month-picker.component.scss',
 })
-export class MonthPickerComponent {
-  date: Date | undefined; // Fecha seleccionada
+export class MonthPickerComponent implements OnInit {
+  date: Date = new Date(); // Inicializar con la fecha actual
 
   @Output() dateChange = new EventEmitter<{ year: number; month: number }>();
+
+  ngOnInit(): void {
+    // Emitir la fecha inicial al cargar el componente
+    this.onDateChange();
+  }
 
   onDateChange(): void {
     if (this.date) {

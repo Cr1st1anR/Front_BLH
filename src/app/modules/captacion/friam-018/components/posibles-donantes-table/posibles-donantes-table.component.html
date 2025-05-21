@@ -1,0 +1,35 @@
+<app-header
+  [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'"
+/>
+<div class="container-table">
+  <p-table
+    [value]="data"
+    [scrollable]="true"
+    scrollHeight="500px"
+    [columns]="headersTablePosiblesDonantes"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [ngStyle]="{ 'min-width': col.width }" class="grid-lines">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns">
+      <tr>
+        @for (col of columns; track $index) {
+        <td>
+          @if (col.field === 'entidad') {
+          {{ rowData.entidad?.nombre || rowData.entidad || "" }}
+          } @else {
+          {{ rowData[col.field] }}
+          }
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

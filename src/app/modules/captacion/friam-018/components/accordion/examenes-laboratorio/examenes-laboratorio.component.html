@@ -1,0 +1,201 @@
+<p-accordion-panel value="2">
+      <p-accordion-header
+        >EXÁMENES DE LABORATORIO DURANTE EL CONTROL PRENATAL</p-accordion-header
+      >
+      <p-accordion-content>
+        <form class="grid grid-cols-2 gap-6">
+          <!-- Fila 1: Fecha registro -->
+          <div></div>
+          <div class="flex items-center justify-end gap-2">
+            <label class="font-bold">Fecha registro:</label>
+            <p-datepicker
+              [(ngModel)]="fechaRegistroLab"
+              name="fechaRegistroLab"
+              [iconDisplay]="'input'"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+            ></p-datepicker>
+          </div>
+
+          <!-- Fila 2: VDRL -->
+          <div class="flex items-center gap-4">
+            <label class="font-bold">VDRL</label>
+            <p-radioButton
+              name="vdrl"
+              value="positivo"
+              [(ngModel)]="vdrl"
+              inputId="vdrlPos"
+            ></p-radioButton>
+            <label for="vdrlPos">Positivo</label>
+            <p-radioButton
+              name="vdrl"
+              value="negativo"
+              [(ngModel)]="vdrl"
+              inputId="vdrlNeg"
+            ></p-radioButton>
+            <label for="vdrlNeg">Negativo</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <label>Fecha de vencimiento:</label>
+            <p-datepicker
+              [(ngModel)]="fechaVencimientoVdrl"
+              name="fechaVencimientoVdrl"
+              [iconDisplay]="'input'"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+            ></p-datepicker>
+          </div>
+
+          <!-- Fila 3: HbsAg -->
+          <div class="flex items-center gap-4">
+            <label class="font-bold">HbsAg</label>
+            <p-radioButton
+              name="hbsag"
+              value="positivo"
+              [(ngModel)]="hbsag"
+              inputId="hbsagPos"
+            ></p-radioButton>
+            <label for="hbsagPos">Positivo</label>
+            <p-radioButton
+              name="hbsag"
+              value="negativo"
+              [(ngModel)]="hbsag"
+              inputId="hbsagNeg"
+            ></p-radioButton>
+            <label for="hbsagNeg">Negativo</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <label>Fecha de vencimiento:</label>
+            <p-datepicker
+              [(ngModel)]="fechaVencimientoHbsag"
+              name="fechaVencimientoHbsag"
+              [iconDisplay]="'input'"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+            ></p-datepicker>
+          </div>
+
+          <!-- Fila 4: HIV -->
+          <div class="flex items-center gap-4">
+            <label class="font-bold">HIV</label>
+            <p-radioButton
+              name="hiv"
+              value="positivo"
+              [(ngModel)]="hiv"
+              inputId="hivPos"
+            ></p-radioButton>
+            <label for="hivPos">Positivo</label>
+            <p-radioButton
+              name="hiv"
+              value="negativo"
+              [(ngModel)]="hiv"
+              inputId="hivNeg"
+            ></p-radioButton>
+            <label for="hivNeg">Negativo</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <label>Fecha de vencimiento:</label>
+            <p-datepicker
+              [(ngModel)]="fechaVencimientoHiv"
+              name="fechaVencimientoHiv"
+              [iconDisplay]="'input'"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+            ></p-datepicker>
+          </div>
+
+          <!-- Fila 5: Hemoglobina y Hematocrito -->
+          <div class="flex items-center gap-2 col-span-2">
+            <label class="font-bold">HEMOGLOBINA</label>
+            <input
+              pInputText
+              type="text"
+              class="w-48"
+              [(ngModel)]="hemoglobina"
+              name="hemoglobina"
+            />
+            <span>Gr/dl</span>
+            <span class="ml-8 font-bold">HEMATOCRITO</span>
+            <input
+              pInputText
+              type="text"
+              class="w-48"
+              [(ngModel)]="hematocrito"
+              name="hematocrito"
+            />
+            <span>%</span>
+          </div>
+
+          <!-- Fila 6: Transfusiones/tatuajes -->
+          <div class="col-span-2 flex items-center gap-4">
+            <label class="font-bold"
+              >¿Ha recibido transfusiones sanguíneas o se ha hecho tatuajes en
+              el último año?</label
+            >
+            <p-radioButton
+              name="transfusiones"
+              value="si"
+              [(ngModel)]="transfusiones"
+              inputId="transfSi"
+            ></p-radioButton>
+            <label for="transfSi">Sí</label>
+            <p-radioButton
+              name="transfusiones"
+              value="no"
+              [(ngModel)]="transfusiones"
+              inputId="transfNo"
+            ></p-radioButton>
+            <label for="transfNo">No</label>
+          </div>
+
+          <!-- Fila 7: Enfermedades durante la gestación -->
+          <div class="col-span-2 flex items-center gap-4">
+            <label class="font-bold"
+              >¿Qué enfermedades presentó durante la gestación?</label
+            >
+            <input
+              pInputText
+              type="text"
+              class="flex-1"
+              [(ngModel)]="enfermedadesGestacion"
+              name="enfermedadesGestacion"
+            />
+          </div>
+
+          <!-- Fila 8: Fuma y alcohol -->
+          <div class="col-span-2 flex items-center gap-8">
+            <label class="font-bold">Fuma:</label>
+            <p-radioButton
+              name="fuma"
+              value="si"
+              [(ngModel)]="fuma"
+              inputId="fumaSi"
+            ></p-radioButton>
+            <label for="fumaSi">Sí</label>
+            <p-radioButton
+              name="fuma"
+              value="no"
+              [(ngModel)]="fuma"
+              inputId="fumaNo"
+            ></p-radioButton>
+            <label for="fumaNo" class="mr-8">No</label>
+
+            <label class="font-bold">Consume Alcohol:</label>
+            <p-radioButton
+              name="alcohol"
+              value="si"
+              [(ngModel)]="alcohol"
+              inputId="alcoholSi"
+            ></p-radioButton>
+            <label for="alcoholSi">Sí</label>
+            <p-radioButton
+              name="alcohol"
+              value="no"
+              [(ngModel)]="alcohol"
+              inputId="alcoholNo"
+            ></p-radioButton>
+            <label for="alcoholNo">No</label>
+          </div>
+        </form>
+      </p-accordion-content>
+    </p-accordion-panel>

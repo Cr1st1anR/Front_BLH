@@ -3,7 +3,8 @@ import { RegistroDonanteService } from './services/registro-donante.service';
 import { RegistroDonanteData } from './interfaces/registro-donante.interface';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from "../../../../../shared/components/header/header.component";
+import { HeaderComponent } from '../../../../../shared/components/header/header.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'posibles-donantes-table',
@@ -36,15 +37,25 @@ export class PosiblesDonantesTableComponent implements OnInit {
       header: 'REMITE',
       field: 'entidad',
       width: '200px',
-      tipo: 'text', // Cambia a 'text' si solo mostrarás el nombre
+      tipo: 'text',
     },
   ];
 
   data: RegistroDonanteData[] = [];
 
-  constructor(private registroDonanteService: RegistroDonanteService) {}
+  constructor(
+    private registroDonanteService: RegistroDonanteService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.data = this.registroDonanteService.getDataRegistroDonante();
+  }
+
+  onRowClick(row: RegistroDonanteData) {
+    this.router.navigate([
+      '/blh/captacion/registro-donante-blh',
+      row.documento,
+    ]);
   }
 }

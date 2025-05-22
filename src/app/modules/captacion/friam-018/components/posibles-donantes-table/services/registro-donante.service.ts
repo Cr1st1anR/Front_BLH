@@ -10,12 +10,14 @@ export class RegistroDonanteService {
   getDataRegistroDonante() {
     return [
       {
+        id: 1,
         nombre: 'Daniela',
         apellido: 'Toro',
         documento: 789451234,
         entidad: 'HUDN',
       },
       {
+        id: 2,
         nombre: 'Chili',
         apellido: 'Willy',
         documento: 123456789,

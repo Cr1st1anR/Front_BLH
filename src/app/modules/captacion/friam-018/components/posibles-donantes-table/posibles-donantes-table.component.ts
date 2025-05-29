@@ -5,12 +5,13 @@ import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
 import { Router } from '@angular/router';
+import { MonthPickerTableComponent } from "../month-picker-table/month-picker-table.component";
 
 @Component({
   selector: 'posibles-donantes-table',
   templateUrl: './posibles-donantes-table.component.html',
   styleUrl: './posibles-donantes-table.component.scss',
-  imports: [TableModule, CommonModule, HeaderComponent],
+  imports: [TableModule, CommonModule, HeaderComponent, MonthPickerTableComponent],
   providers: [RegistroDonanteService],
 })
 export class PosiblesDonantesTableComponent implements OnInit {

@@ -1,6 +1,12 @@
 <app-header
   [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'"
 />
+
+<div class="flex justify-between items-center mx-4 mt-6">
+  <div></div>
+  <month-picker-table />
+</div>
+
 <div class="container-table">
   <p-table
     [value]="data"
@@ -21,7 +27,7 @@
       </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns">
-      <tr (click)="onRowClick(rowData)" style="cursor:pointer">
+      <tr (click)="onRowClick(rowData)" style="cursor: pointer">
         @for (col of columns; track $index) {
         <td>
           @if (col.field === 'entidad') {

@@ -8,18 +8,22 @@ import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/tabl
 @Injectable({
   providedIn: 'root'
 })
-export class RutaRecoleccionService {
+export class primaryDialogServices {
 
   constructor(private http: HttpClient) { }
 
-  // getDataFriam041(mes: number, anio: number): Observable<ApiResponse> {
-  //   const url = `${environment.ApiBLH}/getMadresPotenciales`;
-  //   const params = { mes, anio };
-  //   return this.http.get<ApiResponse>(url, { params })
-  // }
+  getDataTemperaturaRuta(rutaId: number): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getTemperaturasCasas/${rutaId}`
+    return this.http.get<ApiResponse>(url)
+  }
 
-  getDataEmpleados():Observable<ApiResponse>{
-    const url = `${environment.ApiBLH}/GetEmpleados`;
+  getDataCasasRuta(rutaId: number): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getCasasVisitas/${rutaId}`
+    return this.http.get<ApiResponse>(url)
+  }
+
+  getMadresDonantes():Observable<ApiResponse>{
+    const url = `${environment.ApiBLH}/GetMadreDonante`;
     return this.http.get<ApiResponse>(url);
   }
 
@@ -34,5 +38,5 @@ export class RutaRecoleccionService {
   //   return this.http.post<ApiResponse>(url, data );
   // }
 
-  
+
 }

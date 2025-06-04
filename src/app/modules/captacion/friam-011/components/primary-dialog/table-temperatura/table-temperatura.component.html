@@ -1,60 +1,72 @@
-<div *ngIf="dialogRow" class="container-table">
-  <p-table
-    [value]="[dialogRow]"
-    [scrollable]="true"
-    scrollHeight="flex"
-    scrollWidth="100%"
-    [tableStyle]="{ 'min-width': '50rem' }"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th>NO. CAJA</th>
-        <th>HORA DE SALIDA</th>
-        <th>T° DE SALIDA</th>
-        <th *ngFor="let col of dynamicColumns">{{ col }}</th>
-        <th>ACCIONES</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-customer>
-      <tr>
-        <td>{{ customer.noCaja }}</td>
-        <td>{{ customer.hSalida }}</td>
-        <td>
-          <ng-container *ngIf="editingRow === customer; else viewTemperaturaSalida">
-            <input type="number" [(ngModel)]="customer.tSalida" />
-          </ng-container>
-          <ng-template #viewTemperaturaSalida>
-            {{ customer.tSalida }}
+<p-toast position="top-right" key="tr" />
+
+<p-table #table [value]="dataTable" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }"
+  [columns]="headerTableTemperatura" editMode="row" dataKey="id">
+  <ng-template #header let-columns>
+    <tr>
+      @for (col of columns; track $index) {
+      <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+        {{ col.header }}
+      </th>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+    <tr [pEditableRow]="rowData">
+      @for (col of columns; track $index) {
+      @if (col.field != "acciones") {
+      <td>
+        <p-cellEditor>
+          <ng-template #input>
+            @switch (col.tipo) {
+            @case ("number") {
+              @if (col.field === 't_salida' || col.field === 't_llegada') {
+                <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+              @else {
+                <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" 
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              }
+            }
+            @case ("time") {
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              inputId="icondisplay" [timeOnly]="true"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            }
           </ng-template>
-        </td>
-        <td *ngFor="let col of dynamicColumns">
-          <ng-container *ngIf="editingRow === customer || editingColumn === col; else viewColumn">
-            <input
-              type="number"
-              [(ngModel)]="customer[col]"
-              (blur)="editingColumn === col ? guardarEdicion(customer) : null"
-              (keyup.enter)="editingColumn === col ? guardarEdicion(customer) : null"
-              (keyup.escape)="editingColumn === col ? cancelarEdicion() : cancelarEdicionFila()"
-              autofocus
-            />
-          </ng-container>
-          <ng-template #viewColumn>
-            <span>{{ customer[col] }}</span>
+          <ng-template #output>
+            @if(col.tipo == "time"){
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              inputId="icondisplay" [timeOnly]="true" [disabled]="true" />
+            }@else {
+              {{rowData[col.field]}}
+            }
           </ng-template>
-        </td>
-        <td>
-          <ng-container *ngIf="editingRow === customer || editingColumn !== null; else editButton">
-            <button (click)="editingColumn !== null ? guardarEdicion(customer) : guardarFila()">💾</button>
-            <button (click)="editingColumn !== null ? cancelarEdicion() : cancelarEdicionFila()">❌</button>
-          </ng-container>
-          <ng-template #editButton>
-            <button (click)="editarFila(customer)">✏️</button>
-          </ng-template>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
-<div *ngIf="!dialogRow" class="p-4 text-center text-gray-500">
+        </p-cellEditor>
+      </td>
+      }
+      @else if (col.field === "acciones") {
+      <td>
+        <div class="flex items-center justify-center gap-2">
+          <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+            severity="secondary" (click)="onRowEditInit(rowData)"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData,ri,$event)"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+            severity="danger" (click)="onRowEditCancel(rowData, ri)"></button>
+        </div>
+      </td>
+      }
+
+      }
+    </tr>
+  </ng-template>
+</p-table>
+
+<div *ngIf="!dataTable" class="p-4 text-center text-gray-500">
   No hay datos disponibles
 </div>

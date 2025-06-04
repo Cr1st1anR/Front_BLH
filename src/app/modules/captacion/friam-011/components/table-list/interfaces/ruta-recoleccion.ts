@@ -1,17 +1,20 @@
-export interface Customer {
-  id?: number;
-  fecha?: string | Date;
-  ruta?: string;
-  placaVehiculo?: string;
-  conductor?: string;
-  kmInicial?: number;
-  kmFinal?: number;
-  horaSalida?: string;
-  horaLlegada?: string;
-  responsableTecnico?: string;
-  cargo?: string;
-  totalVisitas?: number;
-  volumenLecheRecolectada?: number;
+export interface rutaRecoleccion {
+  id_ruta?: number;
+  fecha_registro: Date | null | string
+  jornada?: string
+  nombre_conductor: string
+  placa_vehiculo?: string
+  kilometraje_inicial?: number | string
+  kilometraje_final?: number | string
+  hora_salida: string | Date
+  hora_llegada: string| Date
+  temperatura_llegada: number | string
+  temperatura_salida: number | string
+  total_visitas?: number
+  volumen_total?: number
+  id_empleado?: number
+  nombreEmpleado: string
+  cargo?: string
 
   // Nuevas propiedades para las columnas adicionales
   noCaja?: number;

@@ -1,32 +1,12 @@
-<p-dialog
-  header="REGISTRO DE TEMPERATURA TERMOS/CAJAS ISOTERMICAS"
-  [resizable]="false"
-  [modal]="true"
-  [maximizable]="true"
-  appendTo="body"
-  [(visible)]="dialogVisible"
-  [style]="{ width: '75vw' }"
-  [contentStyle]="{ height: '300px' }"
-  [draggable]="false"
-  (onHide)="onDialogHide()"
->
+<p-dialog header="REGISTRO DE TEMPERATURA TERMOS/CAJAS ISOTERMICAS" [resizable]="false" [modal]="true"
+  [maximizable]="true" appendTo="body" [(visible)]="dialogVisible" [style]="{ width: '85vw' }"
+  [contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="cerrarDialogo()">
+
   <new-register-temperatura (nuevaColumna)="agregarColumna($event)" />
-  <table-temperatura
-    [dialogRow]="dialogRow"
-    [dynamicColumns]="dynamicColumns"
-    [nuevaColumna]="nuevaColumna"
-  />
+  <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" />
 
   <new-register-casa (nuevoRegistro)="crearNuevoRegistroCasa()" />
-  <table-casa
-    [secondaryTableData]="secondaryTableData"
-    [editingSecondaryRow]="editingSecondaryRow"
-    (casaSeleccionada)="onCasaSeleccionada($event)"
-  />
+  <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion"  />
 </p-dialog>
 
-<secondary-dialog
-  [(visible)]="secondaryDialogVisible"
-  [casaNo]="selectedCasaNo"
-  (onHide)="onSecondaryDialogHide()"
-/>
+<secondary-dialog [(visible)]="secondaryDialogVisible" [casaNo]="selectedCasaNo" (onHide)="onSecondaryDialogHide()" />

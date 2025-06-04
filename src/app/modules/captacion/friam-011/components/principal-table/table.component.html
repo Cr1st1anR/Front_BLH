@@ -1,7 +1,9 @@
+<p-toast position="top-right" key="tr" />
+
 <div class="container-table">
-  <p-table #tableVap [value]="filteredCustomers" [scrollable]="true" scrollHeight="500px"
+  <p-table #tableVap [value]="dataTableRutaRecoleccion" [scrollable]="true" scrollHeight="500px"
     [columns]="headersRutaRecoleccion" editMode="row" selectionMode="single" [(selection)]="selectedRow"
-    (onRowSelect)="onRowSelect($event)" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+    (onRowSelect)="onRowSelect($event)" dataKey="id_ruta" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
@@ -12,7 +14,7 @@
       </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
-      <tr [pEditableRow]="rowData">
+      <tr [pEditableRow]="rowData" [pSelectableRow]="editingRow === null ? rowData : null">
         @for (col of columns; track $index) {
         @if (col.field != "acciones") {
         <td>
@@ -35,7 +37,7 @@
               }
               @case ("date") {
               <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'"
-                [showIcon]="true" inputId="icondisplay"
+                [showIcon]="true" inputId="icondisplay" [disabled]="true"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("time") {
@@ -46,12 +48,17 @@
               }
             </ng-template>
             <ng-template #output>
-              @if (col.field === "responsable" ) {
+              @if (col.field === "nombreEmpleado") {
               {{ rowData[col.field]?.nombre || '' }}
               }
               @else if (col.tipo == "date") {
               <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
                 [disabled]="true" inputId="icondisplay" />
+              }
+              @else if (col.tipo == "time") {
+                <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'"
+                [showIcon]="true" inputId="icondisplay" [timeOnly]="true" [disabled]="true"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @else {
               {{rowData[col.field]}}

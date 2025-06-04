@@ -220,6 +220,7 @@ p-datepicker {
 
 // Custom sytles p-inputtext
 .p-inputtext {
+    width: 100%;
     &:enabled:focus {
         border: 1px solid #224186 !important;
     }

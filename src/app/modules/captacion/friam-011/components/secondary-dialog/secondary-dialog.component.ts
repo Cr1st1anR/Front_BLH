@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { DialogModule } from 'primeng/dialog';
 import { TableFrascoComponent } from './table-frasco/table-frasco.component';
 import { NewRegisterFrascoComponent } from './new-register-frasco/new-register-frasco.component';
-import { CustomerService } from '../table-list/services/customerservice';
 
 
 @Component({
@@ -10,7 +9,7 @@ import { CustomerService } from '../table-list/services/customerservice';
   imports: [DialogModule, TableFrascoComponent, NewRegisterFrascoComponent],
   templateUrl: './secondary-dialog.component.html',
   styleUrl: './secondary-dialog.component.scss',
-  providers: [CustomerService],
+  providers: [],
 })
 export class SecondaryDialogComponent implements OnChanges {
   @Input() visible: boolean = false;
@@ -22,7 +21,7 @@ export class SecondaryDialogComponent implements OnChanges {
   editingFrascoRow: any = null;
   clonedFrascoRow: any = null;
 
-  constructor(private customerService: CustomerService) {}
+  constructor() {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['casaNo'] && this.casaNo !== null) {
@@ -32,10 +31,10 @@ export class SecondaryDialogComponent implements OnChanges {
 
   cargarFrascosData(casaNo: number) {
     console.log('Cargando frascos para casa:', casaNo);
-    this.customerService.getFrascosData(casaNo).then((data: any[]) => {
-      this.frascosData = data;
-      console.log('Frascos cargados:', this.frascosData);
-    });
+    // this.customerService.getFrascosData(casaNo).then((data: any[]) => {
+    //   this.frascosData = data;
+    //   console.log('Frascos cargados:', this.frascosData);
+    // });
   }
 
   onDialogHide() {

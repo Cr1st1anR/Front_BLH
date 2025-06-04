@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { CustomerService } from '../../table-list/services/customerservice';
+
 
 
 @Component({
@@ -10,7 +10,7 @@ import { CustomerService } from '../../table-list/services/customerservice';
   imports: [TableModule, FormsModule, CommonModule],
   templateUrl: './table-frasco.component.html',
   styleUrl: './table-frasco.component.scss',
-  providers: [CustomerService],
+  providers: [],
 })
 export class TableFrascoComponent {
   @Input() frascosData: any[] = [];
@@ -20,13 +20,13 @@ export class TableFrascoComponent {
   @Output() guardarFrasco = new EventEmitter<void>();
   @Output() cancelarEdicionFrasco = new EventEmitter<void>();
 
-  constructor(private customerService: CustomerService) {}
+  constructor() {}
 
   // Función para cargar los datos de la nueva tabla en el tercer Dialog
   cargarFrascosData(casaNo: number) {
-    this.customerService.getFrascosData(casaNo).then((data: any[]) => {
-      this.frascosData = data; // Carga los datos de los frascos
-    });
+    // this.customerService.getFrascosData(casaNo).then((data: any[]) => {
+    //   this.frascosData = data; // Carga los datos de los frascos
+    // });
   }
 
   onEditarFrasco(row: any) {

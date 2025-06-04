@@ -1,100 +1,140 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
-import { CustomerService } from '../../table-list/services/customerservice';
-
+import { primaryDialogServices } from '../services/primaryDialog.service';
+import { rutaRecoleccion } from '../../table-list/interfaces/ruta-recoleccion';
+import { casasVisitaData, MadresDonantes } from '../interfaces/primaryDialog.interface';
+import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'table-casa',
-  imports: [TableModule, FormsModule, CommonModule],
+  imports: [
+    TableModule,
+    FormsModule,
+    CommonModule,
+    ToastModule,
+    ButtonModule,
+    SelectModule,
+    InputTextModule
+  ],
   templateUrl: './table-casa.component.html',
   styleUrl: './table-casa.component.scss',
-  providers: [CustomerService],
+  providers: [
+    MessageService,
+    primaryDialogServices
+  ],
 })
-export class TableCasaComponent implements OnChanges {
-  // Segunda tabla dentro del Dialog
-  @Input() secondaryTableData: any[] = []; // Datos de la nueva tabla dentro del Dialog
-  @Input() editingSecondaryRow: any = null;
-  @Output() casaSeleccionada = new EventEmitter<{casaNo: number, visible: boolean}>();
+export class TableCasaComponent implements OnChanges, OnInit{
 
-  selectedSecondaryRow: any = null; // Fila seleccionada en la nueva tabla
-  clonedSecondaryRow: any = null; // Copia de la fila en edición en la nueva tabla
+  @Input() dataRutaRecoleccion: rutaRecoleccion | null = null;
+  // @Input() editingSecondaryRow: any = null;
+  // @Output() casaSeleccionada = new EventEmitter<{casaNo: number, visible: boolean}>();
 
-  // Nuevo Dialog
-  tercerDialogVisible: boolean = false; // Controla la visibilidad del nuevo Dialog
-  selectedCasaNo: number | null = null; // Almacena el casaNo de la fila seleccionada
-  frascosData: any[] = []; // Datos para la nueva tabla en el tercer Dialog
+  dataTable: any[] = [];
+  headerTableCasasVisita: any[] = [
+    { header: 'CASA No.', field: 'id_casa_visita', width: '200px', tipo: "text", disable: true },
+    { header: 'CODIGO', field: 'id_madre_donante', width: '200px', tipo: "select",disable: false,
+      options: null, label: "id_madre_donante", placeholder: "Seleccione una madre"
+    },
+    { header: 'NOMBRE', field: 'nombre', width: '200px', tipo: "text", disable: true },
+    { header: 'DIRECCION', field: 'direccion', width: '200px', tipo: "text", disable: true },
+    { header: 'TELEFONO', field: 'celular', width: '200px', tipo: "text", disable: true},
+    { header: 'OBSERVACIONES', field: 'observacion', width: '200px', tipo: "text", disable: false},
+    { header: 'ACCIONES', field: 'acciones', width: '200px' }
+  ];
 
-  constructor(private customerService: CustomerService) {}
+  selectedSecondaryRow: any = null;
+  clonedSecondaryRow: any = null;
+
+
+  tercerDialogVisible: boolean = false;
+  selectedCasaNo: number | null = null;
+  frascosData: any[] = [];
+
+  
+  // requiredFields: string[] = ['observacion', 'hora_salida', 't_salida'];
+
+  constructor(
+    private messageService: MessageService,
+    private _primaryService: primaryDialogServices
+  ) { }
+
+
+  ngOnInit(): void {
+    this.loadDataMadresDonanates();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['secondaryTableData']) {
-      if (this.secondaryTableData && this.secondaryTableData.length > 0) {
-        console.log('TableCasaComponent - Datos recibidos:', this.secondaryTableData);
-      } else {
-        this.cargarDatosSecundarios();
-      }
+    if (changes['dataRutaRecoleccion'] && changes['dataRutaRecoleccion'].currentValue) {
+      this.loadDataforTable(this.dataRutaRecoleccion?.id_ruta!);
     }
   }
 
-  cargarDatosSecundarios() {
-    console.log('TableCasaComponent - Cargando todos los datos de casas...');
-    this.customerService.getCustomersMedium().then((data: any[]) => {
-      const casasMap = new Map();
+  loadDataMadresDonanates(){
+     this._primaryService.getMadresDonantes().subscribe({
+      next: (response) => {
+        this.headerTableCasasVisita[1].options = response.data;
+        console.log(this.headerTableCasasVisita[1].options);
+      },
+      error: (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la data de las madres donantes.' });
+      }
+    })
+  }
 
-      data.forEach(item => {
-        if (item.casaNo !== undefined) {
-          const key = `${item.casaNo}-${item.codigo}`;
-          if (!casasMap.has(key)) {
-            casasMap.set(key, {
-              casaNo: item.casaNo,
-              codigo: item.codigo,
-              nombre: item.nombre,
-              direccion: item.direccion,
-              telefono1: item.telefono1,
-              telefono2: item.telefono2,
-              observaciones: item.observaciones,
-            });
-          }
-        }
-      });
+  loadDataforTable(idRuta: number) {
+    this._primaryService.getDataCasasRuta(idRuta).subscribe({
+      next: (response) => {
+        this.dataTable = this.formatData(response.data);
+        console.log(this.dataTable);
 
-      this.secondaryTableData = Array.from(casasMap.values());
-      console.log('TableCasaComponent - Datos cargados:', this.secondaryTableData);
-    });
+      },
+      error: (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la data de temperatura.' });
+      }
+    })
+  }
+
+  formatData(data: casasVisitaData[]): any[] {
+    return data.map((item) => {
+      return {
+        ...item,
+        nombre: item.nombre && item.apellido ? item.nombre + ' ' + item.apellido : ' ',
+      }
+    })
+  }
+
+  fillText(event:{originalEvent:any,value:MadresDonantes}, index:number) {
+    this.dataTable[index].nombre = event.value.nombre;
+    this.dataTable[index].direccion = event.value.direccion;
+    this.dataTable[index].celular = event.value.celular;
   }
 
   onRowSelect(event: any) {
-    // No permitir selección si hay una fila en edición
-    if (this.editingSecondaryRow) {
-      return;
-    }
-    this.casaSeleccionada.emit({ casaNo: event.data.casaNo, visible: true });
+
   }
 
-  editarFilaSecondary(row: any) {
-    this.clonedSecondaryRow = { ...row };
-    this.editingSecondaryRow = row;
+  onRowEditInit(dataRow: any): void {
+
   }
 
-  guardarFilaSecondary() {
-    this.editingSecondaryRow = null;
-    this.clonedSecondaryRow = null;
+  onRowEditSave(data: any, inex: number, event: any) {
+
   }
 
-  cancelarEdicionSecondary() {
-    if (this.editingSecondaryRow && this.clonedSecondaryRow) {
-      Object.assign(this.editingSecondaryRow, this.clonedSecondaryRow);
-    }
-    this.editingSecondaryRow = null;
-    this.clonedSecondaryRow = null;
+  onRowEditCancel(dataRow: rutaRecoleccion, index: number): void {
+
   }
 
-  // Función para cargar los datos de la nueva tabla en el tercer Dialog
-  cargarFrascosData(casaNo: number) {
-    this.customerService.getFrascosData(casaNo).then((data: any[]) => {
-      this.frascosData = data; // Carga los datos de los frascos
-    });
-  }
+  // isFieldInvalid(field: string, dataRow: any): boolean {
+  //   return this.requiredFields.includes(field) &&
+  //     (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
+  // }
+
+
 }

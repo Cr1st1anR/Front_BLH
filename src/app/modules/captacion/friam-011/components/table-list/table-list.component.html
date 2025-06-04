@@ -5,14 +5,8 @@
   <app-month-picker (dateChange)="filtrarPorFecha($event)" />
 </div>
 
-<!-- <principal-table /> -->
+<principal-table [datesSelected]="datesSelected" (openRowSelected)="onRowSelected($event)" />
 
-<principal-table [customers]="customers" [filteredCustomers]="filteredCustomers" [filaEnEdicion]="filaEnEdicion"
-  (filaSeleccionada)="onFilaSeleccionada($event)" (modoEdicionCambiado)="onModoEdicionCambiado($event)" />
-
-
-<primary-dialog [dialogRow]="selectedCustomer" [dialogVisible]="selectedCustomer !== null && !enModoEdicion"
-  (visibilityChange)="onDialogVisibilityChange($event)" />
-
-<!-- Nuevo Dialog -->
-<secondary-dialog />
+@if (rowSelected ) {
+  <primary-dialog [rowDataDialog]="rowSelected" (dialogClosed)="onClosedDialog()"   />
+}

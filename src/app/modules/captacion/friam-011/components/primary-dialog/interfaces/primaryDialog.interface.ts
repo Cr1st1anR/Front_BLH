@@ -6,6 +6,7 @@ export interface TemperaturaData {
 }
 
 export interface casasVisitaData {
+    id_madre_donante:number;
     id_casa_visita: number;
     id_ruta: number;
     observacion: string;

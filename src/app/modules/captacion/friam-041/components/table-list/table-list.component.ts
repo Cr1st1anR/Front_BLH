@@ -208,7 +208,6 @@ export class TableListComponent implements OnInit {
     if (dataRow.idMadrePotencial === undefined) {
       this._lineaAmigaService.postDataLineaAmiga(body).subscribe({
         next: (data) => {
-          console.log(data);
           this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
           this.dataTableLienaAmiga[this.dataTableLienaAmiga.length - 1].fechaNacimiento = this.ageCalculate((this.dataTableLienaAmiga.filter((item) => item.idMadrePotencial === undefined)[0].fechaNacimiento as Date));
           this.table.saveRowEdit(dataRow, rowElement);

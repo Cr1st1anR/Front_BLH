@@ -6,7 +6,7 @@
   <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" />
 
   <new-register-casa (nuevoRegistro)="crearNuevoRegistroCasa()" />
-  <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion"  />
+  <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion" (openDialogFrascosL)="openDialogFrascosL($event)" />
 </p-dialog>
 
-<secondary-dialog [(visible)]="secondaryDialogVisible" [casaNo]="selectedCasaNo" (onHide)="onSecondaryDialogHide()" />
+<secondary-dialog [casaNo]="selectedCasaNo" />

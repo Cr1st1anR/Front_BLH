@@ -6,6 +6,7 @@ import { NewRegisterCasaComponent } from './new-register-casa/new-register-casa.
 import { TableCasaComponent } from "./table-casa/table-casa.component";
 import { SecondaryDialogComponent } from '../secondary-dialog/secondary-dialog.component';
 import { rutaRecoleccion } from '../table-list/interfaces/ruta-recoleccion';
+import { casasVisitaData } from './interfaces/primaryDialog.interface';
 
 @Component({
   selector: 'primary-dialog',
@@ -30,7 +31,7 @@ export class PrimaryDialogComponent implements OnChanges {
   dataRutaRecoleccion: any = null; 
 
   secondaryDialogVisible: boolean = false;
-  selectedCasaNo: number | null = null;
+  selectedCasaNo: casasVisitaData | null = null;
 
   constructor() {}
 
@@ -39,19 +40,12 @@ export class PrimaryDialogComponent implements OnChanges {
       this.dataRutaRecoleccion = changes['rowDataDialog'].currentValue;
       this.dialogVisible = true;
     }
-
   }
 
   cerrarDialogo() {
     this.dialogVisible = false;
     this.rowDataDialog = null;
     this.dialogClosed.emit()
-  }
-
-  onCasaSeleccionada(event: { casaNo: number, visible: boolean }) {
-    console.log('Casa seleccionada en primary-dialog:', event);
-    this.selectedCasaNo = event.casaNo;
-    this.secondaryDialogVisible = event.visible;
   }
 
   onSecondaryDialogHide() {
@@ -86,6 +80,10 @@ export class PrimaryDialogComponent implements OnChanges {
 
     // this.secondaryTableData.push(nuevoRegistro); // Agrega la nueva fila
     // this.editarFilaSecondary(nuevoRegistro); // Activa el modo de edición para la nueva fila
+  }
+
+  openDialogFrascosL(data: casasVisitaData) {
+    this.selectedCasaNo = data;
   }
 
 

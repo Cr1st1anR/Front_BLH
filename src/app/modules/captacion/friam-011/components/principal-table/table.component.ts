@@ -99,7 +99,6 @@ export class TableComponent implements OnInit, OnChanges {
       tap((data) => {
         if (data) {
           this.dataTableRutaRecoleccion = this.formatData(data.data);
-          console.log(this.dataTableRutaRecoleccion);
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -163,7 +162,6 @@ export class TableComponent implements OnInit, OnChanges {
   }
 
   onRowSelect(event: any) {
-    console.log(this.selectedRow);
     if (this.editingRow !== null) {
       this.selectedRow = [];
       return;

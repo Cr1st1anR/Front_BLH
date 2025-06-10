@@ -82,9 +82,7 @@ export class DashBoardComponent {
 
   }
 
-  closeCallback(e:any): void {
-    console.log(e);
-    
+  closeCallback(e:any): void {    
     this.drawerRef.close(e);
   }
   onSelect(item: any) {

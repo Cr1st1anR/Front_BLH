@@ -23,7 +23,6 @@ import { TableComponent } from '../principal-table/table.component';
     FormsModule,
     CommonModule,
     TableComponent,
-    SecondaryDialogComponent,
     PrimaryDialogComponent,
   ],
   templateUrl: './table-list.component.html',
@@ -47,9 +46,7 @@ export class TableListComponent {
   }
 
   onRowSelected(dataSelect:rutaRecoleccion): void {
-    this.rowSelected = dataSelect;
-    console.log(this.rowSelected);
-    
+    this.rowSelected = dataSelect;    
   }
 
   onClosedDialog() {

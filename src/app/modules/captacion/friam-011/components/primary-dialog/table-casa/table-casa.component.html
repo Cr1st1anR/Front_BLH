@@ -2,7 +2,7 @@
 
 
 <p-table [value]="dataTable" [scrollable]="true" scrollHeight="300px" [columns]="headerTableCasasVisita"
-  [tableStyle]="{ 'min-width': '50rem' }" (onRowSelect)="onRowSelect($event)" [selectionMode]="'single'" editMode="row"
+  [tableStyle]="{ 'min-width': '50rem' }" (onRowSelect)="onRowSelect($event)" selectionMode="single" editMode="row"  [(selection)]="selectedRow"
   dataKey="id_casa_visita">
   <ng-template #header let-columns>
     <tr>
@@ -14,7 +14,7 @@
     </tr>
   </ng-template>
   <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
-    <tr [pEditableRow]="rowData">
+    <tr [pEditableRow]="rowData"  [pSelectableRow]="editingRow === null ? rowData : null">
       @for (col of columns; track $index) {
       @if (col.field != "acciones") {
       <td>
@@ -27,14 +27,18 @@
             @case ("select") {
             <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
               [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
-              [placeholder]="col.placeholder" class="w-full md:w-56"
-              (onChange)="fillText($event,rowIndex)"
-              />
+              [placeholder]="col.placeholder" class="w-full md:w-56" (onChange)="fillText($event,rowIndex)" />
             }
             }
           </ng-template>
           <ng-template #output>
+            @if (col.tipo == "select") {
+            <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
+              [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
+              [placeholder]="col.placeholder" class="w-full md:w-56" [disabled]="true" />
+            }@else {
             {{rowData[col.field]}}
+            }
           </ng-template>
         </p-cellEditor>
       </td>

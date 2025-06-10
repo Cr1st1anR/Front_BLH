@@ -1,47 +1,61 @@
-  <p-table
-    [value]="frascosData"
-    [scrollable]="true"
-    scrollHeight="flex"
-    [tableStyle]="{ 'min-width': '50rem' }"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th>No. Frasco</th>
-        <th>Volumen Estimado</th>
-        <th>Fecha de Extracción</th>
-        <th>Tipo de Frasco</th>
-        <th>N° de Termo</th>
-        <th>Congelador</th>
-        <th>Gaveta</th>
-        <th>Acciones</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-frasco>
-      <tr>
-        @if (editingFrascoRow === frasco) {
-        <td><input [(ngModel)]="frasco.noFrasco" /></td>
-        <td><input [(ngModel)]="frasco.volumenEstimado" /></td>
-        <td><input type="date" [(ngModel)]="frasco.fechaExtraccion" /></td>
-        <td><input [(ngModel)]="frasco.tipoFrasco" /></td>
-        <td><input [(ngModel)]="frasco.noTermo" /></td>
-        <td><input [(ngModel)]="frasco.congelador" /></td>
-        <td><input [(ngModel)]="frasco.gaveta" /></td>
-        <td>
-          <button (click)="onGuardarFrasco()">💾</button>
-          <button (click)="onCancelarEdicionFrasco()">❌</button>
-        </td>
-        } @else {
-        <td>{{ frasco.noFrasco }}</td>
-        <td>{{ frasco.volumenEstimado }}</td>
-        <td>{{ frasco.fechaExtraccion }}</td>
-        <td>{{ frasco.tipoFrasco }}</td>
-        <td>{{ frasco.noTermo }}</td>
-        <td>{{ frasco.congelador }}</td>
-        <td>{{ frasco.gaveta }}</td>
-        <td>
-          <button (click)="onEditarFrasco(frasco)">✏️</button>
-        </td>
-        }
-      </tr>
-    </ng-template>
-  </p-table>
+<p-table [value]="dataTableFrascosLeche" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'min-width': '50rem' }"
+ [columns]="headersTableFrascosLeche" editMode="row">
+  <ng-template #header let-columns>
+    <tr>
+      @for (col of columns; track $index) {
+      <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+        {{ col.header }}
+      </th>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+    <tr [pEditableRow]="rowData">
+      @for (col of columns; track $index) {
+      @if (col.field != "acciones") {
+      <td>
+        <p-cellEditor>
+          <ng-template #input>
+            @switch (col.tipo) {
+            @case ("date") {
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              inputId="icondisplay" [disabled]="true"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            @case ("text") {
+            <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            }
+          </ng-template>
+          <ng-template #output>
+            @if (col.field === "date") {
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              [disabled]="true" inputId="icondisplay" />
+            }
+            @else {
+            {{rowData[col.field]}}
+
+            }
+          </ng-template>
+        </p-cellEditor>
+      </td>
+      }
+      @else if (col.field === "acciones") {
+      <td>
+        <div class="flex items-center justify-center gap-2">
+          <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+            severity="secondary" (click)="onRowEditInit(rowData)"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData,ri,$event)"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+            severity="danger" (click)="onRowEditCancel(rowData, ri)"></button>
+        </div>
+      </td>
+      }
+      }
+    </tr>
+  </ng-template>
+</p-table>

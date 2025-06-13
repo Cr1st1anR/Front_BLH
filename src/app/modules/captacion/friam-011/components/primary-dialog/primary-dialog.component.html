@@ -1,6 +1,6 @@
 <p-dialog header="REGISTRO DE TEMPERATURA TERMOS/CAJAS ISOTERMICAS" [resizable]="false" [modal]="true"
   [maximizable]="true" appendTo="body" [(visible)]="dialogVisible" [style]="{ width: '85vw' }"
-  [contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="cerrarDialogo()">
+  [contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="onClosedDialogPrimary()">
 
   <new-register-temperatura (nuevaColumna)="agregarColumna($event)" />
   <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" />
@@ -9,4 +9,4 @@
   <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion" (openDialogFrascosL)="openDialogFrascosL($event)" />
 </p-dialog>
 
-<secondary-dialog [casaNo]="selectedCasaNo" />
+<secondary-dialog [casaNo]="selectedCasaNo" (dialogClosed)="onClosedDialog()" />

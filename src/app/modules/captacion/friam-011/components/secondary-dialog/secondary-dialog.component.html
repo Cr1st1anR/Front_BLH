@@ -1,6 +1,6 @@
 <p-dialog header="Detalles de Frascos" [(visible)]="dialogVisible" [modal]="true" [resizable]="false"
   [maximizable]="true" appendTo="body" [style]="{ width: '75vw' }" [contentStyle]="{ height: '300px' }"
-  (onHide)="onDialogHide()" [draggable]="false">
+ (onHide)="cerrarDialogo()" [draggable]="false">
   <new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()" />
   <table-frasco [frascosData]="frascosData" />
 </p-dialog>

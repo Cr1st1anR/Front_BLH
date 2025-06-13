@@ -70,7 +70,6 @@ export class TableComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-
     this.loading = true;
     of(null).pipe(
       concatMap(() => this.loadDataEmpleados()),

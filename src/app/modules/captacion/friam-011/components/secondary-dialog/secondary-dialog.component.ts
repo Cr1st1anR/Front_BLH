@@ -15,8 +15,7 @@ import { casasVisitaData } from '../primary-dialog/interfaces/primaryDialog.inte
 export class SecondaryDialogComponent implements OnChanges {
 
   @Input() casaNo: casasVisitaData | null = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  // @Output() onHide = new EventEmitter<void>();
+  @Output() dialogClosed = new EventEmitter<void>();
 
   dialogVisible:boolean = false;
 
@@ -32,9 +31,10 @@ export class SecondaryDialogComponent implements OnChanges {
     }
   }
 
-  onDialogHide() {
-    this.visibleChange.emit(false);
-    // this.onHide.emit();
+  cerrarDialogo() {
+    this.dialogVisible = false;
+    this.casaNo = null;
+    this.dialogClosed.emit()
   }
 
   crearNuevoRegistroFrasco() {

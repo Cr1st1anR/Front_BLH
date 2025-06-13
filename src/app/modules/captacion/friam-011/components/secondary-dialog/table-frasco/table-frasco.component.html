@@ -1,5 +1,7 @@
-<p-table [value]="dataTableFrascosLeche" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'min-width': '50rem' }"
- [columns]="headersTableFrascosLeche" editMode="row">
+<p-toast position="top-right" key="tr" />
+
+<p-table [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
+  [columns]="headersTableFrascosLeche" editMode="row" dataKey="id_frascos_recolectados">
   <ng-template #header let-columns>
     <tr>
       @for (col of columns; track $index) {
@@ -26,10 +28,14 @@
             <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
               [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
             }
+            @case ("number") {
+            <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
             }
           </ng-template>
           <ng-template #output>
-            @if (col.field === "date") {
+            @if (col.tipo === "date") {
             <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
               [disabled]="true" inputId="icondisplay" />
             }

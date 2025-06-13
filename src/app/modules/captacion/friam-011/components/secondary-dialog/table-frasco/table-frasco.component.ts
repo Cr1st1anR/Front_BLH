@@ -28,8 +28,7 @@ import { casasVisitaData } from '../../primary-dialog/interfaces/primaryDialog.i
   styleUrl: './table-frasco.component.scss',
   providers: [
     MessageService,
-    secondaryDialogServices,
-  
+    secondaryDialogServices
   ],
 })
 export class TableFrascoComponent implements OnChanges {
@@ -46,7 +45,7 @@ export class TableFrascoComponent implements OnChanges {
     { header: 'No. FRASCOS', field: 'frasco', width: '200px', tipo: "number" },
     { header: 'VOLUMEN ESTIMADO', field: 'volumen', width: '200px', tipo: "number" },
     { header: 'FECHA DE EXTRACCION', field: 'fecha_de_extraccion', width: '200px', tipo: "date" },
-    { header: 'TIPO DE FRASCO', field: 'fecha_registro', width: '200px', tipo: "texto" },
+    { header: 'TIPO DE FRASCO', field: 'tFrasco', width: '200px', tipo: "text" },
     { header: 'N° DE TERMO', field: 'termo', width: '200px', tipo: "number" },
     { header: 'CONGELADOR', field: 'id_congelador', width: '200px', tipo: "number" },
     { header: 'GAVETA', field: 'gaveta', width: '200px', tipo: "number" },
@@ -70,17 +69,19 @@ export class TableFrascoComponent implements OnChanges {
     this.secondaryDialogServices.getDataFrascosLeche(casaNo).subscribe({
       next: (response) => {
         if (response && response.data.length > 0) {
-          this.dataTableFrascosLeche = response.data;
+          this.dataTableFrascosLeche = this.formatData(response.data);
           this.messageService.add({
             severity: 'success',
             summary: 'Datos Cargados',
-            detail: 'Los datos de los frascos de leche se han cargado correctamente.'
+            detail: 'Los datos de los frascos de leche se han cargado correctamente.',
+            life: 3000
           });
         } else {
           this.messageService.add({
             severity: 'warn',
             summary: 'Advertencia',
-            detail: 'No se encontraron datos de frascos de leche para la casa seleccionada.'
+            detail: 'No se encontraron datos de frascos de leche para la casa seleccionada.',
+            life: 3000
           });
         }
       },
@@ -88,10 +89,22 @@ export class TableFrascoComponent implements OnChanges {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudieron cargar los datos de los frascos de leche.'
+          detail: 'No se pudieron cargar los datos de los frascos de leche.',
+          life: 3000
         });
       }
     })
+  }
+
+  formatData(data:FrascosLeche[]): FrascosLeche[] {
+    return data.map((item: FrascosLeche) => {
+      return {
+        ...item,
+        frasco: 1,
+        fecha_de_extraccion: item.fecha_de_extraccion ? new Date(item.fecha_de_extraccion) : null,
+        tFrasco: "Vidrio",
+      };
+    });
   }
 
   onRowEditInit(dataRow: FrascosLeche): void {
@@ -115,5 +128,7 @@ export class TableFrascoComponent implements OnChanges {
     return this.requiredFields.includes(field) &&
       (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
   }
+
+ 
 
 }

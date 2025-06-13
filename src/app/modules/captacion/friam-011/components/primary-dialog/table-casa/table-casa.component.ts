@@ -181,6 +181,10 @@ export class TableCasaComponent implements OnChanges, OnInit {
 
   }
 
+  limpiarSeleccion() {
+    this.selectedRow = null;
+  }
+
   // isFieldInvalid(field: string, dataRow: any): boolean {
   //   return this.requiredFields.includes(field) &&
   //     (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');

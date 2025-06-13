@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { NewRegisterTemperaturaComponent } from './new-register-temperatura/new-register-temperatura.component';
 import { TableTemperaturaComponent } from './table-temperatura/table-temperatura.component';
@@ -26,6 +26,8 @@ export class PrimaryDialogComponent implements OnChanges {
 
   @Input() rowDataDialog: rutaRecoleccion | null = null; 
   @Output() dialogClosed = new EventEmitter<void>();
+  @ViewChild(TableCasaComponent) tableMain!: TableCasaComponent;
+
 
   dialogVisible:boolean = false;
   dataRutaRecoleccion: any = null; 
@@ -42,15 +44,11 @@ export class PrimaryDialogComponent implements OnChanges {
     }
   }
 
-  cerrarDialogo() {
-    this.dialogVisible = false;
-    this.rowDataDialog = null;
-    this.dialogClosed.emit()
-  }
-
-  onSecondaryDialogHide() {
-    this.secondaryDialogVisible = false;
+  onClosedDialog() {
     this.selectedCasaNo = null;
+    if (this.tableMain) {
+      this.tableMain.limpiarSeleccion();
+    }
   }
 
   agregarColumna(evento: { nombre: string }) {
@@ -84,6 +82,11 @@ export class PrimaryDialogComponent implements OnChanges {
 
   openDialogFrascosL(data: casasVisitaData) {
     this.selectedCasaNo = data;
+  }
+
+  onClosedDialogPrimary(){
+    this.dialogClosed.emit();
+    this.dialogVisible = false;
   }
 
 

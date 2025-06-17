@@ -326,3 +326,13 @@ p-select {
         }
     }
 }
+
+:root {
+  --p-accordion-header-color: #224186 !important;
+  --p-accordion-header-active-color: #224186 !important;
+}
+
+.p-accordionheader:hover,
+.p-accordionheader:focus {
+  color: #1a3366 !important;
+}

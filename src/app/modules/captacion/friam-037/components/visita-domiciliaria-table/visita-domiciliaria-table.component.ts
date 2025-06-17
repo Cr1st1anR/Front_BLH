@@ -6,6 +6,11 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
 import { MonthPickerTableComponent } from '../month-picker-table/month-picker-table.component';
+import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { of } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'visita-domiciliaria-table',
@@ -14,12 +19,17 @@ import { MonthPickerTableComponent } from '../month-picker-table/month-picker-ta
     CommonModule,
     HeaderComponent,
     MonthPickerTableComponent,
+    ProgressSpinnerModule,
+    ToastModule,
+    ButtonModule,
   ],
   templateUrl: './visita-domiciliaria-table.component.html',
   styleUrl: './visita-domiciliaria-table.component.scss',
-  providers: [VisitaDomiciliariaService],
+  providers: [VisitaDomiciliariaService, MessageService],
 })
 export class VisitaDomiciliariaTableComponent implements OnInit {
+  loading: boolean = false;
+
   headersTableVisitaDomiciliaria: any[] = [
     {
       header: 'FECHA DE VISITA',
@@ -27,48 +37,13 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       width: '200px',
       tipo: Date,
     },
-    {
-      header: 'NOMBRES',
-      field: 'nombre',
-      width: '200px',
-      tipo: 'text',
-    },
-    {
-      header: 'APELLIDOS',
-      field: 'apellido',
-      width: '200px',
-      tipo: 'text',
-    },
-    {
-      header: 'NO. DOC',
-      field: 'documento',
-      width: '200px',
-      tipo: 'number',
-    },
-    {
-      header: 'EDAD',
-      field: 'edad',
-      width: '200px',
-      tipo: 'number',
-    },
-    {
-      header: 'DIRECCION',
-      field: 'direccion',
-      width: '200px',
-      tipo: 'text',
-    },
-    {
-      header: 'CELULAR',
-      field: 'celular',
-      width: '200px',
-      tipo: 'number',
-    },
-    {
-      header: 'MUNICIPIO',
-      field: 'municipio',
-      width: '200px',
-      tipo: 'text',
-    },
+    { header: 'NOMBRES', field: 'nombre', width: '200px', tipo: 'text' },
+    { header: 'APELLIDOS', field: 'apellido', width: '200px', tipo: 'text' },
+    { header: 'NO. DOC', field: 'documento', width: '200px', tipo: 'number' },
+    { header: 'EDAD', field: 'edad', width: '200px', tipo: 'number' },
+    { header: 'DIRECCION', field: 'direccion', width: '200px', tipo: 'text' },
+    { header: 'CELULAR', field: 'celular', width: '200px', tipo: 'number' },
+    { header: 'MUNICIPIO', field: 'municipio', width: '200px', tipo: 'text' },
     {
       header: 'ENCUESTA REALIZADA',
       field: 'encuesta_realizada',
@@ -79,17 +54,58 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
 
   data: VisitaDomiciliariaData[] = [];
 
+  requiredFields: string[] = [
+    'fecha_visita',
+    'nombre',
+    'apellido',
+    'documento',
+    'edad',
+    'direccion',
+    'celular',
+    'municipio',
+  ];
+
   constructor(
     private visitaDomiciliariaService: VisitaDomiciliariaService,
-    private router: Router
+    private router: Router,
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
-    const data = this.visitaDomiciliariaService.getDataVisitaDomiciliaria();
-    this.data = data.map((item) => ({
-      ...item,
-      fecha_visita: new Date(item.fecha_visita),
-    }));
+    this.loading = true;
+    this.visitaDomiciliariaService.getDataVisitaDomiciliaria().subscribe({
+      next: (data) => {
+        this.data = data;
+        this.loading = false;
+        if (data && data.length > 0) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos cargados correctamente',
+            key: 'tr',
+            life: 2000,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Información',
+            detail: 'No hay datos para mostrar',
+            key: 'tr',
+            life: 2000,
+          });
+        }
+      },
+      error: (error) => {
+        this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Hubo un error al cargar los datos',
+          key: 'tr',
+          life: 2000,
+        });
+      },
+    });
   }
 
   onRowClick(row: VisitaDomiciliariaData) {

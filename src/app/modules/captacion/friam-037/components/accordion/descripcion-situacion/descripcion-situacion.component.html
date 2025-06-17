@@ -1,0 +1,365 @@
+<p-accordion-panel value="0">
+  <p-accordion-header
+    >DESCRIPCIÓN DE LA SITUACIÓN ENCONTRADA</p-accordion-header
+  >
+  <p-accordion-content>
+    <div style="max-height: 600px; overflow-y: auto; padding-right: 12px">
+      <form class="grid grid-cols-2 gap-6 mb-10">
+        <div class="col-span-2">
+          <h3 class="subtitulo-accordion text-base font-semibold mb-2">
+            1. CONDICIONES FÍSICAS E HIGIÉNICAS DE LA VIVIENDA
+          </h3>
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold mb-1 block"
+            >¿Cuenta con un espacio adecuado e higiénico para la recolección de
+            leche humana?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="espacioAdecuado"
+              value="si"
+              [(ngModel)]="espacioAdecuado"
+              inputId="espacioAdecuadoSi"
+            ></p-radioButton>
+            <label for="espacioAdecuadoSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="espacioAdecuado"
+              value="no"
+              [(ngModel)]="espacioAdecuado"
+              inputId="espacioAdecuadoNo"
+            ></p-radioButton>
+            <label for="espacioAdecuadoNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿El espacio se encuentra libre de vectores?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="libreVectores"
+              value="si"
+              [(ngModel)]="libreVectores"
+              inputId="libreVectoresSi"
+            ></p-radioButton>
+            <label for="libreVectoresSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="libreVectores"
+              value="no"
+              [(ngModel)]="libreVectores"
+              inputId="libreVectoresNo"
+            ></p-radioButton>
+            <label for="libreVectoresNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿El espacio se encuentra libre de posibles contaminantes:
+            detergentes, fungicidas, jabones, etc.?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="libreContaminantes"
+              value="si"
+              [(ngModel)]="libreContaminantes"
+              inputId="libreContaminantesSi"
+            ></p-radioButton>
+            <label for="libreContaminantesSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="libreContaminantes"
+              value="no"
+              [(ngModel)]="libreContaminantes"
+              inputId="libreContaminantesNo"
+            ></p-radioButton>
+            <label for="libreContaminantesNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿El espacio para la recolección se encuentra limpio?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="espacioLimpio"
+              value="si"
+              [(ngModel)]="espacioLimpio"
+              inputId="espacioLimpioSi"
+            ></p-radioButton>
+            <label for="espacioLimpioSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="espacioLimpio"
+              value="no"
+              [(ngModel)]="espacioLimpio"
+              inputId="espacioLimpioNo"
+            ></p-radioButton>
+            <label for="espacioLimpioNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿La posible donante cuenta con lavamanos?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="lavamanos"
+              value="si"
+              [(ngModel)]="lavamanos"
+              inputId="lavamanosSi"
+            ></p-radioButton>
+            <label for="lavamanosSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="lavamanos"
+              value="no"
+              [(ngModel)]="lavamanos"
+              inputId="lavamanosNo"
+            ></p-radioButton>
+            <label for="lavamanosNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿Cuenta con sistema de refrigeración?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="refrigeracion"
+              value="si"
+              [(ngModel)]="refrigeracion"
+              inputId="refrigeracionSi"
+            ></p-radioButton>
+            <label for="refrigeracionSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="refrigeracion"
+              value="no"
+              [(ngModel)]="refrigeracion"
+              inputId="refrigeracionNo"
+            ></p-radioButton>
+            <label for="refrigeracionNo">No</label>
+          </div>
+        </div>
+      </form>
+
+      <form class="grid grid-cols-2 gap-6">
+        <div class="col-span-2">
+          <h3 class="subtitulo-accordion text-base font-semibold mb-2">
+            2. CONDICIONES PERSONALES DE LA POSIBLE DONANTE
+          </h3>
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold mb-1 block"
+            >¿Posible donante con excedente de leche humana?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="excedenteLeche"
+              value="si"
+              [(ngModel)]="excedenteLeche"
+              inputId="excedenteLecheSi"
+            ></p-radioButton>
+            <label for="excedenteLecheSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="excedenteLeche"
+              value="no"
+              [(ngModel)]="excedenteLeche"
+              inputId="excedenteLecheNo"
+            ></p-radioButton>
+            <label for="excedenteLecheNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿Se evidencia adecuada higiene de la donante?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="higieneDonante"
+              value="si"
+              [(ngModel)]="higieneDonante"
+              inputId="higieneDonanteSi"
+            ></p-radioButton>
+            <label for="higieneDonanteSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="higieneDonante"
+              value="no"
+              [(ngModel)]="higieneDonante"
+              inputId="higieneDonanteNo"
+            ></p-radioButton>
+            <label for="higieneDonanteNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿La posible donante se encuentra en buenas condiciones de salud y
+            nutricional?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="saludDonante"
+              value="si"
+              [(ngModel)]="saludDonante"
+              inputId="saludDonanteSi"
+            ></p-radioButton>
+            <label for="saludDonanteSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="saludDonante"
+              value="no"
+              [(ngModel)]="saludDonante"
+              inputId="saludDonanteNo"
+            ></p-radioButton>
+            <label for="saludDonanteNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿El hijo o hija de la posible donante se encuentra en buenas
+            condiciones de salud?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="saludHijo"
+              value="si"
+              [(ngModel)]="saludHijo"
+              inputId="saludHijoSi"
+            ></p-radioButton>
+            <label for="saludHijoSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="saludHijo"
+              value="no"
+              [(ngModel)]="saludHijo"
+              inputId="saludHijoNo"
+            ></p-radioButton>
+            <label for="saludHijoNo">No</label>
+          </div>
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold mb-1 block"
+            >¿Cuenta con exámenes de Laboratorio negativos para VIH, Serología y
+            Hepatitis B?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="examenesNegativos"
+              value="si"
+              [(ngModel)]="examenesNegativos"
+              inputId="examenesNegativosSi"
+            ></p-radioButton>
+            <label for="examenesNegativosSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="examenesNegativos"
+              value="no"
+              [(ngModel)]="examenesNegativos"
+              inputId="examenesNegativosNo"
+            ></p-radioButton>
+            <label for="examenesNegativosNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿Se ha realizado tatuajes durante el último año?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="tatuajes"
+              value="si"
+              [(ngModel)]="tatuajes"
+              inputId="tatuajesSi"
+            ></p-radioButton>
+            <label for="tatuajesSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="tatuajes"
+              value="no"
+              [(ngModel)]="tatuajes"
+              inputId="tatuajesNo"
+            ></p-radioButton>
+            <label for="tatuajesNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿Ha recibido transfusiones sanguíneas durante el último año?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="transfusiones"
+              value="si"
+              [(ngModel)]="transfusiones"
+              inputId="transfusionesSi"
+            ></p-radioButton>
+            <label for="transfusionesSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="transfusiones"
+              value="no"
+              [(ngModel)]="transfusiones"
+              inputId="transfusionesNo"
+            ></p-radioButton>
+            <label for="transfusionesNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block">¿Toma algún medicamento?</label>
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="medicamento"
+              value="si"
+              [(ngModel)]="medicamento"
+              inputId="medicamentoSi"
+            ></p-radioButton>
+            <label for="medicamentoSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="medicamento"
+              value="no"
+              [(ngModel)]="medicamento"
+              inputId="medicamentoNo"
+            ></p-radioButton>
+            <label for="medicamentoNo">No</label>
+          </div>
+        </div>
+        <div>
+          <label class="font-bold mb-1 block"
+            >¿Consume sustancias psicoactivas, alcohol o más de cinco (5)
+            cigarrillos al día?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="psicoactivos"
+              value="si"
+              [(ngModel)]="psicoactivos"
+              inputId="psicoactivosSi"
+            ></p-radioButton>
+            <label for="psicoactivosSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="psicoactivos"
+              value="no"
+              [(ngModel)]="psicoactivos"
+              inputId="psicoactivosNo"
+            ></p-radioButton>
+            <label for="psicoactivosNo">No</label>
+          </div>
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold mb-1 block"
+            >¿La posible donante manifiesta utilizar recolectores para la leche
+            humana?</label
+          >
+          <div class="flex items-center gap-6 mt-2">
+            <p-radioButton
+              name="recolectores"
+              value="si"
+              [(ngModel)]="recolectores"
+              inputId="recolectoresSi"
+            ></p-radioButton>
+            <label for="recolectoresSi" class="mr-4">Sí</label>
+            <p-radioButton
+              name="recolectores"
+              value="no"
+              [(ngModel)]="recolectores"
+              inputId="recolectoresNo"
+            ></p-radioButton>
+            <label for="recolectoresNo">No</label>
+          </div>
+        </div>
+      </form>
+    </div>
+  </p-accordion-content>
+</p-accordion-panel>

@@ -1,14 +1,15 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VisitaDomiciliariaService {
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
-  getDataVisitaDomiciliaria() {
-    return [
+  getDataVisitaDomiciliaria(): Observable<any[]> {
+    return of([
       {
         id: 1,
         fecha_visita: '01/05/2025',
@@ -33,6 +34,6 @@ export class VisitaDomiciliariaService {
         municipio: 'Samaniego',
         encuesta_realizada: 'No',
       },
-    ];
+    ]).pipe(delay(1000)); // Simula 1 segundo de carga
   }
 }

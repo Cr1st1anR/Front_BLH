@@ -1,5 +1,5 @@
 export interface VisitaDomiciliariaData {
-  fecha_visita: Date;
+  fecha_visita: Date | null | string;
   nombre: string;
   apellido: string;
   documento: number;

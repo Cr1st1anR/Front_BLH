@@ -1,1 +1,31 @@
-<p>accordion works!</p>,
+<app-header
+  [title]="
+    'VISITA DOMICILIARIA DE INGRESO PARA MADRES DONANTES DEL PROGRAMA BLH (FRIAM-037)'
+  "
+/>
+
+<div class="card flex justify-center accordion-container">
+  <p-accordion value="0">
+    <descripcion-situacion />
+    <evaluar-lactancia />
+    <datos-adicionales />
+  </p-accordion>
+</div>
+
+<div class="flex justify-end gap-4 mt-8 pr-8">
+  <button
+    pButton
+    type="button"
+    label="Guardar"
+    icon="pi pi-save"
+    class="guardar-btn"
+  ></button>
+  <button
+    pButton
+    type="button"
+    label="Cancelar"
+    icon="pi pi-times"
+    class="cancelar-btn"
+    (click)="onCancelar()"
+  ></button>
+</div>

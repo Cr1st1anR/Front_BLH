@@ -19,7 +19,7 @@ export const CAPTACION_ROUTES: Routes = [
           ).then((c) => c.PosiblesDonantesTableComponent),
       },
       {
-        path: ':documento', //documento
+        path: ':documento',
         loadComponent: () =>
           import('./friam-018/components/accordion/accordion.component').then(
             (c) => c.AccordionComponent
@@ -38,7 +38,7 @@ export const CAPTACION_ROUTES: Routes = [
           ).then((c) => c.VisitaDomiciliariaTableComponent),
       },
       {
-        path: ':documento', //documento
+        path: ':documento',
         loadComponent: () =>
           import('./friam-037/components/accordion/accordion.component').then(
             (c) => c.AccordionComponent

@@ -6,7 +6,7 @@ import { DescripcionSituacionComponent } from './descripcion-situacion/descripci
 import { EvaluarLactanciaComponent } from './evaluar-lactancia/evaluar-lactancia.component';
 import { DatosAdicionalesComponent } from './datos-adicionales/datos-adicionales.component';
 import { ButtonModule } from 'primeng/button';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'accordion',
@@ -23,10 +23,16 @@ import { Router } from '@angular/router';
   styleUrl: './accordion.component.scss',
 })
 export class AccordionComponent {
-  constructor(private router: Router) {}
+  documento: string | null = null;
+
+  constructor(private route: ActivatedRoute, private router: Router) {
+    this.route.paramMap.subscribe((params) => {
+      this.documento = params.get('documento');
+      //console.log('Documento:', this.documento);
+    });
+  }
 
   onCancelar() {
     this.router.navigate(['/blh/captacion/visita-domiciliaria']);
   }
-
 }

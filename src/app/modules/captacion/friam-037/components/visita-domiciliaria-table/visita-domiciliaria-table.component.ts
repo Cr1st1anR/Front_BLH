@@ -8,9 +8,7 @@ import { HeaderComponent } from '../../../../../shared/components/header/header.
 import { MonthPickerTableComponent } from '../month-picker-table/month-picker-table.component';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { of } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
-import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'visita-domiciliaria-table',
@@ -21,7 +19,6 @@ import { ButtonModule } from 'primeng/button';
     MonthPickerTableComponent,
     ProgressSpinnerModule,
     ToastModule,
-    ButtonModule,
   ],
   templateUrl: './visita-domiciliaria-table.component.html',
   styleUrl: './visita-domiciliaria-table.component.scss',
@@ -63,6 +60,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     'direccion',
     'celular',
     'municipio',
+    'encuesta_realizada',
   ];
 
   constructor(

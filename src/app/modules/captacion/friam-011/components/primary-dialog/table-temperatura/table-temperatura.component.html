@@ -1,6 +1,8 @@
 <p-toast position="top-right" key="tr" />
 
-<p-table #table [value]="dataTable" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }"
+<new-register-temperatura (nuevaColumna)="agregarColumna()" />
+
+<p-table #tableTemp [value]="dataTableTemp" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }"
   [columns]="headerTableTemperatura" editMode="row" dataKey="id">
   <ng-template #header let-columns>
     <tr>
@@ -61,12 +63,11 @@
         </div>
       </td>
       }
-
       }
     </tr>
   </ng-template>
 </p-table>
 
-<div *ngIf="!dataTable" class="p-4 text-center text-gray-500">
+<div *ngIf="dataTableTemp.length == 0" class="p-4 text-center text-gray-500">
   No hay datos disponibles
 </div>

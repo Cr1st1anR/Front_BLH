@@ -96,7 +96,6 @@ export class TableListComponent implements OnInit {
     const mesActual = fechaActual.getMonth() + 1;
     const anioActual = fechaActual.getFullYear();
     
-    // setTimeout(() => {
       of(null).pipe(
         concatMap(() => this.loadDataEmpleados()),
         concatMap(() => this.loadDataEntidades()),
@@ -106,14 +105,12 @@ export class TableListComponent implements OnInit {
           setTimeout(() => {
             this.loading = false;
           }, 2000);
-          // console.log('Todas las peticiones se ejecutaron');
         },
         error: (err) => {
           this.loading = false;
           console.error('Error en la secuencia de peticiones', err);
         }
       });
-    // }, 2000);
   }
 
   loadDataEntidades(): Observable<ApiResponse> {
@@ -228,8 +225,6 @@ export class TableListComponent implements OnInit {
         }
       })
     }
-
-
   }
 
   onRowEditCancel(dataRow: lineaAmigaData, index: number): void {

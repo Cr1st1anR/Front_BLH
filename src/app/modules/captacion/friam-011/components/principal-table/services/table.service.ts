@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../../../../../environments/environments';
 import { map, Observable } from 'rxjs';
 import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
+import { rutaRecoleccion } from '../../table-list/interfaces/ruta-recoleccion';
 
 
 @Injectable({
@@ -23,16 +24,16 @@ export class TableService {
     return this.http.get<ApiResponse>(url);
   }
 
-  // putDataLineaAmiga(data: any): Observable<ApiResponse> {
-  //   const id = data.id;
-  //   const url = `${environment.ApiBLH}/UpdateMadrePotencial/${id}`;
-  //   return this.http.put<ApiResponse>(url, data );
-  // }
+  putDataRutaRecoleccion(data: any): Observable<ApiResponse> {
+    const id = data.id;
+    const url = `${environment.ApiBLH}/updateRutaRecoleccion/${id}`;
+    return this.http.put<ApiResponse>(url, data );
+  }
 
-  // postDataLineaAmiga(data: any): Observable<ApiResponse> {
-  //   const url = `${environment.ApiBLH}/CreateMadrePotencial`;
-  //   return this.http.post<ApiResponse>(url, data );
-  // }
+  postDataRutaRecoleccion(data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/createRutaRecoleccion`;
+    return this.http.post<ApiResponse>(url, data );
+  }
 
   
 }

@@ -1,7 +1,7 @@
 export interface TemperaturaData {
-    id: number;
-    caja?: number;
-    numeroCasa: number;
+    id: number | null;
+    caja?: number | null;
+    numeroCasa: number | null;
     temperatura: number | null;
 }
 

@@ -58,7 +58,6 @@ export class TableFrascoComponent implements OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    debugger
     if (changes['frascosData'] && changes['frascosData'].currentValue) {
       this.dataTableFrascosLeche = changes['frascosData'].currentValue;
       this.LoadDataFrascosLeche(this.frascosData!.id_casa_visita || 0);

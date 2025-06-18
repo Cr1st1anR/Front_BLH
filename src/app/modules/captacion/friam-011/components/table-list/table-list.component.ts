@@ -18,8 +18,6 @@ import { TableComponent } from '../principal-table/table.component';
     TableModule,
     DialogModule,
     HeaderComponent,
-    MonthPickerComponent,
-    NewRouteComponent,
     FormsModule,
     CommonModule,
     TableComponent,
@@ -37,9 +35,7 @@ export class TableListComponent {
 
   constructor() { }
 
-  agregarFilaVacia() {
 
-  }
 
   filtrarPorFecha(filtro: { year: number; month: number }): void {
     this.datesSelected = filtro;

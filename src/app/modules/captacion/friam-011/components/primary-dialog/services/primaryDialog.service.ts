@@ -33,10 +33,10 @@ export class primaryDialogServices {
   //   return this.http.put<ApiResponse>(url, data );
   // }
 
-  // postDataLineaAmiga(data: any): Observable<ApiResponse> {
-  //   const url = `${environment.ApiBLH}/CreateMadrePotencial`;
-  //   return this.http.post<ApiResponse>(url, data );
-  // }
+  postDataTemperatura(data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/createTemperaturaCasas`;
+    return this.http.post<ApiResponse>(url, data );
+  }
 
 
 }

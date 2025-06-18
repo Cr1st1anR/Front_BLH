@@ -1,10 +1,5 @@
 <app-header [title]="'RUTA DE RECOLECCIÓN DE LECHE HUMANA CRUDA (FRIAM 011)'" />
 
-<div class="flex justify-between items-center mx-4">
-  <new-route (nuevaRuta)="agregarFilaVacia()" />
-  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
-</div>
-
 <principal-table [datesSelected]="datesSelected" (openRowSelected)="onRowSelected($event)" />
 
 @if (rowSelected ) {

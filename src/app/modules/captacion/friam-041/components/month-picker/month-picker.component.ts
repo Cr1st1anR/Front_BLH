@@ -9,14 +9,14 @@ import { DatePicker } from 'primeng/datepicker';
   styleUrl: './month-picker.component.scss',
 })
 export class MonthPickerComponent {
-  date: Date | undefined = new Date()
+  date: Date | undefined = new Date();
   @Output() dateChange = new EventEmitter<{ year: number; month: number }>();
   
 
   onDateChange(): void {
     if (this.date) {
       const year = this.date.getFullYear();
-      const month = this.date.getMonth() + 1; // Los meses son 0-indexados
+      const month = this.date.getMonth() + 1;
       this.dateChange.emit({ year, month });
     }
   }

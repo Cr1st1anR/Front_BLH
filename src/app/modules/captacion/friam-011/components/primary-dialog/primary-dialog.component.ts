@@ -12,7 +12,6 @@ import { casasVisitaData } from './interfaces/primaryDialog.interface';
   selector: 'primary-dialog',
   imports: [
     DialogModule,
-    NewRegisterTemperaturaComponent,
     TableTemperaturaComponent,
     NewRegisterCasaComponent,
     TableCasaComponent,
@@ -49,19 +48,6 @@ export class PrimaryDialogComponent implements OnChanges {
     if (this.tableMain) {
       this.tableMain.limpiarSeleccion();
     }
-  }
-
-  agregarColumna(evento: { nombre: string }) {
-    // const nuevaColumna = evento.nombre;
-    // this.dynamicColumns.push(nuevaColumna);
-    // if (this.rowDataDialog) {
-    //   (this.rowDataDialog as any)[nuevaColumna] = null;
-    //   this.nuevaColumna = nuevaColumna;
-    //   // Resetear nuevaColumna después de un breve momento para permitir que se detecte el cambio
-    //   setTimeout(() => {
-    //     this.nuevaColumna = null;
-    //   }, 0);
-    // }
   }
 
   crearNuevoRegistroCasa() {

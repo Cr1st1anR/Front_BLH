@@ -1,7 +1,13 @@
 <p-toast position="top-right" key="tr" />
 
+
+<div class="flex justify-between items-center mx-4">
+  <new-route (nuevaRuta)="agregarFilaVacia()" />
+  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
+</div>
+
 <div class="container-table">
-  <p-table #tableVap [value]="dataTableRutaRecoleccion" [scrollable]="true" scrollHeight="500px"
+  <p-table #tableRuta [value]="dataTableRutaRecoleccion" [scrollable]="true" scrollHeight="500px"
     [columns]="headersRutaRecoleccion" editMode="row" selectionMode="single" [(selection)]="selectedRow"
     (onRowSelect)="onRowSelect($event)" dataKey="id_ruta" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header let-columns>
@@ -24,15 +30,15 @@
               @case ("select") {
               <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
                 [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
-                [placeholder]="col.placeholder" class="w-full md:w-56"
+                [placeholder]="col.placeholder" class="w-full md:w-56" (onChange)="fillText($event,ri)"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("text") {
-              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" [disabled]="col.disable"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("number") {
-              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" [disabled]="col.disable"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               @case ("date") {

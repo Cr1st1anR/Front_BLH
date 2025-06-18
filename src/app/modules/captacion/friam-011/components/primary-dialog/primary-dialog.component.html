@@ -2,7 +2,6 @@
   [maximizable]="true" appendTo="body" [(visible)]="dialogVisible" [style]="{ width: '85vw' }"
   [contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="onClosedDialogPrimary()">
 
-  <new-register-temperatura (nuevaColumna)="agregarColumna($event)" />
   <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" />
 
   <new-register-casa (nuevoRegistro)="crearNuevoRegistroCasa()" />

@@ -11,7 +11,8 @@ import { ExamenesLaboratorioComponent } from './examenes-laboratorio/examenes-la
 import { HistoriaGestacionComponent } from './historia-gestacion/historia-gestacion.component';
 import { DatosInscripcionComponent } from './datos-inscripcion/datos-inscripcion.component';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'accordion',
@@ -28,6 +29,7 @@ import { ActivatedRoute } from '@angular/router';
     HistoriaGestacionComponent,
     DatosInscripcionComponent,
     HeaderComponent,
+    ButtonModule
   ],
   templateUrl: './accordion.component.html',
   styleUrl: './accordion.component.scss',
@@ -35,10 +37,13 @@ import { ActivatedRoute } from '@angular/router';
 export class AccordionComponent {
   documento: string | null = null;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(private route: ActivatedRoute, private router: Router) {
     this.route.paramMap.subscribe((params) => {
       this.documento = params.get('documento');
       //console.log('Documento:', this.documento);
     });
+  }
+  onCancelar() {
+    this.router.navigate(['/blh/captacion/registro-donante-blh']);
   }
 }

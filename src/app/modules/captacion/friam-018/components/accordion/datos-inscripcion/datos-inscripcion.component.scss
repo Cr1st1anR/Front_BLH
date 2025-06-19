@@ -1,3 +1,58 @@
 :host {
   display: block;
 }
+
+.datos-inscripcion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem 2rem;
+  width: 100%;
+}
+
+.datos-inscripcion-grid label {
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  display: block;
+}
+
+.datos-inscripcion-grid input,
+.datos-inscripcion-grid textarea,
+.datos-inscripcion-grid p-datepicker {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+}
+
+.datos-inscripcion-grid textarea {
+  min-height: 40px;
+  max-height: 60px;
+  resize: vertical;
+}
+
+.datos-inscripcion-grid .flex.items-center.gap-4 {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 1.2rem;
+}
+
+.datos-inscripcion-grid .flex.items-center.gap-4 > p-radiobutton {
+  display: flex;
+  align-items: center;
+}
+
+.datos-inscripcion-grid .flex.items-center.gap-4 > label {
+  margin-left: -0.1rem;
+  margin-right: 0.9rem;
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+  font-size: 0.97rem;
+  vertical-align: middle;
+  line-height: 2.5;
+  padding-top: 2px;
+  transform: translateY(1.5px);
+}

@@ -1,138 +1,102 @@
-    <p-accordion-panel value="0">
-      <p-accordion-header>DATOS DE INSCRIPCION</p-accordion-header>
-      <p-accordion-content>
-        <form class="grid grid-cols-3 gap-4">
-          <!-- Primera columna -->
-          <div class="flex flex-col gap-2">
-            <label>FECHA DILIGENCIAMIENTO</label>
-            <p-datepicker
-              [(ngModel)]="fechaDiligenciamiento"
-              name="fechaDiligenciamiento"
-              [iconDisplay]="'input'"
-              [showIcon]="true"
-              inputId="icondisplay"
-              dateFormat="dd/mm/yy"
-            ></p-datepicker>
-
-            <label>Nombre</label>
-            <input
-              pInputText
-              type="text"
-              name="nombre"
-              [(ngModel)]="nombre"
-              required
-            />
-
-            <label>Fecha de nacimiento</label>
-            <p-datepicker
-              [(ngModel)]="fechaNacimiento"
-              name="fechaNacimiento"
-              [iconDisplay]="'input'"
-              [showIcon]="true"
-              inputId="icondisplay"
-              dateFormat="dd/mm/yy"
-            ></p-datepicker>
-
-            <label>Telefono</label>
-            <input pInputText type="text" />
-
-            <label>Direccion</label>
-            <input pInputText type="text" />
-
-            <label>Ciudad</label>
-            <input pInputText type="text" />
-          </div>
-
-          <!-- Segunda columna -->
-          <div class="flex flex-col gap-2">
-            <label>Profesion/Oficio</label>
-            <input pInputText type="text" />
-            <label>¿Donante exclusiva?</label>
-            <div class="flex items-center gap-4">
-              <p-radioButton
-                name="donanteExclusiva"
-                value="si"
-                [(ngModel)]="donanteExclusiva"
-                inputId="donanteSi"
-              ></p-radioButton>
-              <label for="donanteSi" class="mr-4">Sí</label>
-              <p-radioButton
-                name="donanteExclusiva"
-                value="no"
-                [(ngModel)]="donanteExclusiva"
-                inputId="donanteNo"
-              ></p-radioButton>
-              <label for="donanteNo">No</label>
-            </div>
-
-            <label>Nombre del hijo</label>
-            <input pInputText type="text" />
-
-            <label>Recoleccion en el domicilio</label>
-            <div class="flex items-center gap-4">
-              <p-radioButton
-                name="recoleccionDomicilio"
-                value="si"
-                [(ngModel)]="recoleccionDomicilio"
-                inputId="recoleccionSi"
-              ></p-radioButton>
-              <label for="recoleccionSi" class="mr-4">Sí</label>
-              <p-radioButton
-                name="recoleccionDomicilio"
-                value="no"
-                [(ngModel)]="recoleccionDomicilio"
-                inputId="recoleccionNo"
-              ></p-radioButton>
-              <label for="recoleccionNo">No</label>
-            </div>
-
-            <label>Documento de identidad</label>
-            <input pInputText type="text" />
-
-            <label>Codigo de donante</label>
-            <input pInputText type="text" />
-
-            <label>Edad</label>
-            <input pInputText type="text" />
-          </div>
-
-          <!-- Tercera columna -->
-          <div class="flex flex-col gap-2">
-            <label>Celular</label>
-            <input pInputText type="text" />
-
-            <label>Barrio/Vereda</label>
-            <input pInputText type="text" />
-
-            <label>Departamento</label>
-            <input pInputText type="text" />
-
-            <label>EPS</label>
-            <input pInputText type="text" />
-
-            <label>Peso del bebe (gramos)</label>
-            <input pInputText type="text" />
-
-            <div class="flex items-center gap-4">
-              <p-radioButton
-                name="donante_EoI"
-                value="externa"
-                [(ngModel)]="donante_EoI"
-                inputId="donanteExterna"
-              ></p-radioButton>
-              <label for="donanteExterna" class="mr-4">Donante externa</label>
-              <p-radioButton
-                name="donante_EoI"
-                value="interna"
-                [(ngModel)]="donante_EoI"
-                inputId="donanteInterna"
-              ></p-radioButton>
-              <label for="donanteInterna">Donante interna</label>
-            </div>
-
-            <label>Capacitada en</label>
-            <input pInputText type="text" />
-          </div>
-        </form>
-      </p-accordion-content>
-    </p-accordion-panel>
+<p-accordion-panel value="0">
+  <p-accordion-header>DATOS DE INSCRIPCION</p-accordion-header>
+  <p-accordion-content>
+    <form class="datos-inscripcion-grid">
+      <div>
+        <label>FECHA DILIGENCIAMIENTO</label>
+        <p-datepicker [(ngModel)]="fechaDiligenciamiento" name="fechaDiligenciamiento" [iconDisplay]="'input'" [showIcon]="true" inputId="icondisplay" dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div>
+        <label>Nombre</label>
+        <input pInputText type="text" name="nombre" [(ngModel)]="nombre" required />
+      </div>
+      <div>
+        <label>Celular</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Fecha de nacimiento</label>
+        <p-datepicker [(ngModel)]="fechaNacimiento" name="fechaNacimiento" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div>
+        <label>Profesión/Oficio</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Barrio/Vereda</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>¿Donante exclusiva?</label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="donanteExclusiva" value="si" [(ngModel)]="donanteExclusiva" inputId="donanteSi"></p-radioButton>
+          <label for="donanteSi" class="mr-4">Sí</label>
+          <p-radioButton name="donanteExclusiva" value="no" [(ngModel)]="donanteExclusiva" inputId="donanteNo"></p-radioButton>
+          <label for="donanteNo">No</label>
+        </div>
+      </div>
+      <div>
+        <label>Departamento</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Dirección</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Nombre del hijo</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>EPS</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Ciudad</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Recolección en el domicilio</label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="recoleccionDomicilio" value="si" [(ngModel)]="recoleccionDomicilio" inputId="recoleccionSi"></p-radioButton>
+          <label for="recoleccionSi" class="mr-4">Sí</label>
+          <p-radioButton name="recoleccionDomicilio" value="no" [(ngModel)]="recoleccionDomicilio" inputId="recoleccionNo"></p-radioButton>
+          <label for="recoleccionNo">No</label>
+        </div>
+      </div>
+      <div>
+        <label>Peso del bebé (gramos)</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Edad</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Documento de identidad</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label>Código de donante</label>
+        <input pInputText type="text" />
+      </div>
+      <div>
+        <label></label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="donante_EoI" value="externa" [(ngModel)]="donante_EoI" inputId="donanteExterna"></p-radioButton>
+          <label for="donanteExterna" class="mr-4">Donante externa</label>
+          <p-radioButton name="donante_EoI" value="interna" [(ngModel)]="donante_EoI" inputId="donanteInterna"></p-radioButton>
+          <label for="donanteInterna">Donante interna</label>
+        </div>
+      </div>
+      <div>
+        <label>Capacitada en</label>
+        <input pInputText type="text" />
+      </div>
+    </form>
+  </p-accordion-content>
+</p-accordion-panel>

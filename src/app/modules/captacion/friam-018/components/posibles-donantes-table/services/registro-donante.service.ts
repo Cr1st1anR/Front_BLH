@@ -1,14 +1,14 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable, of, delay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RegistroDonanteService {
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
-  getDataRegistroDonante() {
-    return [
+  getDataRegistroDonante(): Observable<any[]> {
+    return of([
       {
         id: 1,
         nombre: 'Daniela',
@@ -23,6 +23,6 @@ export class RegistroDonanteService {
         documento: 123456789,
         entidad: 'LA ROSA',
       },
-    ];
+    ]).pipe(delay(1000)); // Simula 1 segundo de carga
   }
 }

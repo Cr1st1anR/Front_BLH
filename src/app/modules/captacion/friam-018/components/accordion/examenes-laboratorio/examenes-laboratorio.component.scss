@@ -1,3 +1,49 @@
-:host {
-  display: block;
+// Alinea verticalmente los radios y sus textos
+.flex.items-center.gap-4 {
+  align-items: center;
+  min-height: 56px;
+}
+
+.flex.items-center.gap-4 label,
+.flex.items-center.gap-4 p-radiobutton {
+  margin-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+// Alinea el label y el input de la fecha de registro y fechas de vencimiento
+.flex.items-center.gap-2 {
+  align-items: center;
+  min-height: 56px;
+}
+
+.flex.items-center.gap-2 label {
+  margin-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+// Ajusta el tamaño del datepicker para que todos queden iguales
+p-datepicker {
+  width: 100%;
+  min-width: 180px;
+  max-width: 260px;
+}
+
+// Ajusta el ancho de los labels de los exámenes para alinear los radios
+.flex.items-center.gap-4 label.font-bold.w-24 {
+  min-width: 90px;
+  width: 90px;
+  justify-content: flex-end;
+}
+
+.alinear-fecha-registro {
+  margin-left: 65px; // Ajusta este valor hasta que el input quede alineado con los de abajo
+}
+
+.radios-texto p-radiobutton + label {
+  margin-left: -0.9rem;
+  margin-right: 1.0rem;
+  transform: translateY(1.0px);
 }

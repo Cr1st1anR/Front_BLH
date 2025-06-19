@@ -1,3 +1,61 @@
-:host {
-  display: block;
+.historia-control-prenatal-row {
+  display: flex;
+  align-items: center; // Centra verticalmente ambos elementos
+  gap: 2rem;
+  min-height: 70px;
+}
+
+.historia-control-prenatal-input {
+  flex: 0 0 48%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.historia-control-prenatal-input input,
+.historia-control-prenatal-input textarea {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  resize: none;
+}
+
+.historia-control-prenatal-radios {
+  flex: 1;
+  display: flex;
+  align-items: center; // Centra verticalmente los radios
+  justify-content: flex-start;
+  min-width: 220px;
+  height: 48px;
+    margin-top: 20px; // <-- Ajusta este valor hasta que veas los radios centrados verticalmente
+
+}
+
+.historia-control-prenatal-radios label {
+  margin: 0 1.5rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
+  transform: translateY(2.5px);
+}
+
+.radios-texto label {
+  margin-left: -0.9rem;
+  margin-right: 1.0rem;
+  transform: translateY(1.0px);
+}
+
+.input-abreviacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-abreviacion .input-peso {
+  width: 310px;
+  min-width: 0;
+  max-width: 100%;
 }

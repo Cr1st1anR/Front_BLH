@@ -20,9 +20,20 @@ import type { DatosInscripcionData } from '../interfaces/datos-inscripcion.inter
 })
 export class DatosInscripcionComponent implements DatosInscripcionData {
   nombre: string = '';
-  donanteExclusiva: string = '';
-  recoleccionDomicilio: string = '';
+  donanteExclusiva: number = 0;
+  recoleccionDomicilio: number = 0;
   donante_EoI: string = '';
   fechaDiligenciamiento: Date | undefined;
   fechaNacimiento: Date | undefined;
+
+  getFormData() {
+    return {
+      nombre: this.nombre,
+      donanteExclusiva: this.donanteExclusiva,
+      recoleccionDomicilio: this.recoleccionDomicilio,
+      donante_EoI: this.donante_EoI,
+      fechaDiligenciamiento: this.fechaDiligenciamiento,
+      fechaNacimiento: this.fechaNacimiento,
+    };
+  }
 }

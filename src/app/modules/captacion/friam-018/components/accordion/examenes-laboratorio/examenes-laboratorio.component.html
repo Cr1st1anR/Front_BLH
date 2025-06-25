@@ -1,199 +1,157 @@
+<p-toast position="top-right" key="tr" />
+
 <p-accordion-panel value="2">
   <p-accordion-header>
     EXÁMENES DE LABORATORIO DURANTE EL CONTROL PRENATAL
   </p-accordion-header>
   <p-accordion-content>
-    <form class="grid grid-cols-2 gap-6">
-      <!-- Fila 1: Fecha registro (alineada con los inputs de fecha) -->
-<div></div>
-<div class="flex items-center gap-2 min-h-[56px] alinear-fecha-registro">
-  <label class="font-bold">Fecha registro:</label>
-  <p-datepicker
-    [(ngModel)]="fechaRegistroLab"
-    name="fechaRegistroLab"
-    [iconDisplay]="'input'"
-    [showIcon]="true"
-    dateFormat="dd/mm/yy"
-  ></p-datepicker>
-</div>
+    <form class="examenes-lab-grid">
 
-      <!-- Fila 2: VDRL -->
+      <div></div>
+      <div class="flex items-center gap-2 min-h-[56px] alinear-fecha-registro">
+        <label class="font-bold">Fecha registro:</label>
+        <p-datepicker [(ngModel)]="fechaRegistroLab" name="fechaRegistroLab" [iconDisplay]="'input'" [showIcon]="true"
+          dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div></div>
+
+
       <div class="flex items-center gap-4 min-h-[56px] radios-texto">
         <label class="font-bold w-24">VDRL</label>
-        <p-radioButton
-          name="vdrl"
-          value="positivo"
-          [(ngModel)]="vdrl"
-          inputId="vdrlPos"
-        ></p-radioButton>
+        <p-radioButton name="vdrl" value="positivo" [(ngModel)]="vdrl" inputId="vdrlPos"></p-radioButton>
         <label for="vdrlPos">Positivo</label>
-        <p-radioButton
-          name="vdrl"
-          value="negativo"
-          [(ngModel)]="vdrl"
-          inputId="vdrlNeg"
-        ></p-radioButton>
+        <p-radioButton name="vdrl" value="negativo" [(ngModel)]="vdrl" inputId="vdrlNeg"></p-radioButton>
         <label for="vdrlNeg">Negativo</label>
       </div>
       <div class="flex items-center gap-2 min-h-[56px]">
         <label>Fecha de vencimiento:</label>
-        <p-datepicker
-          [(ngModel)]="fechaVencimientoVdrl"
-          name="fechaVencimientoVdrl"
-          [iconDisplay]="'input'"
-          [showIcon]="true"
-          dateFormat="dd/mm/yy"
-        ></p-datepicker>
+        <p-datepicker [(ngModel)]="fechaVencimientoVdrl" name="fechaVencimientoVdrl" [iconDisplay]="'input'"
+          [showIcon]="true" dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div class="flex items-center gap-2 min-h-[56px] archivo-col relative">
+        <label class="font-bold">Examen VDRL</label>
+        <p-fileUpload #fuVdrl [auto]="false" [customUpload]="true" [showUploadButton]="false" [showCancelButton]="false"
+          chooseLabel="Elegir" name="examenVdrl" (onSelect)="onFileSelect($event, 'vdrl')" [maxFileSize]="1000000"
+          [accept]="'.pdf,.jpg,.png'" styleClass="p-0" [styleClass]="'custom-file-upload'" [style]="{'border': 'none'}"
+          chooseStyleClass="p-button-blue-custom">
+        </p-fileUpload>
+        <span class="nombre-archivo" [title]="fileNames.vdrl">
+          {{ fileNames.vdrl || 'Sin archivo' }}
+        </span>
+        <p-button label="Subir" (onClick)="onUpload('vdrl')" severity="secondary" class="ml-2"
+          [disabled]="uploading['vdrl']"></p-button>
+
+        @if (uploading['vdrl']) {
+        <div class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+          <p-progressSpinner strokeWidth="4" [style]="{ width: '35px', height: '35px' }"></p-progressSpinner>
+        </div>
+        }
       </div>
 
-      <!-- Fila 3: HbsAg -->
+
       <div class="flex items-center gap-4 min-h-[56px] radios-texto">
         <label class="font-bold w-24">HbsAg</label>
-        <p-radioButton
-          name="hbsag"
-          value="positivo"
-          [(ngModel)]="hbsag"
-          inputId="hbsagPos"
-        ></p-radioButton>
+        <p-radioButton name="hbsag" value="positivo" [(ngModel)]="hbsag" inputId="hbsagPos"></p-radioButton>
         <label for="hbsagPos">Positivo</label>
-        <p-radioButton
-          name="hbsag"
-          value="negativo"
-          [(ngModel)]="hbsag"
-          inputId="hbsagNeg"
-        ></p-radioButton>
+        <p-radioButton name="hbsag" value="negativo" [(ngModel)]="hbsag" inputId="hbsagNeg"></p-radioButton>
         <label for="hbsagNeg">Negativo</label>
       </div>
       <div class="flex items-center gap-2 min-h-[56px]">
         <label>Fecha de vencimiento:</label>
-        <p-datepicker
-          [(ngModel)]="fechaVencimientoHbsag"
-          name="fechaVencimientoHbsag"
-          [iconDisplay]="'input'"
-          [showIcon]="true"
-          dateFormat="dd/mm/yy"
-        ></p-datepicker>
+        <p-datepicker [(ngModel)]="fechaVencimientoHbsag" name="fechaVencimientoHbsag" [iconDisplay]="'input'"
+          [showIcon]="true" dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div class="flex items-center gap-2 min-h-[56px] archivo-col relative">
+        <label class="font-bold">Examen HbsAg</label>
+        <p-fileUpload #fuHbsag [auto]="false" [customUpload]="true" [showUploadButton]="false"
+          [showCancelButton]="false" chooseLabel="Elegir" name="examenHbsag" (onSelect)="onFileSelect($event, 'hbsag')"
+          [maxFileSize]="1000000" [accept]="'.pdf,.jpg,.png'" styleClass="p-0 custom-file-upload"
+          [style]="{'border': 'none'}" chooseStyleClass="p-button-blue-custom">
+        </p-fileUpload>
+        <span class="nombre-archivo" [title]="fileNames.hbsag">
+          {{ fileNames.hbsag || 'Sin archivo' }}
+        </span>
+        <p-button label="Subir" (onClick)="onUpload('hbsag')" severity="secondary" class="ml-2"
+          [disabled]="uploading['hbsag']"></p-button>
+
+        @if (uploading['hbsag']) {
+        <div class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+          <p-progressSpinner strokeWidth="4" [style]="{ width: '35px', height: '35px' }"></p-progressSpinner>
+        </div>
+        }
       </div>
 
-      <!-- Fila 4: HIV -->
+
       <div class="flex items-center gap-4 min-h-[56px] radios-texto">
         <label class="font-bold w-24">HIV</label>
-        <p-radioButton
-          name="hiv"
-          value="positivo"
-          [(ngModel)]="hiv"
-          inputId="hivPos"
-        ></p-radioButton>
+        <p-radioButton name="hiv" value="positivo" [(ngModel)]="hiv" inputId="hivPos"></p-radioButton>
         <label for="hivPos">Positivo</label>
-        <p-radioButton
-          name="hiv"
-          value="negativo"
-          [(ngModel)]="hiv"
-          inputId="hivNeg"
-        ></p-radioButton>
+        <p-radioButton name="hiv" value="negativo" [(ngModel)]="hiv" inputId="hivNeg"></p-radioButton>
         <label for="hivNeg">Negativo</label>
       </div>
       <div class="flex items-center gap-2 min-h-[56px]">
         <label>Fecha de vencimiento:</label>
-        <p-datepicker
-          [(ngModel)]="fechaVencimientoHiv"
-          name="fechaVencimientoHiv"
-          [iconDisplay]="'input'"
-          [showIcon]="true"
-          dateFormat="dd/mm/yy"
-        ></p-datepicker>
+        <p-datepicker [(ngModel)]="fechaVencimientoHiv" name="fechaVencimientoHiv" [iconDisplay]="'input'"
+          [showIcon]="true" dateFormat="dd/mm/yy"></p-datepicker>
+      </div>
+      <div class="flex items-center gap-2 min-h-[56px] archivo-col relative">
+        <label class="font-bold">Examen HIV</label>
+        <p-fileUpload #fuHiv [auto]="false" [customUpload]="true" [showUploadButton]="false" [showCancelButton]="false"
+          chooseLabel="Elegir" name="examenHiv" (onSelect)="onFileSelect($event, 'hiv')" [maxFileSize]="1000000"
+          [accept]="'.pdf,.jpg,.png'" styleClass="p-0 custom-file-upload" [style]="{'border': 'none'}"
+          chooseStyleClass="p-button-blue-custom">
+        </p-fileUpload>
+        <span class="nombre-archivo" [title]="fileNames.hiv">
+          {{ fileNames.hiv || 'Sin archivo' }}
+        </span>
+        <p-button label="Subir" (onClick)="onUpload('hiv')" severity="secondary" class="ml-2"
+          [disabled]="uploading['hiv']"></p-button>
+
+        @if (uploading['hiv']) {
+        <div class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+          <p-progressSpinner strokeWidth="4" [style]="{ width: '35px', height: '35px' }"></p-progressSpinner>
+        </div>
+        }
       </div>
 
-      <!-- Fila 5: Hemoglobina y Hematocrito -->
-      <div class="flex items-center gap-2 col-span-2 min-h-[56px]">
+
+      <div class="flex items-center gap-2 col-span-3 min-h-[56px]">
         <label class="font-bold">HEMOGLOBINA</label>
-        <input
-          pInputText
-          type="text"
-          class="w-48"
-          [(ngModel)]="hemoglobina"
-          name="hemoglobina"
-        />
+        <input pInputText type="text" class="w-48" [(ngModel)]="hemoglobina" name="hemoglobina" />
         <span>Gr/dl</span>
         <span class="ml-8 font-bold">HEMATOCRITO</span>
-        <input
-          pInputText
-          type="text"
-          class="w-48"
-          [(ngModel)]="hematocrito"
-          name="hematocrito"
-        />
+        <input pInputText type="text" class="w-48" [(ngModel)]="hematocrito" name="hematocrito" />
         <span>%</span>
       </div>
 
-      <!-- Fila 6: Transfusiones/tatuajes -->
-      <div class="col-span-2 flex items-center gap-4 min-h-[56px] radios-texto">
-        <label class="font-bold"
-          >¿Ha recibido transfusiones sanguíneas o se ha hecho tatuajes en
-          el último año?</label
-        >
-        <p-radioButton
-          name="transfusiones"
-          value="si"
-          [(ngModel)]="transfusiones"
-          inputId="transfSi"
-        ></p-radioButton>
+
+      <div class="col-span-3 flex items-center gap-4 min-h-[56px] radios-texto">
+        <label class="font-bold">¿Ha recibido transfusiones sanguíneas o se ha hecho tatuajes en
+          el último año?</label>
+        <p-radioButton name="transfusiones" [value]="1" [(ngModel)]="transfusiones" inputId="transfSi"></p-radioButton>
         <label for="transfSi">Sí</label>
-        <p-radioButton
-          name="transfusiones"
-          value="no"
-          [(ngModel)]="transfusiones"
-          inputId="transfNo"
-        ></p-radioButton>
+        <p-radioButton name="transfusiones" [value]="0" [(ngModel)]="transfusiones" inputId="transfNo"></p-radioButton>
         <label for="transfNo">No</label>
       </div>
 
-      <!-- Fila 7: Enfermedades durante la gestación -->
-      <div class="col-span-2 flex items-center gap-4 min-h-[56px]">
-        <label class="font-bold"
-          >¿Qué enfermedades presentó durante la gestación?</label
-        >
-        <input
-          pInputText
-          type="text"
-          class="flex-1"
-          [(ngModel)]="enfermedadesGestacion"
-          name="enfermedadesGestacion"
-        />
+
+      <div class="col-span-3 flex items-center gap-4 min-h-[56px]">
+        <label class="font-bold">¿Qué enfermedades presentó durante la gestación?</label>
+        <input pInputText type="text" class="flex-1" [(ngModel)]="enfermedadesGestacion" name="enfermedadesGestacion" />
       </div>
 
-      <!-- Fila 8: Fuma y alcohol -->
-      <div class="col-span-2 flex items-center gap-8 min-h-[56px] radios-texto">
+
+      <div class="col-span-3 flex items-center gap-8 min-h-[56px] radios-texto">
         <label class="font-bold">Fuma:</label>
-        <p-radioButton
-          name="fuma"
-          value="si"
-          [(ngModel)]="fuma"
-          inputId="fumaSi"
-        ></p-radioButton>
+        <p-radioButton name="fuma" [value]="1" [(ngModel)]="fuma" inputId="fumaSi"></p-radioButton>
         <label for="fumaSi">Sí</label>
-        <p-radioButton
-          name="fuma"
-          value="no"
-          [(ngModel)]="fuma"
-          inputId="fumaNo"
-        ></p-radioButton>
+        <p-radioButton name="fuma" [value]="0" [(ngModel)]="fuma" inputId="fumaNo"></p-radioButton>
         <label for="fumaNo" class="mr-8">No</label>
 
         <label class="font-bold">Consume Alcohol:</label>
-        <p-radioButton
-          name="alcohol"
-          value="si"
-          [(ngModel)]="alcohol"
-          inputId="alcoholSi"
-        ></p-radioButton>
+        <p-radioButton name="alcohol" [value]="1" [(ngModel)]="alcohol" inputId="alcoholSi"></p-radioButton>
         <label for="alcoholSi">Sí</label>
-        <p-radioButton
-          name="alcohol"
-          value="no"
-          [(ngModel)]="alcohol"
-          inputId="alcoholNo"
-        ></p-radioButton>
+        <p-radioButton name="alcohol" [value]="0" [(ngModel)]="alcohol" inputId="alcoholNo"></p-radioButton>
         <label for="alcoholNo">No</label>
       </div>
     </form>

@@ -38,12 +38,188 @@ p-datepicker {
   justify-content: flex-end;
 }
 
+// Alinea el input de fecha de registro con los de abajo
 .alinear-fecha-registro {
-  margin-left: 65px; // Ajusta este valor hasta que el input quede alineado con los de abajo
+  margin-left: 30px; // Ajusta este valor hasta que el input quede alineado con los de abajo
 }
 
+// Espaciado entre los radios y sus textos
 .radios-texto p-radiobutton + label {
   margin-left: -0.9rem;
   margin-right: 1.0rem;
   transform: translateY(1.0px);
+}
+
+// GRID PRINCIPAL: 3 columnas bien separadas
+.examenes-lab-grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1.3fr 2fr; // Más espacio para la columna de archivos
+  gap: 1.9rem 6.5rem; // Mucho más espacio horizontal entre columnas
+  width: 100%;
+}
+
+// Columna de archivos: alineación vertical perfecta
+.archivo-col {
+  min-width: 320px;
+  max-width: 520px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  position: relative;
+  min-height: 56px;
+}
+
+.archivo-col label {
+  min-width: 90px;
+  width: 90px;
+  justify-content: flex-end;
+  font-weight: bold;
+  align-items: center;
+  margin-right: 0.5rem;
+  padding-top: 0;
+  height: 40px;
+}
+
+.archivo-col p-fileupload {
+  margin-right: 0.3rem;
+}
+
+// Elimina el recuadro blanco y el fondo del fileupload avanzado
+:host ::ng-deep .p-fileupload,
+:host ::ng-deep .p-fileupload-content {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+// Ajusta el botón "Elegir" con mayor especificidad y !important en todas las propiedades
+:host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose,
+:host ::ng-deep .p-fileupload .p-fileupload-choose {
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background-color: #224186 !important;
+  border-color: #224186 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+// Estilo para hover con mayor especificidad
+:host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose:hover:not(.p-disabled),
+:host ::ng-deep .p-fileupload .p-fileupload-choose:hover {
+  background-color: #1a3269 !important;
+  border-color: #1a3269 !important;
+  color: #ffffff !important;
+}
+
+// Estilo para focus con mayor especificidad
+:host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose:focus,
+:host ::ng-deep .p-fileupload .p-fileupload-choose:focus {
+  box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+  border-color: #224186 !important;
+}
+
+// Ajusta el nombre del archivo
+:host ::ng-deep .p-fileupload-filename {
+  font-size: 0.85rem !important;
+  color: #224186 !important;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+// Oculta la línea horizontal que aparece al seleccionar archivo
+:host ::ng-deep .p-fileupload-row {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+// Reduce el padding y el tamaño del bloque del archivo seleccionado
+:host ::ng-deep .p-fileupload-files {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+:host ::ng-deep .p-fileupload-row {
+  min-height: 24px !important;
+  padding: 2px 0 !important;
+}
+
+// Opcional: reduce el tamaño del botón de eliminar archivo
+:host ::ng-deep .p-fileupload-row .p-fileupload-remove {
+  font-size: 1rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  margin-left: 0.5rem !important;
+}
+
+.archivo-col p-button {
+  margin-left: 0.8rem !important;
+}
+
+:host ::ng-deep .p-fileupload-files,
+:host ::ng-deep .p-fileupload-row,
+:host ::ng-deep .p-fileupload-content {
+  display: none !important;
+}
+
+.nombre-archivo {
+  font-size: 0.85rem;
+  color: #224186;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  cursor: pointer;
+}
+
+.nombre-archivo-vacio {
+  color: #b0b0b0;
+}
+
+/* Asegurar que el spinner sea visible y centrado */
+.archivo-col p-progressspinner {
+  z-index: 10;
+}
+
+/* Contenedor para el spinner */
+.archivo-col .absolute {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Establece variables CSS para los colores del tema */
+:root {
+  --fileupload-button-bg: #224186;
+  --fileupload-button-border: #224186;
+  --fileupload-button-text: #ffffff;
+  --fileupload-button-hover-bg: #1a3269;
+  --fileupload-button-hover-border: #1a3269;
+}
+
+// Agrega estos estilos al final del archivo
+:host ::ng-deep .p-button-blue-custom {
+  background-color: #224186 !important;
+  border-color: #224186 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .p-button-blue-custom:hover {
+  background-color: #1a3269 !important;
+  border-color: #1a3269 !important;
+  color: #ffffff !important;
+}
+
+:host ::ng-deep .p-button-blue-custom:focus {
+  box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
 }

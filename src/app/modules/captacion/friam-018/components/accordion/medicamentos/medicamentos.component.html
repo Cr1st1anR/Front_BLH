@@ -5,75 +5,39 @@
       <!-- Medicamentos y Psicoactivos -->
       <div>
         <label>Medicamentos:</label>
-        <input
-          pInputText
-          type="text"
-          class="w-full"
-          [(ngModel)]="medicamentos"
-          name="medicamentos"
-        />
+        <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos" name="medicamentos" />
         <div class="flex items-center mt-2">
           <label class="mr-2">Ninguno:</label>
-          <p-checkbox
-            binary="true"
-            [(ngModel)]="ningunMedicamento"
-            name="ningunMedicamento"
-            inputId="ningunMedicamento"
-          ></p-checkbox>
+          <p-checkbox binary="true" [(ngModel)]="ningunMedicamento" name="ningunMedicamento"
+            inputId="ningunMedicamento"></p-checkbox>
         </div>
       </div>
       <div>
         <label>Psicoactivos:</label>
-        <input
-          pInputText
-          type="text"
-          class="w-full"
-          [(ngModel)]="psicoactivos"
-          name="psicoactivos"
-        />
+        <input pInputText type="text" class="w-full" [(ngModel)]="psicoactivos" name="psicoactivos" />
       </div>
 
       <!-- Recibió educación y Responsable -->
       <div>
         <label>Recibió educación en:</label>
-        <input
-          pInputText
-          type="text"
-          class="w-full"
-          [(ngModel)]="recibioEducacion"
-          name="recibioEducacion"
-        />
+        <input pInputText type="text" class="w-full" [(ngModel)]="recibioEducacion" name="recibioEducacion" />
       </div>
       <div>
         <label>Responsable del registro:</label>
-        <input
-          pInputText
-          type="text"
-          class="w-full"
-          [(ngModel)]="responsableRegistro"
-          name="responsableRegistro"
-        />
+        <input pInputText type="text" class="w-full" [(ngModel)]="responsableRegistro" name="responsableRegistro" />
       </div>
 
       <div>
         <label>Si es donante menor de edad, firma de adulto acompañante:</label>
         <div>
-          <canvas
-            #canvasAcompanante
-            width="350"
-            height="120"
-            style="
+          <canvas #canvasAcompanante width="350" height="120" style="
               border: 1px solid #ccc;
               border-radius: 8px;
               touch-action: none;
-            "
-          ></canvas>
+            "></canvas>
           <div class="mt-2 flex gap-2">
-            <button
-              type="button"
-              (click)="clearFirmaAcompanante()"
-              class="p-1 px-2 bg-gray-200 rounded border border-gray-300"
-            >
+            <button type="button" (click)="clearFirmaAcompanante()"
+              class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
               Limpiar
             </button>
           </div>
@@ -83,19 +47,9 @@
       <div>
         <label>Donante apta:</label>
         <div class="flex items-center gap-4 mt-2">
-          <p-radioButton
-            name="donanteApta"
-            value="si"
-            [(ngModel)]="donanteApta"
-            inputId="aptaSi"
-          ></p-radioButton>
+          <p-radioButton name="donanteApta" [value]="1" [(ngModel)]="donanteApta" inputId="aptaSi"></p-radioButton>
           <label for="aptaSi" class="mr-4">Sí</label>
-          <p-radioButton
-            name="donanteApta"
-            value="no"
-            [(ngModel)]="donanteApta"
-            inputId="aptaNo"
-          ></p-radioButton>
+          <p-radioButton name="donanteApta" [value]="0" [(ngModel)]="donanteApta" inputId="aptaNo"></p-radioButton>
           <label for="aptaNo">No</label>
         </div>
       </div>
@@ -111,22 +65,14 @@
       <div>
         <label>FIRMA DEL DONANTE:</label>
         <div>
-          <canvas
-            #canvasDonante
-            width="350"
-            height="120"
-            style="
+          <canvas #canvasDonante width="350" height="120" style="
               border: 1px solid #ccc;
               border-radius: 8px;
               touch-action: none;
-            "
-          ></canvas>
+            "></canvas>
           <div class="mt-2 flex gap-2">
-            <button
-              type="button"
-              (click)="clearFirmaDonante()"
-              class="p-1 px-2 bg-gray-200 rounded border border-gray-300"
-            >
+            <button type="button" (click)="clearFirmaDonante()"
+              class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
               Limpiar
             </button>
           </div>
@@ -136,22 +82,14 @@
       <div>
         <label>PROFESIONAL RESPONSABLE:</label>
         <div>
-          <canvas
-            #canvasProfesional
-            width="350"
-            height="120"
-            style="
+          <canvas #canvasProfesional width="350" height="120" style="
               border: 1px solid #ccc;
               border-radius: 8px;
               touch-action: none;
-            "
-          ></canvas>
+            "></canvas>
           <div class="mt-2 flex gap-2">
-            <button
-              type="button"
-              (click)="clearFirmaProfesional()"
-              class="p-1 px-2 bg-gray-200 rounded border border-gray-300"
-            >
+            <button type="button" (click)="clearFirmaProfesional()"
+              class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
               Limpiar
             </button>
           </div>

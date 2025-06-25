@@ -5,7 +5,7 @@ export interface MedicamentosData {
   recibioEducacion: string;
   responsableRegistro: string;
   firmaAcompanante: string;
-  donanteApta: string;
+  donanteApta: number;
   firmaDonante: string;
   profesionalResponsable: string;
 }

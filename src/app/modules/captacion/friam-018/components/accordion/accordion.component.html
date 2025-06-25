@@ -1,3 +1,21 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+  </div>
+}
+<p-toast position="top-right" key="tr" />
+
+@if (saving) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+  </div>
+}
+
+
 <app-header
   [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'"
 />
@@ -18,6 +36,7 @@
     label="Guardar"
     icon="pi pi-save"
     class="guardar-btn"
+    (click)="onLoadData()"
   ></button>
   <button
     pButton

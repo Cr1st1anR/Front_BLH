@@ -26,9 +26,23 @@ export class MedicamentosComponent implements MedicamentosData, AfterViewInit {
   recibioEducacion: string = '';
   responsableRegistro: string = '';
   firmaAcompanante: string = '';
-  donanteApta: string = '';
+  donanteApta: number = 0;
   firmaDonante: string = '';
   profesionalResponsable: string = '';
+
+  getFormData() {
+    return {
+      medicamentos: this.medicamentos,
+      ningunMedicamento: this.ningunMedicamento,
+      psicoactivos: this.psicoactivos,
+      recibioEducacion: this.recibioEducacion,
+      responsableRegistro: this.responsableRegistro,
+      firmaAcompanante: this.firmaAcompanante,
+      donanteApta: this.donanteApta,
+      firmaDonante: this.firmaDonante,
+      profesionalResponsable: this.profesionalResponsable,
+    };
+  }
 
   @ViewChild('canvasAcompanante', { static: true })
   canvasAcompananteRef!: ElementRef<HTMLCanvasElement>;

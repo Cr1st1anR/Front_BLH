@@ -21,11 +21,25 @@ import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.int
 export class HistoriaGestacionComponent implements HistoriaGestacionData{
   lugarControlPrenatal: string = '';
   tipoIPS: string = '';
-  asistioControl: string = '';
+  asistioControl: number = 0;
   pesoInicial: string = '';
   pesoFinal: string = '';
   talla: string = '';
   tipoParto: string = '';
   semanasGestacion: number = 0;
   fechaParto: Date | undefined;
+
+  getFormData() {
+    return {
+      lugarControlPrenatal: this.lugarControlPrenatal,
+      tipoIPS: this.tipoIPS,
+      asistioControl: this.asistioControl,
+      pesoInicial: this.pesoInicial,
+      pesoFinal: this.pesoFinal,
+      talla: this.talla,
+      tipoParto: this.tipoParto,
+      semanasGestacion: this.semanasGestacion,
+      fechaParto: this.fechaParto,
+    };
+  }
 }

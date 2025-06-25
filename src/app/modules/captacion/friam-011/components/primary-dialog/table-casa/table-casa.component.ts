@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { primaryDialogServices } from '../services/primaryDialog.service';
 import { rutaRecoleccion } from '../../table-list/interfaces/ruta-recoleccion';
 import { casasVisitaData, MadresDonantes } from '../interfaces/primaryDialog.interface';
@@ -12,6 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { concatMap, Observable, of, tap } from 'rxjs';
 import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
+import { NewRegisterCasaComponent } from '../new-register-casa/new-register-casa.component';
 
 @Component({
   selector: 'table-casa',
@@ -22,7 +23,8 @@ import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/tabl
     ToastModule,
     ButtonModule,
     SelectModule,
-    InputTextModule
+    InputTextModule,
+    NewRegisterCasaComponent
   ],
   templateUrl: './table-casa.component.html',
   styleUrl: './table-casa.component.scss',
@@ -35,10 +37,10 @@ export class TableCasaComponent implements OnChanges, OnInit {
 
   @Input() dataRutaRecoleccion: rutaRecoleccion | null = null;
   @Output() openDialogFrascosL = new EventEmitter<casasVisitaData>();
-  // @Input() editingSecondaryRow: any = null;
-  // @Output() casaSeleccionada = new EventEmitter<{casaNo: number, visible: boolean}>();
+  @ViewChild('tableCasas') table!: Table
+  dataTableCasas: any[] = [];
+  clonedTableCasasVisita: { [s: number]: casasVisitaData } = {};
 
-  dataTable: any[] = [];
   headerTableCasasVisita: any[] = [
     { header: 'CASA No.', field: 'id_casa_visita', width: '200px', tipo: "text", disable: true },
     {
@@ -54,25 +56,16 @@ export class TableCasaComponent implements OnChanges, OnInit {
 
   selectedRow: casasVisitaData[] | null = [];
   editingRow: casasVisitaData | null = null;
-
-  clonedSecondaryRow: any = null;
-
-
   tercerDialogVisible: boolean = false;
   selectedCasaNo: number | null = null;
   frascosData: any[] = [];
-
   loading: boolean = false;
-
-
-
-  // requiredFields: string[] = ['observacion', 'hora_salida', 't_salida'];
+  requiredFields: string[] = ['id_madre_donante'];
 
   constructor(
     private messageService: MessageService,
     private _primaryService: primaryDialogServices
   ) { }
-
 
   ngOnInit(): void {
   }
@@ -105,7 +98,7 @@ export class TableCasaComponent implements OnChanges, OnInit {
       tap((data) => {
         if (data) {
           this.headerTableCasasVisita[1].options = data.data;
-        }else{
+        } else {
           this.headerTableCasasVisita[1].options = [];
           this.messageService.add({
             severity: 'info',
@@ -123,7 +116,7 @@ export class TableCasaComponent implements OnChanges, OnInit {
     return this._primaryService.getDataCasasRuta(idRuta).pipe(
       tap((data) => {
         if (data) {
-          this.dataTable = this.formatData(data.data);
+          this.dataTableCasas = this.formatData(data.data);
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -132,7 +125,7 @@ export class TableCasaComponent implements OnChanges, OnInit {
             life: 3000
           });
         } else {
-          this.dataTable = [];
+          this.dataTableCasas = [];
           this.messageService.add({
             severity: 'info',
             summary: 'Información',
@@ -156,9 +149,28 @@ export class TableCasaComponent implements OnChanges, OnInit {
   }
 
   fillText(event: { originalEvent: any, value: MadresDonantes }, index: number) {
-    this.dataTable[index].nombre = event.value.nombre;
-    this.dataTable[index].direccion = event.value.direccion;
-    this.dataTable[index].celular = event.value.celular;
+    this.dataTableCasas[index].nombre = event.value.nombre;
+    this.dataTableCasas[index].direccion = event.value.direccion;
+    this.dataTableCasas[index].celular = event.value.celular;
+  }
+
+  crearNuevoRegistroCasa() {
+    const nuevoRegistro: casasVisitaData = {
+      id_ruta: null,
+      id_casa_visita: null,
+      id_madre_donante: null,
+      nombre: null,
+      direccion: null,
+      celular: null,
+      observacion: null,
+    };
+
+    this.dataTableCasas.unshift(nuevoRegistro);
+    this.editingRow = nuevoRegistro;
+    this.selectedRow = [nuevoRegistro];
+    setTimeout(() => {
+      this.table.initRowEdit(nuevoRegistro);
+    });
   }
 
   onRowSelect(event: any) {
@@ -169,26 +181,74 @@ export class TableCasaComponent implements OnChanges, OnInit {
     this.openDialogFrascosL.emit(event.data);
   }
 
-  onRowEditInit(dataRow: any): void {
-
+  onRowEditInit(dataRow: casasVisitaData): void {
+    this.clonedTableCasasVisita[dataRow.id_casa_visita as number] = { ...dataRow };
+    this.editingRow = dataRow;
+    this.selectedRow = null;
   }
 
-  onRowEditSave(data: any, inex: number, event: any) {
+  onRowEditSave(dataRow: casasVisitaData, index: number, event: MouseEvent) {
+    this.editingRow = null;
+    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+    const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
+    if (invalidField) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: `El campo "${invalidField}" es obligatorio.`,
+        key: 'tr',
+        life: 3000
+      });
+      return;
+    }
+    delete this.clonedTableCasasVisita[dataRow.id_casa_visita as number];
+    const bodyFormat = this.formatInputBody(dataRow);
 
+    if (dataRow.id_casa_visita === undefined || dataRow.id_casa_visita === null) {
+      this._primaryService.postDataCasasVisitas(bodyFormat).subscribe({
+        next: (data) => {
+          this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
+          this.table.saveRowEdit(dataRow, rowElement);
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'danger', summary: 'Error', detail: 'Hubo un error al guardar', key: 'tr', life: 3000 });
+        }
+      })
+    } else {
+
+      // this._primaryService.putDataRutaRecoleccion(bodyFormat).subscribe({
+      //   next: (data) => {
+      //     this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos actualizados', key: 'tr', life: 3000 });
+      //     this.table.saveRowEdit(dataRow, rowElement);
+      //   },
+      //   error: (error) => {
+      //     this.messageService.add({ severity: 'danger', summary: 'Error', detail: 'Hubo un error al actualizar', key: 'tr', life: 3000 });
+      //   }
+      // })
+    }
   }
 
   onRowEditCancel(dataRow: rutaRecoleccion, index: number): void {
+    this.dataTableCasas[index] = this.clonedTableCasasVisita[dataRow.id_ruta as number];
+    delete this.clonedTableCasasVisita[dataRow.id_ruta as number];
+    this.editingRow = null;
+  }
 
+  formatInputBody(body:any){
+    return {
+      madreDonante: body.id_madre_donante.id_madre_donante ? body.id_madre_donante.id_madre_donante : null,
+      ruta: this.dataRutaRecoleccion?.id_ruta || null,
+      observacion: body.observacion || null,
+    };
   }
 
   limpiarSeleccion() {
     this.selectedRow = null;
   }
 
-  // isFieldInvalid(field: string, dataRow: any): boolean {
-  //   return this.requiredFields.includes(field) &&
-  //     (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
-  // }
-
+  isFieldInvalid(field: string, dataRow: any): boolean {
+    return this.requiredFields.includes(field) &&
+      (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
+  }
 
 }

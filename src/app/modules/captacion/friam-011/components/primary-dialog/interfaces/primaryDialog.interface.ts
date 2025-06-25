@@ -6,15 +6,15 @@ export interface TemperaturaData {
 }
 
 export interface casasVisitaData {
-    id_madre_donante:number;
-    id_casa_visita: number;
-    id_ruta: number;
-    observacion: string;
-    id_info_madre: number;
-    nombre: string;
-    apellido: string;
-    direccion: string;
-    celular: string;
+    id_madre_donante:number | null;
+    id_casa_visita: number | null;
+    id_ruta: number | null;
+    observacion: string | null;
+    id_info_madre?: number;
+    nombre?: string | null;
+    apellido?: string | null;
+    direccion: string | null;
+    celular: string | null;
 }
 
 export interface MadresDonantes {

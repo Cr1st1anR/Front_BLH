@@ -22,21 +22,18 @@ export class primaryDialogServices {
     return this.http.get<ApiResponse>(url)
   }
 
-  getMadresDonantes():Observable<ApiResponse>{
+  getMadresDonantes(): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/GetMadreDonante`;
     return this.http.get<ApiResponse>(url);
   }
 
-  // putDataLineaAmiga(data: any): Observable<ApiResponse> {
-  //   const id = data.id;
-  //   const url = `${environment.ApiBLH}/UpdateMadrePotencial/${id}`;
-  //   return this.http.put<ApiResponse>(url, data );
-  // }
-
   postDataTemperatura(data: any): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/createTemperaturaCasas`;
-    return this.http.post<ApiResponse>(url, data );
+    return this.http.post<ApiResponse>(url, data);
   }
 
-
+  postDataCasasVisitas(data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/createCasasVisitas`;
+    return this.http.post<ApiResponse>(url, data);
+  }
 }

@@ -1,7 +1,8 @@
 <p-toast position="top-right" key="tr" />
 
+<new-register-casa (nuevoRegistro)="crearNuevoRegistroCasa()" />
 
-<p-table [value]="dataTable" [scrollable]="true" scrollHeight="300px" [columns]="headerTableCasasVisita"
+<p-table #tableCasas [value]="dataTableCasas" [scrollable]="true" scrollHeight="300px" [columns]="headerTableCasasVisita"
   [tableStyle]="{ 'min-width': '50rem' }" (onRowSelect)="onRowSelect($event)" selectionMode="single" editMode="row"  [(selection)]="selectedRow"
   dataKey="id_casa_visita">
   <ng-template #header let-columns>
@@ -63,6 +64,6 @@
   </ng-template>
 </p-table>
 
-<div *ngIf="dataTable.length === 0" class="p-4 text-center text-gray-500">
+<div *ngIf="dataTableCasas.length === 0" class="p-4 text-center text-gray-500">
   No hay datos disponibles
 </div>

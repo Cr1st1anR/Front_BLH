@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { secondaryDialogServices } from '../services/secondaryDialog.service';
 import { FrascosLeche } from '../interface/secondaryDialog.interface';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { casasVisitaData } from '../../primary-dialog/interfaces/primaryDialog.interface';
+import { NewRegisterFrascoComponent } from '../new-register-frasco/new-register-frasco.component';
 
 @Component({
   selector: 'table-frasco',
@@ -22,7 +23,8 @@ import { casasVisitaData } from '../../primary-dialog/interfaces/primaryDialog.i
     ButtonModule,
     InputTextModule,
     SelectModule,
-    ToastModule
+    ToastModule,
+    NewRegisterFrascoComponent
   ],
   templateUrl: './table-frasco.component.html',
   styleUrl: './table-frasco.component.scss',
@@ -34,10 +36,11 @@ import { casasVisitaData } from '../../primary-dialog/interfaces/primaryDialog.i
 export class TableFrascoComponent implements OnChanges {
 
   @Input() frascosData: casasVisitaData | null = null;
-  editingRow: FrascosLeche | null = null; 
+  @ViewChild('tableFrascos') table!: Table
 
+  editingRow: FrascosLeche | null = null; 
   dataTableFrascosLeche: FrascosLeche[] = [];
-  clonedTableRutaRecoleccion: { [s: number]: FrascosLeche } = {};
+  clonedTableFrascos: { [s: number]: FrascosLeche } = {};
   requiredFields: string[] = [''];
 
 
@@ -54,7 +57,7 @@ export class TableFrascoComponent implements OnChanges {
 
   constructor(
     private messageService: MessageService,
-    private secondaryDialogServices: secondaryDialogServices
+    private _secondaryDialogServices: secondaryDialogServices
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -65,7 +68,7 @@ export class TableFrascoComponent implements OnChanges {
   }
 
   LoadDataFrascosLeche(casaNo: number) {
-    this.secondaryDialogServices.getDataFrascosLeche(casaNo).subscribe({
+    this._secondaryDialogServices.getDataFrascosLeche(casaNo).subscribe({
       next: (response) => {
         if (response && response.data.length > 0) {
           this.dataTableFrascosLeche = this.formatData(response.data);
@@ -107,20 +110,46 @@ export class TableFrascoComponent implements OnChanges {
   }
 
   onRowEditInit(dataRow: FrascosLeche): void {
-    this.clonedTableRutaRecoleccion[dataRow.id_frascos_recolectados as number] = { ...dataRow };
+    this.clonedTableFrascos[dataRow.id_frascos_recolectados as number] = { ...dataRow };
     this.editingRow = dataRow;
-    // this.modoEdicionCambiado.emit(true);
   }
 
-  onRowEditSave(data: any, inex: number, event: any) {
+  onRowEditSave(dataRow: FrascosLeche, inex: number, event: MouseEvent) {
     this.editingRow = null;
-    // this.clonedTableRutaRecoleccion = null;
-    // this.modoEdicionCambiado.emit(false);
+    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+    const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
+    if (invalidField) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: `El campo "${invalidField}" es obligatorio.`,
+        key: 'tr',
+        life: 3000
+      });
+      return;
+    }
+    delete this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
+    const bodyFormat = this.formatInputBody(dataRow);
+
+    if (dataRow.id_frascos_recolectados === undefined || dataRow.id_frascos_recolectados === null) {
+      this._secondaryDialogServices.postDataFrascosRecolectados(bodyFormat).subscribe({
+        next: (data) => {
+          this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
+          this.table.saveRowEdit(dataRow, rowElement);
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'danger', summary: 'Error', detail: 'Hubo un error al guardar', key: 'tr', life: 3000 });
+        }
+      })
+    } else {
+
+    }
   }
 
   onRowEditCancel(dataRow: FrascosLeche, index: number): void {
-    this.dataTableFrascosLeche[index] = this.clonedTableRutaRecoleccion[dataRow.id_frascos_recolectados as number];
-    delete this.clonedTableRutaRecoleccion[dataRow.id_frascos_recolectados as number];
+    this.dataTableFrascosLeche[index] = this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
+    delete this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
+    this.editingRow = null;
   }
 
   isFieldInvalid(field: string, dataRow: any): boolean {
@@ -128,6 +157,28 @@ export class TableFrascoComponent implements OnChanges {
       (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
   }
 
+  crearNuevoRegistroFrasco(){
+    const nuevoRegistro: any = {
+      id_frascos_recolectados: null,
+      frasco: 1,
+      volumen: null,
+      fecha_de_extraccion: null,
+      tFrasco: "Vidrio",
+      termo: null,
+      id_congelador: null,
+      gaveta: null
+    };
+
+    this.dataTableFrascosLeche.push(nuevoRegistro);
+    this.editingRow = nuevoRegistro;
+    setTimeout(() => {
+      this.table.initRowEdit(nuevoRegistro);
+    });
+  }
+
+  formatInputBody(body:any){
+
+  }
  
 
 }

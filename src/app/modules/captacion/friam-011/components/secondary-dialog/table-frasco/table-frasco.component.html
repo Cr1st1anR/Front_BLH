@@ -1,6 +1,8 @@
 <p-toast position="top-right" key="tr" />
 
-<p-table [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
+<new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()" />
+
+<p-table #tableFrascos [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
   [columns]="headersTableFrascosLeche" editMode="row" dataKey="id_frascos_recolectados">
   <ng-template #header let-columns>
     <tr>

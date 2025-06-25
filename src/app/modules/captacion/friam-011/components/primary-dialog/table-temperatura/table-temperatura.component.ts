@@ -54,7 +54,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges {
   numerosDatos: number = 0;
   editValidate: boolean = false;
 
-  requiredFields: string[] = ['caja', 't_salida'];
+  requiredFields: string[] = ['caja'];
 
   constructor(
     private messageService: MessageService,
@@ -105,9 +105,9 @@ export class TableTemperaturaComponent implements OnInit, OnChanges {
       {
         caja: 1,
         hora_salida: this.dataRutaRecoleccion?.hora_salida,
-        t_salida: parseFloat((this.dataRutaRecoleccion?.temperatura_salida?.toString() ?? '').split('°')[0]),
+        t_salida: this.dataRutaRecoleccion?.temperatura_salida != null ? parseFloat((this.dataRutaRecoleccion?.temperatura_salida?.toString() ?? '').split('°')[0]): null,
         hora_llegada: this.dataRutaRecoleccion?.hora_llegada,
-        t_llegada: parseFloat((this.dataRutaRecoleccion?.temperatura_llegada?.toString() ?? '').split('°')[0]),
+        t_llegada: this.dataRutaRecoleccion?.temperatura_llegada != null ? parseFloat((this.dataRutaRecoleccion?.temperatura_llegada?.toString() ?? '').split('°')[0]) : null,
       }
     ];
     const temperatura = Array.from({ length: data.length }, (_, i) => ({
@@ -179,12 +179,14 @@ export class TableTemperaturaComponent implements OnInit, OnChanges {
   }
 
   isFieldInvalid(field: string, dataRow: any): boolean {
+    for (let index = 0; index < this.numerosDatos; index++) {
+      this.requiredFields.push('temperature_' + (index + 1));
+    }
     return this.requiredFields.includes(field) &&
       (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
   }
 
   agregarColumna() {
-    debugger
     const temperatura = {
       header: `TEMPERATURA ${this.numerosDatos + 1} (°C)`,
       field: `temperature_${this.numerosDatos + 1}`,

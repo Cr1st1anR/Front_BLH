@@ -13,7 +13,6 @@ import { casasVisitaData } from './interfaces/primaryDialog.interface';
   imports: [
     DialogModule,
     TableTemperaturaComponent,
-    NewRegisterCasaComponent,
     TableCasaComponent,
     SecondaryDialogComponent
   ],

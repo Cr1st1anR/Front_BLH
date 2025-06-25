@@ -7,7 +7,7 @@ import { casasVisitaData } from '../primary-dialog/interfaces/primaryDialog.inte
 
 @Component({
   selector: 'secondary-dialog',
-  imports: [DialogModule, TableFrascoComponent, NewRegisterFrascoComponent],
+  imports: [DialogModule, TableFrascoComponent],
   templateUrl: './secondary-dialog.component.html',
   styleUrl: './secondary-dialog.component.scss',
   providers: [],
@@ -35,22 +35,6 @@ export class SecondaryDialogComponent implements OnChanges {
     this.dialogVisible = false;
     this.casaNo = null;
     this.dialogClosed.emit()
-  }
-
-  crearNuevoRegistroFrasco() {
-    // const nuevoFrasco = {
-    //   noFrasco: 1, // Por defecto, el número de frasco es 1
-    //   volumenEstimado: null,
-    //   fechaExtraccion: '',
-    //   tipoFrasco: '',
-    //   noTermo: null,
-    //   congelador: '',
-    //   gaveta: null,
-    //   casaNo: this.casaNo // Asociamos el frasco con la casa seleccionada
-    // };
-
-    // this.frascosData.push(nuevoFrasco);
-    // this.editarFrasco(nuevoFrasco);
   }
 
 

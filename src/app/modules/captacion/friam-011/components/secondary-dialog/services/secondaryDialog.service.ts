@@ -17,10 +17,10 @@ export class secondaryDialogServices {
     return this.http.get<ApiResponse>(url)
   }
 
-  // getDataCasasRuta(rutaId: number): Observable<ApiResponse> {
-  //   const url = `${environment.ApiBLH}/getCasasVisitas/${rutaId}`
-  //   return this.http.get<ApiResponse>(url)
-  // }
+  getDataCongeladores(): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getCongeladores`
+    return this.http.get<ApiResponse>(url)
+  }
 
   // getMadresDonantes():Observable<ApiResponse>{
   //   const url = `${environment.ApiBLH}/GetMadreDonante`;

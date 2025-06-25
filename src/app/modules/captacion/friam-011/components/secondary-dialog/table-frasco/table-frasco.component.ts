@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { secondaryDialogServices } from '../services/secondaryDialog.service';
-import { FrascosLeche } from '../interface/secondaryDialog.interface';
+import { Congeladores, FrascosLeche } from '../interface/secondaryDialog.interface';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,12 +12,14 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { casasVisitaData } from '../../primary-dialog/interfaces/primaryDialog.interface';
 import { NewRegisterFrascoComponent } from '../new-register-frasco/new-register-frasco.component';
+import { concatMap, Observable, of, tap } from 'rxjs';
+import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
 
 @Component({
   selector: 'table-frasco',
   imports: [
-    TableModule, 
-    FormsModule, 
+    TableModule,
+    FormsModule,
     CommonModule,
     DatePickerModule,
     ButtonModule,
@@ -38,11 +40,12 @@ export class TableFrascoComponent implements OnChanges {
   @Input() frascosData: casasVisitaData | null = null;
   @ViewChild('tableFrascos') table!: Table
 
-  editingRow: FrascosLeche | null = null; 
+  editingRow: FrascosLeche | null = null;
   dataTableFrascosLeche: FrascosLeche[] = [];
+  dataCongeladores: Congeladores[] = [];
   clonedTableFrascos: { [s: number]: FrascosLeche } = {};
-  requiredFields: string[] = [''];
-
+  loading: boolean = false;
+  requiredFields: string[] = ['frasco', 'volumen', 'fecha_de_extraccion', 'tFrasco', 'termo', 'id_congelador', 'gaveta'];
 
   headersTableFrascosLeche: any[] = [
     { header: 'No. FRASCOS', field: 'frasco', width: '200px', tipo: "number" },
@@ -50,7 +53,9 @@ export class TableFrascoComponent implements OnChanges {
     { header: 'FECHA DE EXTRACCION', field: 'fecha_de_extraccion', width: '200px', tipo: "date" },
     { header: 'TIPO DE FRASCO', field: 'tFrasco', width: '200px', tipo: "text" },
     { header: 'N° DE TERMO', field: 'termo', width: '200px', tipo: "number" },
-    { header: 'CONGELADOR', field: 'id_congelador', width: '200px', tipo: "number" },
+    { header: 'CONGELADOR', field: 'id_congelador', width: '200px', tipo: "select",options: null,
+      label: "id", placeholder: "Seleccione un congeladdor" },
+    { header: 'DESCRIPCION', field: 'descripcion', width: '200px', tipo: "text" },
     { header: 'GAVETA', field: 'gaveta', width: '200px', tipo: "number" },
     { header: 'ACCIONES', field: 'acciones', width: '200px' },
   ];
@@ -61,17 +66,55 @@ export class TableFrascoComponent implements OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
+    
     if (changes['frascosData'] && changes['frascosData'].currentValue) {
-      this.dataTableFrascosLeche = changes['frascosData'].currentValue;
-      this.LoadDataFrascosLeche(this.frascosData!.id_casa_visita || 0);
+      of(null).pipe(
+        concatMap(() => this.loadDataCongeladores()),
+        concatMap(() => this.LoadDataFrascosLeche(this.frascosData!.id_casa_visita || 0))
+      ).subscribe({
+        complete: () => {
+          setTimeout(() => {
+            this.loading = false;
+          }, 2000);
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error('Error en la secuencia de peticiones', err);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la data de las casas de visita.' });
+        }
+      })
     }
   }
 
-  LoadDataFrascosLeche(casaNo: number) {
-    this._secondaryDialogServices.getDataFrascosLeche(casaNo).subscribe({
-      next: (response) => {
+  loadDataCongeladores():Observable<ApiResponse> {
+    return this._secondaryDialogServices.getDataCongeladores().pipe(
+      tap((response) => {
+        if (response && response.data.length > 0) {
+          this.dataCongeladores = response.data;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Datos Cargados',
+            detail: 'Los datos de los congeladores se han cargado correctamente.',
+            life: 3000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Advertencia',
+            detail: 'No se encontraron datos de congeladores.',
+            life: 3000
+          });
+        }
+      })
+    )
+  }
+
+  LoadDataFrascosLeche(casaNo: number): Observable<ApiResponse> {
+    return this._secondaryDialogServices.getDataFrascosLeche(casaNo).pipe(
+      tap((response) => {
         if (response && response.data.length > 0) {
           this.dataTableFrascosLeche = this.formatData(response.data);
+          this.headersTableFrascosLeche[5].options = this.dataCongeladores;
           this.messageService.add({
             severity: 'success',
             summary: 'Datos Cargados',
@@ -86,25 +129,20 @@ export class TableFrascoComponent implements OnChanges {
             life: 3000
           });
         }
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar los datos de los frascos de leche.',
-          life: 3000
-        });
-      }
-    })
+      })
+    )
   }
 
-  formatData(data:FrascosLeche[]): FrascosLeche[] {
+  formatData(data: FrascosLeche[]): FrascosLeche[] {
+    debugger
     return data.map((item: FrascosLeche) => {
       return {
         ...item,
         frasco: 1,
         fecha_de_extraccion: item.fecha_de_extraccion ? new Date(item.fecha_de_extraccion) : null,
         tFrasco: "Vidrio",
+        id_congelador: this.dataCongeladores.find(congelador => congelador.id === item.id_congelador) || null,
+        descripcion: this.dataCongeladores.find(congelador => congelador.id === item.id_congelador)?.descripcion || null,
       };
     });
   }
@@ -157,11 +195,12 @@ export class TableFrascoComponent implements OnChanges {
       (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
   }
 
-  crearNuevoRegistroFrasco(){
+  crearNuevoRegistroFrasco() {
     const nuevoRegistro: any = {
       id_frascos_recolectados: null,
       frasco: 1,
       volumen: null,
+      descripcion: null,
       fecha_de_extraccion: null,
       tFrasco: "Vidrio",
       termo: null,
@@ -170,15 +209,27 @@ export class TableFrascoComponent implements OnChanges {
     };
 
     this.dataTableFrascosLeche.push(nuevoRegistro);
+
     this.editingRow = nuevoRegistro;
     setTimeout(() => {
       this.table.initRowEdit(nuevoRegistro);
     });
   }
 
-  formatInputBody(body:any){
-
+  formatInputBody(body: FrascosLeche) {
+    return {
+      volumen: body.volumen,
+      fechaDeExtraccion: body.fecha_de_extraccion
+        ? (new Date(body.fecha_de_extraccion).toISOString()).split('T')[0]
+        : null,
+      termo: body.termo,
+      gaveta: body.gaveta,
+      congelador: body.id_congelador,
+      casaVisita: this.frascosData?.id_casa_visita
+    }
   }
- 
 
+  fillText(event: { originalEvent: any, value: Congeladores }, index: number){
+    this.dataTableFrascosLeche[index].descripcion = event.value.descripcion;
+  }
 }

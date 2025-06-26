@@ -4,63 +4,33 @@
     <div style="max-height: 600px; overflow-y: auto; padding-right: 12px">
       <h3 class="subtitulo-accordion text-base font-semibold">OBSERVACIÓN DEL AMAMANTAMIENTO</h3>
       <div class="mb-6"></div>
-      <div class="grid grid-cols-2 gap-x-24 gap-y-12 mb-12">
+      <div class="grid grid-cols-2 gap-x-24 gap-y-12 mb-12 ">
         <div>
           <h4 class="subtitulo-accordion font-bold mb-6">MADRE</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
               <label class="flex-1 text-left">Se le ve relajada</label>
-              <p-radioButton
-                name="madre_relajada"
-                value="si"
-                [(ngModel)]="madre_relajada"
-                inputId="madre_relajada_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Se la ve enferma o deprimida</label
-              >
-              <p-radioButton
-                name="madre_relajada"
-                value="no"
-                [(ngModel)]="madre_relajada"
-                inputId="madre_relajada_no"
-              ></p-radioButton>
+              <p-radioButton name="madre_relajada" value="si" [(ngModel)]="madre_relajada"
+                inputId="madre_relajada_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Se la ve enferma o deprimida</label>
+              <p-radioButton name="madre_relajada" value="no" [(ngModel)]="madre_relajada"
+                inputId="madre_relajada_no"></p-radioButton>
             </div>
             <div class="flex items-center">
               <label class="flex-1 text-left">Está cómoda</label>
-              <p-radioButton
-                name="madre_comoda"
-                value="si"
-                [(ngModel)]="madre_comoda"
-                inputId="madre_comoda_si"
-              ></p-radioButton>
+              <p-radioButton name="madre_comoda" value="si" [(ngModel)]="madre_comoda"
+                inputId="madre_comoda_si"></p-radioButton>
               <label class="flex-1 text-left ml-8">Está tensa o incómoda</label>
-              <p-radioButton
-                name="madre_comoda"
-                value="no"
-                [(ngModel)]="madre_comoda"
-                inputId="madre_comoda_no"
-              ></p-radioButton>
+              <p-radioButton name="madre_comoda" value="no" [(ngModel)]="madre_comoda"
+                inputId="madre_comoda_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Está presente el vínculo afectivo madre/bebé</label
-              >
-              <p-radioButton
-                name="madre_vinculo"
-                value="si"
-                [(ngModel)]="madre_vinculo"
-                inputId="madre_vinculo_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >No está presente el vínculo afectivo madre/bebé</label
-              >
-              <p-radioButton
-                name="madre_vinculo"
-                value="no"
-                [(ngModel)]="madre_vinculo"
-                inputId="madre_vinculo_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Está presente el vínculo afectivo madre/bebé</label>
+              <p-radioButton name="madre_vinculo" value="si" [(ngModel)]="madre_vinculo"
+                inputId="madre_vinculo_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">No está presente el vínculo afectivo madre/bebé</label>
+              <p-radioButton name="madre_vinculo" value="no" [(ngModel)]="madre_vinculo"
+                inputId="madre_vinculo_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -68,60 +38,28 @@
           <h4 class="subtitulo-accordion font-bold mb-6">BEBÉ</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Se lo ve saludable y bien nutrido</label
-              >
-              <p-radioButton
-                name="bebe_saludable"
-                value="si"
-                [(ngModel)]="bebe_saludable"
-                inputId="bebe_saludable_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Se lo ve somnoliento o enfermo</label
-              >
-              <p-radioButton
-                name="bebe_saludable"
-                value="no"
-                [(ngModel)]="bebe_saludable"
-                inputId="bebe_saludable_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Se lo ve saludable y bien nutrido</label>
+              <p-radioButton name="bebe_saludable" value="si" [(ngModel)]="bebe_saludable"
+                inputId="bebe_saludable_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Se lo ve somnoliento o enfermo</label>
+              <p-radioButton name="bebe_saludable" value="no" [(ngModel)]="bebe_saludable"
+                inputId="bebe_saludable_no"></p-radioButton>
             </div>
             <div class="flex items-center">
               <label class="flex-1 text-left">Está calmado y relajado</label>
-              <p-radioButton
-                name="bebe_calmado"
-                value="si"
-                [(ngModel)]="bebe_calmado"
-                inputId="bebe_calmado_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Está inquieto o llorando</label
-              >
-              <p-radioButton
-                name="bebe_calmado"
-                value="no"
-                [(ngModel)]="bebe_calmado"
-                inputId="bebe_calmado_no"
-              ></p-radioButton>
+              <p-radioButton name="bebe_calmado" value="si" [(ngModel)]="bebe_calmado"
+                inputId="bebe_calmado_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Está inquieto o llorando</label>
+              <p-radioButton name="bebe_calmado" value="no" [(ngModel)]="bebe_calmado"
+                inputId="bebe_calmado_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Busca el pecho si tiene hambre</label
-              >
-              <p-radioButton
-                name="bebe_busca_pecho"
-                value="si"
-                [(ngModel)]="bebe_busca_pecho"
-                inputId="bebe_busca_pecho_si"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Busca el pecho si tiene hambre</label>
+              <p-radioButton name="bebe_busca_pecho" value="si" [(ngModel)]="bebe_busca_pecho"
+                inputId="bebe_busca_pecho_si"></p-radioButton>
               <label class="flex-1 text-left ml-8">No busca el pecho</label>
-              <p-radioButton
-                name="bebe_busca_pecho"
-                value="no"
-                [(ngModel)]="bebe_busca_pecho"
-                inputId="bebe_busca_pecho_no"
-              ></p-radioButton>
+              <p-radioButton name="bebe_busca_pecho" value="no" [(ngModel)]="bebe_busca_pecho"
+                inputId="bebe_busca_pecho_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -133,61 +71,27 @@
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
               <label class="flex-1 text-left">Están sanos</label>
-              <p-radioButton
-                name="pechos_sanos"
-                value="si"
-                [(ngModel)]="pechos_sanos"
-                inputId="pechos_sanos_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Están enrojecidos o hinchados</label
-              >
-              <p-radioButton
-                name="pechos_sanos"
-                value="no"
-                [(ngModel)]="pechos_sanos"
-                inputId="pechos_sanos_no"
-              ></p-radioButton>
+              <p-radioButton name="pechos_sanos" value="si" [(ngModel)]="pechos_sanos"
+                inputId="pechos_sanos_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Están enrojecidos o hinchados</label>
+              <p-radioButton name="pechos_sanos" value="no" [(ngModel)]="pechos_sanos"
+                inputId="pechos_sanos_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >No presenta dolor o molestias en el pezón</label
-              >
-              <p-radioButton
-                name="pechos_sin_dolor"
-                value="si"
-                [(ngModel)]="pechos_sin_dolor"
-                inputId="pechos_sin_dolor_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Presenta dolor o molestia en los pezones</label
-              >
-              <p-radioButton
-                name="pechos_sin_dolor"
-                value="no"
-                [(ngModel)]="pechos_sin_dolor"
-                inputId="pechos_sin_dolor_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">No presenta dolor o molestias en el pezón</label>
+              <p-radioButton name="pechos_sin_dolor" value="si" [(ngModel)]="pechos_sin_dolor"
+                inputId="pechos_sin_dolor_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Presenta dolor o molestia en los pezones</label>
+              <p-radioButton name="pechos_sin_dolor" value="no" [(ngModel)]="pechos_sin_dolor"
+                inputId="pechos_sin_dolor_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Pezón protruye es protáctil</label
-              >
-              <p-radioButton
-                name="pezon_protractil"
-                value="si"
-                [(ngModel)]="pezon_protractil"
-                inputId="pezon_protractil_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Pezón plano no es retráctil</label
-              >
-              <p-radioButton
-                name="pezon_protractil"
-                value="no"
-                [(ngModel)]="pezon_protractil"
-                inputId="pezon_protractil_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Pezón protruye es protáctil</label>
+              <p-radioButton name="pezon_protractil" value="si" [(ngModel)]="pezon_protractil"
+                inputId="pezon_protractil_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Pezón plano no es retráctil</label>
+              <p-radioButton name="pezon_protractil" value="no" [(ngModel)]="pezon_protractil"
+                inputId="pezon_protractil_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -195,84 +99,36 @@
           <h4 class="subtitulo-accordion font-bold mb-6">POSICIÓN DEL BEBÉ DURANTE LA LACTANCIA</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >La cabeza y el cuerpo están alineados</label
-              >
-              <p-radioButton
-                name="bebe_alineado"
-                value="si"
-                [(ngModel)]="bebe_alineado"
-                inputId="bebe_alineado_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >El cuello y la cabeza están torcidos</label
-              >
-              <p-radioButton
-                name="bebe_alineado"
-                value="no"
-                [(ngModel)]="bebe_alineado"
-                inputId="bebe_alineado_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">La cabeza y el cuerpo están alineados</label>
+              <p-radioButton name="bebe_alineado" value="si" [(ngModel)]="bebe_alineado"
+                inputId="bebe_alineado_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">El cuello y la cabeza están torcidos</label>
+              <p-radioButton name="bebe_alineado" value="no" [(ngModel)]="bebe_alineado"
+                inputId="bebe_alineado_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Está en contacto con el cuerpo de la madre</label
-              >
-              <p-radioButton
-                name="bebe_contacto"
-                value="si"
-                [(ngModel)]="bebe_contacto"
-                inputId="bebe_contacto_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >El bebé no está en contacto</label
-              >
-              <p-radioButton
-                name="bebe_contacto"
-                value="no"
-                [(ngModel)]="bebe_contacto"
-                inputId="bebe_contacto_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Está en contacto con el cuerpo de la madre</label>
+              <p-radioButton name="bebe_contacto" value="si" [(ngModel)]="bebe_contacto"
+                inputId="bebe_contacto_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">El bebé no está en contacto</label>
+              <p-radioButton name="bebe_contacto" value="no" [(ngModel)]="bebe_contacto"
+                inputId="bebe_contacto_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Todo el cuerpo del bebé está sostenido</label
-              >
-              <p-radioButton
-                name="bebe_sostenido"
-                value="si"
-                [(ngModel)]="bebe_sostenido"
-                inputId="bebe_sostenido_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Solo la cabeza y el cuello están sostenidos</label
-              >
-              <p-radioButton
-                name="bebe_sostenido"
-                value="no"
-                [(ngModel)]="bebe_sostenido"
-                inputId="bebe_sostenido_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Todo el cuerpo del bebé está sostenido</label>
+              <p-radioButton name="bebe_sostenido" value="si" [(ngModel)]="bebe_sostenido"
+                inputId="bebe_sostenido_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Solo la cabeza y el cuello están sostenidos</label>
+              <p-radioButton name="bebe_sostenido" value="no" [(ngModel)]="bebe_sostenido"
+                inputId="bebe_sostenido_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Aproximación al pecho, nariz al pezón</label
-              >
-              <p-radioButton
-                name="bebe_nariz_pecho"
-                value="si"
-                [(ngModel)]="bebe_nariz_pecho"
-                inputId="bebe_nariz_pecho_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Aproximación al pecho, labio inferior/mentón al pezón</label
-              >
-              <p-radioButton
-                name="bebe_nariz_pecho"
-                value="no"
-                [(ngModel)]="bebe_nariz_pecho"
-                inputId="bebe_nariz_pecho_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Aproximación al pecho, nariz al pezón</label>
+              <p-radioButton name="bebe_nariz_pecho" value="si" [(ngModel)]="bebe_nariz_pecho"
+                inputId="bebe_nariz_pecho_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Aproximación al pecho, labio inferior/mentón al pezón</label>
+              <p-radioButton name="bebe_nariz_pecho" value="no" [(ngModel)]="bebe_nariz_pecho"
+                inputId="bebe_nariz_pecho_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -283,64 +139,28 @@
           <h4 class="subtitulo-accordion font-bold mb-6">AGARRE DEL PECHO</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >La boca del bebé está bien abierta</label
-              >
-              <p-radioButton
-                name="boca_bien_abierta"
-                value="si"
-                [(ngModel)]="boca_bien_abierta"
-                inputId="boca_bien_abierta_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >La boca no está muy abierta</label
-              >
-              <p-radioButton
-                name="boca_bien_abierta"
-                value="no"
-                [(ngModel)]="boca_bien_abierta"
-                inputId="boca_bien_abierta_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">La boca del bebé está bien abierta</label>
+              <p-radioButton name="boca_bien_abierta" value="si" [(ngModel)]="boca_bien_abierta"
+                inputId="boca_bien_abierta_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">La boca no está muy abierta</label>
+              <p-radioButton name="boca_bien_abierta" value="no" [(ngModel)]="boca_bien_abierta"
+                inputId="boca_bien_abierta_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Labio inferior hacia afuera</label
-              >
-              <p-radioButton
-                name="labio_fuera"
-                value="si"
-                [(ngModel)]="labio_fuera"
-                inputId="labio_fuera_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Labios hacia adentro o hacia adelante</label
-              >
-              <p-radioButton
-                name="labio_fuera"
-                value="no"
-                [(ngModel)]="labio_fuera"
-                inputId="labio_fuera_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Labio inferior hacia afuera</label>
+              <p-radioButton name="labio_fuera" value="si" [(ngModel)]="labio_fuera"
+                inputId="labio_fuera_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Labios hacia adentro o hacia adelante</label>
+              <p-radioButton name="labio_fuera" value="no" [(ngModel)]="labio_fuera"
+                inputId="labio_fuera_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >El mentón y la nariz están cerca del seno</label
-              >
-              <p-radioButton
-                name="menton_nariz_cerca"
-                value="si"
-                [(ngModel)]="menton_nariz_cerca"
-                inputId="menton_nariz_cerca_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >El mentón y la nariz están lejos del seno</label
-              >
-              <p-radioButton
-                name="menton_nariz_cerca"
-                value="no"
-                [(ngModel)]="menton_nariz_cerca"
-                inputId="menton_nariz_cerca_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">El mentón y la nariz están cerca del seno</label>
+              <p-radioButton name="menton_nariz_cerca" value="si" [(ngModel)]="menton_nariz_cerca"
+                inputId="menton_nariz_cerca_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">El mentón y la nariz están lejos del seno</label>
+              <p-radioButton name="menton_nariz_cerca" value="no" [(ngModel)]="menton_nariz_cerca"
+                inputId="menton_nariz_cerca_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -348,60 +168,28 @@
           <h4 class="subtitulo-accordion font-bold mb-6">SUCCIÓN</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Succiones lentas, profundas, con pausas</label
-              >
-              <p-radioButton
-                name="succion_lenta"
-                value="si"
-                [(ngModel)]="succion_lenta"
-                inputId="succion_lenta_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Succiones rápidas y superficiales</label
-              >
-              <p-radioButton
-                name="succion_lenta"
-                value="no"
-                [(ngModel)]="succion_lenta"
-                inputId="succion_lenta_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Succiones lentas, profundas, con pausas</label>
+              <p-radioButton name="succion_lenta" value="si" [(ngModel)]="succion_lenta"
+                inputId="succion_lenta_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Succiones rápidas y superficiales</label>
+              <p-radioButton name="succion_lenta" value="no" [(ngModel)]="succion_lenta"
+                inputId="succion_lenta_no"></p-radioButton>
             </div>
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Las mejillas del bebé están redondeadas</label
-              >
-              <p-radioButton
-                name="mejillas_redondas"
-                value="si"
-                [(ngModel)]="mejillas_redondas"
-                inputId="mejillas_redondas_si"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Las mejillas del bebé están redondeadas</label>
+              <p-radioButton name="mejillas_redondas" value="si" [(ngModel)]="mejillas_redondas"
+                inputId="mejillas_redondas_si"></p-radioButton>
               <label class="flex-1 text-left ml-8">Mejillas no se inflan</label>
-              <p-radioButton
-                name="mejillas_redondas"
-                value="no"
-                [(ngModel)]="mejillas_redondas"
-                inputId="mejillas_redondas_no"
-              ></p-radioButton>
+              <p-radioButton name="mejillas_redondas" value="no" [(ngModel)]="mejillas_redondas"
+                inputId="mejillas_redondas_no"></p-radioButton>
             </div>
             <div class="flex items-center">
               <label class="flex-1 text-left">Vaciamento del seno</label>
-              <p-radioButton
-                name="vaciado_seno"
-                value="si"
-                [(ngModel)]="vaciado_seno"
-                inputId="vaciado_seno_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >Madre retira al bebé del pecho y no hay vaciamiento</label
-              >
-              <p-radioButton
-                name="vaciado_seno"
-                value="no"
-                [(ngModel)]="vaciado_seno"
-                inputId="vaciado_seno_no"
-              ></p-radioButton>
+              <p-radioButton name="vaciado_seno" value="si" [(ngModel)]="vaciado_seno"
+                inputId="vaciado_seno_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">Madre retira al bebé del pecho y no hay vaciamiento</label>
+              <p-radioButton name="vaciado_seno" value="no" [(ngModel)]="vaciado_seno"
+                inputId="vaciado_seno_no"></p-radioButton>
             </div>
           </div>
         </div>
@@ -412,42 +200,20 @@
           <h4 class="subtitulo-accordion font-bold mb-6">DEGLUCIÓN</h4>
           <div class="flex flex-col gap-6">
             <div class="flex items-center">
-              <label class="flex-1 text-left"
-                >Se escucha y se siente que traga</label
-              >
-              <p-radioButton
-                name="deglucion_traga"
-                value="si"
-                [(ngModel)]="deglucion_traga"
-                inputId="deglucion_traga_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >No se escucha que traga</label
-              >
-              <p-radioButton
-                name="deglucion_traga"
-                value="no"
-                [(ngModel)]="deglucion_traga"
-                inputId="deglucion_traga_no"
-              ></p-radioButton>
+              <label class="flex-1 text-left">Se escucha y se siente que traga</label>
+              <p-radioButton name="deglucion_traga" value="si" [(ngModel)]="deglucion_traga"
+                inputId="deglucion_traga_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">No se escucha que traga</label>
+              <p-radioButton name="deglucion_traga" value="no" [(ngModel)]="deglucion_traga"
+                inputId="deglucion_traga_no"></p-radioButton>
             </div>
             <div class="flex items-center">
               <label class="flex-1 text-left">La lengua está acanalada</label>
-              <p-radioButton
-                name="lengua_acanalada"
-                value="si"
-                [(ngModel)]="lengua_acanalada"
-                inputId="lengua_acanalada_si"
-              ></p-radioButton>
-              <label class="flex-1 text-left ml-8"
-                >La lengua está plana o la protruye</label
-              >
-              <p-radioButton
-                name="lengua_acanalada"
-                value="no"
-                [(ngModel)]="lengua_acanalada"
-                inputId="lengua_acanalada_no"
-              ></p-radioButton>
+              <p-radioButton name="lengua_acanalada" value="si" [(ngModel)]="lengua_acanalada"
+                inputId="lengua_acanalada_si"></p-radioButton>
+              <label class="flex-1 text-left ml-8">La lengua está plana o la protruye</label>
+              <p-radioButton name="lengua_acanalada" value="no" [(ngModel)]="lengua_acanalada"
+                inputId="lengua_acanalada_no"></p-radioButton>
             </div>
           </div>
         </div>

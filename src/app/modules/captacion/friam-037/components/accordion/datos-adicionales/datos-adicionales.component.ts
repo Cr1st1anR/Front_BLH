@@ -4,6 +4,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
 import SignaturePad from 'signature_pad';
+import type { DatosAdicionalesData } from '../interfaces/datos-adicionales.interface';
 
 @Component({
   selector: 'datos-adicionales',
@@ -12,12 +13,23 @@ import SignaturePad from 'signature_pad';
   templateUrl: './datos-adicionales.component.html',
   styleUrl: './datos-adicionales.component.scss',
 })
-export class DatosAdicionalesComponent implements AfterViewInit {
+export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionalesData {
   observacionesVisita: string = '';
   recomendaciones: string = '';
-  donanteEfectiva: string = '';
+  // donanteEfectiva: number = 0;
+  donanteEfectiva: number | null = null; 
   firmaUsuaria: string = '';
   firmaVisita: string = '';
+
+  getFormData() {
+    return {
+      observacionesVisita: this.observacionesVisita,
+      recomendaciones: this.recomendaciones,
+      donanteEfectiva: this.donanteEfectiva,
+      firmaUsuaria: this.firmaUsuaria,
+      firmaVisita: this.firmaVisita,
+    };
+  }
 
   @ViewChild('canvasUsuaria', { static: true })
   canvasUsuariaRef!: ElementRef<HTMLCanvasElement>;

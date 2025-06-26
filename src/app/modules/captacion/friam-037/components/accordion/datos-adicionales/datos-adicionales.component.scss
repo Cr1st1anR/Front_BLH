@@ -3,3 +3,9 @@
   border-radius: 6px;
   transition: border-color 0.2s;
 }
+
+.radios-texto p-radiobutton + label {
+  margin-left: -0.9rem;
+  margin-right: 1.0rem;
+  transform: translateY(1.0px);
+}

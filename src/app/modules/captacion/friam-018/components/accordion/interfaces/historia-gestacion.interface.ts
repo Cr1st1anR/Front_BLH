@@ -1,7 +1,7 @@
 export interface HistoriaGestacionData {
   lugarControlPrenatal: string;
   tipoIPS: string;
-  asistioControl: number;
+  asistioControl: number | null;
   pesoInicial: string;
   pesoFinal: string;
   talla: string;

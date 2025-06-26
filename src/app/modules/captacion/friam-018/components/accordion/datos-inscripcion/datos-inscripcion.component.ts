@@ -20,8 +20,8 @@ import type { DatosInscripcionData } from '../interfaces/datos-inscripcion.inter
 })
 export class DatosInscripcionComponent implements DatosInscripcionData {
   nombre: string = '';
-  donanteExclusiva: number = 0;
-  recoleccionDomicilio: number = 0;
+  donanteExclusiva: number | null = null;
+  recoleccionDomicilio: number | null = null;
   donante_EoI: string = '';
   fechaDiligenciamiento: Date | undefined;
   fechaNacimiento: Date | undefined;

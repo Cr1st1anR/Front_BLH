@@ -8,8 +8,8 @@ export interface ExamenesLaboratorioData {
   fechaVencimientoHiv: Date | null;
   hemoglobina: string;
   hematocrito: string;
-  transfusiones: number;
+  transfusiones: number | null;
   enfermedadesGestacion: string;
-  fuma: number;
-  alcohol: number;
+  fuma: number | null;
+  alcohol: number | null;
 }

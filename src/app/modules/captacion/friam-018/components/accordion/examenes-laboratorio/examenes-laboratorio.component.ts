@@ -38,10 +38,10 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData {
   fechaVencimientoHiv: Date | null = null;
   hemoglobina: string = '';
   hematocrito: string = '';
-  transfusiones: number = 0;
+  transfusiones: number | null = null;
   enfermedadesGestacion: string = '';
-  fuma: number = 0;
-  alcohol: number = 0;
+  fuma: number | null = null;
+  alcohol: number | null = null;
 
   fileNames = { vdrl: '', hbsag: '', hiv: '' };
   files: { [key: string]: File | null } = {

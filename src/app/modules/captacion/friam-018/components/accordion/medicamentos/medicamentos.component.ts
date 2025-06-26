@@ -26,7 +26,7 @@ export class MedicamentosComponent implements MedicamentosData, AfterViewInit {
   recibioEducacion: string = '';
   responsableRegistro: string = '';
   firmaAcompanante: string = '';
-  donanteApta: number = 0;
+  donanteApta: number | null = null;
   firmaDonante: string = '';
   profesionalResponsable: string = '';
 

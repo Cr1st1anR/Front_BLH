@@ -21,7 +21,7 @@ import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.int
 export class HistoriaGestacionComponent implements HistoriaGestacionData{
   lugarControlPrenatal: string = '';
   tipoIPS: string = '';
-  asistioControl: number = 0;
+  asistioControl: number | null = null;
   pesoInicial: string = '';
   pesoFinal: string = '';
   talla: string = '';

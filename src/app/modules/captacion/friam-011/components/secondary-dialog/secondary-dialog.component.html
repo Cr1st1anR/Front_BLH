@@ -1,0 +1,16 @@
+<p-dialog header="Detalles de Frascos" [(visible)]="dialogVisible" [modal]="true" [resizable]="false"
+[maximizable]="true" appendTo="body" [style]="{ width: '75vw' }" [contentStyle]="{ height: '300px' }"
+(onHide)="cerrarDialogo()" [draggable]="false">
+
+<p-toast position="top-right" key="tr" />
+
+  @if (loading) {
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+  </div>
+  }
+
+  <table-frasco [frascosData]="frascosData" />
+</p-dialog>

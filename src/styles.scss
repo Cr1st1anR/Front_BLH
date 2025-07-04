@@ -120,7 +120,31 @@ p-datepicker {
             border: 1px solid #224186;
         }
 
+                // Estilos para el selector de tiempo
+        .p-datepicker-time-picker {
+            .p-button {
+                color: #224186 !important;
+
+                &:hover {
+                    background-color: #224186 !important;
+                    color: white !important;
+                }
+            }
+        }
+
         .p-datepicker-panel {
+
+                      // Estilos para el panel de tiempo
+            .p-datepicker-time-picker {
+                .p-button {
+                    color: #224186 !important;
+
+                    &:hover {
+                        background-color: #224186 !important;
+                        color: white !important;
+                    }
+                }
+            }
 
             .p-datepicker-calendar {
                 .p-datepicker-header {
@@ -220,6 +244,7 @@ p-datepicker {
 
 // Custom sytles p-inputtext
 .p-inputtext {
+    width: 100%;
     &:enabled:focus {
         border: 1px solid #224186 !important;
     }
@@ -323,6 +348,25 @@ p-select {
             // &.p-multiselect-option:not(.p-multiselect-option-selected):not(.p-disabled).p-focus {
             //     background: #224186;
             // }
+        }
+    }
+}
+
+// Estilos globales para el selector de tiempo
+.p-datepicker-time-picker {
+    .p-button {
+        color: #224186 !important;
+
+        &:not(:disabled):hover {
+            background-color: #224186 !important;
+            color: white !important;
+            border-color: #224186 !important;
+        }
+
+        &:not(:disabled):active {
+            background-color: #1a3570 !important;
+            color: white !important;
+            border-color: #1a3570 !important;
         }
     }
 }

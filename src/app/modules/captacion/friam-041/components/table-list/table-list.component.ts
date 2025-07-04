@@ -96,7 +96,6 @@ export class TableListComponent implements OnInit {
     const mesActual = fechaActual.getMonth() + 1;
     const anioActual = fechaActual.getFullYear();
     
-    // setTimeout(() => {
       of(null).pipe(
         concatMap(() => this.loadDataEmpleados()),
         concatMap(() => this.loadDataEntidades()),
@@ -106,14 +105,12 @@ export class TableListComponent implements OnInit {
           setTimeout(() => {
             this.loading = false;
           }, 2000);
-          // console.log('Todas las peticiones se ejecutaron');
         },
         error: (err) => {
           this.loading = false;
           console.error('Error en la secuencia de peticiones', err);
         }
       });
-    // }, 2000);
   }
 
   loadDataEntidades(): Observable<ApiResponse> {
@@ -208,7 +205,6 @@ export class TableListComponent implements OnInit {
     if (dataRow.idMadrePotencial === undefined) {
       this._lineaAmigaService.postDataLineaAmiga(body).subscribe({
         next: (data) => {
-          console.log(data);
           this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
           this.dataTableLienaAmiga[this.dataTableLienaAmiga.length - 1].fechaNacimiento = this.ageCalculate((this.dataTableLienaAmiga.filter((item) => item.idMadrePotencial === undefined)[0].fechaNacimiento as Date));
           this.table.saveRowEdit(dataRow, rowElement);
@@ -229,8 +225,6 @@ export class TableListComponent implements OnInit {
         }
       })
     }
-
-
   }
 
   onRowEditCancel(dataRow: lineaAmigaData, index: number): void {

@@ -1,0 +1,7 @@
+<app-header [title]="'RUTA DE RECOLECCIÓN DE LECHE HUMANA CRUDA (FRIAM 011)'" />
+
+<principal-table [datesSelected]="datesSelected" (openRowSelected)="onRowSelected($event)" />
+
+@if (rowSelected ) {
+  <primary-dialog [rowDataDialog]="rowSelected" (dialogClosed)="onClosedDialog()"   />
+}

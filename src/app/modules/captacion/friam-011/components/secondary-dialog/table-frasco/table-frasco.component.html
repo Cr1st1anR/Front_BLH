@@ -1,0 +1,81 @@
+<p-toast position="top-right" key="tr" />
+
+<new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()"
+  [disabled]="!!hasNewRowInEditing || !!editingRow"></new-register-frasco>
+
+<p-table #tableFrascos [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
+  [columns]="headersTableFrascosLeche" editMode="row" dataKey="id_frascos_recolectados">
+  <ng-template #header let-columns>
+    <tr>
+      @for (col of columns; track $index) {
+      <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+        {{ col.header }}
+      </th>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+    <tr [pEditableRow]="rowData">
+      @for (col of columns; track $index) {
+      @if (col.field != "acciones") {
+      <td>
+        <p-cellEditor>
+          <ng-template #input>
+            @switch (col.tipo) {
+            @case ("date") {
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            @case ("text") {
+            <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            @case ("number") {
+            <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
+              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+            }
+            @case ("select") {
+            <p-select [checkmark]="true" [filter]="true" filterBy="id" appendTo="body" [options]="col.options"
+              [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
+              [placeholder]="col.placeholder" class="w-full md:w-56" (onChange)="fillText($event,rowIndex)" />
+            }
+            }
+          </ng-template>
+          <ng-template #output>
+            @if (col.tipo === "date") {
+            <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+              [disabled]="true" inputId="icondisplay" />
+            }
+            @else if (col.tipo == "select") {
+            <p-select [checkmark]="true" [filter]="true" filterBy="id" appendTo="body" [options]="col.options"
+              [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
+              [placeholder]="col.placeholder" class="w-full md:w-56" [disabled]="true" />
+            }
+            @else {
+            {{rowData[col.field]}}
+            }
+          </ng-template>
+        </p-cellEditor>
+      </td>
+      }
+      @else if (col.field === "acciones") {
+      <td>
+        <div class="flex items-center justify-center gap-2">
+          <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+            severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="!!hasNewRowInEditing"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData,rowIndex,$event)"></button>
+
+          <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+            severity="danger" (click)="onRowEditCancel(rowData, rowIndex)"></button>
+        </div>
+      </td>
+      }
+      }
+    </tr>
+  </ng-template>
+</p-table>
+<div *ngIf="dataTableFrascosLeche.length == 0" class="p-4 text-center text-gray-500">
+  No hay datos disponibles
+</div>

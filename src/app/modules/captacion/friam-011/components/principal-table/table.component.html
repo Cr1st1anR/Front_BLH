@@ -1,0 +1,209 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300"
+>
+  <p-progress-spinner
+    strokeWidth="8"
+    fill="transparent"
+    animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"
+  ></p-progress-spinner>
+</div>
+}
+
+<div class="flex justify-between items-center mx-4">
+  <new-route (nuevaRuta)="agregarFilaVacia()" [disabled]="hasNewRowInEditing" />
+  <app-month-picker (dateChange)="filtrarPorFecha($event)" />
+</div>
+
+<div class="container-table">
+  <p-table
+    #tableRuta
+    [value]="dataTableRutaRecoleccion"
+    [scrollable]="true"
+    scrollHeight="500px"
+    [columns]="headersRutaRecoleccion"
+    editMode="row"
+    selectionMode="single"
+    [(selection)]="selectedRow"
+    (onRowSelect)="onRowSelect($event)"
+    dataKey="id_ruta"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template
+      #body
+      let-rowData
+      let-columns="columns"
+      let-editing="editing"
+      let-ri="rowIndex"
+    >
+      <tr
+        [pEditableRow]="rowData"
+        [pSelectableRow]="editingRow === null ? rowData : null"
+      >
+        @for (col of columns; track $index) { @if (col.field != "acciones") {
+        <td>
+          <p-cellEditor>
+            <ng-template #input>
+              @switch (col.tipo) { @case ("select") {
+              <p-select
+                [checkmark]="true"
+                [filter]="true"
+                filterBy="nombre"
+                appendTo="body"
+                [options]="col.options"
+                [(ngModel)]="rowData[col.field]"
+                [checkmark]="true"
+                [optionLabel]="col.label"
+                [showClear]="true"
+                [placeholder]="col.placeholder"
+                class="w-full md:w-56"
+                (onChange)="fillText($event, ri)"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              />
+              } @case ("text") {
+              <input
+                [type]="col.tipo"
+                pInputText
+                [(ngModel)]="rowData[col.field]"
+                [disabled]="col.disable"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              />
+              } @case ("number") {
+              <input
+                [type]="col.tipo"
+                pInputText
+                [(ngModel)]="rowData[col.field]"
+                [disabled]="col.disable"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              />
+              } @case ("date") {
+              <p-datepicker
+                appendTo="body"
+                [(ngModel)]="rowData[col.field]"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                inputId="icondisplay"
+                [disabled]="true"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              />
+              } @case ("time") {
+              <p-datepicker
+                appendTo="body"
+                [(ngModel)]="rowData[col.field]"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                inputId="icondisplay"
+                [timeOnly]="true"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              >
+                <ng-template #inputicon>
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+              } }
+            </ng-template>
+            <ng-template #output>
+              @if (col.field === "nombreEmpleado") {
+              {{ rowData[col.field]?.nombre || "" }}
+              } @else if (col.tipo == "date") {
+              <p-datepicker
+                appendTo="body"
+                [(ngModel)]="rowData[col.field]"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                [disabled]="true"
+                inputId="icondisplay"
+              />
+              } @else if (col.tipo == "time") {
+              <p-datepicker
+                appendTo="body"
+                [(ngModel)]="rowData[col.field]"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                inputId="icondisplay"
+                [timeOnly]="true"
+                [disabled]="true"
+                [ngClass]="{
+                  'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
+                }"
+              >
+                <ng-template #inputicon>
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+              } @else {
+              {{ rowData[col.field] }}
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.field === "acciones") {
+        <td>
+          <div class="flex items-center justify-center gap-2">
+            <button
+              *ngIf="!editing"
+              pButton
+              pRipple
+              type="button"
+              pInitEditableRow
+              icon="pi pi-pencil"
+              text
+              rounded
+              severity="secondary"
+              (click)="onRowEditInit(rowData)"
+              [disabled]="hasNewRowInEditing"
+            ></button>
+
+            <button
+              *ngIf="editing"
+              pButton
+              pRipple
+              type="button"
+              icon="pi pi-check"
+              text
+              rounded
+              severity="success"
+              (click)="onRowEditSave(rowData, ri, $event)"
+            ></button>
+
+            <button
+              *ngIf="editing"
+              pButton
+              pRipple
+              type="button"
+              pCancelEditableRow
+              icon="pi pi-times"
+              text
+              rounded
+              severity="danger"
+              (click)="onRowEditCancel(rowData, ri)"
+            ></button>
+          </div>
+        </td>
+        } }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
 
@@ -11,12 +11,11 @@ import { DatePicker } from 'primeng/datepicker';
 export class MonthPickerComponent {
   date: Date | undefined = new Date();
   @Output() dateChange = new EventEmitter<{ year: number; month: number }>();
-  
 
   onDateChange(): void {
     if (this.date) {
       const year = this.date.getFullYear();
-      const month = this.date.getMonth() + 1;
+      const month = this.date.getMonth() + 1; 
       this.dateChange.emit({ year, month });
     }
   }

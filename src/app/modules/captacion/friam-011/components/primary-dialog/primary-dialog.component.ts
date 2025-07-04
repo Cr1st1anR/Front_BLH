@@ -1,12 +1,22 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
-import { NewRegisterTemperaturaComponent } from './new-register-temperatura/new-register-temperatura.component';
 import { TableTemperaturaComponent } from './table-temperatura/table-temperatura.component';
-import { NewRegisterCasaComponent } from './new-register-casa/new-register-casa.component';
-import { TableCasaComponent } from "./table-casa/table-casa.component";
+import { TableCasaComponent } from './table-casa/table-casa.component';
 import { SecondaryDialogComponent } from '../secondary-dialog/secondary-dialog.component';
 import { rutaRecoleccion } from '../table-list/interfaces/ruta-recoleccion';
 import { casasVisitaData } from './interfaces/primaryDialog.interface';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'primary-dialog',
@@ -14,31 +24,45 @@ import { casasVisitaData } from './interfaces/primaryDialog.interface';
     DialogModule,
     TableTemperaturaComponent,
     TableCasaComponent,
-    SecondaryDialogComponent
+    SecondaryDialogComponent,
+    ProgressSpinnerModule,
+    ToastModule,
   ],
   templateUrl: './primary-dialog.component.html',
   styleUrl: './primary-dialog.component.scss',
-  providers: [],
+  providers: [MessageService],
 })
 export class PrimaryDialogComponent implements OnChanges {
-
-  @Input() rowDataDialog: rutaRecoleccion | null = null; 
+  @Input() rowDataDialog: rutaRecoleccion | null = null;
   @Output() dialogClosed = new EventEmitter<void>();
   @ViewChild(TableCasaComponent) tableMain!: TableCasaComponent;
 
-
-  dialogVisible:boolean = false;
-  dataRutaRecoleccion: any = null; 
-
+  loading: boolean = false;
+  dialogVisible: boolean = false;
+  dataRutaRecoleccion: any = null;
   secondaryDialogVisible: boolean = false;
   selectedCasaNo: casasVisitaData | null = null;
 
-  constructor() {}
+  hasTemperaturaData: boolean | null = null;
+  hasCasaData: boolean | null = null;
+  private hasShownSuccessAlert: boolean = false;
 
-  ngOnChanges(changes: SimpleChanges):void {
+  constructor(private messageService: MessageService) {}
+
+  ngOnInit() {
+    this.loading = true;
+    setTimeout(() => {
+      this.loading = false;
+    }, 1200);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes['rowDataDialog'] && changes['rowDataDialog'].currentValue) {
       this.dataRutaRecoleccion = changes['rowDataDialog'].currentValue;
       this.dialogVisible = true;
+      this.hasTemperaturaData = null;
+      this.hasCasaData = null;
+      this.hasShownSuccessAlert = false;
     }
   }
 
@@ -49,30 +73,53 @@ export class PrimaryDialogComponent implements OnChanges {
     }
   }
 
-  crearNuevoRegistroCasa() {
-    // Función para crear un nuevo registro en la segunda tabla
-    // const nuevoRegistro = {
-    //   casaNo: null,
-    //   codigo: null,
-    //   nombre: '',
-    //   direccion: '',
-    //   telefono1: null,
-    //   telefono2: null,
-    //   observaciones: '',
-    // };
-
-    // this.secondaryTableData.push(nuevoRegistro); // Agrega la nueva fila
-    // this.editarFilaSecondary(nuevoRegistro); // Activa el modo de edición para la nueva fila
-  }
-
   openDialogFrascosL(data: casasVisitaData) {
     this.selectedCasaNo = data;
   }
 
-  onClosedDialogPrimary(){
+  onClosedDialogPrimary() {
     this.dialogClosed.emit();
     this.dialogVisible = false;
   }
 
+  onTemperaturaDataLoaded(hasData: boolean) {
+    this.hasTemperaturaData = hasData;
+    this.checkSuccessAlert();
+    this.checkMadresDonantesAlert();
+  }
 
+  onCasaDataLoaded(hasData: boolean) {
+    this.hasCasaData = hasData;
+    this.checkSuccessAlert();
+    this.checkMadresDonantesAlert();
+  }
+
+  private checkSuccessAlert() {
+    if (
+      !this.hasShownSuccessAlert &&
+      ((this.hasTemperaturaData === true && this.hasCasaData !== false) ||
+        (this.hasCasaData === true && this.hasTemperaturaData !== false))
+    ) {
+      this.hasShownSuccessAlert = true;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: 'Datos cargados para la ruta seleccionada',
+        key: 'tr',
+        life: 3000,
+      });
+    }
+  }
+
+  private checkMadresDonantesAlert() {
+    if (this.hasTemperaturaData === false && this.hasCasaData === false) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Información',
+        detail: 'No hay datos para la ruta seleccionada',
+        key: 'tr',
+        life: 3000,
+      });
+    }
+  }
 }

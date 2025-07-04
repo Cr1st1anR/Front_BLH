@@ -1,10 +1,23 @@
 <p-toast position="top-right" key="tr" />
 
-<new-register-casa (nuevoRegistro)="crearNuevoRegistroCasa()" />
+<new-register-casa
+  (nuevoRegistro)="crearNuevoRegistroCasa()"
+  [disabled]="hasNewRowInEditing"
+/>
 
-<p-table #tableCasas [value]="dataTableCasas" [scrollable]="true" scrollHeight="300px" [columns]="headerTableCasasVisita"
-  [tableStyle]="{ 'min-width': '50rem' }" (onRowSelect)="onRowSelect($event)" selectionMode="single" editMode="row"  [(selection)]="selectedRow"
-  dataKey="id_casa_visita">
+<p-table
+  #tableCasas
+  [value]="dataTableCasas"
+  [scrollable]="true"
+  scrollHeight="300px"
+  [columns]="headerTableCasasVisita"
+  [tableStyle]="{ 'min-width': '50rem' }"
+  (onRowSelect)="onRowSelect($event)"
+  selectionMode="single"
+  editMode="row"
+  [(selection)]="selectedRow"
+  dataKey="id_casa_visita"
+>
   <ng-template #header let-columns>
     <tr>
       @for (col of columns; track $index) {
@@ -14,53 +27,112 @@
       }
     </tr>
   </ng-template>
-  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
-    <tr [pEditableRow]="rowData"  [pSelectableRow]="editingRow === null ? rowData : null">
-      @for (col of columns; track $index) {
-      @if (col.field != "acciones") {
+  <ng-template
+    #body
+    let-rowData
+    let-columns="columns"
+    let-editing="editing"
+    let-rowIndex="rowIndex"
+  >
+    <tr
+      [pEditableRow]="rowData"
+      [pSelectableRow]="editingRow === null ? rowData : null"
+    >
+      @for (col of columns; track $index) { @if (col.field != "acciones") {
       <td>
         <p-cellEditor>
           <ng-template #input>
-            @switch (col.tipo) {
-            @case ("text") {
-            <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" [disabled]="col.disable" />
-            }
-            @case ("select") {
-            <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
-              [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
-              [placeholder]="col.placeholder" class="w-full md:w-56" (onChange)="fillText($event,rowIndex)" />
-            }
-            }
+            @switch (col.tipo) { @case ("text") {
+            <input
+              [type]="col.tipo"
+              pInputText
+              [(ngModel)]="rowData[col.field]"
+              [disabled]="col.disable"
+            />
+            } @case ("select") {
+            <p-select
+              [checkmark]="true"
+              [filter]="true"
+              filterBy="id_madre_donante"
+              appendTo="body"
+              [options]="col.options"
+              [(ngModel)]="rowData[col.field]"
+              [checkmark]="true"
+              [optionLabel]="col.label"
+              [showClear]="true"
+              [placeholder]="col.placeholder"
+              class="w-full md:w-56"
+              (onChange)="fillText($event, rowIndex)"
+            />
+            } }
           </ng-template>
           <ng-template #output>
             @if (col.tipo == "select") {
-            <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
-              [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
-              [placeholder]="col.placeholder" class="w-full md:w-56" [disabled]="true" />
+            <p-select
+              [checkmark]="true"
+              [filter]="true"
+              filterBy="id_madre_donante"
+              appendTo="body"
+              [options]="col.options"
+              [(ngModel)]="rowData[col.field]"
+              [checkmark]="true"
+              [optionLabel]="col.label"
+              [showClear]="true"
+              [placeholder]="col.placeholder"
+              class="w-full md:w-56"
+              [disabled]="true"
+            />
             }@else {
-            {{rowData[col.field]}}
+            {{ rowData[col.field] }}
             }
           </ng-template>
         </p-cellEditor>
       </td>
-      }
-      @else if (col.field === "acciones") {
+      } @else if (col.field === "acciones") {
       <td>
         <div class="flex items-center justify-center gap-2">
-          <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
-            severity="secondary" (click)="onRowEditInit(rowData)"></button>
+          <button
+            *ngIf="!editing"
+            pButton
+            pRipple
+            type="button"
+            pInitEditableRow
+            icon="pi pi-pencil"
+            text
+            rounded
+            severity="secondary"
+            (click)="onRowEditInit(rowData)"
+            [disabled]="hasNewRowInEditing"
+          ></button>
 
-          <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
-            (click)="onRowEditSave(rowData,rowIndex,$event)"></button>
+          <button
+            *ngIf="editing"
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-check"
+            text
+            rounded
+            severity="success"
+            (click)="onRowEditSave(rowData, rowIndex, $event)"
+          ></button>
 
-          <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
-            severity="danger" (click)="onRowEditCancel(rowData, rowIndex)"></button>
+          <button
+            *ngIf="editing"
+            pButton
+            pRipple
+            type="button"
+            pCancelEditableRow
+            icon="pi pi-times"
+            text
+            rounded
+            severity="danger"
+            (click)="onRowEditCancel(rowData, rowIndex)"
+          ></button>
         </div>
       </td>
-      }
-      }
+      } }
     </tr>
-
   </ng-template>
 </p-table>
 

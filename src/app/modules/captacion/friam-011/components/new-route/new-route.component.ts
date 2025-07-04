@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 
 export class NewRouteComponent {
   @Output() nuevaRuta = new EventEmitter<void>();
+  @Input() disabled: boolean = false;
 
   crearRuta() {
     this.nuevaRuta.emit();

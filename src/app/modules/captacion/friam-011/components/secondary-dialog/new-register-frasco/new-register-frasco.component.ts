@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
   styleUrl: './new-register-frasco.component.scss',
 })
 export class NewRegisterFrascoComponent {
+  @Input() disabled: boolean = false;
   frascosData: any[] = []; // Datos para la nueva tabla en el tercer Dialog
   editingFrascoRow: any = null; // Fila en edición en la nueva tabla
   clonedFrascoRow: any = null; // Copia de la fila en edición en la nueva tabla

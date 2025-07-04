@@ -1,9 +1,16 @@
 <p-dialog header="REGISTRO DE TEMPERATURA TERMOS/CAJAS ISOTERMICAS" [resizable]="false" [modal]="true"
-  [maximizable]="true" appendTo="body" [(visible)]="dialogVisible" [style]="{ width: '85vw' }"
-  [contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="onClosedDialogPrimary()">
+[maximizable]="true" appendTo="body" [(visible)]="dialogVisible" [style]="{ width: '85vw' }"
+[contentStyle]="{ height: '550px' }" [draggable]="false" (onHide)="onClosedDialogPrimary()">
+  <p-toast position="top-right" key="tr" />
 
-  <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" />
-  <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion" (openDialogFrascosL)="openDialogFrascosL($event)" />
+  @if (loading) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+      <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+        [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+    </div>
+  }
+    <table-temperatura [dataRutaRecoleccion]="dataRutaRecoleccion" (dataLoaded)="onTemperaturaDataLoaded($event)" />
+    <table-casa [dataRutaRecoleccion]="dataRutaRecoleccion" (openDialogFrascosL)="openDialogFrascosL($event)" (dataLoaded)="onCasaDataLoaded($event)" />
 </p-dialog>
 
 <secondary-dialog [casaNo]="selectedCasaNo" (dialogClosed)="onClosedDialog()" />

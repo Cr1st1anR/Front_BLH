@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -8,9 +8,10 @@ import { ButtonModule } from 'primeng/button';
   styleUrl: './new-register-temperatura.component.scss',
 })
 export class NewRegisterTemperaturaComponent {
-  @Output() nuevaColumna = new EventEmitter<{nombre: string}>();
+  @Input() disabled: boolean = false;
+  @Output() nuevaColumna = new EventEmitter<{ nombre: string }>();
 
-  private contadorColumnas = 1; // Inicia en 5 porque ya tienes T° CASA 1 a T° CASA 5
+  private contadorColumnas = 1;
 
   crearColumna() {
     this.contadorColumnas++;

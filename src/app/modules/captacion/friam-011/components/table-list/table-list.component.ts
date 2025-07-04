@@ -1,6 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, EventEmitter, Input, input, Output, output, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  input,
+  Output,
+  output,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
@@ -27,22 +35,22 @@ import { TableComponent } from '../principal-table/table.component';
   styleUrl: './table-list.component.scss',
 })
 export class TableListComponent {
-
   @ViewChild(TableComponent) tableMain!: TableComponent;
-  
+
   rowSelected: any = null;
-  datesSelected: { year: number; month: number } = {} as { year: number; month: number };
+  datesSelected: { year: number; month: number } = {} as {
+    year: number;
+    month: number;
+  };
 
-  constructor() { }
-
-
+  constructor() {}
 
   filtrarPorFecha(filtro: { year: number; month: number }): void {
     this.datesSelected = filtro;
   }
 
-  onRowSelected(dataSelect:rutaRecoleccion): void {
-    this.rowSelected = dataSelect;    
+  onRowSelected(dataSelect: rutaRecoleccion): void {
+    this.rowSelected = dataSelect;
   }
 
   onClosedDialog() {

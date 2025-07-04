@@ -1,6 +1,7 @@
 <p-toast position="top-right" key="tr" />
 
-<new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()" />
+<new-register-frasco (nuevoRegistroFrasco)="crearNuevoRegistroFrasco()"
+  [disabled]="!!hasNewRowInEditing || !!editingRow"></new-register-frasco>
 
 <p-table #tableFrascos [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
   [columns]="headersTableFrascosLeche" editMode="row" dataKey="id_frascos_recolectados">
@@ -23,8 +24,7 @@
             @switch (col.tipo) {
             @case ("date") {
             <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-              inputId="icondisplay" 
-              [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
             }
             @case ("text") {
             <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
@@ -35,7 +35,7 @@
               [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
             }
             @case ("select") {
-            <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
+            <p-select [checkmark]="true" [filter]="true" filterBy="id" appendTo="body" [options]="col.options"
               [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
               [placeholder]="col.placeholder" class="w-full md:w-56" (onChange)="fillText($event,rowIndex)" />
             }
@@ -47,7 +47,7 @@
               [disabled]="true" inputId="icondisplay" />
             }
             @else if (col.tipo == "select") {
-              <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="col.options"
+            <p-select [checkmark]="true" [filter]="true" filterBy="id" appendTo="body" [options]="col.options"
               [(ngModel)]="rowData[col.field]" [checkmark]="true" [optionLabel]="col.label" [showClear]="true"
               [placeholder]="col.placeholder" class="w-full md:w-56" [disabled]="true" />
             }
@@ -62,7 +62,7 @@
       <td>
         <div class="flex items-center justify-center gap-2">
           <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
-            severity="secondary" (click)="onRowEditInit(rowData)"></button>
+            severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="!!hasNewRowInEditing"></button>
 
           <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
             (click)="onRowEditSave(rowData,rowIndex,$event)"></button>

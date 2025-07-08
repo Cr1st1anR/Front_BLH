@@ -22,10 +22,10 @@
 
 <div class="card flex justify-center accordion-container">
   <p-accordion value="0">
-    <datos-inscripcion />
+    <datos-inscripcion [datosPrecargados]="datosPrecargados" />
     <historia-gestacion />
     <examenes-laboratorio />
-    <medicamentos />
+    <medicamentos [empleadosOpt]="empleadosOpt" />
   </p-accordion>
 </div>
 

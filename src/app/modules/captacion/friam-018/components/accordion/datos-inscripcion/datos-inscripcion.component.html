@@ -25,7 +25,7 @@
       </div>
       <div>
         <label>Celular</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" name="celular" [(ngModel)]="datosPrecargados.celular" />
       </div>
       <div>
         <label>Fecha de nacimiento</label>
@@ -39,15 +39,15 @@
       </div>
       <div>
         <label>Profesión/Oficio</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="profesion" name="profesion" />
       </div>
       <div>
         <label>Barrio/Vereda</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="datosPrecargados.barrio" name="barrio"/>
       </div>
       <div>
         <label>Teléfono</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="datosPrecargados.telefono" name="telefono" />
       </div>
       <div>
         <label>¿Donante exclusiva?</label>
@@ -70,23 +70,23 @@
       </div>
       <div>
         <label>Departamento</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="departamento" name="departamento" />
       </div>
       <div>
         <label>Dirección</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="datosPrecargados.direccion" name="direccion"/>
       </div>
       <div>
         <label>Nombre del hijo</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="nombreHijo" name="nombreHijo" />
       </div>
       <div>
         <label>EPS</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="eps" name="eps" />
       </div>
       <div>
         <label>Ciudad</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="datosPrecargados.ciudad" name="ciudad"/>
       </div>
       <div>
         <label>Recolección en el domicilio</label>
@@ -109,19 +109,19 @@
       </div>
       <div>
         <label>Peso del bebé (gramos)</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="pesoBebe" name="pesoBebe"/>
       </div>
       <div>
         <label>Edad</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="edad" name="edad" />
       </div>
       <div>
         <label>Documento de identidad</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="datosPrecargados.documento" name="documento"/>
       </div>
       <div>
         <label>Código de donante</label>
-        <input pInputText type="text" />
+        <input pInputText type="text" [(ngModel)]="codDonante" name="codDonante" [disabled]="true" />
       </div>
       <div>
         <label></label>
@@ -144,7 +144,7 @@
       </div>
       <div>
         <label>Capacitada en</label>
-        <input pInputText type="text" />
+        <input pInputText type="text"  [(ngModel)]="capacitacion" name="capacitacion"/>
       </div>
     </form>
   </p-accordion-content>

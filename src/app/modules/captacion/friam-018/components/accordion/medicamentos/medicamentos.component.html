@@ -24,7 +24,11 @@
       </div>
       <div>
         <label>Responsable del registro:</label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="responsableRegistro" name="responsableRegistro" />
+
+        <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="empleadosOpt"
+          [(ngModel)]="selectedEmpleado" [checkmark]="true" optionLabel="nombre" [showClear]="true"
+          placeholder="Seleccione un responsanble" class="w-full md:w-56" name="responsable"/>
+
       </div>
 
       <div>

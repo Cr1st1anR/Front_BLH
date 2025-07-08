@@ -13,12 +13,12 @@
 
 <div class="flex justify-between items-center mx-4 mt-6">
   <div></div>
-  <month-picker-table />
+  <month-picker-table (dateChange)="filtrarPorFecha($event)"  />
 </div>
 
 <div class="container-table">
   <p-table
-    [value]="data"
+    [value]="dataRegistroDonante"
     [scrollable]="true"
     scrollHeight="500px"
     [columns]="headersTablePosiblesDonantes"

@@ -157,7 +157,13 @@ export class AccordionComponent implements OnInit {
       firmaDonante: medicamentos.firmaDonante,
       firmaProfesional: medicamentos.profesionalResponsable,
       firmaAcompañante: medicamentos.firmaAcompanante,
-      madrePotencial: {id:this.datosPrecargados.idMadrePotencial},
+      recibioEducacion: medicamentos.recibioEducacion,
+      madrePotencial: {
+        id: this.datosPrecargados.idMadrePotencial
+      },
+      empleado:{
+        id:medicamentos.empleado?.id
+      },
       hijosMadre:[
         {
           nombre: datosInscripcion.nombreHijo,
@@ -173,8 +179,8 @@ export class AccordionComponent implements OnInit {
         talla: historiaGestacion.talla,
         partoTermino: historiaGestacion.tipoParto === "termino" ? 1 : 0,
         preTermino: historiaGestacion.tipoParto === "pretermino" ? 1 : 0,
-        semanasGestacion: historiaGestacion.semanasGestacion,
-        fechaParto: historiaGestacion.fechaParto,
+        semanas: parseInt(String(historiaGestacion.semanasGestacion)),
+        fechaParto: historiaGestacion.fechaParto?.toString().split('T')[0],
       },
       examenPrenatal:{
         hemoglobina: examenesLab.hemoglobina,

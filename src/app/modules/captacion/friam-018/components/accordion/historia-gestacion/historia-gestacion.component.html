@@ -9,9 +9,9 @@
           <input pInputText type="text" [(ngModel)]="lugarControlPrenatal" name="lugarControlPrenatal" class="w-full" />
         </div>
         <div class="historia-control-prenatal-radios">
-          <p-radioButton name="tipoIPS" value="publica" [(ngModel)]="tipoIPS" inputId="ipsPublica"></p-radioButton>
+          <p-radioButton name="tipoIPS" [value]="1" [(ngModel)]="tipoIPS" inputId="ipsPublica"></p-radioButton>
           <label for="ipsPublica" class="mr-4 font-bold">IPS Publica</label>
-          <p-radioButton name="tipoIPS" value="privada" [(ngModel)]="tipoIPS" inputId="ipsPrivada"></p-radioButton>
+          <p-radioButton name="tipoIPS" [value]="2" [(ngModel)]="tipoIPS" inputId="ipsPrivada"></p-radioButton>
           <label for="ipsPrivada" class="mr-4 font-bold">IPS Privada</label>
         </div>
       </div>

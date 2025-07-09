@@ -87,6 +87,7 @@ export class MedicamentosComponent implements MedicamentosData, AfterViewInit, O
       donanteApta: this.donanteApta,
       firmaDonante: this.firmaDonante,
       profesionalResponsable: this.profesionalResponsable,
+      empleado: this.selectedEmpleado
     };
   }
 

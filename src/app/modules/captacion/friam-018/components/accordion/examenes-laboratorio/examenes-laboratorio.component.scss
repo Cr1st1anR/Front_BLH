@@ -1,4 +1,3 @@
-// Alinea verticalmente los radios y sus textos
 .flex.items-center.gap-4 {
   align-items: center;
   min-height: 56px;
@@ -11,7 +10,6 @@
   align-items: center;
 }
 
-// Alinea el label y el input de la fecha de registro y fechas de vencimiento
 .flex.items-center.gap-2 {
   align-items: center;
   min-height: 56px;
@@ -24,47 +22,42 @@
   font-weight: 500;
 }
 
-// Ajusta el tamaño del datepicker para que todos queden iguales
 p-datepicker {
   width: 100%;
   min-width: 180px;
   max-width: 260px;
 }
 
-// Ajusta el ancho de los labels de los exámenes para alinear los radios
 .flex.items-center.gap-4 label.font-bold.w-24 {
   min-width: 90px;
   width: 90px;
   justify-content: flex-end;
 }
 
-// Alinea el input de fecha de registro con los de abajo
 .alinear-fecha-registro {
-  margin-left: 30px; // Ajusta este valor hasta que el input quede alineado con los de abajo
+  margin-left: 30px;
 }
 
-// Espaciado entre los radios y sus textos
 .radios-texto p-radiobutton + label {
   margin-left: -0.9rem;
-  margin-right: 1.0rem;
-  transform: translateY(1.0px);
+  margin-right: 1rem;
+  transform: translateY(1px);
 }
 
-// GRID PRINCIPAL: 3 columnas bien separadas
 .examenes-lab-grid {
   display: grid;
-  grid-template-columns: 1.7fr 1.3fr 2fr; // Más espacio para la columna de archivos
-  gap: 1.9rem 6.5rem; // Mucho más espacio horizontal entre columnas
+  grid-template-columns: 1.7fr 1.3fr 2fr;
+  gap: 1.9rem 6.5rem;
   width: 100%;
 }
 
-// Columna de archivos: alineación vertical perfecta
 .archivo-col {
   min-width: 320px;
   max-width: 520px;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 0.7rem;
+  gap: 0.5rem;
   position: relative;
   min-height: 56px;
 }
@@ -84,7 +77,6 @@ p-datepicker {
   margin-right: 0.3rem;
 }
 
-// Elimina el recuadro blanco y el fondo del fileupload avanzado
 :host ::ng-deep .p-fileupload,
 :host ::ng-deep .p-fileupload-content {
   border: none !important;
@@ -93,7 +85,6 @@ p-datepicker {
   padding: 0 !important;
 }
 
-// Ajusta el botón "Elegir" con mayor especificidad y !important en todas las propiedades
 :host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose,
 :host ::ng-deep .p-fileupload .p-fileupload-choose {
   margin: 0 !important;
@@ -105,22 +96,27 @@ p-datepicker {
   box-shadow: none !important;
 }
 
-// Estilo para hover con mayor especificidad
-:host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose:hover:not(.p-disabled),
+:host
+  ::ng-deep
+  .p-fileupload
+  .p-fileupload-buttonbar
+  .p-fileupload-choose:hover:not(.p-disabled),
 :host ::ng-deep .p-fileupload .p-fileupload-choose:hover {
   background-color: #1a3269 !important;
   border-color: #1a3269 !important;
   color: #ffffff !important;
 }
 
-// Estilo para focus con mayor especificidad
-:host ::ng-deep .p-fileupload .p-fileupload-buttonbar .p-fileupload-choose:focus,
+:host
+  ::ng-deep
+  .p-fileupload
+  .p-fileupload-buttonbar
+  .p-fileupload-choose:focus,
 :host ::ng-deep .p-fileupload .p-fileupload-choose:focus {
   box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
   border-color: #224186 !important;
 }
 
-// Ajusta el nombre del archivo
 :host ::ng-deep .p-fileupload-filename {
   font-size: 0.85rem !important;
   color: #224186 !important;
@@ -133,14 +129,12 @@ p-datepicker {
   cursor: pointer;
 }
 
-// Oculta la línea horizontal que aparece al seleccionar archivo
 :host ::ng-deep .p-fileupload-row {
   border-top: none !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
-// Reduce el padding y el tamaño del bloque del archivo seleccionado
 :host ::ng-deep .p-fileupload-files {
   margin-top: 0 !important;
   padding-top: 0 !important;
@@ -151,7 +145,6 @@ p-datepicker {
   padding: 2px 0 !important;
 }
 
-// Opcional: reduce el tamaño del botón de eliminar archivo
 :host ::ng-deep .p-fileupload-row .p-fileupload-remove {
   font-size: 1rem !important;
   width: 1.5rem !important;
@@ -186,17 +179,14 @@ p-datepicker {
   color: #b0b0b0;
 }
 
-/* Asegurar que el spinner sea visible y centrado */
 .archivo-col p-progressspinner {
   z-index: 10;
 }
 
-/* Contenedor para el spinner */
 .archivo-col .absolute {
   transition: opacity 0.2s ease-in-out;
 }
 
-/* Establece variables CSS para los colores del tema */
 :root {
   --fileupload-button-bg: #224186;
   --fileupload-button-border: #224186;
@@ -205,7 +195,6 @@ p-datepicker {
   --fileupload-button-hover-border: #1a3269;
 }
 
-// Agrega estos estilos al final del archivo
 :host ::ng-deep .p-button-blue-custom {
   background-color: #224186 !important;
   border-color: #224186 !important;
@@ -222,4 +211,171 @@ p-datepicker {
 
 :host ::ng-deep .p-button-blue-custom:focus {
   box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.ng-invalid {
+  border-color: red !important;
+}
+
+.error-offset {
+  margin-left: 90px;
+}
+
+.flex.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex.flex-col.gap-1 {
+  gap: 0.25rem;
+}
+
+.flex.flex-col.gap-2 {
+  gap: 0.5rem;
+}
+
+.flex.flex-col.gap-0\.5 {
+  gap: 0.125rem;
+}
+
+.grid.grid-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid.grid-cols-2.gap-8 {
+  gap: 2rem;
+}
+
+.fuma-alcohol-section {
+  gap: -0.9rem !important;
+}
+
+.fuma-alcohol-section .flex.items-center.gap-2 {
+  gap: 0.9rem !important;
+}
+
+.fuma-alcohol-section .flex.items-center.gap-2 label.font-bold {
+  min-width: 10px !important;
+  margin-right: 0.3rem !important;
+}
+
+.fuma-alcohol-section .radios-texto p-radiobutton + label {
+  margin-left: -0.2rem !important;
+  margin-right: 1rem !important;
+}
+
+.fuma-alcohol-section > div:first-child {
+  padding-right: 0.5rem;
+}
+
+.fuma-alcohol-section > div:last-child {
+  padding-left: 0rem;
+}
+
+.fuma-alcohol-section .flex.flex-col {
+  min-height: 60px;
+}
+
+.fuma-alcohol-section .flex.items-center.gap-2 {
+  align-items: center;
+  min-height: 40px;
+}
+
+.archivo-col-optimizada {
+  min-width: 320px;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  position: relative;
+  min-height: 56px;
+}
+
+.archivo-label {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.9rem;
+}
+
+.archivo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.nombre-archivo-optimizado {
+  font-size: 0.8rem;
+  color: #224186;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+  flex-shrink: 1;
+  min-width: 80px;
+}
+
+.boton-subir-optimizado {
+  flex-shrink: 0;
+  min-width: 60px !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+.archivo-col-optimizada p-fileupload {
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .archivo-col-optimizada .p-button {
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.examenes-lab-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 2.3fr;
+  gap: 1.9rem 5rem;
+  width: 100%;
+}
+
+@media (max-width: 1400px) {
+  .nombre-archivo-optimizado {
+    max-width: 120px;
+  }
+
+  .examenes-lab-grid {
+    grid-template-columns: 1.4fr 1.1fr 2.5fr;
+    gap: 1.5rem 4rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .nombre-archivo-optimizado {
+    max-width: 100px;
+  }
+
+  .boton-subir-optimizado {
+    min-width: 55px !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
 }

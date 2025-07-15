@@ -1,31 +1,23 @@
 <p-toast position="top-right" key="tr" />
 
 @if (loading) {
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
-    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
-      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
-  </div>
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
 }
 
-<app-header
-  [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'"
-/>
+<app-header [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'" />
 
 <div class="flex justify-between items-center mx-4 mt-6">
   <div></div>
-  <month-picker-table (dateChange)="filtrarPorFecha($event)"  />
+  <month-picker-table (dateChange)="filtrarPorFecha($event)" />
 </div>
 
 <div class="container-table">
-  <p-table
-    [value]="dataRegistroDonante"
-    [scrollable]="true"
-    scrollHeight="500px"
-    [columns]="headersTablePosiblesDonantes"
-    [tableStyle]="{ 'min-width': '50rem' }"
-    selectionMode="single"
-    dataKey="id"
-  >
+  <p-table [value]="dataRegistroDonante" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersTablePosiblesDonantes" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single"
+    dataKey="id">
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
@@ -36,7 +28,8 @@
       </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns">
-      <tr (click)="onRowClick(rowData)" style="cursor: pointer">
+      <tr (click)="onRowClick(rowData)" style="cursor: pointer"
+        [class.donante-efectiva]="rowData.donanteEfectiva === 1">
         @for (col of columns; track $index) {
         <td>
           @if (col.field === 'entidad') {

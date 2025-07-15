@@ -2,37 +2,53 @@
   <p-accordion-header>MEDICAMENTOS</p-accordion-header>
   <p-accordion-content>
     <form class="grid grid-cols-2 gap-6">
-      <!-- Medicamentos y Psicoactivos -->
       <div>
-        <label>Medicamentos:</label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos" name="medicamentos" />
+        <label class="font-bold">Medicamentos: <span class="required">*</span></label>
+        <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos" name="medicamentos"
+          [disabled]="ningunMedicamento" required (ngModelChange)="onFieldChange('medicamentos', $event)"
+          [class.ng-invalid]="formErrors['medicamentos']" />
         <div class="flex items-center mt-2">
           <label class="mr-2">Ninguno:</label>
-          <p-checkbox binary="true" [(ngModel)]="ningunMedicamento" name="ningunMedicamento"
-            inputId="ningunMedicamento"></p-checkbox>
+          <p-checkbox binary="true" [(ngModel)]="ningunMedicamento" name="ningunMedicamento" inputId="ningunMedicamento"
+            (ngModelChange)="onNingunMedicamentoChange()"></p-checkbox>
         </div>
-      </div>
-      <div>
-        <label>Psicoactivos:</label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="psicoactivos" name="psicoactivos" />
+        <small class="error-message" *ngIf="formErrors['medicamentos']">
+          {{ formErrors['medicamentos'] }}
+        </small>
       </div>
 
-      <!-- Recibió educación y Responsable -->
       <div>
-        <label>Recibió educación en:</label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="recibioEducacion" name="recibioEducacion" />
+        <label class="font-bold">Psicoactivos: <span class="required">*</span></label>
+        <input pInputText type="text" class="w-full" [(ngModel)]="psicoactivos" name="psicoactivos" required
+          (ngModelChange)="onFieldChange('psicoactivos', $event)" [class.ng-invalid]="formErrors['psicoactivos']" />
+        <small class="error-message" *ngIf="formErrors['psicoactivos']">
+          {{ formErrors['psicoactivos'] }}
+        </small>
       </div>
-      <div>
-        <label>Responsable del registro:</label>
 
+      <div>
+        <label class="font-bold">Recibió educación en: <span class="required">*</span></label>
+        <input pInputText type="text" class="w-full" [(ngModel)]="recibioEducacion" name="recibioEducacion" required
+          (ngModelChange)="onFieldChange('recibioEducacion', $event)"
+          [class.ng-invalid]="formErrors['recibioEducacion']" />
+        <small class="error-message" *ngIf="formErrors['recibioEducacion']">
+          {{ formErrors['recibioEducacion'] }}
+        </small>
+      </div>
+
+      <div>
+        <label class="font-bold">Responsable del registro: <span class="required">*</span></label>
         <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="empleadosOpt"
-          [(ngModel)]="selectedEmpleado" [checkmark]="true" optionLabel="nombre" [showClear]="true"
-          placeholder="Seleccione un responsanble" class="w-full md:w-56" name="responsable"/>
-
+          [(ngModel)]="selectedEmpleado" optionLabel="nombre" [showClear]="true" placeholder="Seleccione un responsable"
+          class="w-full md:w-56" name="responsable" required (ngModelChange)="onFieldChange('selectedEmpleado', $event)"
+          [class.ng-invalid]="formErrors['selectedEmpleado']" />
+        <small class="error-message" *ngIf="formErrors['selectedEmpleado']">
+          {{ formErrors['selectedEmpleado'] }}
+        </small>
       </div>
 
       <div>
-        <label>Si es donante menor de edad, firma de adulto acompañante:</label>
+        <label class="font-bold">Si es donante menor de edad, firma de adulto acompañante:</label>
         <div>
           <canvas #canvasAcompanante width="350" height="120" style="
               border: 1px solid #ccc;
@@ -46,16 +62,24 @@
             </button>
           </div>
         </div>
+        <small class="error-message" *ngIf="formErrors['firmaAcompanante']">
+          {{ formErrors['firmaAcompanante'] }}
+        </small>
       </div>
 
       <div>
-        <label>Donante apta:</label>
+        <label class="font-bold">Donante apta: <span class="required">*</span></label>
         <div class="flex items-center gap-4 mt-2">
-          <p-radioButton name="donanteApta" [value]="1" [(ngModel)]="donanteApta" inputId="aptaSi"></p-radioButton>
+          <p-radioButton name="donanteApta" [value]="1" [(ngModel)]="donanteApta" inputId="aptaSi"
+            (ngModelChange)="onFieldChange('donanteApta', $event)"></p-radioButton>
           <label for="aptaSi" class="mr-4">Sí</label>
-          <p-radioButton name="donanteApta" [value]="0" [(ngModel)]="donanteApta" inputId="aptaNo"></p-radioButton>
+          <p-radioButton name="donanteApta" [value]="0" [(ngModel)]="donanteApta" inputId="aptaNo"
+            (ngModelChange)="onFieldChange('donanteApta', $event)"></p-radioButton>
           <label for="aptaNo">No</label>
         </div>
+        <small class="error-message" *ngIf="formErrors['donanteApta']">
+          {{ formErrors['donanteApta'] }}
+        </small>
       </div>
 
       <div class="col-span-2">
@@ -67,13 +91,13 @@
       </div>
 
       <div>
-        <label>FIRMA DEL DONANTE:</label>
+        <label class="font-bold">FIRMA DEL DONANTE: <span class="required">*</span></label>
         <div>
           <canvas #canvasDonante width="350" height="120" style="
               border: 1px solid #ccc;
               border-radius: 8px;
               touch-action: none;
-            "></canvas>
+            " [class.canvas-invalid]="formErrors['firmaDonante']"></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaDonante()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -81,16 +105,19 @@
             </button>
           </div>
         </div>
+        <small class="error-message" *ngIf="formErrors['firmaDonante']">
+          {{ formErrors['firmaDonante'] }}
+        </small>
       </div>
 
       <div>
-        <label>PROFESIONAL RESPONSABLE:</label>
+        <label class="font-bold">PROFESIONAL RESPONSABLE: <span class="required">*</span></label>
         <div>
           <canvas #canvasProfesional width="350" height="120" style="
               border: 1px solid #ccc;
               border-radius: 8px;
               touch-action: none;
-            "></canvas>
+            " [class.canvas-invalid]="formErrors['profesionalResponsable']"></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaProfesional()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -98,6 +125,9 @@
             </button>
           </div>
         </div>
+        <small class="error-message" *ngIf="formErrors['profesionalResponsable']">
+          {{ formErrors['profesionalResponsable'] }}
+        </small>
       </div>
     </form>
   </p-accordion-content>

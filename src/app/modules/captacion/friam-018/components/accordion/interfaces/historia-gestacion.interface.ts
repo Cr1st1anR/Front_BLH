@@ -6,6 +6,6 @@ export interface HistoriaGestacionData {
   pesoFinal: string;
   talla: string;
   tipoParto: string;
-  semanasGestacion: number;
+  semanasGestacion: number | null;
   fechaParto: Date | undefined;
 }

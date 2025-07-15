@@ -1,6 +1,6 @@
 .historia-control-prenatal-row {
   display: flex;
-  align-items: center; // Centra verticalmente ambos elementos
+  align-items: center;
   gap: 2rem;
   min-height: 70px;
 }
@@ -24,12 +24,11 @@
 .historia-control-prenatal-radios {
   flex: 1;
   display: flex;
-  align-items: center; // Centra verticalmente los radios
+  align-items: center;
   justify-content: flex-start;
   min-width: 220px;
   height: 48px;
-    margin-top: 20px; // <-- Ajusta este valor hasta que veas los radios centrados verticalmente
-
+  margin-top: 20px;
 }
 
 .historia-control-prenatal-radios label {
@@ -44,8 +43,12 @@
 
 .radios-texto label {
   margin-left: -0.9rem;
-  margin-right: 1.0rem;
-  transform: translateY(1.0px);
+  margin-right: 2rem;
+  transform: translateY(1px);
+}
+
+.radios-texto {
+  margin-top: 0.5rem;
 }
 
 .input-abreviacion {
@@ -58,4 +61,40 @@
   width: 310px;
   min-width: 0;
   max-width: 100%;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.ng-invalid {
+  border-color: red !important;
+}
+
+.flex.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flex.flex-col label {
+  font-weight: bold;
+  margin-bottom: -0.1rem;
+}
+
+.w-20 {
+  min-width: 150px;
+}
+
+p-datepicker {
+  width: 100%;
+  min-width: 180px;
 }

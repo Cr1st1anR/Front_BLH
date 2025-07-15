@@ -19,7 +19,10 @@ import { MessageService } from 'primeng/api';
 import { RegistroDonanteData } from '../posibles-donantes-table/interfaces/registro-donante.interface';
 import { RegistroDonanteService } from '../posibles-donantes-table/services/registro-donante.service';
 import { concatMap, Observable, of, tap } from 'rxjs';
-import { ApiResponse, empleados } from '../../../friam-041/components/table-list/interfaces/linea-amiga.interface';
+import {
+  ApiResponse,
+  empleados,
+} from '../../../friam-041/components/table-list/interfaces/linea-amiga.interface';
 
 @Component({
   selector: 'accordion-registro',
@@ -64,8 +67,7 @@ export class AccordionComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private _registroDonanteService: RegistroDonanteService,
-
+    private _registroDonanteService: RegistroDonanteService
   ) {
     this.route.paramMap.subscribe((params) => {
       this.documento = params.get('documento');
@@ -74,27 +76,27 @@ export class AccordionComponent implements OnInit {
 
   ngOnInit() {
     this.loading = true;
-    of(null).
-      pipe(
-        concatMap(() => this.loadDataEmpleados())
-      ).subscribe({
+    of(null)
+      .pipe(concatMap(() => this.loadDataEmpleados()))
+      .subscribe({
         complete: () => {
           setTimeout(() => {
             this.precargaDatos();
-            this.loading = false
+            this.loading = false;
           }, 1200);
-        }, error: (err) => {
+        },
+        error: (err) => {
           this.loading = false;
           console.error('Error en la secuencia de peticiones', err);
-        }
-      })
+        },
+      });
   }
 
   precargaDatos() {
     const personaData = localStorage.getItem('personInfo');
     this.datosPrecargados = personaData
       ? (JSON.parse(personaData) as RegistroDonanteData)
-      : {} as RegistroDonanteData;
+      : ({} as RegistroDonanteData);
     setTimeout(() => {
       this.loading = false;
     }, 1500);
@@ -124,7 +126,7 @@ export class AccordionComponent implements OnInit {
           });
         }
       })
-    )
+    );
   }
 
   onCancelar() {
@@ -133,69 +135,90 @@ export class AccordionComponent implements OnInit {
 
   onLoadData() {
     this.saving = true;
-    setTimeout(() => {
+
+    try {
+      const datosInscripcion = this.datosInscripcionComp.getFormData();
+      const historiaGestacion = this.historiaGestacionComp.getFormData();
+      const examenesLab = this.examenesLabComp.getFormData();
+      const medicamentos = this.medicamentosComp.getFormData();
+
+      const body = {
+        donanteExclusivo: datosInscripcion.donanteExclusiva,
+        tipoDonante: datosInscripcion.donante_EoI,
+        recoleccionDomicilio: datosInscripcion.recoleccionDomicilio,
+        capacitado: datosInscripcion.capcitacion,
+        donanteApta: medicamentos.donanteApta,
+        firmaDonante: medicamentos.firmaDonante,
+        firmaProfesional: medicamentos.profesionalResponsable,
+        firmaAcompañante: medicamentos.firmaAcompanante,
+        recibioEducacion: medicamentos.recibioEducacion,
+        madrePotencial: {
+          id: this.datosPrecargados.idMadrePotencial,
+        },
+        empleado: {
+          id: medicamentos.empleado?.id,
+        },
+        hijosMadre: [
+          {
+            nombre: datosInscripcion.nombreHijo,
+            peso: datosInscripcion.pesoBebe,
+          },
+        ],
+        gestacion: {
+          lugarControlPrenatal: historiaGestacion.lugarControlPrenatal,
+          asistioControlPrenatal: historiaGestacion.asistioControl,
+          tipoIps: historiaGestacion.tipoIPS,
+          pesoGestacionInicial: historiaGestacion.pesoInicial,
+          pesoGestacionFinal: historiaGestacion.pesoFinal,
+          talla: historiaGestacion.talla,
+          partoTermino: historiaGestacion.tipoParto === 'termino' ? 1 : 0,
+          preTermino: historiaGestacion.tipoParto === 'pretermino' ? 1 : 0,
+          semanas: parseInt(String(historiaGestacion.semanasGestacion)),
+          fechaParto: historiaGestacion.fechaParto?.toString().split('T')[0],
+        },
+        examenPrenatal: {
+          hemoglobina: examenesLab.hemoglobina,
+          hematocrito: examenesLab.hematocrito,
+          transfuciones: examenesLab.transfusiones,
+          enfermedadesGestacion: examenesLab.enfermedadesGestacion,
+          fuma: examenesLab.fuma,
+          alcohol: examenesLab.alcohol,
+        },
+        medicamento: {
+          medicamento: medicamentos.medicamentos,
+          psicoactivos: medicamentos.psicoactivos,
+        },
+      };
+
+      console.log('Datos completos del formulario:', body);
+
+      setTimeout(() => {
+        this.saving = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Datos guardados correctamente',
+          key: 'tr',
+          life: 2500,
+        });
+
+      setTimeout(() => {
+        this.router.navigate(['/blh/captacion/registro-donante-blh']);
+      }, 2500);
+
+      }, 1500);
+    } catch (error) {
       this.saving = false;
       this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Datos guardados correctamente',
+        severity: 'error',
+        summary: 'Error',
+        detail:
+          error instanceof Error
+            ? error.message
+            : 'Error al validar el formulario',
         key: 'tr',
-        life: 2500,
+        life: 3000,
       });
-    }, 1500);
-
-    const datosInscripcion = this.datosInscripcionComp.getFormData();
-    const historiaGestacion = this.historiaGestacionComp.getFormData();
-    const examenesLab = this.examenesLabComp.getFormData();
-    const medicamentos = this.medicamentosComp.getFormData();
-    const body = {
-      donanteExclusivo: datosInscripcion.donanteExclusiva,
-      tipoDonante: datosInscripcion.donante_EoI,
-      recoleccionDomicilio: datosInscripcion.recoleccionDomicilio,
-      capacitado: datosInscripcion.capcitacion,
-      donanteApta: medicamentos.donanteApta,
-      firmaDonante: medicamentos.firmaDonante,
-      firmaProfesional: medicamentos.profesionalResponsable,
-      firmaAcompañante: medicamentos.firmaAcompanante,
-      recibioEducacion: medicamentos.recibioEducacion,
-      madrePotencial: {
-        id: this.datosPrecargados.idMadrePotencial
-      },
-      empleado:{
-        id:medicamentos.empleado?.id
-      },
-      hijosMadre:[
-        {
-          nombre: datosInscripcion.nombreHijo,
-          peso: datosInscripcion.pesoBebe
-        }
-      ],
-      gestacion:{
-        lugarControlPrenatal:historiaGestacion.lugarControlPrenatal,
-        asistioControlPrenatal:historiaGestacion.asistioControl,
-        tipoIps: historiaGestacion.tipoIPS,
-        pesoGestacionInicial: historiaGestacion.pesoInicial,
-        pesoGestacionFinal: historiaGestacion.pesoFinal,
-        talla: historiaGestacion.talla,
-        partoTermino: historiaGestacion.tipoParto === "termino" ? 1 : 0,
-        preTermino: historiaGestacion.tipoParto === "pretermino" ? 1 : 0,
-        semanas: parseInt(String(historiaGestacion.semanasGestacion)),
-        fechaParto: historiaGestacion.fechaParto?.toString().split('T')[0],
-      },
-      examenPrenatal:{
-        hemoglobina: examenesLab.hemoglobina,
-        hematocrito: examenesLab.hematocrito,
-        transfuciones: examenesLab.transfusiones,
-        enfermedadesGestacion: examenesLab.enfermedadesGestacion,
-        fuma: examenesLab.fuma,
-        alcohol: examenesLab.alcohol,
-      },
-      medicamento:{
-        medicamento: medicamentos.medicamentos,
-        psicoactivos: medicamentos.psicoactivos,
-      }
     }
-
-    console.log('Datos completos del formulario:', body);
   }
 }

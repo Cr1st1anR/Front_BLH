@@ -4,6 +4,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
+import { CommonModule } from '@angular/common';
 import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.interface';
 
 @Component({
@@ -14,11 +15,12 @@ import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.int
     InputTextModule,
     DatePickerModule,
     RadioButton,
+    CommonModule,
   ],
   templateUrl: './historia-gestacion.component.html',
   styleUrl: './historia-gestacion.component.scss',
 })
-export class HistoriaGestacionComponent implements HistoriaGestacionData{
+export class HistoriaGestacionComponent implements HistoriaGestacionData {
   lugarControlPrenatal: string = '';
   tipoIPS: string = '';
   asistioControl: number | null = null;
@@ -26,10 +28,133 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData{
   pesoFinal: string = '';
   talla: string = '';
   tipoParto: string = '';
-  semanasGestacion: number = 0;
+  semanasGestacion: number | null = null;
   fechaParto: Date | undefined;
 
+  formErrors: { [key: string]: string } = {};
+  isFormValid: boolean = false;
+
+  validateNumericField(value: string): boolean {
+    const numValue = parseFloat(value);
+    return !isNaN(numValue) && numValue > 0;
+  }
+
+  validateSemanas(semanas: number): boolean {
+    return !isNaN(semanas) && semanas > 0;
+    // return !isNaN(semanas) && semanas > 0 && semanas <= 45;
+  }
+
+  validateField(fieldName: string, value: any): string {
+    switch (fieldName) {
+      case 'lugarControlPrenatal':
+        return !value || value.trim() === ''
+          ? 'El lugar del control prenatal es obligatorio'
+          : '';
+
+      case 'tipoIPS':
+        return !value || value.trim() === ''
+          ? 'Debe seleccionar una opcion'
+          : '';
+
+      case 'asistioControl':
+        return value === null ? 'Debe seleccionar una opcion' : '';
+
+      case 'pesoInicial':
+        if (!value || value.trim() === '')
+          return 'El peso inicial es obligatorio';
+        if (!this.validateNumericField(value))
+          return 'El peso inicial debe ser un número válido mayor a 0';
+        return '';
+
+      case 'pesoFinal':
+        if (!value || value.trim() === '')
+          return 'El peso final es obligatorio';
+        if (!this.validateNumericField(value))
+          return 'El peso final debe ser un número válido mayor a 0';
+        return '';
+
+      case 'talla':
+        if (!value || value.trim() === '') return 'La talla es obligatoria';
+        if (!this.validateNumericField(value))
+          return 'La talla debe ser un número válido mayor a 0';
+        return '';
+
+      case 'tipoParto':
+        return !value || value.trim() === ''
+          ? 'Debe seleccionar una opcion'
+          : '';
+
+      case 'semanasGestacion':
+        if (!value) return 'Las semanas de gestación son obligatorias';
+        if (!this.validateSemanas(value))
+          return 'Las semanas deben ser un número válido mayor a 0';
+        return '';
+
+      case 'fechaParto':
+        return !value ? 'La fecha de parto es obligatoria' : '';
+
+      default:
+        return '';
+    }
+  }
+
+  validateForm(): boolean {
+    this.formErrors = {};
+    let isValid = true;
+
+    const fieldsToValidate = [
+      'lugarControlPrenatal',
+      'tipoIPS',
+      'asistioControl',
+      'pesoInicial',
+      'pesoFinal',
+      'talla',
+      'tipoParto',
+      'semanasGestacion',
+      'fechaParto',
+    ];
+
+    fieldsToValidate.forEach((field) => {
+      const value = (this as any)[field];
+      const error = this.validateField(field, value);
+      if (error) {
+        this.formErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    this.isFormValid = isValid;
+    return isValid;
+  }
+
+  onFieldChange(fieldName: string, value: any): void {
+    const error = this.validateField(fieldName, value);
+    if (error) {
+      this.formErrors[fieldName] = error;
+    } else {
+      delete this.formErrors[fieldName];
+    }
+  }
+
+  onNumericInput(event: any): void {
+    const value = event.target.value;
+    event.target.value = value
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*)\./g, '$1');
+  }
+
+  onIntegerInput(event: any): void {
+    const value = event.target.value;
+    event.target.value = value.replace(/[^0-9]/g, '');
+  }
+
   getFormData() {
+    if (!this.validateForm()) {
+      throw new Error(
+        'Formulario de Historia de Gestación inválido. Por favor, corrija los errores antes de continuar.'
+      );
+    }
+
     return {
       lugarControlPrenatal: this.lugarControlPrenatal,
       tipoIPS: this.tipoIPS,
@@ -38,7 +163,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData{
       pesoFinal: this.pesoFinal,
       talla: this.talla,
       tipoParto: this.tipoParto,
-      semanasGestacion: this.semanasGestacion,
+      semanasGestacion: this.semanasGestacion || 0,
       fechaParto: this.fechaParto,
     };
   }

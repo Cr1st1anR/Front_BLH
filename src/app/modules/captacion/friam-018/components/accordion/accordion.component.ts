@@ -83,7 +83,7 @@ export class AccordionComponent implements OnInit {
           setTimeout(() => {
             this.precargaDatos();
             this.loading = false;
-          }, 1200);
+          }, 2000);
         },
         error: (err) => {
           this.loading = false;
@@ -97,9 +97,6 @@ export class AccordionComponent implements OnInit {
     this.datosPrecargados = personaData
       ? (JSON.parse(personaData) as RegistroDonanteData)
       : ({} as RegistroDonanteData);
-    setTimeout(() => {
-      this.loading = false;
-    }, 1500);
   }
 
   loadDataEmpleados(): Observable<ApiResponse | null> {
@@ -108,7 +105,6 @@ export class AccordionComponent implements OnInit {
         this.empleadosOpt = [];
         if (response && response.data.length > 0) {
           this.empleadosOpt = response.data;
-          this.loading = false;
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -202,10 +198,9 @@ export class AccordionComponent implements OnInit {
           life: 2500,
         });
 
-      setTimeout(() => {
-        this.router.navigate(['/blh/captacion/registro-donante-blh']);
-      }, 2500);
-
+        setTimeout(() => {
+          this.router.navigate(['/blh/captacion/registro-donante-blh']);
+        }, 2500);
       }, 1500);
     } catch (error) {
       this.saving = false;

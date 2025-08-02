@@ -1,0 +1,125 @@
+.condiciones-container {
+  margin: 20px auto; // Cambiar de "20px 0" a "20px auto" para centrar horizontalmente
+  display: flex; // Agregar flexbox
+  justify-content: center; // Centrar el contenido
+  width: 100%; // Asegurar que ocupe todo el ancho disponible
+
+  .p-table {
+    width: auto; // Permitir que la tabla tenga su ancho natural
+    max-width: 100%; // No exceder el ancho del contenedor
+
+    .p-table-thead > tr > th {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 12px 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .condiciones-header-main {
+      background-color: #3b82f6 !important;
+      width: 60% !important; // Aumentar de 55% a 60%
+      text-align: center !important;
+      padding-left: 16px !important;
+    }
+
+    .condiciones-header-option {
+      background-color: #3b82f6 !important;
+      width: 13.33% !important; // Reducir de 15% a 13.33% para compensar
+      text-align: center !important;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 8px 6px;
+      border: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+
+    .condicion-descripcion {
+      width: 60% !important; // Aumentar de 55% a 60%
+      text-align: left !important;
+      padding-left: 16px !important;
+      font-weight: 500;
+      color: #374151;
+      white-space: normal !important;
+      word-wrap: break-word !important;
+    }
+
+    .condicion-opcion {
+      width: 13.33% !important; // Reducir de 15% a 13.33%
+      text-align: center !important;
+
+      .p-radiobutton {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .p-table-tbody > tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .p-table-tbody > tr:hover {
+      background-color: #f3f4f6;
+    }
+  }
+}
+
+// Estilos específicos para radio buttons
+::ng-deep {
+  .p-radiobutton .p-radiobutton-box {
+    width: 16px;
+    height: 16px;
+  }
+
+  .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
+    width: 8px;
+    height: 8px;
+  }
+
+  // Centrar la tabla dentro del dialog
+  .condiciones-container {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  // Ajustar el ancho de la tabla
+  .condiciones-container .p-table {
+    width: auto !important; // Permitir ancho automático
+    max-width: 900px !important; // Limitar el ancho máximo
+    margin: 0 !important; // Remover márgenes
+  }
+
+  // Forzar el ancho de las columnas
+  .condiciones-container .p-table .p-table-tbody > tr > td.condicion-descripcion {
+    width: 60% !important; // Aumentar de 55% a 60%
+    text-align: left !important;
+    padding-left: 16px !important;
+  }
+
+  .condiciones-container .p-table .p-table-tbody > tr > td.condicion-opcion {
+    width: 13.33% !important; // Reducir de 15% a 13.33%
+    text-align: center !important;
+    padding: 12px 8px !important;
+  }
+
+  // Forzar anchos específicos en los headers
+  .condiciones-container .p-table .p-table-thead > tr > th.condiciones-header-main {
+    width: 60% !important; // Aumentar de 55% a 60%
+    max-width: 60% !important;
+  }
+
+  .condiciones-container .p-table .p-table-thead > tr > th.condiciones-header-option {
+    width: 13.33% !important; // Reducir de 15% a 13.33%
+    max-width: 13.33% !important;
+  }
+
+  // Configuración de la tabla
+  .condiciones-container .p-table table {
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+}

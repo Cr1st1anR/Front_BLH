@@ -1,0 +1,124 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="flex flex-col items-center justify-center mx-auto my-6 max-w-4xl">
+  <p-table
+    #tableVisitas
+    [value]="dataTableVisita"
+    [scrollable]="true"
+    scrollHeight="500px"
+    [columns]="headersTableVisita"
+    [tableStyle]="{ 'min-width': '20rem', 'max-width': '60rem' }"
+    selectionMode="single"
+    dataKey="id_visita"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines">{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td>
+          @if (col.field === 'fecha_visita') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-datepicker
+                  [(ngModel)]="rowData.fecha_visita"
+                  [iconDisplay]="'input'"
+                  [showIcon]="true"
+                  dateFormat="dd/mm/yy"
+                  placeholder="Seleccione fecha"
+                  appendTo="body"
+                  class="w-full">
+                </p-datepicker>
+              </ng-template>
+              <ng-template pTemplate="output">
+                <span (click)="onRowClick(rowData)" style="cursor: pointer">
+                  {{ rowData.fecha_visita || 'Sin fecha' }}
+                </span>
+              </ng-template>
+            </p-cellEditor>
+          } @else if (col.field === 'vista_rapida') {
+            <div class="flex justify-center">
+              <button pButton pRipple type="button" icon="pi pi-eye"
+                class="p-button-rounded p-button-text p-button-secondary"
+                (click)="onEyeClick(rowData, $event)"
+                pTooltip="Ver detalles"
+                tooltipPosition="top"
+                [disabled]="isEyeButtonDisabled(rowData)">
+              </button>
+            </div>
+          } @else if (col.field === 'acciones') {
+            <div class="flex items-center justify-center gap-2">
+              <button
+                *ngIf="!editing"
+                pButton
+                pRipple
+                type="button"
+                pInitEditableRow
+                icon="pi pi-pencil"
+                text
+                rounded
+                severity="secondary"
+                (click)="onRowEditInit(rowData)"
+                [disabled]="isEditButtonDisabled(rowData)"
+                pTooltip="Editar fecha"
+                tooltipPosition="top">
+              </button>
+
+              <button
+                *ngIf="editing"
+                pButton
+                pRipple
+                type="button"
+                icon="pi pi-check"
+                text
+                rounded
+                severity="success"
+                (click)="onRowEditSave(rowData, rowIndex, $event)"
+                pTooltip="Guardar"
+                tooltipPosition="top">
+              </button>
+
+              <button
+                *ngIf="editing"
+                pButton
+                pRipple
+                type="button"
+                pCancelEditableRow
+                icon="pi pi-times"
+                text
+                rounded
+                severity="danger"
+                (click)="onRowEditCancel(rowData, rowIndex)"
+                pTooltip="Cancelar"
+                tooltipPosition="top">
+              </button>
+            </div>
+          } @else {
+            <span (click)="onRowClick(rowData)" style="cursor: pointer">
+              {{ rowData[col.field] }}
+            </span>
+          }
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataTableVisita || dataTableVisita.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

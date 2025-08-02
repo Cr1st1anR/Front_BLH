@@ -1,0 +1,66 @@
+<p-toast position="top-right" key="tr" />
+
+<div class="condiciones-container">
+  <p-table [value]="condiciones" [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'fixed', 'width': '100%' }">
+
+    <!-- Header con anchos actualizados -->
+    <ng-template #header>
+      <tr>
+        <th class="condiciones-header-main" [ngStyle]="{'width': '60%', 'max-width': '60%'}">
+          CONDICIONES DE LA SITUACION ENCONTRADA
+        </th>
+        <th class="condiciones-header-option" [ngStyle]="{'width': '13.33%', 'max-width': '13.33%'}">SI</th>
+        <th class="condiciones-header-option" [ngStyle]="{'width': '13.33%', 'max-width': '13.33%'}">NO</th>
+        <th class="condiciones-header-option" [ngStyle]="{'width': '13.33%', 'max-width': '13.33%'}">N/A</th>
+      </tr>
+    </ng-template>
+
+    <!-- Body con anchos actualizados -->
+    <ng-template #body let-condicion let-rowIndex="rowIndex">
+      <tr>
+        <td class="condicion-descripcion"
+            [ngStyle]="{'text-align': 'left', 'padding-left': '16px', 'width': '60%', 'max-width': '60%'}">
+          <div [ngStyle]="{'text-align': 'left', 'width': '100%'}">
+            {{ rowIndex + 1 }}. {{ condicion.descripcion }}
+          </div>
+        </td>
+
+        <!-- Opción SI -->
+        <td class="condicion-opcion"
+            [ngStyle]="{'text-align': 'center', 'width': '13.33%', 'max-width': '13.33%'}">
+          <p-radioButton
+            [inputId]="'si_' + condicion.id"
+            value="SI"
+            [(ngModel)]="condicion.respuesta"
+            (onClick)="onRespuestaChange(condicion, 'SI')"
+            name="condicion_{{ condicion.id }}">
+          </p-radioButton>
+        </td>
+
+        <!-- Opción NO -->
+        <td class="condicion-opcion"
+            [ngStyle]="{'text-align': 'center', 'width': '13.33%', 'max-width': '13.33%'}">
+          <p-radioButton
+            [inputId]="'no_' + condicion.id"
+            value="NO"
+            [(ngModel)]="condicion.respuesta"
+            (onClick)="onRespuestaChange(condicion, 'NO')"
+            name="condicion_{{ condicion.id }}">
+          </p-radioButton>
+        </td>
+
+        <!-- Opción N/A -->
+        <td class="condicion-opcion"
+            [ngStyle]="{'text-align': 'center', 'width': '13.33%', 'max-width': '13.33%'}">
+          <p-radioButton
+            [inputId]="'na_' + condicion.id"
+            value="N/A"
+            [(ngModel)]="condicion.respuesta"
+            (onClick)="onRespuestaChange(condicion, 'N/A')"
+            name="condicion_{{ condicion.id }}">
+          </p-radioButton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -11,7 +11,7 @@
 
 
 <div class="flex justify-between items-center mx-4">
-  <app-new-register (nuevoRegistro)="agregarFilaVacia()" />
+  <app-new-register (nuevoRegistro)="agregarFilaVacia()" [disabled]="isAnyRowEditing()" />
   <app-month-picker (dateChange)="filtrarPorFecha($event)" />
 </div>
 
@@ -86,8 +86,8 @@
                 [showIcon]="true" inputId="icondisplay"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }@else {
-              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [timeOnly]="true"
-               [showIcon]="true" inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               }
               @case ("checkbox") {
@@ -162,7 +162,7 @@
         <td>
           <div class="flex items-center justify-center gap-2">
             <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
-              severity="secondary" (click)="onRowEditInit(rowData)"></button>
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"></button>
 
             <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
               (click)="onRowEditSave(rowData,ri,$event)"></button>

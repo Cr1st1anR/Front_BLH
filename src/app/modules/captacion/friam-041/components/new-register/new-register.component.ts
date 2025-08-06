@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 
@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 })
 export class NewRegisterComponent {
   @Output() nuevoRegistro = new EventEmitter<void>();
+  @Input() disabled: boolean = false;
 
   crearRegistro() {
     this.nuevoRegistro.emit();

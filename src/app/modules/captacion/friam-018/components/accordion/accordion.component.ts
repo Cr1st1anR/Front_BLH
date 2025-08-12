@@ -16,7 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { RegistroDonanteData } from '../posibles-donantes-table/interfaces/registro-donante.interface';
+import { BodyMadreDonante, ResponseMadresDonantes } from '../posibles-donantes-table/interfaces/registro-donante.interface';
 import { RegistroDonanteService } from '../posibles-donantes-table/services/registro-donante.service';
 import { concatMap, Observable, of, tap } from 'rxjs';
 import {
@@ -60,7 +60,7 @@ export class AccordionComponent implements OnInit {
   @ViewChild(MedicamentosComponent) medicamentosComp!: MedicamentosComponent;
 
   documento: string | null = null;
-  datosPrecargados: RegistroDonanteData = {} as RegistroDonanteData;
+  datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
   empleadosOpt: empleados[] = [];
 
   constructor(
@@ -69,6 +69,10 @@ export class AccordionComponent implements OnInit {
     private messageService: MessageService,
     private _registroDonanteService: RegistroDonanteService
   ) {
+
+    const navigation = this.router.getCurrentNavigation();
+    this.datosPrecargados = navigation?.extras?.state?.['personInfo'];
+
     this.route.paramMap.subscribe((params) => {
       this.documento = params.get('documento');
     });
@@ -76,54 +80,16 @@ export class AccordionComponent implements OnInit {
 
   ngOnInit() {
     this.loading = true;
-    of(null)
-      .pipe(concatMap(() => this.loadDataEmpleados()))
-      .subscribe({
-        complete: () => {
-          setTimeout(() => {
-            this.precargaDatos();
-            this.loading = false;
-          }, 2000);
-        },
-        error: (err) => {
-          this.loading = false;
-          console.error('Error en la secuencia de peticiones', err);
-        },
-      });
+    this.precargaDatos();
   }
 
   precargaDatos() {
-    const personaData = localStorage.getItem('personInfo');
-    this.datosPrecargados = personaData
-      ? (JSON.parse(personaData) as RegistroDonanteData)
-      : ({} as RegistroDonanteData);
+    setTimeout(() => {
+      this.loading = false
+    }, 1000);
   }
 
-  loadDataEmpleados(): Observable<ApiResponse | null> {
-    return this._registroDonanteService.getDataEmpleados().pipe(
-      tap((response) => {
-        this.empleadosOpt = [];
-        if (response && response.data.length > 0) {
-          this.empleadosOpt = response.data;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos cargados correctamente',
-            key: 'tr',
-            life: 2000,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos para mostrar',
-            key: 'tr',
-            life: 2000,
-          });
-        }
-      })
-    );
-  }
+
 
   onCancelar() {
     this.router.navigate(['/blh/captacion/registro-donante-blh']);
@@ -138,18 +104,35 @@ export class AccordionComponent implements OnInit {
       const examenesLab = this.examenesLabComp.getFormData();
       const medicamentos = this.medicamentosComp.getFormData();
 
-      const body = {
-        donanteExclusivo: datosInscripcion.donanteExclusiva,
-        tipoDonante: datosInscripcion.donante_EoI,
-        recoleccionDomicilio: datosInscripcion.recoleccionDomicilio,
-        capacitado: datosInscripcion.capcitacion,
-        donanteApta: medicamentos.donanteApta,
-        firmaDonante: medicamentos.firmaDonante,
-        firmaProfesional: medicamentos.profesionalResponsable,
-        firmaAcompañante: medicamentos.firmaAcompanante,
-        recibioEducacion: medicamentos.recibioEducacion,
-        madrePotencial: {
-          id: this.datosPrecargados.idMadrePotencial,
+      const body: BodyMadreDonante = {
+        madreDonante: {
+          id: this.datosPrecargados.MadreDonante.id,
+          recoleccionDomicilio: datosInscripcion.recoleccionDomicilio,
+          donanteApta: medicamentos.donanteApta,
+          recibioEducacion: medicamentos.recibioEducacion,
+          capacitado: datosInscripcion.capcitacion,
+          tipoDonante: datosInscripcion.donante_EoI,
+          donanteExclusivo: datosInscripcion.donanteExclusiva,
+          firmaDonante: medicamentos.firmaDonante,
+          firmaProfesional: medicamentos.profesionalResponsable,
+          firmaAcompañante: medicamentos.firmaAcompanante,
+          madrePotencial: this.datosPrecargados.id,
+        },
+        infoMadre: {
+          id: this.datosPrecargados.infoMadre,
+          ciudad: datosInscripcion.ciudad,
+          celular: datosInscripcion.celular,
+          fechaNacimiento: datosInscripcion.fechaNacimiento?.toISOString().split('T')[0],
+          profesion: datosInscripcion.profesion,
+          barrio: datosInscripcion.barrio,
+          telefono: datosInscripcion.telefono,
+          direccion: datosInscripcion.direccion,
+          nombre: datosInscripcion.nombre,
+          eps: datosInscripcion.eps,
+          nombreHijo: datosInscripcion.nombreHijo,
+          documento: datosInscripcion.documento,
+          departamento: datosInscripcion.departamento,
+          fechaParto: historiaGestacion.fechaParto?.toISOString().split('T')[0],
         },
         empleado: {
           id: medicamentos.empleado?.id,
@@ -157,7 +140,7 @@ export class AccordionComponent implements OnInit {
         hijosMadre: [
           {
             nombre: datosInscripcion.nombreHijo,
-            peso: datosInscripcion.pesoBebe,
+            peso: datosInscripcion.pesoBebe as string | null,
           },
         ],
         gestacion: {
@@ -170,10 +153,10 @@ export class AccordionComponent implements OnInit {
           partoTermino: historiaGestacion.tipoParto === 'termino' ? 1 : 0,
           preTermino: historiaGestacion.tipoParto === 'pretermino' ? 1 : 0,
           semanas: parseInt(String(historiaGestacion.semanasGestacion)),
-          fechaParto: historiaGestacion.fechaParto?.toString().split('T')[0],
+          fechaParto: historiaGestacion.fechaParto?.toISOString().split('T')[0],
         },
         examenPrenatal: {
-          hemoglobina: examenesLab.hemoglobina,
+          hemoglobina: examenesLab.hemoglobina ,
           hematocrito: examenesLab.hematocrito,
           transfuciones: examenesLab.transfusiones,
           enfermedadesGestacion: examenesLab.enfermedadesGestacion,
@@ -186,22 +169,32 @@ export class AccordionComponent implements OnInit {
         },
       };
 
-      console.log('Datos completos del formulario:', body);
+      debugger
 
-      setTimeout(() => {
-        this.saving = false;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: 'Datos guardados correctamente',
-          key: 'tr',
-          life: 2500,
+      this._registroDonanteService
+        .postDataRegistroDonante(body as BodyMadreDonante)
+        .subscribe({
+          next: (response: ApiResponse) => {
+            if (response.status === 200) {
+              this.saving = false;
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Datos guardados correctamente',
+                key: 'tr',
+                life: 2500,
+              });
+            } else {
+              throw new Error(response.statusmsg || 'Error al guardar los datos');
+            }
+
+            this.router.navigate(['/blh/captacion/registro-donante-blh']);
+
+          },
+          error: (error) => {
+            throw error;
+          },
         });
-
-        setTimeout(() => {
-          this.router.navigate(['/blh/captacion/registro-donante-blh']);
-        }, 2500);
-      }, 1500);
     } catch (error) {
       this.saving = false;
       this.messageService.add({

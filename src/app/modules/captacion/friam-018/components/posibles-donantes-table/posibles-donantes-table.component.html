@@ -9,10 +9,10 @@
 
 <app-header [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'" />
 
-<div class="flex justify-between items-center mx-4 mt-6">
+<!-- <div class="flex justify-between items-center mx-4 mt-6">
   <div></div>
   <month-picker-table (dateChange)="filtrarPorFecha($event)" />
-</div>
+</div> -->
 
 <div class="container-table">
   <p-table [value]="dataRegistroDonante" [scrollable]="true" scrollHeight="500px"
@@ -28,15 +28,20 @@
       </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns">
-      <tr (click)="onRowClick(rowData)" style="cursor: pointer"
-        [class.donante-efectiva]="rowData.donanteEfectiva === 1">
+      <tr (click)="onRowClick(rowData)" style="cursor: pointer" [ngClass]="rowData['backgroundColorRow']">
         @for (col of columns; track $index) {
         <td>
-          @if (col.field === 'entidad') {
-          {{ rowData.entidad?.nombre || rowData.entidad || "" }}
-          } @else {
-          {{ rowData[col.field] }}
+          @if( col.field === 'laboratorio') {
+          <ng-container >
+            {{ rowData[col.field] }}
+          </ng-container>
           }
+          @else {
+          <ng-container >
+            {{ rowData[col.field] }}
+          </ng-container>
+          }
+
         </td>
         }
       </tr>

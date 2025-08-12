@@ -1,15 +1,15 @@
 export interface ExamenesLaboratorioData {
   fechaRegistroLab: Date | null;
-  vdrl: string;
+  vdrl: number | null;
   fechaVencimientoVdrl: Date | null;
-  hbsag: string;
+  hbsag: number | null;
   fechaVencimientoHbsag: Date | null;
-  hiv: string;
+  hiv: number | null;
   fechaVencimientoHiv: Date | null;
-  hemoglobina: string;
-  hematocrito: string;
+  hemoglobina: number | null;
+  hematocrito: number | null;
   transfusiones: number | null;
-  enfermedadesGestacion: string;
+  enfermedadesGestacion: string | null;
   fuma: number | null;
   alcohol: number | null;
 }

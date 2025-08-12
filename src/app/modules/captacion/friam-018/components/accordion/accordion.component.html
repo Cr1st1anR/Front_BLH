@@ -23,9 +23,9 @@
 <div class="card flex justify-center accordion-container">
   <p-accordion value="0">
     <datos-inscripcion [datosPrecargados]="datosPrecargados" />
-    <historia-gestacion />
-    <examenes-laboratorio />
-    <medicamentos [empleadosOpt]="empleadosOpt" />
+    <historia-gestacion [datosPrecargados]="datosPrecargados"/>
+    <examenes-laboratorio  [datosPrecargados]="datosPrecargados"/>
+    <medicamentos  [datosPrecargados]="datosPrecargados" />
   </p-accordion>
 </div>
 

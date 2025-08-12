@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'primeng/accordion';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CommonModule } from '@angular/common';
 import type { ExamenesLaboratorioData } from '../interfaces/examenes-laboratorio.interface';
+import { ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
 
 @Component({
   selector: 'examenes-laboratorio',
@@ -30,16 +31,21 @@ import type { ExamenesLaboratorioData } from '../interfaces/examenes-laboratorio
   styleUrl: './examenes-laboratorio.component.scss',
   providers: [MessageService],
 })
-export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData {
+export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData,OnChanges {
+  @Input() datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
+
   fechaRegistroLab: Date | null = null;
-  vdrl: string = '';
+  vdrl: number | null = null;
   fechaVencimientoVdrl: Date | null = null;
-  hbsag: string = '';
+  docVdrl: string = '';
+  hbsag: number | null = null;
   fechaVencimientoHbsag: Date | null = null;
-  hiv: string = '';
+  docHbsag: string = '';
+  hiv: number | null = null;
+  docHiv: string = '';
   fechaVencimientoHiv: Date | null = null;
-  hemoglobina: string = '';
-  hematocrito: string = '';
+  hemoglobina: number | null = null;
+  hematocrito: number | null = null;
   transfusiones: number | null = null;
   enfermedadesGestacion: string = '';
   fuma: number | null = null;
@@ -60,22 +66,43 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData {
 
   formErrors: { [key: string]: string } = {};
   isFormValid: boolean = false;
+  visible: boolean = false;
 
-  constructor(private messageService: MessageService) {}
+  constructor(private messageService: MessageService) { }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
+      this.formatForm();
+      this.visible = true;
+    }
+  }
+
+  formatForm() {
+    this.fechaRegistroLab =  this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[0].fechaRegistro!) : null;
+    this.vdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[0].resultado : null;
+    this.fechaVencimientoVdrl = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[0].fechaVencimiento!) : null;
+    this.hbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[1].resultado : null;
+    this.fechaVencimientoHbsag = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[1].fechaVencimiento!) : null;
+    this.hiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[2].resultado : null;
+    this.fechaVencimientoHiv = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[2].fechaVencimiento!) : null;
+    this.docVdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[0].documento : '';
+    this.docHbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[1].documento : '';
+    this.docHiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[2].documento : '';
+    this.hemoglobina = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hemoglobina : null;
+    this.hematocrito = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hematocrito : null;
+    this.transfusiones = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.transfuciones : null;
+    this.enfermedadesGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.enfermedadesGestacion : '';
+    this.fuma = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.fuma : null;
+    this.alcohol = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.alcohol : null;
+    if(this.datosPrecargados.MadreDonante){
+      this.datosPrecargados.MadreDonante.laboratorio.map((lab) => {
+        lab.fechaVencimiento = new Date(lab.fechaVencimiento);
+      });
+    }
+  }
 
   validateField(fieldName: string, value: any): string {
     switch (fieldName) {
-      case 'fechaRegistroLab':
-        return !value ? 'La fecha de registro es obligatoria' : '';
-
-      case 'vdrl':
-        return !value || value.trim() === ''
-          ? 'Debe seleccionar una opcion'
-          : '';
-
-      case 'fechaVencimientoVdrl':
-        return !value ? 'La fecha de vencimiento de VDRL es obligatoria' : '';
-
       case 'archivoVdrl':
         return !this.files['vdrl']
           ? 'Debe adjuntar el archivo del examen VDRL'
@@ -143,16 +170,6 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData {
     let isValid = true;
 
     const fieldsToValidate = [
-      'fechaRegistroLab',
-      'vdrl',
-      'fechaVencimientoVdrl',
-      'archivoVdrl',
-      'hbsag',
-      'fechaVencimientoHbsag',
-      'archivoHbsag',
-      'hiv',
-      'fechaVencimientoHiv',
-      'archivoHiv',
       'hemoglobina',
       'hematocrito',
       'transfusiones',

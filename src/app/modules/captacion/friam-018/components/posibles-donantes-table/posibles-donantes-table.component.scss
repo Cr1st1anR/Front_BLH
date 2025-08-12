@@ -17,8 +17,12 @@
 
 .donante-efectiva {
     background-color: #78c089 !important;
+    :hover {
+        background-color: #54be6d !important;
+    }
 }
 
-.donante-efectiva:hover {
-    background-color: #54be6d !important;
+.lab-vencimiento {
+    background-color: red !important;
 }
+

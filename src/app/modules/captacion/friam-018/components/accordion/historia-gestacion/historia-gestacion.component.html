@@ -1,3 +1,4 @@
+@if (visible) {
 <p-accordion-panel value="1">
   <p-accordion-header>HISTORIA DE LA GESTACION</p-accordion-header>
   <p-accordion-content>
@@ -7,8 +8,9 @@
         <div class="historia-control-prenatal-input">
           <label class="font-bold mb-1 block">¿Dónde asistió al control prenatal? <span
               class="required">*</span></label>
-          <input pInputText type="text" [(ngModel)]="lugarControlPrenatal" name="lugarControlPrenatal" class="w-full"
-            required (ngModelChange)="onFieldChange('lugarControlPrenatal', $event)"
+          <input pInputText type="text" [(ngModel)]="lugarControlPrenatal"
+            name="lugarControlPrenatal" class="w-full" required
+            (ngModelChange)="onFieldChange('lugarControlPrenatal', $event)"
             [class.ng-invalid]="formErrors['lugarControlPrenatal']" />
           <small class="error-message" *ngIf="formErrors['lugarControlPrenatal']">
             {{ formErrors['lugarControlPrenatal'] }}
@@ -17,11 +19,11 @@
         <div class="historia-control-prenatal-radios">
           <div class="flex flex-col radios-texto">
             <div class="flex items-center gap-4 radio">
-              <p-radioButton name="tipoIPS" [value]="'1'" [(ngModel)]="tipoIPS" inputId="ipsPublica"
-                (ngModelChange)="onFieldChange('tipoIPS', $event)"></p-radioButton>
+              <p-radioButton name="tipoIPS" [value]="'1'" [(ngModel)]="tipoIPS"
+                inputId="ipsPublica" (ngModelChange)="onFieldChange('tipoIPS', $event)"></p-radioButton>
               <label for="ipsPublica" class="mr-4 font-bold">IPS Publica</label>
-              <p-radioButton name="tipoIPS" [value]="'2'" [(ngModel)]="tipoIPS" inputId="ipsPrivada"
-                (ngModelChange)="onFieldChange('tipoIPS', $event)"></p-radioButton>
+              <p-radioButton name="tipoIPS" [value]="'2'" [(ngModel)]="tipoIPS"
+                inputId="ipsPrivada" (ngModelChange)="onFieldChange('tipoIPS', $event)"></p-radioButton>
               <label for="ipsPrivada" class="mr-4 font-bold">IPS Privada</label>
             </div>
             <small class="error-message" *ngIf="formErrors['tipoIPS']">
@@ -34,10 +36,12 @@
       <div>
         <label class="font-bold mb-1 block">Asistió al control prenatal <span class="required">*</span></label>
         <div class="flex items-center gap-6 mt-2 radios-texto">
-          <p-radioButton name="asistioControl" [value]="1" [(ngModel)]="asistioControl" inputId="asistioSi"
+          <p-radioButton name="asistioControl" [value]="1"
+            [(ngModel)]="asistioControl" inputId="asistioSi"
             (ngModelChange)="onFieldChange('asistioControl', $event)"></p-radioButton>
           <label for="asistioSi" class="mr-4">Sí</label>
-          <p-radioButton name="asistioControl" [value]="0" [(ngModel)]="asistioControl" inputId="asistioNo"
+          <p-radioButton name="asistioControl" [value]="0"
+            [(ngModel)]="asistioControl" inputId="asistioNo"
             (ngModelChange)="onFieldChange('asistioControl', $event)"></p-radioButton>
           <label for="asistioNo">No</label>
         </div>
@@ -53,7 +57,8 @@
           <div>
             <label>Inicial: <span class="required">*</span></label>
             <div class="input-abreviacion">
-              <input pInputText type="text" class="input-peso" [(ngModel)]="pesoInicial" name="pesoInicial" required
+              <input pInputText type="text" class="input-peso"
+                [(ngModel)]="pesoInicial" name="pesoInicial" required
                 (input)="onNumericInput($event)" (ngModelChange)="onFieldChange('pesoInicial', $event)"
                 [class.ng-invalid]="formErrors['pesoInicial']" />
               <span>(Kg)</span>
@@ -65,7 +70,8 @@
           <div>
             <label>Final: <span class="required">*</span></label>
             <div class="input-abreviacion">
-              <input pInputText type="text" class="input-peso" [(ngModel)]="pesoFinal" name="pesoFinal" required
+              <input pInputText type="text" class="input-peso"
+                [(ngModel)]="pesoFinal" name="pesoFinal" required
                 (input)="onNumericInput($event)" (ngModelChange)="onFieldChange('pesoFinal', $event)"
                 [class.ng-invalid]="formErrors['pesoFinal']" />
               <span>(Kg)</span>
@@ -77,7 +83,8 @@
           <div>
             <label>Talla: <span class="required">*</span></label>
             <div class="input-abreviacion">
-              <input pInputText type="text" class="input-peso" [(ngModel)]="talla" name="talla" required
+              <input pInputText type="text" class="input-peso"
+                [(ngModel)]="talla" name="talla" required
                 (input)="onNumericInput($event)" (ngModelChange)="onFieldChange('talla', $event)"
                 [class.ng-invalid]="formErrors['talla']" />
               <span>(Cm)</span>
@@ -107,8 +114,9 @@
 
           <div class="flex flex-col">
             <label class="font-bold mb-2">Semanas: <span class="required">*</span></label>
-            <input pInputText type="text" class="w-20" [(ngModel)]="semanasGestacion" name="semanasGestacion" required
-              (input)="onIntegerInput($event)" (ngModelChange)="onFieldChange('semanasGestacion', $event)"
+            <input pInputText type="text" class="w-20" [(ngModel)]="semanasGestacion"
+              name="semanasGestacion" required (input)="onIntegerInput($event)"
+              (ngModelChange)="onFieldChange('semanasGestacion', $event)"
               [class.ng-invalid]="formErrors['semanasGestacion']" />
             <small class="error-message" *ngIf="formErrors['semanasGestacion']">
               {{ formErrors['semanasGestacion'] }}
@@ -117,8 +125,9 @@
 
           <div class="flex flex-col">
             <label class="font-bold mb-2">Fecha de parto: <span class="required">*</span></label>
-            <p-datepicker [(ngModel)]="fechaParto" name="fechaParto" [iconDisplay]="'input'" [showIcon]="true"
-              dateFormat="dd/mm/yy" required (ngModelChange)="onFieldChange('fechaParto', $event)"
+            <p-datepicker [(ngModel)]="fechaParto" name="fechaParto"
+              [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy" required
+              (ngModelChange)="onFieldChange('fechaParto', $event)"
               [class.ng-invalid]="formErrors['fechaParto']"></p-datepicker>
             <small class="error-message" *ngIf="formErrors['fechaParto']">
               {{ formErrors['fechaParto'] }}
@@ -129,3 +138,4 @@
     </form>
   </p-accordion-content>
 </p-accordion-panel>
+}

@@ -119,7 +119,7 @@ export class AccordionComponent implements OnInit {
           madrePotencial: this.datosPrecargados.id
         },
         infoMadre: {
-          id: this.datosPrecargados.infoMadre,
+          id: this.datosPrecargados.infoMadre.id,
           ciudad: datosInscripcion.ciudad,
           celular: datosInscripcion.celular,
           fechaNacimiento: datosInscripcion.fechaNacimiento?.toISOString().split('T')[0],

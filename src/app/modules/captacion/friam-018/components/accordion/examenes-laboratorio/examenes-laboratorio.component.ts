@@ -226,18 +226,19 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
   }
 
   onUpload(tipo: 'vdrl' | 'hbsag' | 'hiv') {
-    const formData = new FormData();
-
-
     if (this.files[tipo]) {
       this.uploading[tipo] = true;
+      const formData = new FormData();
+      const fechaVencimiento = tipo === 'vdrl' ? this.fechaVencimientoVdrl : tipo === 'hbsag' ? this.fechaVencimientoHbsag : this.fechaVencimientoHiv;
+      const tipoLaboratorio = tipo === 'vdrl' ? '1' : tipo === 'hbsag' ? '2' : '3';
+      const resultado = tipo === 'vdrl' ? this.vdrl : tipo === 'hbsag' ? this.hbsag : this.hiv;
+
       formData.append('pdf', this.files[tipo] as File);
-      formData.append('resultado', this.vdrl?.toString() || '');
-      formData.append('fechaVencimiento', this.fechaVencimientoVdrl?.toString() || '');
-      formData.append('madreDonante', this.fechaVencimientoVdrl?.toString() || '');
-
-
-
+      formData.append('resultado', resultado?.toString() || '');
+      formData.append('fechaVencimiento', fechaVencimiento?.toISOString().split('T')[0] || '');
+      formData.append('madrePotencial', this.datosPrecargados.id?.toString() || '');
+      formData.append('tipoLaboratorio', tipoLaboratorio);
+      debugger; 
       setTimeout(() => {
         this.uploading[tipo] = false;
         this._registroDonanteService.uploadPdf(formData).subscribe({

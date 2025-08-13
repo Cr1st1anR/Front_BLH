@@ -12,6 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CommonModule } from '@angular/common';
 import type { ExamenesLaboratorioData } from '../interfaces/examenes-laboratorio.interface';
 import { ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
+import { RegistroDonanteService } from '../../posibles-donantes-table/services/registro-donante.service';
 
 @Component({
   selector: 'examenes-laboratorio',
@@ -31,7 +32,7 @@ import { ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces
   styleUrl: './examenes-laboratorio.component.scss',
   providers: [MessageService],
 })
-export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData,OnChanges {
+export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, OnChanges {
   @Input() datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
 
   fechaRegistroLab: Date | null = null;
@@ -68,7 +69,10 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData,OnC
   isFormValid: boolean = false;
   visible: boolean = false;
 
-  constructor(private messageService: MessageService) { }
+  constructor(
+    private messageService: MessageService,
+    private _registroDonanteService: RegistroDonanteService
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
@@ -78,24 +82,24 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData,OnC
   }
 
   formatForm() {
-    this.fechaRegistroLab =  this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[0].fechaRegistro!) : null;
-    this.vdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[0].resultado : null;
-    this.fechaVencimientoVdrl = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[0].fechaVencimiento!) : null;
-    this.hbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[1].resultado : null;
-    this.fechaVencimientoHbsag = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[1].fechaVencimiento!) : null;
-    this.hiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[2].resultado : null;
-    this.fechaVencimientoHiv = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.laboratorio[2].fechaVencimiento!) : null;
-    this.docVdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[0].documento : '';
-    this.docHbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[1].documento : '';
-    this.docHiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.laboratorio[2].documento : '';
+    this.fechaRegistroLab = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaRegistro!) : null;
+    this.vdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].resultado : null;
+    this.fechaVencimientoVdrl = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaVencimiento!) : null;
+    this.hbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].resultado : null;
+    this.fechaVencimientoHbsag = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[1].fechaVencimiento!) : null;
+    this.hiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].resultado : null;
+    this.fechaVencimientoHiv = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[2].fechaVencimiento!) : null;
+    this.docVdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].documento : '';
+    this.docHbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].documento : '';
+    this.docHiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].documento : '';
     this.hemoglobina = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hemoglobina : null;
     this.hematocrito = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hematocrito : null;
     this.transfusiones = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.transfuciones : null;
     this.enfermedadesGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.enfermedadesGestacion : '';
     this.fuma = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.fuma : null;
     this.alcohol = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.alcohol : null;
-    if(this.datosPrecargados.MadreDonante){
-      this.datosPrecargados.MadreDonante.laboratorio.map((lab) => {
+    if (this.datosPrecargados.MadreDonante) {
+      this.datosPrecargados.laboratorio.map((lab) => {
         lab.fechaVencimiento = new Date(lab.fechaVencimiento);
       });
     }
@@ -222,22 +226,40 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData,OnC
   }
 
   onUpload(tipo: 'vdrl' | 'hbsag' | 'hiv') {
+    const formData = new FormData();
+
+
     if (this.files[tipo]) {
       this.uploading[tipo] = true;
+      formData.append('pdf', this.files[tipo] as File);
+      formData.append('resultado', this.vdrl?.toString() || '');
+      formData.append('fechaVencimiento', this.fechaVencimientoVdrl?.toString() || '');
+      formData.append('madreDonante', this.fechaVencimientoVdrl?.toString() || '');
+
+
 
       setTimeout(() => {
         this.uploading[tipo] = false;
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: `Archivo de ${tipo.toUpperCase()} subido correctamente`,
-          key: 'tr',
-          life: 2500,
+        this._registroDonanteService.uploadPdf(formData).subscribe({
+          next: (response) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: `Archivo de ${tipo.toUpperCase()} subido correctamente`,
+              key: 'tr',
+              life: 2500,
+            });
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error al subir el archivo',
+              key: 'tr',
+              life: 2500,
+            });
+          },
         });
-
-        //  logica de subida de archivos
-        // llamar a un servicio
       }, 1500);
     } else {
       this.messageService.add({

@@ -57,6 +57,7 @@ export interface ResponseMadresDonantes {
   fecha_registro: Date | string;
   infoMadre: InfoMadre;
   MadreDonante: MadreDonante;
+  laboratorio: Laboratorio[];
 }
 
 export interface InfoMadre {
@@ -88,7 +89,7 @@ export interface MadreDonante {
   firmaProfesional: string | null;
   firmaAcompañante: string | null;
   fecha_diligenciamiento: Date | null;
-  laboratorio: Laboratorio[];
+
   gestacion: Gestacion;
   hijosMadre: HijosMadre[];
   examenesPrenatal: ExamenesPrenatal;

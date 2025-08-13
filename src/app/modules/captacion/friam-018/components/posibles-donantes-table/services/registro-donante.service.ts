@@ -36,4 +36,9 @@ export class RegistroDonanteService {
     const url = `${environment.ApiBLH}/getInfoCompleteMadrePotencial/${id}`;
     return this.http.get<ApiResponse>(url);
   }
+
+  uploadPdf(formData: FormData): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/uploadPDFs`;
+    return this.http.post<ApiResponse>(url, formData);
+  }
 }

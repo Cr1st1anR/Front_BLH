@@ -199,7 +199,7 @@ export class PosiblesDonantesTableComponent implements OnInit {
         nombre: flat!.infoMadre.nombre,
         apellido: flat!.infoMadre.apellido,
         documento: flat!.infoMadre.documento,
-        laboratorio: flat!.MadreDonante ? flat!.MadreDonante.laboratorio.map(lab => lab.fechaVencimiento).sort((a, b) => (a > b ? 1 : -1))[0] : "Sin Fecha",
+        laboratorio: flat!.MadreDonante ? flat!.laboratorio.map(lab => lab.fechaVencimiento).sort((a, b) => (a > b ? 1 : -1))[0] : "Sin Fecha",
         backgroundColorRow: flat!.MadreDonante ? flat!.MadreDonante.donanteApta === 1 ? 'donante-efectiva' : '' : ''
       }
 

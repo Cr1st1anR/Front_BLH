@@ -74,7 +74,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChan
           : '';
 
       case 'tipoIPS':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -82,27 +82,27 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChan
         return value === null ? 'Debe seleccionar una opcion' : '';
 
       case 'pesoInicial':
-        if (!value || value.trim() === '')
+        if (!value || value.toString().trim() === '')
           return 'El peso inicial es obligatorio';
         if (!this.validateNumericField(value))
           return 'El peso inicial debe ser un número válido mayor a 0';
         return '';
 
       case 'pesoFinal':
-        if (!value || value.trim() === '')
+        if (!value || value.toString().trim() === '')
           return 'El peso final es obligatorio';
         if (!this.validateNumericField(value))
           return 'El peso final debe ser un número válido mayor a 0';
         return '';
 
       case 'talla':
-        if (!value || value.trim() === '') return 'La talla es obligatoria';
+        if (!value || value.toString().trim() === '') return 'La talla es obligatoria';
         if (!this.validateNumericField(value))
           return 'La talla debe ser un número válido mayor a 0';
         return '';
 
       case 'tipoParto':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -178,6 +178,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChan
     }
 
     return {
+      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.id : null,
       lugarControlPrenatal: this.lugarControlPrenatal,
       tipoIPS: this.tipoIPS,
       asistioControl: this.asistioControl,

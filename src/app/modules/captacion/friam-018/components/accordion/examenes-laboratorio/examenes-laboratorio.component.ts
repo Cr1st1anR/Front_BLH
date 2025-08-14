@@ -113,7 +113,7 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
           : '';
 
       case 'hbsag':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -126,7 +126,7 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
           : '';
 
       case 'hiv':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -139,12 +139,12 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
           : '';
 
       case 'hemoglobina':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Este campo es obligatorio'
           : '';
 
       case 'hematocrito':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Este campo es obligatorio'
           : '';
 
@@ -154,7 +154,7 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
           : '';
 
       case 'enfermedadesGestacion':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Este campo es obligatorio'
           : '';
 
@@ -281,6 +281,7 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
     }
 
     return {
+      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.id : null,
       fechaRegistroLab: this.fechaRegistroLab,
       vdrl: this.vdrl,
       fechaVencimientoVdrl: this.fechaVencimientoVdrl,

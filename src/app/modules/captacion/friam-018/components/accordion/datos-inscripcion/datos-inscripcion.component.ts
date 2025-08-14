@@ -59,7 +59,7 @@ export class DatosInscripcionComponent implements DatosInscripcionData, OnChange
 
   formatForm() {
     this.fechaDiligenciamiento = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.fecha_diligenciamiento!) : new Date();
-    this.nombre = this.datosPrecargados.infoMadre.nombre + ' ' + this.datosPrecargados.infoMadre.apellido;
+    this.nombre = this.datosPrecargados.infoMadre.nombre || '';
     this.celular = this.datosPrecargados.infoMadre.celular;
     this.profesion = this.datosPrecargados.infoMadre.profesion || '';
     this.barrio = this.datosPrecargados.infoMadre.barrio;
@@ -110,7 +110,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'El nombre es obligatorio' : '';
 
     case 'celular':
-      const celular = this.datosPrecargados.infoMadre.celular;
+      const celular = this.celular;
       if (!celular || String(celular).trim() === '') {
         return 'El celular es obligatorio';
       }
@@ -126,11 +126,11 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'La profesión/oficio es obligatoria' : '';
 
     case 'barrio':
-      const barrio = this.datosPrecargados.infoMadre.barrio;
+      const barrio = this.barrio;
       return !barrio || String(barrio).trim() === '' ? 'El barrio/vereda es obligatorio' : '';
 
     case 'telefono':
-      const telefono = this.datosPrecargados.infoMadre.telefono;
+      const telefono = this.telefono;
       return !telefono || String(telefono).trim() === '' ? 'El teléfono es obligatorio' : '';
 
     case 'donanteExclusiva':
@@ -140,7 +140,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'El departamento es obligatorio' : '';
 
     case 'direccion':
-      const direccion = this.datosPrecargados.infoMadre.direccion;
+      const direccion = this.direccion;
       return !direccion || String(direccion).trim() === '' ? 'La dirección es obligatoria' : '';
 
     case 'nombreHijo':
@@ -150,7 +150,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'La EPS es obligatoria' : '';
 
     case 'ciudad':
-      const ciudad = this.datosPrecargados.infoMadre.ciudad;
+      const ciudad = this.ciudad;
       return !ciudad || String(ciudad).trim() === '' ? 'La ciudad es obligatoria' : '';
 
     case 'recoleccionDomicilio':
@@ -167,7 +167,7 @@ validateField(fieldName: string, value: any): string {
       return '';
 
     case 'documento':
-      const documento = this.datosPrecargados.infoMadre.documento;
+      const documento = this.documento;
       if (!documento || String(documento).trim() === '') {
         return 'El documento de identidad es obligatorio';
       }
@@ -256,27 +256,29 @@ validateField(fieldName: string, value: any): string {
   }
 
   getFormData() {
+    debugger
     if (!this.validateForm()) {
       throw new Error('Formulario inválido. Por favor, corrija los errores antes de continuar.');
     }
 
     return {
+      id: this.datosPrecargados.infoMadre ? this.datosPrecargados.infoMadre.id : null,
       nombre: this.nombre,
-      celular: this.datosPrecargados.infoMadre.celular,
+      celular: this.celular,
       fechaNacimiento: this.fechaNacimiento,
       profesion: this.profesion,
-      barrio: this.datosPrecargados.infoMadre.barrio,
-      telefono: this.datosPrecargados.infoMadre.telefono,
+      barrio: this.barrio,
+      telefono: this.telefono,
       donanteExclusiva: this.donanteExclusiva,
       departamento: this.departamento,
-      direccion: this.datosPrecargados.infoMadre.direccion,
+      direccion: this.direccion,
       nombreHijo: this.nombreHijo,
       eps: this.eps,
-      ciudad: this.datosPrecargados.infoMadre.ciudad,
+      ciudad: this.ciudad,
       recoleccionDomicilio: this.recoleccionDomicilio,
       pesoBebe: this.pesoBebe,
       edad: this.edad,
-      documento: this.datosPrecargados.infoMadre.documento,
+      documento: this.documento,
       codDonante: this.codDonante,
       donante_EoI: this.donante_EoI,
       fechaDiligenciamiento: this.fechaDiligenciamiento,

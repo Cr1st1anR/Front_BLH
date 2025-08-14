@@ -1,8 +1,8 @@
+import { N } from "node_modules/@angular/core/navigation_types.d-Lh6SmhKv";
 
 export interface BodyMadreDonante {
   madreDonante: object;
   infoMadre: object;
-  empleado: Empleado;
   hijosMadre: HijosMadre[];
   gestacion: Gestacion;
   examenPrenatal: ExamenPrenatal;
@@ -14,6 +14,7 @@ export interface Empleado {
 }
 
 export interface ExamenPrenatal {
+  id: number | null;
   hemoglobina:  number | null | string;
   hematocrito: number | null | string;
   transfuciones: number | null;
@@ -23,6 +24,7 @@ export interface ExamenPrenatal {
 }
 
 export interface Gestacion {
+  id: number | null;
   lugarControlPrenatal: string;
   asistioControlPrenatal: number | null;
   tipoIps: number;
@@ -41,6 +43,7 @@ export interface HijosMadre {
 }
 
 export interface Medicamento {
+  id: number | null;
   medicamento: string;
   psicoactivos: string;
 }

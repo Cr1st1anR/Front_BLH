@@ -116,10 +116,13 @@ export class AccordionComponent implements OnInit {
           firmaDonante: medicamentos.firmaDonante,
           firmaProfesional: medicamentos.profesionalResponsable,
           firmaAcompañante: medicamentos.firmaAcompanante,
-          madrePotencial: this.datosPrecargados.id
+          madrePotencial: this.datosPrecargados.id,
+          empleado: {
+            id: medicamentos.empleado?.id,
+          },
         },
         infoMadre: {
-          id: this.datosPrecargados.infoMadre.id,
+          id: datosInscripcion.id,
           ciudad: datosInscripcion.ciudad,
           celular: datosInscripcion.celular,
           fechaNacimiento: datosInscripcion.fechaNacimiento?.toISOString().split('T')[0],
@@ -129,13 +132,10 @@ export class AccordionComponent implements OnInit {
           direccion: datosInscripcion.direccion,
           nombre: datosInscripcion.nombre,
           eps: datosInscripcion.eps,
-          nombreHijo: datosInscripcion.nombreHijo,
+          // nombreHijo: datosInscripcion.nombreHijo,
           documento: datosInscripcion.documento,
           departamento: datosInscripcion.departamento,
           fechaParto: historiaGestacion.fechaParto?.toISOString().split('T')[0],
-        },
-        empleado: {
-          id: medicamentos.empleado?.id,
         },
         hijosMadre: [
           {
@@ -144,6 +144,7 @@ export class AccordionComponent implements OnInit {
           },
         ],
         gestacion: {
+          id: historiaGestacion.id,
           lugarControlPrenatal: historiaGestacion.lugarControlPrenatal,
           asistioControlPrenatal: historiaGestacion.asistioControl,
           tipoIps: historiaGestacion.tipoIPS,
@@ -156,7 +157,8 @@ export class AccordionComponent implements OnInit {
           fechaParto: historiaGestacion.fechaParto?.toISOString().split('T')[0],
         },
         examenPrenatal: {
-          hemoglobina: examenesLab.hemoglobina ,
+          id: examenesLab.id,
+          hemoglobina: examenesLab.hemoglobina,
           hematocrito: examenesLab.hematocrito,
           transfuciones: examenesLab.transfusiones,
           enfermedadesGestacion: examenesLab.enfermedadesGestacion,
@@ -164,13 +166,11 @@ export class AccordionComponent implements OnInit {
           alcohol: examenesLab.alcohol,
         },
         medicamento: {
+          id: medicamentos.id,
           medicamento: medicamentos.medicamentos,
           psicoactivos: medicamentos.psicoactivos,
         },
       };
-
-      debugger
-
       this._registroDonanteService
         .postDataRegistroDonante(body as BodyMadreDonante)
         .subscribe({

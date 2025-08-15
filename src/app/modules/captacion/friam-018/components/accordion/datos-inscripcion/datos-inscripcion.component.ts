@@ -255,8 +255,7 @@ validateField(fieldName: string, value: any): string {
     event.target.value = value;
   }
 
-  getFormData() {
-    debugger
+  getFormData() {    
     if (!this.validateForm()) {
       throw new Error('Formulario inválido. Por favor, corrija los errores antes de continuar.');
     }

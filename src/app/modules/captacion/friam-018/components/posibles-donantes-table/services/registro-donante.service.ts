@@ -41,4 +41,9 @@ export class RegistroDonanteService {
     const url = `${environment.ApiBLH}/uploadPDFs`;
     return this.http.post<ApiResponse>(url, formData);
   }
+
+  getPDF(doc: string): Observable<Blob> {
+    const url = `${environment.ApiBLH}/pdfs/${doc}`;
+    return this.http.get<Blob>(url, { responseType: 'blob' as 'json' });
+  }
 }

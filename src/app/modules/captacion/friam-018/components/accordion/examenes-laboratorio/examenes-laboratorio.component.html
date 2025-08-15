@@ -48,7 +48,7 @@
           <span class="nombre-archivo" [title]="fileNames.vdrl">
             {{ docVdrl || 'Sin archivo' }}
           </span>
-          <p-button label="Ver" (onClick)="onUpload('vdrl')" severity="secondary" class="ml-2"
+          <p-button label="Ver" (onClick)="downloadPDF(0)" severity="secondary" class="ml-2"
             [disabled]="uploading['vdrl']"></p-button>
           }
           @else {
@@ -97,7 +97,7 @@
           <span class="nombre-archivo" [title]="fileNames.hbsag">
             {{ docHbsag || 'Sin archivo' }}
           </span>
-          <p-button label="Ver" (onClick)="onUpload('hbsag')" severity="secondary" class="ml-2"
+          <p-button label="Ver" (onClick)="downloadPDF(1)" severity="secondary" class="ml-2"
             [disabled]="uploading['hbsag']"></p-button>
           }
           @else {
@@ -150,7 +150,7 @@
           <span class="nombre-archivo" [title]="fileNames.hiv">
             {{ docHiv || 'Sin archivo' }}
           </span>
-          <p-button label="Ver" (onClick)="onUpload('hiv')" severity="secondary" class="ml-2"
+          <p-button label="Ver" (onClick)="downloadPDF(2)" severity="secondary" class="ml-2"
             [disabled]="uploading['hiv']"></p-button>
           }
           @else {

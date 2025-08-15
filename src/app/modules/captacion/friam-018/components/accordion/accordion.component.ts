@@ -103,7 +103,6 @@ export class AccordionComponent implements OnInit {
       const historiaGestacion = this.historiaGestacionComp.getFormData();
       const examenesLab = this.examenesLabComp.getFormData();
       const medicamentos = this.medicamentosComp.getFormData();
-      debugger
       const body: BodyMadreDonante = {
         madreDonante: {
           id: datosInscripcion.codDonante,

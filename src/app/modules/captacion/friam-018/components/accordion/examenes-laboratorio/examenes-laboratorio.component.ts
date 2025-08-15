@@ -238,7 +238,6 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
       formData.append('fechaVencimiento', fechaVencimiento?.toISOString().split('T')[0] || '');
       formData.append('madrePotencial', this.datosPrecargados.id?.toString() || '');
       formData.append('tipoLaboratorio', tipoLaboratorio);
-      debugger; 
       setTimeout(() => {
         this.uploading[tipo] = false;
         this._registroDonanteService.uploadPdf(formData).subscribe({
@@ -296,5 +295,41 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
       fuma: this.fuma,
       alcohol: this.alcohol,
     };
+  }
+
+  downloadPDF(index: number) {
+    const doc = index === 0 ? this.docVdrl : index === 1 ? this.docHbsag : this.docHiv;
+    if (doc) {
+      this._registroDonanteService.getPDF(doc).subscribe({
+        next: (response: Blob) => {
+          const blob = new Blob([response], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${doc}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al descargar el archivo',
+            key: 'tr',
+            life: 2500,
+          });
+        },
+      });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'No hay archivo disponible para descargar',
+        key: 'tr',
+        life: 2500,
+      });
+    }
   }
 }

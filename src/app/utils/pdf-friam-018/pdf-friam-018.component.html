@@ -65,9 +65,11 @@
             <label>Edad:</label>
             <span class="field-value">{{ datosInscripcion?.edad }}</span>
           </div>
-          <div class="form-field">
+          <div class="form-field weight-field codigo-donante-field">
             <label>Código de donante:</label>
-            <span class="field-value">{{ datosInscripcion?.codDonante }}</span>
+            <div class="weight-input-container">
+              <span class="weight-line">{{ datosInscripcion?.codDonante }}</span>
+            </div>
           </div>
         </div>
 
@@ -107,10 +109,10 @@
         <div class="form-row">
           <div class="form-field">
             <label>Profesión/Oficio:</label>
-              <span class="field-value">{{ datosInscripcion?.profesion }}</span>
+            <span class="field-value">{{ datosInscripcion?.profesion }}</span>
           </div>
           <div class="form-field">
-            <label>EPS:</label>
+            <label>EPS :</label>
             <span class="field-value">{{ datosInscripcion?.eps }}</span>
           </div>
         </div>
@@ -136,8 +138,10 @@
           </div>
           <div class="form-field checkbox-field">
             <span class="checkbox-group">
-              <span class="checkbox-item">Donante externa: {{ datosInscripcion?.donante_EoI === 'externa' ? '[X]' : '[ ]' }}</span>
-              <span class="checkbox-item">Donante interna: {{ datosInscripcion?.donante_EoI === 'interna' ? '[X]' : '[ ]' }}</span>
+              <span class="checkbox-item">Donante externa: {{ datosInscripcion?.donante_EoI === 'externa' ? '[X]' : '[
+                ]' }}</span>
+              <span class="checkbox-item">Donante interna: {{ datosInscripcion?.donante_EoI === 'interna' ? '[X]' : '[
+                ]' }}</span>
             </span>
           </div>
         </div>
@@ -208,8 +212,10 @@
         <div class="form-row">
           <div class="form-field checkbox-field">
             <span class="checkbox-group">
-              <span class="checkbox-item">Parto a término: {{ historiaGestacion?.tipoParto === 'termino' ? '[X]' : '[ ]' }}</span>
-              <span class="checkbox-item">Pre término: {{ historiaGestacion?.tipoParto === 'pretermino' ? '[X]' : '[ ]' }}</span>
+              <span class="checkbox-item">Parto a término: {{ historiaGestacion?.tipoParto === 'termino' ? '[X]' : '[ ]'
+                }}</span>
+              <span class="checkbox-item">Pre término: {{ historiaGestacion?.tipoParto === 'pretermino' ? '[X]' : '[ ]'
+                }}</span>
             </span>
           </div>
           <div class="form-field">
@@ -230,15 +236,15 @@
 
       <div class="form-grid">
         <div class="form-row">
-          <div class="form-field">
-            <label>Fecha:</label>
+          <div class="form-field fecha-registro-field">
+            <label>Fecha registro:</label>
             <span class="field-value">{{ examenesLab?.fechaRegistroLab | date:'dd/MM/yyyy' }}</span>
           </div>
         </div>
 
         <div class="form-row lab-exams-row">
           <div class="form-field checkbox-field">
-            <label>VDRL:</label>
+            <label>VDRL :</label>
             <span class="checkbox-group">
               <span class="checkbox-item">Positivo: {{ examenesLab?.vdrl === 'positivo' ? '[X]' : '[ ]' }}</span>
               <span class="checkbox-item">Negativo: {{ examenesLab?.vdrl === 'negativo' ? '[X]' : '[ ]' }}</span>
@@ -357,7 +363,7 @@
         </div>
 
         <div class="form-row">
-          <div class="form-field">
+          <div class="form-field signature-field minor-signature">
             <label>Si es donante menor de edad, firma de adulto acompañante:</label>
             <div class="signature-box" *ngIf="medicamentos?.firmaAcompanante">
               <img [src]="medicamentos.firmaAcompanante" alt="Firma acompañante" class="signature-img">
@@ -392,9 +398,9 @@
 
           <div class="form-field signature-field">
             <label>PROFESIONAL RESPONSABLE:</label>
-              <div class="signature-box" *ngIf="medicamentos?.profesionalResponsable">
-                <img [src]="medicamentos.profesionalResponsable" alt="Firma profesional" class="signature-img">
-              </div>
+            <div class="signature-box" *ngIf="medicamentos?.profesionalResponsable">
+              <img [src]="medicamentos.profesionalResponsable" alt="Firma profesional" class="signature-img">
+            </div>
           </div>
         </div>
       </div>

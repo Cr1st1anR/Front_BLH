@@ -96,7 +96,6 @@
   margin-bottom: 15px;
   border: 1px solid black;
 
-
   .section-title {
     background: #f0f0f0;
     margin: 0;
@@ -126,45 +125,52 @@
           display: inline-block;
           margin-right: 5px;
           font-size: 10px;
+          /* Para labels que necesitan más separación después de los dos puntos */
+          &.extra-spacing {
+            margin-right: 20px;
+          }
         }
 
         .field-value {
           border-bottom: 1px solid black;
-          min-height: 21px;
-          // display: inline-block;
-          min-width: 80px;
-          max-width: 150px;
+          min-height: 21px; //lineas datos inscripcion
+          display: inline-block;
           padding: 1px 4px 2px 4px;
+        }
+        /* Estilo específico para el campo "Fecha registro" */
+        &.fecha-registro-field {
+          margin-left: 358px; /* Mover aquí, fuera de lab-exams-row */
         }
 
         &.weight-field {
           display: flex;
           align-items: center;
-          max-width: 200px;
+          max-width: none;
+          flex: 1;
 
           label {
             white-space: nowrap;
-            margin-right: 0;
+            margin-right: 5px;
             font-weight: bold;
             font-size: 10px;
+            min-width: auto;
           }
 
           .weight-input-container {
             display: flex;
             align-items: center;
             flex: 1;
-            margin-left: 5px;
+            margin-left: 0;
 
             .weight-line {
               border-bottom: 1px solid black;
-              flex: 1;
-              min-width: 60px;
-              max-width: 100px;
+              flex: none;
               height: 24px;
               display: flex;
               align-items: center;
               padding: 1px 4px 2px 4px;
               margin-right: 5px;
+              width: fit-content;
             }
 
             .weight-unit {
@@ -176,10 +182,16 @@
             /* Para campos sin unidad (como "Capacitada en") */
             &:only-child .weight-line,
             .weight-line:last-child:not(.weight-line + .weight-unit) {
-              max-width: 120px;
-              margin-right: 0;
+              margin-right: 20px;
+              width: fit-content;
             }
           }
+        }
+
+        /* Selector específico solo para Código de donante */
+        &.codigo-donante-field {
+          transform: translateX(-120px);
+          position: relative;
         }
 
         .field-group {
@@ -199,11 +211,11 @@
 
             .weight-value {
               border-bottom: 1px solid black;
-              min-width: 50px;
-              max-width: 80px;
               height: 18px;
               padding: 1px 4px 2px 4px;
               display: inline-block;
+              min-height: 21px; //lineas peso inicial, final y talla
+              width: fit-content;
             }
 
             .weight-unit-inline {
@@ -231,7 +243,7 @@
               border: 1px solid black;
               padding: 1px 5px 2px 5px;
               font-size: 10px;
-              padding-bottom: 11px;
+              padding-bottom: 13px; /// altura rectangulos donante interna externa
             }
           }
         }
@@ -256,13 +268,62 @@
             max-width: 250px;
             margin: 0;
           }
+          /* Clase específica solo para la firma del menor de edad */
+          &.minor-signature {
+            label {
+              margin-bottom: 5px;
+              width: 100%;
+              max-width: 250px;
+              line-height: 1.3;
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+            }
+
+            .signature-box {
+              margin-top: 10px;
+              clear: both;
+            }
+          }
         }
       }
     }
 
     /* Estilos específicos para fechas de vencimiento de laboratorios */
     .lab-exams-row {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+
+      .form-field.checkbox-field {
+        flex: 0 0 auto;
+        min-width: 300px;
+
+        label {
+          display: inline-block;
+          margin-right: 10px;
+          font-weight: bold;
+          font-size: 10px;
+          min-width: 60px;
+        }
+
+        .checkbox-group {
+          display: inline-flex;
+          gap: 10px;
+          margin-left: 0;
+
+          .checkbox-item {
+            font-weight: normal;
+            border: 1px solid black;
+            padding: 1px 5px 2px 5px;
+            font-size: 10px;
+            padding-bottom: 13px;
+            white-space: nowrap;
+          }
+        }
+      }
+
       .form-field.lab-date-field {
+        flex: 1;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -277,11 +338,10 @@
 
         .field-value {
           border-bottom: 1px solid black;
-          min-height: 18px;
+          min-height: 21px;
           display: inline-block;
-          min-width: 80px;
-          max-width: 120px;
           padding: 1px 4px 2px 4px;
+          width: fit-content;
         }
       }
     }

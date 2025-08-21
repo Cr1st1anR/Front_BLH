@@ -294,6 +294,7 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
       enfermedadesGestacion: this.enfermedadesGestacion,
       fuma: this.fuma,
       alcohol: this.alcohol,
+      laboratorios: this.files
     };
   }
 

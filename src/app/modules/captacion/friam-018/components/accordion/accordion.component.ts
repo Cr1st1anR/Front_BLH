@@ -97,7 +97,6 @@ export class AccordionComponent implements OnInit {
 
   onLoadData() {
     this.saving = true;
-
     try {
       const datosInscripcion = this.datosInscripcionComp.getFormData();
       const historiaGestacion = this.historiaGestacionComp.getFormData();

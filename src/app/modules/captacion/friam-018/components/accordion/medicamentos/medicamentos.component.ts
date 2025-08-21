@@ -287,16 +287,19 @@ export class MedicamentosComponent
   }
 
   mostrarFirma(firmaBase64: string, opt: string) {
-    switch (opt) {
-      case 'Acompanante':
-        this.signaturePadAcompanante.fromDataURL(firmaBase64);
-        break;
-      case 'Donante':
-        this.signaturePadDonante.fromDataURL(firmaBase64);
-        break;
-      case 'Profesional':
-        this.signaturePadProfesional.fromDataURL(firmaBase64);
-        break;
+    debugger
+    if(firmaBase64 && firmaBase64.length > 0){
+      switch (opt) {
+        case 'Acompanante':
+          this.signaturePadAcompanante.fromDataURL(firmaBase64);
+          break;
+        case 'Donante':
+          this.signaturePadDonante.fromDataURL(firmaBase64);
+          break;
+        case 'Profesional':
+          this.signaturePadProfesional.fromDataURL(firmaBase64);
+          break;
+      }
     }
   }
 

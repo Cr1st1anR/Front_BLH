@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { VisitaDomiciliariaData } from './interfaces/visita-domiciliaria';
+import { VisitaMadresResponse } from './interfaces/visita-domiciliaria';
 import { VisitaDomiciliariaService } from './services/visita-domiciliaria.service';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
@@ -40,7 +40,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     { header: 'EDAD', field: 'edad', width: '200px', tipo: 'number' },
     { header: 'DIRECCION', field: 'direccion', width: '200px', tipo: 'text' },
     { header: 'CELULAR', field: 'celular', width: '200px', tipo: 'number' },
-    { header: 'MUNICIPIO', field: 'municipio', width: '200px', tipo: 'text' },
+    { header: 'MUNICIPIO', field: 'ciudad', width: '200px', tipo: 'text' },
     {
       header: 'ENCUESTA REALIZADA',
       field: 'encuesta_realizada',
@@ -49,33 +49,21 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     },
   ];
 
-  data: VisitaDomiciliariaData[] = [];
-
-  requiredFields: string[] = [
-    'fecha_visita',
-    'nombre',
-    'apellido',
-    'documento',
-    'edad',
-    'direccion',
-    'celular',
-    'municipio',
-    'encuesta_realizada',
-  ];
+  dataTable: VisitaMadresResponse[] = [];
 
   constructor(
     private visitaDomiciliariaService: VisitaDomiciliariaService,
     private router: Router,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loading = true;
     this.visitaDomiciliariaService.getDataVisitaDomiciliaria().subscribe({
       next: (data) => {
-        this.data = data;
+        this.dataTable = this.formatData(data.data);
         this.loading = false;
-        if (data && data.length > 0) {
+        if (data && data.data.length > 0) {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -106,7 +94,33 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     });
   }
 
-  onRowClick(row: VisitaDomiciliariaData) {
-    this.router.navigate(['/blh/captacion/visita-domiciliaria', row.documento]);
+  onRowClick(row: VisitaMadresResponse) {
+    this.router.navigate(['/blh/captacion/visita-domiciliaria', row.infoMadre.documento]);
+  }
+
+  formatData(data: VisitaMadresResponse[]): VisitaMadresResponse[] {
+    return data.map(item => ({
+      ...item,
+      nombre: item.infoMadre.nombre,
+      apellido: item.infoMadre.apellido,
+      documento: item.infoMadre.documento,
+      direccion: item.infoMadre.direccion,
+      celular: item.infoMadre.celular,
+      ciudad: item.infoMadre.ciudad,
+      fecha_visita: item.fecha_visita,
+      edad: this.ageCalculate(item.infoMadre.fechaNacimiento),
+      encuesta_realizada:  'No',
+    }));
+  }
+
+  ageCalculate(age: Date): number {
+    const fechaNacimiento = new Date(age);
+    const fechaActual = new Date();
+    const edad = fechaActual.getFullYear() - fechaNacimiento.getFullYear();
+    const mes = fechaActual.getMonth() - fechaNacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && fechaActual.getDate() < fechaNacimiento.getDate())) {
+      return edad - 1;
+    }
+    return edad;
   }
 }

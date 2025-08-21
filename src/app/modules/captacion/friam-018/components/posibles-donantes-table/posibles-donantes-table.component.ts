@@ -14,7 +14,6 @@ import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { ResponseMadresDonantes } from './interfaces/registro-donante.interface';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import { PdfFriam018Component } from '../../../../../utils/pdf-friam-018/pdf-friam-018.component';
 
 @Component({
@@ -134,13 +133,6 @@ export class PosiblesDonantesTableComponent implements OnInit {
         if (response && response.data.length > 0) {
           this.dataRegistroDonanteByMadresDonantes = this.formatData(response.data);
           this.loading = false;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos cargados correctamente',
-            key: 'tr',
-            life: 2000,
-          });
         } else {
           this.messageService.add({
             severity: 'info',
@@ -168,6 +160,31 @@ export class PosiblesDonantesTableComponent implements OnInit {
   formatDataByMadrePotenciales(dataFirst: ResponseMadresDonantes[], dataSecond: ResponseMadresDonantes[]) {
     dataFirst.forEach((item, index) => {
       const flat = dataSecond.find((d) => d.id === item.id) || item;
+
+      let fechaVencimientoProxima = null;
+      let fechasVencimiento: string[] = [];
+
+      if (flat.MadreDonante && flat.laboratorio && flat.laboratorio.length > 0) {
+        fechasVencimiento = flat.laboratorio
+          .map((lab) => lab.fechaVencimiento)
+          .filter(fecha => fecha != null)
+          .map(fecha => typeof fecha === 'string' ? fecha : fecha.toISOString())
+          .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+        fechaVencimientoProxima = fechasVencimiento[0] || null;
+      }
+
+      const fechaFormateada = fechaVencimientoProxima
+        ? this.formatDateToDDMMYYYY(fechaVencimientoProxima)
+        : 'Sin Fecha';
+
+      let backgroundColorRow = '';
+      if (flat.MadreDonante && flat.MadreDonante.donanteApta === 1) {
+        backgroundColorRow = 'donante-efectiva';
+      }
+
+      const labVencido = fechaVencimientoProxima ? this.isLabVencimientoCercano(fechaVencimientoProxima) : false;
+
       this.dataRegistroDonante[index] = {
         ...item,
         MadreDonante: flat.MadreDonante || null,
@@ -176,18 +193,24 @@ export class PosiblesDonantesTableComponent implements OnInit {
         nombre: flat.infoMadre.nombre,
         apellido: flat.infoMadre.apellido,
         documento: flat.infoMadre.documento,
-        laboratorio: flat.MadreDonante
-          ? flat.laboratorio
-            .map((lab) => lab.fechaVencimiento)
-            .sort((a, b) => (a > b ? 1 : -1))[0]
-          : 'Sin Fecha',
-        backgroundColorRow: flat.MadreDonante
-          ? flat.MadreDonante.donanteApta === 1
-            ? 'donante-efectiva'
-            : ''
-          : '',
+        laboratorio: fechaFormateada,
+        backgroundColorRow: backgroundColorRow,
+        labVencido: labVencido,
       };
     });
+  }
+
+  private formatDateToDDMMYYYY(fecha: string): string {
+    try {
+      const fechaParts = fecha.split('T')[0].split('-');
+      const year = fechaParts[0];
+      const month = fechaParts[1];
+      const day = fechaParts[2];
+
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      return 'Fecha inválida';
+    }
   }
 
   descargarPDF(rowData: any): void {
@@ -218,7 +241,6 @@ export class PosiblesDonantesTableComponent implements OnInit {
           return;
         }
 
-        // Normalizar a objeto único
         const madreDataRaw = Array.isArray(response.data) ? response.data[0] : response.data;
         const madreData = madreDataRaw as unknown as ResponseMadresDonantes;
         this.pdfPayload = this.mapResponseToPdfPayload(madreData);
@@ -278,7 +300,7 @@ export class PosiblesDonantesTableComponent implements OnInit {
     });
   }
 
-private mapResponseToPdfPayload(data: ResponseMadresDonantes) {
+  private mapResponseToPdfPayload(data: ResponseMadresDonantes) {
     const madreDonante = data.MadreDonante;
     const info = data.infoMadre;
     const gest = madreDonante?.gestacion;
@@ -411,14 +433,28 @@ private mapResponseToPdfPayload(data: ResponseMadresDonantes) {
     return data.map((item) => ({ ...item }));
   }
 
+  private isLabVencimientoCercano(fechaVencimiento: string): boolean {
+    try {
+      const fechaParts = fechaVencimiento.split('T')[0].split('-');
+      const fechaVenc = new Date(parseInt(fechaParts[0]), parseInt(fechaParts[1]) - 1, parseInt(fechaParts[2]));
+
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      fechaVenc.setHours(0, 0, 0, 0);
+
+      const diferenciaEnDias = Math.floor((fechaVenc.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+
+      return diferenciaEnDias <= 15;
+    } catch (error) {
+      return false;
+    }
+  }
+
   dateDiff(fechas: string[]): boolean {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    if (!fechas || fechas.length === 0) return false;
+
     for (const fechaStr of fechas) {
-      const fecha = new Date(fechaStr);
-      fecha.setHours(0, 0, 0, 0);
-      const diferenciaEnDias = Math.floor((fecha.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-      if (diferenciaEnDias <= 15) {
+      if (this.isLabVencimientoCercano(fechaStr)) {
         return true;
       }
     }

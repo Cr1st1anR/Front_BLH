@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -47,9 +47,10 @@ import {
   styleUrl: './accordion.component.scss',
   providers: [MessageService, RegistroDonanteService],
 })
-export class AccordionComponent implements OnInit {
+export class AccordionComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   saving: boolean = false;
+  private hasUnsavedChanges: boolean = true;
 
   @ViewChild(DatosInscripcionComponent)
   datosInscripcionComp!: DatosInscripcionComponent;
@@ -83,16 +84,42 @@ export class AccordionComponent implements OnInit {
     this.precargaDatos();
   }
 
+  ngOnDestroy(): void {
+    this.hasUnsavedChanges = false;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges) {
+      $event.preventDefault();
+    }
+  }
+
+  @HostListener('window:popstate', ['$event'])
+  onPopState(event: PopStateEvent): void {
+    if (this.hasUnsavedChanges) {
+      const confirmLeave = confirm('Si abandona esta página, la información llenada se perderá. ¿Está seguro de que desea continuar?');
+      if (!confirmLeave) {
+        history.pushState(null, '', window.location.href);
+      } else {
+        this.hasUnsavedChanges = false;
+        this.router.navigate(['/blh/captacion/registro-donante-blh']);
+      }
+    }
+  }
+
   precargaDatos() {
     setTimeout(() => {
       this.loading = false
     }, 1000);
   }
 
-
-
   onCancelar() {
-    this.router.navigate(['/blh/captacion/registro-donante-blh']);
+    const confirmCancel = confirm('Si cancela, la información llenada se perderá. ¿Está seguro de que desea continuar?');
+    if (confirmCancel) {
+      this.hasUnsavedChanges = false;
+      this.router.navigate(['/blh/captacion/registro-donante-blh']);
+    }
   }
 
   onLoadData() {
@@ -175,6 +202,7 @@ export class AccordionComponent implements OnInit {
           next: (response: ApiResponse) => {
             if (response.status === 200) {
               this.saving = false;
+              this.hasUnsavedChanges = false;
               this.messageService.add({
                 severity: 'success',
                 summary: 'Éxito',

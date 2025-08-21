@@ -27,18 +27,6 @@
   }
 }
 
-.lab-vencimiento {
-  background-color: red !important;
-
-  &:hover {
-    background-color: #cc0000 !important;
-  }
-
-  &:hover td {
-    background-color: #cc0000 !important;
-  }
-}
-
 .p-button-sm {
   font-size: 0.75rem;
   padding: 0.375rem 0.75rem;
@@ -58,19 +46,13 @@ td {
   background-color: inherit !important;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.donante-efectiva:hover {
-  background-color: #54be6d !important;
+.lab-fecha-vencida {
+  background-color: red !important;
+  color: white !important;
+  font-weight: bold !important;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.donante-efectiva:hover td {
-  background-color: #54be6d !important;
-}
-
-// Para la fila lab-vencimiento si existe
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.lab-vencimiento:hover {
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover .lab-fecha-vencida {
   background-color: #cc0000 !important;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.lab-vencimiento:hover td {
-  background-color: #cc0000 !important;
+  color: white !important;
 }

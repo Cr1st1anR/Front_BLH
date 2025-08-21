@@ -81,29 +81,32 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
     }
   }
 
-  formatForm() {
-    this.fechaRegistroLab = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaRegistro!) : null;
-    this.vdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].resultado : null;
-    this.fechaVencimientoVdrl = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaVencimiento!) : null;
-    this.hbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].resultado : null;
-    this.fechaVencimientoHbsag = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[1].fechaVencimiento!) : null;
-    this.hiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].resultado : null;
-    this.fechaVencimientoHiv = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[2].fechaVencimiento!) : null;
-    this.docVdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].documento : '';
-    this.docHbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].documento : '';
-    this.docHiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].documento : '';
-    this.hemoglobina = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hemoglobina : null;
-    this.hematocrito = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hematocrito : null;
-    this.transfusiones = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.transfuciones : null;
-    this.enfermedadesGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.enfermedadesGestacion : '';
-    this.fuma = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.fuma : null;
-    this.alcohol = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.alcohol : null;
-    if (this.datosPrecargados.MadreDonante) {
-      this.datosPrecargados.laboratorio.map((lab) => {
-        lab.fechaVencimiento = new Date(lab.fechaVencimiento);
-      });
-    }
-  }
+formatForm() {
+  // Usar las fechas directamente sin crear nuevos objetos Date para evitar problemas de zona horaria
+  this.fechaRegistroLab = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaRegistro + 'T00:00:00') : null;
+  this.vdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].resultado : null;
+  this.fechaVencimientoVdrl = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaVencimiento + 'T00:00:00') : null;
+  this.hbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].resultado : null;
+  this.fechaVencimientoHbsag = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[1].fechaVencimiento + 'T00:00:00') : null;
+  this.hiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].resultado : null;
+  this.fechaVencimientoHiv = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.laboratorio[2].fechaVencimiento + 'T00:00:00') : null;
+  this.docVdrl = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[0].documento : '';
+  this.docHbsag = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[1].documento : '';
+  this.docHiv = this.datosPrecargados.MadreDonante ? this.datosPrecargados.laboratorio[2].documento : '';
+  this.hemoglobina = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hemoglobina : null;
+  this.hematocrito = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.hematocrito : null;
+  this.transfusiones = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.transfuciones : null;
+  this.enfermedadesGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.enfermedadesGestacion : '';
+  this.fuma = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.fuma : null;
+  this.alcohol = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.examenesPrenatal.alcohol : null;
+
+  // Remover esta línea que estaba causando problemas de zona horaria
+  // if (this.datosPrecargados.MadreDonante) {
+  //   this.datosPrecargados.laboratorio.map((lab) => {
+  //     lab.fechaVencimiento = new Date(lab.fechaVencimiento);
+  //   });
+  // }
+}
 
   validateField(fieldName: string, value: any): string {
     switch (fieldName) {

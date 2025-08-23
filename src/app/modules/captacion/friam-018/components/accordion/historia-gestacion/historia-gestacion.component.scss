@@ -1,0 +1,100 @@
+.historia-control-prenatal-row {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  min-height: 70px;
+}
+
+.historia-control-prenatal-input {
+  flex: 0 0 48%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.historia-control-prenatal-input input,
+.historia-control-prenatal-input textarea {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  resize: none;
+}
+
+.historia-control-prenatal-radios {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 220px;
+  height: 48px;
+  margin-top: 20px;
+}
+
+.historia-control-prenatal-radios label {
+  margin: 0 1.5rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
+  transform: translateY(2.5px);
+}
+
+.radios-texto label {
+  margin-left: -0.9rem;
+  margin-right: 2rem;
+  transform: translateY(1px);
+}
+
+.radios-texto {
+  margin-top: 0.5rem;
+}
+
+.input-abreviacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-abreviacion .input-peso {
+  width: 310px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.ng-invalid {
+  border-color: red !important;
+}
+
+.flex.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flex.flex-col label {
+  font-weight: bold;
+  margin-bottom: -0.1rem;
+}
+
+.w-20 {
+  min-width: 150px;
+}
+
+p-datepicker {
+  width: 100%;
+  min-width: 180px;
+}

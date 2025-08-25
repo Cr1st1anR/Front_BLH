@@ -59,7 +59,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
       field: 'id_casa_visita',
       width: '200px',
       tipo: 'text',
-      disable: true,
+      disable: false,
     },
     {
       header: 'CODIGO',

@@ -28,3 +28,15 @@ export interface MadresDonantes {
     telefono: string;
     celular: string;
 }
+
+export interface CajaTable {
+    cajaNumber: number;
+    data: any[];
+    headers: any[];
+    editingRow: any | null;
+    editingRowIndex: number;
+    clonedRow: any | null;
+    editValidate: boolean;
+    isAddingTemperature: boolean;
+    numeroTemperaturas: number;
+}

@@ -198,6 +198,12 @@ export class TableListComponent implements OnInit {
 
   onRowEditSave(dataRow: lineaAmigaData, index: number, event: MouseEvent) {
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+
+    // Sincronizar fechaNacimiento con fechaNacAux
+    if (dataRow.fechaNacAux) {
+      dataRow.fechaNacimiento = new Date(dataRow.fechaNacAux);
+    }
+
     const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
     if (invalidField) {
       this.messageService.add({

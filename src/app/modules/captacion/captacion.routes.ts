@@ -15,5 +15,23 @@ export const CAPTACION_ROUTES: Routes = [
         (c) => c.TableListComponent
       ),
   },
-
+  {
+    path: 'registro-donante-blh',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import(
+            './friam-018/components/posibles-donantes-table/posibles-donantes-table.component'
+          ).then((c) => c.PosiblesDonantesTableComponent),
+      },
+      {
+        path: ':documento',
+        loadComponent: () =>
+          import('./friam-018/components/accordion/accordion.component').then(
+            (c) => c.AccordionComponent
+          ),
+      },
+    ],
+  },
 ];

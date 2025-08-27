@@ -15,6 +15,7 @@ export interface casasVisitaData {
     apellido?: string | null;
     direccion: string | null;
     celular: string | null;
+    _uid?: string;
 }
 
 export interface MadresDonantes {

@@ -8,7 +8,7 @@ import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/tabl
   providedIn: 'root',
 })
 export class primaryDialogServices {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getDataTemperaturaRuta(rutaId: number): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/getTemperaturasCasas/${rutaId}`;
@@ -38,5 +38,10 @@ export class primaryDialogServices {
   postDataCasasVisitas(data: any): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/createCasasVisitas`;
     return this.http.post<ApiResponse>(url, data);
+  }
+
+  updateDataCasas(id: number, data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/updateCasas/${id}`;
+    return this.http.put<ApiResponse>(url, data);
   }
 }

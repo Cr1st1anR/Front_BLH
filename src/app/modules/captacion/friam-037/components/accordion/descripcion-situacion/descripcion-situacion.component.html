@@ -2,198 +2,40 @@
   <p-accordion-header>DESCRIPCIÓN DE LA SITUACIÓN ENCONTRADA</p-accordion-header>
   <p-accordion-content>
     <div style="max-height: 600px; overflow-y: auto; padding-right: 12px">
-      <form class="grid grid-cols-2 gap-6 mb-10">
-        <div class="col-span-2">
-          <h3 class="subtitulo-accordion text-base font-semibold mb-2">
-            1. CONDICIONES FÍSICAS E HIGIÉNICAS DE LA VIVIENDA
-          </h3>
-        </div>
-        <div class="col-span-2 radios-texto">
-          <label class="font-bold mb-1 block">¿Cuenta con un espacio adecuado e higiénico para la recolección de
-            leche humana?</label>
-          <div class="flex items-center gap-6 mt-2">
-            <p-radioButton name="espacioAdecuado" [value]="1" [(ngModel)]="espacioAdecuado"
-              inputId="espacioAdecuadoSi"></p-radioButton>
-            <label for="espacioAdecuadoSi" class="mr-4">Sí</label>
-            <p-radioButton name="espacioAdecuado" [value]="0" [(ngModel)]="espacioAdecuado"
-              inputId="espacioAdecuadoNo"></p-radioButton>
-            <label for="espacioAdecuadoNo">No</label>
+      @for (item of categorias; track $index) {
+        <div class="mb-10">
+          <div class="col-span-2 mb-4">
+            <h3 class="subtitulo-accordion text-base font-semibold mb-2">
+              {{$index +1}}. {{item.descripcion.toUpperCase()}}
+            </h3>
+          </div>
+          <div class="grid grid-cols-2 gap-6">
+            @for (pregunta of newPreguntas[$index]; track $index) {
+              <div class="radios-texto" 
+                   [class]="pregunta.descripcion.length > 50 ? 'col-span-2' : 'col-span-1'">
+                <label class="font-bold mb-1 block">¿{{pregunta.descripcion}}?</label>
+                <div class="flex items-center gap-6 mt-2">
+                  <p-radioButton 
+                    [name]="'pregunta_' + $index" 
+                    [value]="1" 
+                    [(ngModel)]="respuestas[$index].respuesta"
+                    [inputId]="'pregunta_' + $index + '_si'">
+                  </p-radioButton>
+                  <label [for]="'pregunta_' + $index + '_si'" class="mr-4">Sí</label>
+                  
+                  <p-radioButton 
+                    [name]="'pregunta_' + $index" 
+                    [value]="0" 
+                    [(ngModel)]="respuestas[$index].respuesta"
+                    [inputId]="'pregunta_' + $index + '_no'">
+                  </p-radioButton>
+                  <label [for]="'pregunta_' + $index + '_no'">No</label>
+                </div>
+              </div>
+            }
           </div>
         </div>
-        <div>
-          <label class="font-bold mb-1 block">¿El espacio se encuentra libre de vectores?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="libreVectores" [value]="1" [(ngModel)]="libreVectores"
-              inputId="libreVectoresSi"></p-radioButton>
-            <label for="libreVectoresSi" class="mr-4">Sí</label>
-            <p-radioButton name="libreVectores" [value]="0" [(ngModel)]="libreVectores"
-              inputId="libreVectoresNo"></p-radioButton>
-            <label for="libreVectoresNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿El espacio se encuentra libre de posibles contaminantes:
-            detergentes, fungicidas, jabones, etc.?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="libreContaminantes" [value]="1" [(ngModel)]="libreContaminantes"
-              inputId="libreContaminantesSi"></p-radioButton>
-            <label for="libreContaminantesSi" class="mr-4">Sí</label>
-            <p-radioButton name="libreContaminantes" [value]="0" [(ngModel)]="libreContaminantes"
-              inputId="libreContaminantesNo"></p-radioButton>
-            <label for="libreContaminantesNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿El espacio para la recolección se encuentra limpio?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="espacioLimpio" [value]="1" [(ngModel)]="espacioLimpio"
-              inputId="espacioLimpioSi"></p-radioButton>
-            <label for="espacioLimpioSi" class="mr-4">Sí</label>
-            <p-radioButton name="espacioLimpio" [value]="0" [(ngModel)]="espacioLimpio"
-              inputId="espacioLimpioNo"></p-radioButton>
-            <label for="espacioLimpioNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿La posible donante cuenta con lavamanos?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="lavamanos" [value]="1" [(ngModel)]="lavamanos" inputId="lavamanosSi"></p-radioButton>
-            <label for="lavamanosSi" class="mr-4">Sí</label>
-            <p-radioButton name="lavamanos" [value]="0" [(ngModel)]="lavamanos" inputId="lavamanosNo"></p-radioButton>
-            <label for="lavamanosNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Cuenta con sistema de refrigeración?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="refrigeracion" [value]="1" [(ngModel)]="refrigeracion"
-              inputId="refrigeracionSi"></p-radioButton>
-            <label for="refrigeracionSi" class="mr-4">Sí</label>
-            <p-radioButton name="refrigeracion" [value]="0" [(ngModel)]="refrigeracion"
-              inputId="refrigeracionNo"></p-radioButton>
-            <label for="refrigeracionNo">No</label>
-          </div>
-        </div>
-      </form>
-
-      <form class="grid grid-cols-2 gap-6">
-        <div class="col-span-2">
-          <h3 class="subtitulo-accordion text-base font-semibold mb-2">
-            2. CONDICIONES PERSONALES DE LA POSIBLE DONANTE
-          </h3>
-        </div>
-        <div class="col-span-2 radios-texto">
-          <label class="font-bold mb-1 block">¿Posible donante con excedente de leche humana?</label>
-          <div class="flex items-center gap-6 mt-2">
-            <p-radioButton name="excedenteLeche" [value]="1" [(ngModel)]="excedenteLeche"
-              inputId="excedenteLecheSi"></p-radioButton>
-            <label for="excedenteLecheSi" class="mr-4">Sí</label>
-            <p-radioButton name="excedenteLeche" [value]="0" [(ngModel)]="excedenteLeche"
-              inputId="excedenteLecheNo"></p-radioButton>
-            <label for="excedenteLecheNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Se evidencia adecuada higiene de la donante?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="higieneDonante" [value]="1" [(ngModel)]="higieneDonante"
-              inputId="higieneDonanteSi"></p-radioButton>
-            <label for="higieneDonanteSi" class="mr-4">Sí</label>
-            <p-radioButton name="higieneDonante" [value]="0" [(ngModel)]="higieneDonante"
-              inputId="higieneDonanteNo"></p-radioButton>
-            <label for="higieneDonanteNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿La posible donante se encuentra en buenas condiciones de salud y
-            nutricional?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="saludDonante" [value]="1" [(ngModel)]="saludDonante"
-              inputId="saludDonanteSi"></p-radioButton>
-            <label for="saludDonanteSi" class="mr-4">Sí</label>
-            <p-radioButton name="saludDonante" [value]="0" [(ngModel)]="saludDonante"
-              inputId="saludDonanteNo"></p-radioButton>
-            <label for="saludDonanteNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿El hijo o hija de la posible donante se encuentra en buenas
-            condiciones de salud?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="saludHijo" [value]="1" [(ngModel)]="saludHijo" inputId="saludHijoSi"></p-radioButton>
-            <label for="saludHijoSi" class="mr-4">Sí</label>
-            <p-radioButton name="saludHijo" [value]="0" [(ngModel)]="saludHijo" inputId="saludHijoNo"></p-radioButton>
-            <label for="saludHijoNo">No</label>
-          </div>
-        </div>
-        <div class="col-span-2">
-          <label class="font-bold mb-1 block">¿Cuenta con exámenes de Laboratorio negativos para VIH, Serología y
-            Hepatitis B?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="examenesNegativos" [value]="1" [(ngModel)]="examenesNegativos"
-              inputId="examenesNegativosSi"></p-radioButton>
-            <label for="examenesNegativosSi" class="mr-4">Sí</label>
-            <p-radioButton name="examenesNegativos" [value]="0" [(ngModel)]="examenesNegativos"
-              inputId="examenesNegativosNo"></p-radioButton>
-            <label for="examenesNegativosNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Se ha realizado tatuajes durante el último año?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="tatuajes" [value]="1" [(ngModel)]="tatuajes" inputId="tatuajesSi"></p-radioButton>
-            <label for="tatuajesSi" class="mr-4">Sí</label>
-            <p-radioButton name="tatuajes" [value]="0" [(ngModel)]="tatuajes" inputId="tatuajesNo"></p-radioButton>
-            <label for="tatuajesNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Ha recibido transfusiones sanguíneas durante el último año?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="transfusiones" [value]="1" [(ngModel)]="transfusiones"
-              inputId="transfusionesSi"></p-radioButton>
-            <label for="transfusionesSi" class="mr-4">Sí</label>
-            <p-radioButton name="transfusiones" [value]="0" [(ngModel)]="transfusiones"
-              inputId="transfusionesNo"></p-radioButton>
-            <label for="transfusionesNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Toma algún medicamento?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="medicamento" [value]="1" [(ngModel)]="medicamento"
-              inputId="medicamentoSi"></p-radioButton>
-            <label for="medicamentoSi" class="mr-4">Sí</label>
-            <p-radioButton name="medicamento" [value]="0" [(ngModel)]="medicamento"
-              inputId="medicamentoNo"></p-radioButton>
-            <label for="medicamentoNo">No</label>
-          </div>
-        </div>
-        <div>
-          <label class="font-bold mb-1 block">¿Consume sustancias psicoactivas, alcohol o más de cinco (5)
-            cigarrillos al día?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="psicoactivos" [value]="1" [(ngModel)]="psicoactivos"
-              inputId="psicoactivosSi"></p-radioButton>
-            <label for="psicoactivosSi" class="mr-4">Sí</label>
-            <p-radioButton name="psicoactivos" [value]="0" [(ngModel)]="psicoactivos"
-              inputId="psicoactivosNo"></p-radioButton>
-            <label for="psicoactivosNo">No</label>
-          </div>
-        </div>
-        <div class="col-span-2">
-          <label class="font-bold mb-1 block">¿La posible donante manifiesta utilizar recolectores para la leche
-            humana?</label>
-          <div class="flex items-center gap-6 mt-2 radios-texto">
-            <p-radioButton name="recolectores" [value]="1" [(ngModel)]="recolectores"
-              inputId="recolectoresSi"></p-radioButton>
-            <label for="recolectoresSi" class="mr-4">Sí</label>
-            <p-radioButton name="recolectores" [value]="0" [(ngModel)]="recolectores"
-              inputId="recolectoresNo"></p-radioButton>
-            <label for="recolectoresNo">No</label>
-          </div>
-        </div>
-      </form>
+      }
     </div>
   </p-accordion-content>
 </p-accordion-panel>

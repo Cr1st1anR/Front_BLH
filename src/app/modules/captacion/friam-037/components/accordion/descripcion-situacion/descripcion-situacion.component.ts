@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Input, input, OnChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'primeng/accordion';
 import { RadioButton } from 'primeng/radiobutton';
-import type { DescripcionSituacionData } from '../interfaces/descripcion-situacion.interface';
+import type { CategoriasResponse, PreguntasResponse, Respuestas, RespuestasVisita } from '../interfaces/descripcion-situacion.interface';
 
 @Component({
   selector: 'descripcion-situacion',
@@ -10,44 +10,38 @@ import type { DescripcionSituacionData } from '../interfaces/descripcion-situaci
   templateUrl: './descripcion-situacion.component.html',
   styleUrl: './descripcion-situacion.component.scss',
 })
-export class DescripcionSituacionComponent implements DescripcionSituacionData {
-  espacioAdecuado: number | null = null;
-  libreVectores: number | null = null;
-  libreContaminantes: number | null = null;
-  espacioLimpio: number | null = null;
-  lavamanos: number | null = null;
-  refrigeracion: number | null = null;
+export class DescripcionSituacionComponent implements OnChanges{
 
-  excedenteLeche: number | null = null;
-  higieneDonante: number | null = null;
-  saludDonante: number | null = null;
-  saludHijo: number | null = null;
-  examenesNegativos: number | null = null;
-  tatuajes: number | null = null;
-  transfusiones: number | null = null;
-  medicamento: number | null = null;
-  psicoactivos: number | null = null;
-  recolectores: number | null = null;
+  @Input() data: RespuestasVisita | null = null;
+  @Input() preguntas: PreguntasResponse[] = [];
+  @Input() categorias: CategoriasResponse[] = [];
+
+  newRegister: object = {};
+  respuestas: Respuestas[] = [];
+  newPreguntas: Array<PreguntasResponse[]> = [];
+
+  ngOnChanges() {
+    if (this.data) {
+      this.formQuestions();
+      this.formAnswers();
+    }
+  }
+
+  formQuestions(){
+    const aux = JSON.parse(JSON.stringify(this.preguntas));
+    this.preguntas = [];
+    this.newPreguntas[0] = aux.slice(0,7);
+    this.newPreguntas[1] = aux.slice(8,15);
+  }
+
+  formAnswers(){
+    const aux = JSON.parse(JSON.stringify(this.data));
+    this.respuestas = this.data!.respuestas;
+    console.log(this.respuestas);
+    
+  }
 
   getFormData() {
-    return {
-      espacioAdecuado: this.espacioAdecuado,
-      libreVectores: this.libreVectores,
-      libreContaminantes: this.libreContaminantes,
-      espacioLimpio: this.espacioLimpio,
-      lavamanos: this.lavamanos,
-      refrigeracion: this.refrigeracion,
-
-      excedenteLeche: this.excedenteLeche,
-      higieneDonante: this.higieneDonante,
-      saludDonante: this.saludDonante,
-      saludHijo: this.saludHijo,
-      examenesNegativos: this.examenesNegativos,
-      tatuajes: this.tatuajes,
-      transfusiones: this.transfusiones,
-      medicamento: this.medicamento,
-      psicoactivos: this.psicoactivos,
-      recolectores: this.recolectores,
-    };
+    return this.respuestas;
   }
 }

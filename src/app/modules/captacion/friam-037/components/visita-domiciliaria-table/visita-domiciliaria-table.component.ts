@@ -16,7 +16,6 @@ import { ToastModule } from 'primeng/toast';
     TableModule,
     CommonModule,
     HeaderComponent,
-    MonthPickerTableComponent,
     ProgressSpinnerModule,
     ToastModule,
   ],
@@ -95,7 +94,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
   }
 
   onRowClick(row: VisitaMadresResponse) {
-    this.router.navigate(['/blh/captacion/visita-domiciliaria', row.infoMadre.documento]);
+    this.router.navigate(['/blh/captacion/visita-domiciliaria', row.id]);
   }
 
   formatData(data: VisitaMadresResponse[]): VisitaMadresResponse[] {

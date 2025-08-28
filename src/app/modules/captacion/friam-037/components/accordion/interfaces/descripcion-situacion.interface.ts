@@ -1,19 +1,72 @@
-export interface DescripcionSituacionData {
-  espacioAdecuado: number | null;
-  libreVectores: number | null;
-  libreContaminantes: number | null;
-  espacioLimpio: number | null;
-  lavamanos: number | null;
-  refrigeracion: number | null;
-
-  excedenteLeche: number | null;
-  higieneDonante: number | null;
-  saludDonante: number | null;
-  saludHijo: number | null;
-  examenesNegativos: number | null;
-  tatuajes: number | null;
-  transfusiones: number | null;
-  medicamento: number | null;
-  psicoactivos: number | null;
-  recolectores: number | null;
+export interface RespuestasVisita {
+  id: number;
+  observaciones: string;
+  recomendaciones: string;
+  donante_efectiva: number;
+  firmaUsuario: string;
+  firmaEvaluador: string;
+  evaluacionLactancia: EvaluacionLactancia;
+  madrePotencial: MadrePotencial;
+  respuestas: Respuestas[]
 }
+
+export interface Respuestas {
+  id: number;
+  respuesta: number;
+}
+
+export interface EvaluacionLactancia {
+  id?: number;
+  madre: string;
+  bebe: string;
+  pechos: string;
+  posicionBebe: string;
+  agarrePecho: string;
+  succion: string;
+  deglucion: string;
+}
+
+export interface MadrePotencial {
+  id: number;
+  educacion_presencial: number;
+  fecha_llamada: Date;
+  llamada: string;
+  asesoria: number;
+  donante_efectiva: number;
+  fecha_visita: Date;
+  observacion: string;
+  fecha_registro: Date;
+}
+
+export interface BodyVisita {
+  observaciones: string;
+  recomendaciones: string;
+  donante_efectiva: number;
+  firmaUsuario: string;
+  firmaEvaluador: string;
+  madrePotencial: MadrePotencial;
+  evaluacionLactancia: EvaluacionLactancia;
+}
+
+export interface MadrePotencial {
+  id: number;
+}
+
+export interface BodyRespuestasVisita {
+  respuesta: number;
+  pregunta: number;
+  visitaMadre: number;
+}
+
+export interface PreguntasResponse {
+  id: number;
+  descripcion: string;
+  clasificacion: number;
+}
+
+export interface CategoriasResponse {
+  id: number;
+  descripcion: string;
+}
+
+

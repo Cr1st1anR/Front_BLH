@@ -56,9 +56,9 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    debugger
+    // debugger
     if (changes['data'].currentValue != null) {
-      debugger
+      // debugger
       this.formatForm();
       this.mostrar = true
     }

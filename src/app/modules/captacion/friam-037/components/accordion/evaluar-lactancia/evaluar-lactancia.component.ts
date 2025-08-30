@@ -12,7 +12,7 @@ import { VisitaDomiciliariaService } from '../../visita-domiciliaria-table/servi
   templateUrl: './evaluar-lactancia.component.html',
   styleUrl: './evaluar-lactancia.component.scss',
 })
-export class EvaluarLactanciaComponent implements OnChanges {
+export class EvaluarLactanciaComponent implements OnChanges, OnInit {
 
   @Input() data: RespuestasVisita | null = null;
   respuestasAux: RespuestasVisita | null = null;
@@ -26,11 +26,14 @@ export class EvaluarLactanciaComponent implements OnChanges {
   ) {
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+    ngOnInit(): void {
+    this.getQuestions();
+  }
 
-    if (changes['data'].currentValue != null) {
-      this.getQuestions();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data']) {
       this.formatForm();
+      this.formatQuestionsAnswers();
     }
   }
 
@@ -44,34 +47,53 @@ export class EvaluarLactanciaComponent implements OnChanges {
   }
 
   formatForm() {
-    this.respuestasAux = JSON.parse(JSON.stringify(this.data!.respuestas));
+    if (this.data && this.data.respuestas) {
+      this.respuestasAux = JSON.parse(JSON.stringify(this.data.respuestas));
+    } else {
+      this.respuestasAux = null;
+    }
   }
 
   formatQuestionsAnswers() {
-    const aux = this.data!.evaluacionLactancia;
+    if (!this.data || !this.data.evaluacionLactancia) {
+      this.formData.forEach((item: any) =>
+        item.questions.forEach((group: any) => {
+          group[0].answer = null;
+          group[1].answer = null;
+        })
+      );
+      return;
+    }
+
+    const aux = this.data.evaluacionLactancia;
+    const parse = (s: string) => {
+      const t = (s ?? '').toString().trim();
+      return t === '' ? null : Number(t);
+    };
     const respuestas = [
-      { respuestas: aux.madre.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.bebe.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.pechos.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.posicionBebe.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.agarrePecho.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.succion.split(',').map((x: string) => Number(x)) },
-      { respuestas: aux.deglucion.split(',').map((x: string) => Number(x)) }
+      { respuestas: aux.madre.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.bebe.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.pechos.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.posicionBebe.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.agarrePecho.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.succion.split(',').map((x: string) => parse(x)) },
+      { respuestas: aux.deglucion.split(',').map((x: string) => parse(x)) }
     ];
 
-    this.formData.map((item, i) => {
+    this.formData.forEach((item: any, i: number) => {
       const res = respuestas[i].respuestas;
-      item.questions.map((group: any, j: number) => {
+      item.questions.forEach((group: any, j: number) => {
         const resGroup = res[j];
-        if (resGroup === 0) {
+        if (resGroup === null || resGroup === undefined) {
+          group[0].answer = null;
+          group[1].answer = null;
+        } else if (resGroup === 0) {
           group[0].answer = 0;
           group[1].answer = 0;
         } else {
           group[0].answer = 1;
           group[1].answer = 1;
         }
-
-
       });
     });
   }

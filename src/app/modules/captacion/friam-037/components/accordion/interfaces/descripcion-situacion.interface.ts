@@ -12,7 +12,7 @@ export interface RespuestasVisita {
 
 export interface Respuestas {
   id: number;
-  respuesta: number;
+  respuesta: number | null;
 }
 
 export interface EvaluacionLactancia {

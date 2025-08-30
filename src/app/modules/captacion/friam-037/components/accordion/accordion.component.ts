@@ -83,7 +83,7 @@ export class AccordionComponent {
 
     return this._vistaServices.getVisitaMadre(this.idVisita!).pipe(
       tap((data) => {
-        if (data) {
+        if (data && data.data) {
           setTimeout(() => {
             this.loading = false;
             this.saving = false;
@@ -91,26 +91,19 @@ export class AccordionComponent {
             this.messageService.add({
               severity: 'success',
               summary: 'Éxito',
-              detail: 'Datos guardados correctamente',
+              detail: 'Datos cargados correctamente',
               key: 'tr',
               life: 1000,
             });
           }, 1000);
         } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos de madres donantes disponibles',
-            key: 'tr',
-            life: 3000
-          });
+          // Solo limpiar estados, no mostrar alerta
           this.loading = false;
           this.saving = false;
+          this.dataVisitaMadre = null;
         }
-
       })
     );
-
   }
 
   loadPreguntas(): Observable<ApiResponse> {

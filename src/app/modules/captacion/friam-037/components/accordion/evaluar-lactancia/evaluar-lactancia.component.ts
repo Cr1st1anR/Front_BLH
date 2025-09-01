@@ -26,7 +26,7 @@ export class EvaluarLactanciaComponent implements OnChanges, OnInit {
   ) {
   }
 
-    ngOnInit(): void {
+  ngOnInit(): void {
     this.getQuestions();
   }
 
@@ -99,6 +99,38 @@ export class EvaluarLactanciaComponent implements OnChanges, OnInit {
   }
 
   getFormData() {
-    return this.formData;
+    const evaluacionLactancia = {
+      madre: this.generateAnswerString(0),
+      bebe: this.generateAnswerString(1),
+      pechos: this.generateAnswerString(2),
+      posicionBebe: this.generateAnswerString(3),
+      agarrePecho: this.generateAnswerString(4),
+      succion: this.generateAnswerString(5),
+      deglucion: this.generateAnswerString(6)
+    };
+
+    return evaluacionLactancia;
+  }
+
+  private generateAnswerString(categoryIndex: number): string {
+    if (!this.formData[categoryIndex]) {
+      return '';
+    }
+
+    const answers: string[] = [];
+
+    this.formData[categoryIndex].questions.forEach((group: any, questionIndex: number) => {
+      if (group[0].answer === 0) {
+        answers.push('0');
+      }
+      else if (group[0].answer === 1) {
+        answers.push('1');
+      }
+      else {
+        answers.push('');
+      }
+    });
+
+    return answers.join(',');
   }
 }

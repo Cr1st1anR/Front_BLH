@@ -18,7 +18,7 @@ export class VisitaDomiciliariaService {
   datos: Array<object> =
     [
       {
-        id:1,
+        id: 1,
         title: "MADRE",
         questions: [
           [
@@ -54,7 +54,7 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:2,
+        id: 2,
         title: "BEBÉ",
         questions: [
           [
@@ -90,7 +90,7 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:3,
+        id: 3,
         title: "PECHOS",
         questions: [
           [
@@ -126,7 +126,7 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:4,
+        id: 4,
         title: "POSICION DEL BEBÉ DURANTE LA LACTANCIA",
         questions: [
           [
@@ -172,9 +172,9 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:5,
-        title:"AGARRE DEL PECHO",
-        questions:[
+        id: 5,
+        title: "AGARRE DEL PECHO",
+        questions: [
           [
             {
               question: "La boca del bebé esta bien abierta",
@@ -208,7 +208,7 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:6,
+        id: 6,
         title: "SUCCIÓN",
         questions: [
           [
@@ -244,7 +244,7 @@ export class VisitaDomiciliariaService {
         ]
       },
       {
-        id:7,
+        id: 7,
         title: "DEGLUCIÓN",
         questions: [
           [

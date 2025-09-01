@@ -28,14 +28,6 @@ export interface EvaluacionLactancia {
 
 export interface MadrePotencial {
   id: number;
-  educacion_presencial: number;
-  fecha_llamada: Date;
-  llamada: string;
-  asesoria: number;
-  donante_efectiva: number;
-  fecha_visita: Date;
-  observacion: string;
-  fecha_registro: Date;
 }
 
 export interface BodyVisita {
@@ -48,8 +40,16 @@ export interface BodyVisita {
   evaluacionLactancia: EvaluacionLactancia;
 }
 
-export interface MadrePotencial {
+export interface MadrePotencialCompleta {
   id: number;
+  educacion_presencial: number;
+  fecha_llamada: Date;
+  llamada: string;
+  asesoria: number;
+  donante_efectiva: number;
+  fecha_visita: Date;
+  observacion: string;
+  fecha_registro: Date;
 }
 
 export interface BodyRespuestasVisita {
@@ -68,5 +68,3 @@ export interface CategoriasResponse {
   id: number;
   descripcion: string;
 }
-
-

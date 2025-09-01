@@ -56,9 +56,7 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // debugger
     if (changes['data'].currentValue != null) {
-      // debugger
       this.formatForm();
       this.mostrar = true
     }
@@ -78,11 +76,11 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
 
   getFormData() {
     return {
-      observacionesVisita: this.observacionesVisita,
-      recomendaciones: this.recomendaciones,
-      donanteEfectiva: this.donanteEfectiva,
-      firmaUsuaria: this.firmaUsuaria,
-      firmaVisita: this.firmaVisita,
+      observacionesVisita: this.observacionesVisita || '',
+      recomendaciones: this.recomendaciones || '',
+      donanteEfectiva: this.donanteEfectiva || 0,
+      firmaUsuaria: this.firmaUsuaria || '',
+      firmaVisita: this.firmaVisita || '',
     };
   }
 

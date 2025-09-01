@@ -13,7 +13,8 @@ import { MessageService } from 'primeng/api';
 import { VisitaDomiciliariaService } from '../visita-domiciliaria-table/services/visita-domiciliaria.service';
 import { concatMap, Observable, of, tap } from 'rxjs';
 import { ApiResponse } from '../../../friam-041/components/table-list/interfaces/linea-amiga.interface';
-import { CategoriasResponse, PreguntasResponse, RespuestasVisita } from './interfaces/descripcion-situacion.interface';
+import { CategoriasResponse, PreguntasResponse } from './interfaces/descripcion-situacion.interface';
+import { BodyVisita } from './interfaces/descripcion-situacion.interface';
 
 @Component({
   selector: 'accordion-visita',
@@ -97,7 +98,6 @@ export class AccordionComponent {
             });
           }, 1000);
         } else {
-          // Solo limpiar estados, no mostrar alerta
           this.loading = false;
           this.saving = false;
           this.dataVisitaMadre = null;
@@ -135,16 +135,56 @@ export class AccordionComponent {
   }
 
   onLoadData() {
-    // const descripcionSituacion = this.descripcionSituacionComp.getFormData();
-    // const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
-    // const datosAdicionales = this.datosAdicionalesComp.getFormData();
+    const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
 
-    // const datosCompletos = {
-    //   descripcionSituacion,
-    //   evaluarLactancia,
-    //   datosAdicionales,
-    // };
+    const datosAdicionales = this.datosAdicionalesComp.getFormData();
 
-    // console.log('Datos completos del formulario:', datosCompletos);
+    const bodyVisita: BodyVisita = {
+      observaciones: datosAdicionales.observacionesVisita || '',
+      recomendaciones: datosAdicionales.recomendaciones || '',
+      donante_efectiva: datosAdicionales.donanteEfectiva || 0,
+      firmaUsuario: datosAdicionales.firmaUsuaria || '',
+      firmaEvaluador: datosAdicionales.firmaVisita || '',
+      madrePotencial: {
+        id: parseInt(this.idVisita!)
+      },
+      evaluacionLactancia: evaluarLactancia
+    };
+
+    console.log('Datos a enviar:', bodyVisita);
+
+    this.saveVisitaMadre(bodyVisita);
+  }
+
+  saveVisitaMadre(body: BodyVisita) {
+    this.saving = true;
+
+    this._vistaServices.postDataVisitaMadres(body).subscribe({
+      next: (response) => {
+        this.saving = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Visita guardada correctamente',
+          key: 'tr',
+          life: 3000,
+        });
+
+        setTimeout(() => {
+          this.router.navigate(['/blh/captacion/visita-domiciliaria']);
+        }, 2000);
+      },
+      error: (error) => {
+        this.saving = false;
+        console.error('Error al guardar la visita:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo guardar la visita. Inténtalo nuevamente.',
+          key: 'tr',
+          life: 3000,
+        });
+      }
+    });
   }
 }

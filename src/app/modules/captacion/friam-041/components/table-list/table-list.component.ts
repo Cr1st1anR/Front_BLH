@@ -44,7 +44,6 @@ import { catchError, concatMap, Observable, of, tap } from 'rxjs';
   providers: [LineaAmigaService, MessageService],
 })
 
-
 export class TableListComponent implements OnInit {
 
   @ViewChild('tableVap') table!: Table;
@@ -54,36 +53,39 @@ export class TableListComponent implements OnInit {
   filtroActual: { year: number; month: number } | null = null;
   entidadesOpt: entidades[] = [];
   selectedEntidades: any[] = [];
-  loading:boolean = false;
+  loading: boolean = false;
+
+  editingRow: lineaAmigaData | null = null;
+  hasNewRowInEditing: boolean = false;
 
   headersTableLineaAmiga: any[] = [
     {
       header: 'REMITE', field: 'entidad', rowspan: 2, width: '200px', tipo: "select",
-      options: null, label: "nombre", placeholder: "Seleccione la entidad", clase:""
+      options: null, label: "nombre", placeholder: "Seleccione la entidad", clase: ""
     },
-    { header: 'NOMBRES', field: 'nombre', rowspan: 2, width: '200px', tipo: "text", clase:""},
-    { header: 'APELLIDOS', field: 'apellido', rowspan: 2, width: '200px', tipo: "text", clase:"" },
-    { header: 'FECHA PARTO', field: 'fechaParto', rowspan: 2, width: '200px', tipo: "date", clase:"" },
-    { header: 'NO. DOC', field: 'documento', rowspan: 2, width: '200px', tipo: "text", clase:"" },
-    { header: 'EDAD', field: 'fechaNacimiento', rowspan: 2, width: '200px', tipo: "date", clase:"" },
-    { header: 'TELEFONO', field: 'telefono', rowspan: 2, width: '200px', tipo: "text", clase:"" },
-    { header: 'BARRIO', field: 'barrio', rowspan: 2, width: '200px', tipo: "text", clase:"" },
-    { header: 'DIRECCION', field: 'direccion', rowspan: 2, width: '200px', tipo: "text", clase:"" },
-    { header: 'EDUCACION PRESENCIAL', field: 'educacionPresencial', rowspan: 2, width: '320px', tipo: "checkbox", clase:"" },
-    { header: 'FECHA LLAMADA', field: 'fechaLlamada', rowspan: 2, width: '200px', tipo: "date", clase:"" },
-    { header: 'LLAMADA', field: "llamada", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase:"" },
+    { header: 'NOMBRES', field: 'nombre', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'APELLIDOS', field: 'apellido', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'FECHA PARTO', field: 'fechaParto', rowspan: 2, width: '200px', tipo: "date", clase: "" },
+    { header: 'NO. DOC', field: 'documento', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'EDAD', field: 'fechaNacimiento', rowspan: 2, width: '200px', tipo: "date", clase: "" },
+    { header: 'TELEFONO', field: 'telefono', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'BARRIO', field: 'barrio', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'DIRECCION', field: 'direccion', rowspan: 2, width: '200px', tipo: "text", clase: "" },
+    { header: 'EDUCACION PRESENCIAL', field: 'educacionPresencial', rowspan: 2, width: '320px', tipo: "checkbox", clase: "" },
+    { header: 'FECHA LLAMADA', field: 'fechaLlamada', rowspan: 2, width: '200px', tipo: "date", clase: "" },
+    { header: 'LLAMADA', field: "llamada", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase: "" },
     {
       header: 'RESPONSABLE', field: 'responsable', rowspan: 2, width: '200px', tipo: "select",
-      options: null, label: "nombre", placeholder: "Seleccione un responsable", clase:""
+      options: null, label: "nombre", placeholder: "Seleccione un responsable", clase: ""
     },
-    { header: 'RECIBE ASESORIA', field: "asesoria", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase:"" },
-    { header: 'POSIBLE DONANTE', field: "donanteEfectiva", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase:"" },
-    { header: 'FECHA VISITA', field: 'fechaVisita', rowspan: 2, width: '200px', tipo: "date", clase:"" },
-    { header: 'OBSERVACIONES', field: 'observacion', rowspan: 2, width: '200px', tipo: "text", clase:"" },
+    { header: 'RECIBE ASESORIA', field: "asesoria", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase: "" },
+    { header: 'POSIBLE DONANTE', field: "donanteEfectiva", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase: "" },
+    { header: 'FECHA VISITA', field: 'fechaVisita', rowspan: 2, width: '200px', tipo: "date", clase: "" },
+    { header: 'OBSERVACIONES', field: 'observacion', rowspan: 2, width: '200px', tipo: "text", clase: "" },
     { header: 'ACCIONES', field: 'acciones', rowspan: 2, width: '200px' }
   ];
 
-  requiredFields: string[] = ['entidad', 'nombre', 'apellido', 'fechaParto','documento','fechaNacimiento','telefono','barrio','direccion','responsable'];
+  requiredFields: string[] = ['entidad', 'nombre', 'apellido', 'fechaParto', 'documento', 'fechaNacimiento', 'telefono', 'barrio', 'direccion', 'responsable'];
 
   constructor(
     private _lineaAmigaService: LineaAmigaService,
@@ -95,22 +97,22 @@ export class TableListComponent implements OnInit {
     const fechaActual = new Date();
     const mesActual = fechaActual.getMonth() + 1;
     const anioActual = fechaActual.getFullYear();
-    
-      of(null).pipe(
-        concatMap(() => this.loadDataEmpleados()),
-        concatMap(() => this.loadDataEntidades()),
-        concatMap(() => this.loadDataLieneaAmiga(mesActual, anioActual))
-      ).subscribe({
-        complete: () => {
-          setTimeout(() => {
-            this.loading = false;
-          }, 2000);
-        },
-        error: (err) => {
+
+    of(null).pipe(
+      concatMap(() => this.loadDataEmpleados()),
+      concatMap(() => this.loadDataEntidades()),
+      concatMap(() => this.loadDataLieneaAmiga(mesActual, anioActual))
+    ).subscribe({
+      complete: () => {
+        setTimeout(() => {
           this.loading = false;
-          console.error('Error en la secuencia de peticiones', err);
-        }
-      });
+        }, 2000);
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error en la secuencia de peticiones', err);
+      }
+    });
   }
 
   loadDataEntidades(): Observable<ApiResponse> {
@@ -134,7 +136,6 @@ export class TableListComponent implements OnInit {
       })
     );
   }
-
 
   loadDataLieneaAmiga(mes: number, anio: number): Observable<ApiResponse | null> {
     return this._lineaAmigaService.getDataFriam041(mes, anio).pipe(
@@ -174,11 +175,35 @@ export class TableListComponent implements OnInit {
   }
 
   onRowEditInit(dataRow: lineaAmigaData): void {
+    // Verificar si hay una nueva fila en edición
+    if (this.hasNewRowInEditing && (!this.editingRow || this.editingRow.idMadrePotencial === undefined)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Debe guardar o cancelar la fila nueva antes de editar otra.',
+        key: 'tr',
+        life: 3000,
+      });
+      return;
+    }
+
+    // Cancelar edición actual si existe
+    if (this.editingRow && this.table) {
+      this.cancelCurrentEditing();
+    }
+
     this.clonedTableLienaAmiga[dataRow.idMadrePotencial as number] = { ...dataRow };
+    this.editingRow = dataRow;
   }
 
   onRowEditSave(dataRow: lineaAmigaData, index: number, event: MouseEvent) {
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+
+    // Sincronizar fechaNacimiento con fechaNacAux
+    if (dataRow.fechaNacAux) {
+      dataRow.fechaNacimiento = new Date(dataRow.fechaNacAux);
+    }
+
     const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
     if (invalidField) {
       this.messageService.add({
@@ -190,6 +215,10 @@ export class TableListComponent implements OnInit {
       });
       return;
     }
+
+    // Limpiar estado de edición
+    this.editingRow = null;
+    this.hasNewRowInEditing = false;
 
     const newDataRow = Object.assign({}, dataRow,
       {
@@ -228,11 +257,36 @@ export class TableListComponent implements OnInit {
   }
 
   onRowEditCancel(dataRow: lineaAmigaData, index: number): void {
-    this.dataTableLienaAmiga[index] = this.clonedTableLienaAmiga[dataRow.idMadrePotencial as number];
-    delete this.clonedTableLienaAmiga[dataRow.idMadrePotencial as number];
+    if (dataRow.idMadrePotencial === undefined) {
+      // Es una nueva fila, eliminarla
+      this.dataTableLienaAmiga.splice(index, 1);
+      this.dataTableLienaAmiga = [...this.dataTableLienaAmiga];
+      this.hasNewRowInEditing = false;
+    } else {
+      // Restaurar datos originales
+      this.dataTableLienaAmiga[index] = this.clonedTableLienaAmiga[dataRow.idMadrePotencial as number];
+      delete this.clonedTableLienaAmiga[dataRow.idMadrePotencial as number];
+    }
+    this.editingRow = null;
   }
 
   agregarFilaVacia() {
+    if (this.hasNewRowInEditing) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Debe guardar o cancelar la fila actual antes de crear una nueva',
+        key: 'tr',
+        life: 3000,
+      });
+      return;
+    }
+
+    // Cancelar edición actual si existe
+    if (this.editingRow && this.table) {
+      this.cancelCurrentEditing();
+    }
+
     const nuevoRegistro: lineaAmigaData = {
       entidad: '',
       nombre: '',
@@ -256,10 +310,11 @@ export class TableListComponent implements OnInit {
 
     this.dataTableLienaAmiga.push(nuevoRegistro);
     this.dataTableLienaAmiga = [...this.dataTableLienaAmiga];
+    this.hasNewRowInEditing = true;
 
     setTimeout(() => {
       this.table.initRowEdit(nuevoRegistro);
-    });
+    }, 100);
   }
 
   filtrarPorFecha(filtro: { year: number; month: number }): void {
@@ -274,7 +329,7 @@ export class TableListComponent implements OnInit {
         fechaLlamada: item.fechaLlamada ? new Date(item.fechaLlamada) : null,
         fechaVisita: item.fechaVisita ? new Date(item.fechaVisita) : null,
         fechaNacimiento: item.fechaNacimiento ? this.ageCalculate(item.fechaNacimiento as Date) : null,
-        fechaNacAux : new Date( item.fechaNacimiento as Date),
+        fechaNacAux: new Date(item.fechaNacimiento as Date),
         entidad: this.headersTableLineaAmiga[0].options.find((entidad: entidades) => entidad.nombre === item.entidad) || '',
         responsable: this.headersTableLineaAmiga[12].options.find((empleado: empleados) => empleado.nombre === item.responsable) || '',
       };
@@ -322,5 +377,44 @@ export class TableListComponent implements OnInit {
   isFieldInvalid(field: string, dataRow: any): boolean {
     return this.requiredFields.includes(field) &&
       (dataRow[field] === null || dataRow[field] === undefined || dataRow[field] === '');
+  }
+
+  // Método privado para cancelar la edición actual
+  private cancelCurrentEditing(): void {
+    if (this.editingRow && this.table) {
+      try {
+        this.table.cancelRowEdit(this.editingRow);
+      } catch (error) {
+        // Ignorar errores del cancelRowEdit
+      }
+
+      const index = this.dataTableLienaAmiga.findIndex(
+        (row) => row === this.editingRow
+      );
+      if (index !== -1) {
+        if (this.editingRow.idMadrePotencial === undefined) {
+          // Es una nueva fila, eliminarla
+          this.dataTableLienaAmiga.splice(index, 1);
+          this.dataTableLienaAmiga = [...this.dataTableLienaAmiga];
+        } else {
+          // Restaurar datos originales si existen
+          if (this.clonedTableLienaAmiga[this.editingRow.idMadrePotencial as number]) {
+            this.dataTableLienaAmiga[index] = this.clonedTableLienaAmiga[this.editingRow.idMadrePotencial as number];
+            delete this.clonedTableLienaAmiga[this.editingRow.idMadrePotencial as number];
+          }
+        }
+      }
+      this.editingRow = null;
+      this.hasNewRowInEditing = false;
+    }
+  }
+
+  // Métodos de utilidad para el control de estado
+  isAnyRowEditing(): boolean {
+    return this.editingRow !== null || this.hasNewRowInEditing;
+  }
+
+  isEditButtonDisabled(rowData: lineaAmigaData): boolean {
+    return this.isAnyRowEditing() && this.editingRow !== rowData;
   }
 }

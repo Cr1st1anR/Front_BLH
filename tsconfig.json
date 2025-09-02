@@ -3,6 +3,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": ".", //Root como base de nuestros urls que vamos a definir
+    "paths": {
+      "@variablescss/*": ["src/styles/*"] //path (alias)
+    },
+
     "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,

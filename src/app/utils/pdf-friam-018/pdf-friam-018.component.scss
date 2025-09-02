@@ -1,0 +1,403 @@
+.pdf-container {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 1cm;
+  margin: 0 auto;
+  background: white;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.15;
+  color: black;
+  box-sizing: border-box;
+}
+
+/* Páginas explícitas */
+.page {
+  position: relative;
+  page-break-after: always;
+  min-height: 27.7cm;
+}
+
+.page:last-of-type {
+  page-break-after: auto;
+}
+
+/* Medicamentos en página 2 */
+.section.medicamentos-section {
+  page-break-before: auto;
+  break-before: auto;
+  margin-top: 80px;
+}
+
+/* Evitar saltos internos en elementos críticos */
+.signature-box,
+.section.medicamentos-section,
+.section.medicamentos-section .form-grid,
+.section.medicamentos-section .form-row {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.header-section {
+  display: flex;
+  border: 2px solid black;
+  margin-bottom: 10px;
+  min-height: 100px;
+
+  .logo-section {
+    width: 150px;
+    border-right: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+
+    .logo-placeholder {
+      border: 1px solid black;
+      width: 80px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+  }
+
+  .title-section {
+    flex: 1;
+    padding: 10px;
+
+    h1 {
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      margin: 0 0 10px 0;
+    }
+
+    .form-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      font-size: 10px;
+
+      > div {
+        display: flex;
+
+        label {
+          font-weight: bold;
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+}
+
+.section {
+  margin-bottom: 15px;
+  border: 1px solid black;
+
+  .section-title {
+    background: #f0f0f0;
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 1px solid black;
+    padding-bottom: 17px;
+    text-align: center;
+  }
+
+  .form-grid {
+    padding: 10px;
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 8px;
+      align-items: flex-start;
+
+      .form-field {
+        flex: 1;
+        min-height: 20px;
+
+        label {
+          font-weight: bold;
+          display: inline-block;
+          margin-right: 5px;
+          font-size: 10px;
+          /* Para labels que necesitan más separación después de los dos puntos */
+          &.extra-spacing {
+            margin-right: 20px;
+          }
+        }
+
+        .field-value {
+          border-bottom: 1px solid black;
+          min-height: 21px; //lineas datos inscripcion
+          display: inline-block;
+          padding: 1px 4px 2px 4px;
+        }
+        /* Estilo específico para el campo "Fecha registro" */
+        &.fecha-registro-field {
+          margin-left: 358px; /* Mover aquí, fuera de lab-exams-row */
+        }
+
+        &.weight-field {
+          display: flex;
+          align-items: center;
+          max-width: none;
+          flex: 1;
+
+          label {
+            white-space: nowrap;
+            margin-right: 5px;
+            font-weight: bold;
+            font-size: 10px;
+            min-width: auto;
+          }
+
+          .weight-input-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            margin-left: 0;
+
+            .weight-line {
+              border-bottom: 1px solid black;
+              flex: none;
+              height: 24px;
+              display: flex;
+              align-items: center;
+              padding: 1px 4px 2px 4px;
+              margin-right: 5px;
+              width: fit-content;
+            }
+
+            .weight-unit {
+              font-size: 10px;
+              font-weight: normal;
+              white-space: nowrap;
+            }
+
+            /* Para campos sin unidad (como "Capacitada en") */
+            &:only-child .weight-line,
+            .weight-line:last-child:not(.weight-line + .weight-unit) {
+              margin-right: 20px;
+              width: fit-content;
+            }
+          }
+        }
+
+        /* Selector específico solo para Código de donante */
+        &.codigo-donante-field {
+          transform: translateX(-120px);
+          position: relative;
+        }
+
+        .field-group {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+
+          .weight-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+
+            .weight-label {
+              font-weight: bold;
+              font-size: 10px;
+            }
+
+            .weight-value {
+              border-bottom: 1px solid black;
+              height: 18px;
+              padding: 1px 4px 2px 4px;
+              display: inline-block;
+              min-height: 21px; //lineas peso inicial, final y talla
+              width: fit-content;
+            }
+
+            .weight-unit-inline {
+              font-size: 10px;
+              font-weight: normal;
+            }
+          }
+        }
+
+        &.checkbox-field {
+          .checkbox {
+            font-weight: bold;
+            border-bottom: 1px solid black;
+            padding: 2px 4px;
+            display: inline-block;
+            padding-bottom: 5px;
+          }
+
+          .checkbox-group {
+            display: flex;
+            gap: 10px;
+
+            .checkbox-item {
+              font-weight: normal;
+              border: 1px solid black;
+              padding: 1px 5px 2px 5px;
+              font-size: 10px;
+              padding-bottom: 13px; /// altura rectangulos donante interna externa
+            }
+          }
+        }
+
+        &.signature-field {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: left;
+            width: auto;
+            margin-right: 20px;
+          }
+
+          .signature-box {
+            width: 100%;
+            max-width: 250px;
+            margin: 0;
+          }
+          /* Clase específica solo para la firma del menor de edad */
+          &.minor-signature {
+            label {
+              margin-bottom: 5px;
+              width: 100%;
+              max-width: 250px;
+              line-height: 1.3;
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+            }
+
+            .signature-box {
+              margin-top: 10px;
+              clear: both;
+            }
+          }
+        }
+      }
+    }
+
+    /* Estilos específicos para fechas de vencimiento de laboratorios */
+    .lab-exams-row {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+
+      .form-field.checkbox-field {
+        flex: 0 0 auto;
+        min-width: 300px;
+
+        label {
+          display: inline-block;
+          margin-right: 10px;
+          font-weight: bold;
+          font-size: 10px;
+          min-width: 60px;
+        }
+
+        .checkbox-group {
+          display: inline-flex;
+          gap: 10px;
+          margin-left: 0;
+
+          .checkbox-item {
+            font-weight: normal;
+            border: 1px solid black;
+            padding: 1px 5px 2px 5px;
+            font-size: 10px;
+            padding-bottom: 13px;
+            white-space: nowrap;
+          }
+        }
+      }
+
+      .form-field.lab-date-field {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+
+        label {
+          white-space: nowrap;
+          margin-right: 5px;
+          font-weight: bold;
+          font-size: 10px;
+        }
+
+        .field-value {
+          border-bottom: 1px solid black;
+          min-height: 21px;
+          display: inline-block;
+          padding: 1px 4px 2px 4px;
+          width: fit-content;
+        }
+      }
+    }
+
+    .signatures-row {
+      margin-top: 20px;
+      display: flex;
+      gap: 30px;
+
+      .form-field {
+        flex: 1;
+      }
+    }
+  }
+}
+
+.signature-box {
+  border: 1px solid black;
+  height: 60px;
+  width: 100%;
+  max-width: 250px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+
+  .signature-img {
+    max-width: 230px;
+    max-height: 50px;
+    object-fit: contain;
+  }
+}
+
+.consent-text {
+  font-size: 10px;
+  text-align: justify;
+  line-height: 1.3;
+  margin: 10px 0;
+  padding: 5px;
+  border: 1px solid black;
+}
+
+@media print {
+  .pdf-container {
+    margin: 0;
+    box-shadow: none;
+    width: 100%;
+    max-width: none;
+  }
+
+  .page {
+    page-break-after: always;
+  }
+
+  .page:last-of-type {
+    page-break-after: auto;
+  }
+}

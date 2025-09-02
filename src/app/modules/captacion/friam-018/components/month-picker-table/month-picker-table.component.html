@@ -1,12 +1,4 @@
 <div class="flex items-center">
-  <p-datepicker
-    [(ngModel)]="date"
-    view="month"
-    dateFormat="mm/yy"
-    [readonlyInput]="true"
-    [iconDisplay]="'input'"
-    [showIcon]="true"
-    inputId="icondisplay"
-    placeholder="Mes/Año"
-  />
+  <p-datepicker [(ngModel)]="date" view="month" dateFormat="mm/yy" [readonlyInput]="true" [iconDisplay]="'input'"
+    [showIcon]="true" inputId="icondisplay" (onSelect)="onDateChange()" placeholder="Mes/Año" />
 </div>

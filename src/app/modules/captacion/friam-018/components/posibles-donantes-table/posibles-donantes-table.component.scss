@@ -1,16 +1,58 @@
-.container-table{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 25px;
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
 }
 
-.grid-lines{
-    border: 1px solid white;
+.grid-lines {
+  border: 1px solid white;
 }
 
-.filter-entidades{
-    width: 100%;
-    min-width: 200px;
+.filter-entidades {
+  width: 100%;
+  min-width: 200px;
+}
+
+.donante-efectiva {
+  background-color: #78c089 !important;
+
+  &:hover {
+    background-color: #54be6d !important;
+  }
+
+  &:hover td {
+    background-color: #54be6d !important;
+  }
+}
+
+.p-button-sm {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+
+  .pi {
+    font-size: 0.875rem;
+  }
+}
+
+td {
+  .p-button {
+    margin: 0;
+  }
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover td {
+  background-color: inherit !important;
+}
+
+.lab-fecha-vencida {
+  background-color: red !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover .lab-fecha-vencida {
+  background-color: #cc0000 !important;
+  color: white !important;
 }

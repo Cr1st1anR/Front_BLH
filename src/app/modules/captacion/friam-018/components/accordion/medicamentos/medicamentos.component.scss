@@ -1,3 +1,43 @@
 :host {
   display: block;
 }
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+  min-height: 20px;
+}
+
+.ng-invalid {
+  border-color: red !important;
+}
+
+.canvas-invalid {
+  border-color: red !important;
+  border-width: 2px !important;
+}
+
+input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+label.font-bold {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.flex.items-center.gap-4 {
+  margin-top: 0.5rem;
+}
+
+.flex.items-center.mt-2 {
+  margin-top: 0.5rem;
+}

@@ -9,6 +9,13 @@ export const CAPTACION_ROUTES: Routes = [
       ),
   },
   {
+    path: 'recoleccion-leche-humana-cruda',
+    loadComponent: () =>
+      import('./friam-011/components/table-list/table-list.component').then(
+        (c) => c.TableListComponent
+      ),
+  },
+  {
     path: 'registro-donante-blh',
     children: [
       {

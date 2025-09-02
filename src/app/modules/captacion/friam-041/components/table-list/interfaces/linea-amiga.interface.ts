@@ -33,7 +33,7 @@ export interface empleados {
     nombre: string;
     cargo: string;
     telefono: number;
-    correo: string | null;
+    correo: string ;
     createdAt: string; 
     updatedAt: string;  
 }

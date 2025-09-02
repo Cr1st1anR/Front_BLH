@@ -83,7 +83,7 @@ export class DashBoardComponent {
 
   constructor(private router: Router) {}
 
-  closeCallback(e: any): void {
+  closeCallback(e:any): void {
     console.log(e);
 
     this.drawerRef.close(e);

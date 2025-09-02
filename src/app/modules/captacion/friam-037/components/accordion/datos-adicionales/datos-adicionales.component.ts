@@ -74,7 +74,41 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
 
   }
 
+  validateForm(): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!this.observacionesVisita || this.observacionesVisita.trim() === '') {
+      errors.push('El campo observaciones es obligatorio');
+    }
+
+    if (!this.recomendaciones || this.recomendaciones.trim() === '') {
+      errors.push('El campo recomendaciones es obligatorio');
+    }
+
+    if (this.donanteEfectiva === null || this.donanteEfectiva === undefined) {
+      errors.push('Debe seleccionar si es donante efectiva o no');
+    }
+
+    if (!this.firmaUsuaria || this.firmaUsuaria.trim() === '') {
+      errors.push('La firma de la usuaria es obligatoria');
+    }
+
+    if (!this.firmaVisita || this.firmaVisita.trim() === '') {
+      errors.push('La firma de quien realiza la visita es obligatoria');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
   getFormData() {
+    const validation = this.validateForm();
+    if (!validation.isValid) {
+      throw new Error(`Datos adicionales incompletos: ${validation.errors.join(', ')}`);
+    }
+
     return {
       observacionesVisita: this.observacionesVisita || '',
       recomendaciones: this.recomendaciones || '',

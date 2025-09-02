@@ -98,7 +98,29 @@ export class EvaluarLactanciaComponent implements OnChanges, OnInit {
     });
   }
 
+  validateForm(): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    this.formData.forEach((category: any, categoryIndex: number) => {
+      category.questions.forEach((group: any, questionIndex: number) => {
+        if (group[0].answer === null || group[0].answer === undefined) {
+          errors.push(`${category.title}: Pregunta ${questionIndex + 1} requiere una respuesta`);
+        }
+      });
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
   getFormData() {
+    const validation = this.validateForm();
+    if (!validation.isValid) {
+      throw new Error(`Evaluación de lactancia incompleta: ${validation.errors.join(', ')}`);
+    }
+
     const evaluacionLactancia = {
       madre: this.generateAnswerString(0),
       bebe: this.generateAnswerString(1),

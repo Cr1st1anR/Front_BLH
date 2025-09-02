@@ -135,25 +135,71 @@ export class AccordionComponent {
   }
 
   onLoadData() {
-    const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
+    try {
+      // Validar y obtener datos de evaluar lactancia
+      const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
 
-    const datosAdicionales = this.datosAdicionalesComp.getFormData();
+      // Validar y obtener datos adicionales
+      const datosAdicionales = this.datosAdicionalesComp.getFormData();
 
-    const bodyVisita: BodyVisita = {
-      observaciones: datosAdicionales.observacionesVisita || '',
-      recomendaciones: datosAdicionales.recomendaciones || '',
-      donante_efectiva: datosAdicionales.donanteEfectiva || 0,
-      firmaUsuario: datosAdicionales.firmaUsuaria || '',
-      firmaEvaluador: datosAdicionales.firmaVisita || '',
-      madrePotencial: {
-        id: parseInt(this.idVisita!)
-      },
-      evaluacionLactancia: evaluarLactancia
+      // Si llegamos aquí, todas las validaciones pasaron
+      const bodyVisita: BodyVisita = {
+        observaciones: datosAdicionales.observacionesVisita || '',
+        recomendaciones: datosAdicionales.recomendaciones || '',
+        donante_efectiva: datosAdicionales.donanteEfectiva || 0,
+        firmaUsuario: datosAdicionales.firmaUsuaria || '',
+        firmaEvaluador: datosAdicionales.firmaVisita || '',
+        madrePotencial: {
+          id: parseInt(this.idVisita!)
+        },
+        evaluacionLactancia: evaluarLactancia
+      };
+
+      console.log('Datos a enviar:', bodyVisita);
+      this.saveVisitaMadre(bodyVisita);
+
+    } catch (error: any) {
+      // Mostrar errores de validación
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulario incompleto',
+        detail: error.message,
+        key: 'tr',
+        life: 5000,
+      });
+
+      console.warn('Errores de validación:', error.message);
+    }
+  }
+
+  // Método adicional para validar individualmente cada componente
+  validateAllSections(): { isValid: boolean; errors: string[] } {
+    const allErrors: string[] = [];
+
+    try {
+      // Validar evaluar lactancia
+      const lactanciaValidation = this.evaluarLactanciaComp.validateForm();
+      if (!lactanciaValidation.isValid) {
+        allErrors.push(...lactanciaValidation.errors.map(err => `Evaluar Lactancia: ${err}`));
+      }
+    } catch (error: any) {
+      allErrors.push(`Evaluar Lactancia: Error de validación`);
+    }
+
+    try {
+      // Validar datos adicionales
+      const datosValidation = this.datosAdicionalesComp.validateForm();
+      if (!datosValidation.isValid) {
+        allErrors.push(...datosValidation.errors.map(err => `Datos Adicionales: ${err}`));
+      }
+    } catch (error: any) {
+      allErrors.push(`Datos Adicionales: Error de validación`);
+    }
+
+    return {
+      isValid: allErrors.length === 0,
+      errors: allErrors
     };
-
-    console.log('Datos a enviar:', bodyVisita);
-
-    this.saveVisitaMadre(bodyVisita);
   }
 
   saveVisitaMadre(body: BodyVisita) {

@@ -4,30 +4,58 @@
     <div style="max-height: 600px; overflow-y: auto; padding-right: 12px">
       <form class="grid grid-cols-2 gap-8">
         <div class="col-span-2">
-          <label class="font-bold mb-1 block">Observaciones durante la visita:</label>
-          <textarea pInputTextarea rows="3" class="p-inputtextarea w-full" [(ngModel)]="observacionesVisita"
-            name="observacionesVisita"></textarea>
+          <label class="font-bold mb-1 block">
+            Observaciones durante la visita: <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            rows="3"
+            class="p-inputtextarea w-full"
+            [(ngModel)]="observacionesVisita"
+            name="observacionesVisita"
+            [class.ng-invalid]="!observacionesVisita || observacionesVisita.trim() === ''"
+          ></textarea>
         </div>
         <div class="col-span-2">
-          <label class="font-bold mb-1 block">Recomendaciones:</label>
-          <textarea pInputTextarea rows="3" class="p-inputtextarea w-full" [(ngModel)]="recomendaciones"
-            name="recomendaciones"></textarea>
+          <label class="font-bold mb-1 block">
+            Recomendaciones: <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            rows="3"
+            class="p-inputtextarea w-full"
+            [(ngModel)]="recomendaciones"
+            name="recomendaciones"
+            [class.ng-invalid]="!recomendaciones || recomendaciones.trim() === ''"
+          ></textarea>
         </div>
         <div>
-          <label class="font-bold mb-1 block">DONANTE EFECTIVA:</label>
+          <label class="font-bold mb-1 block">
+            DONANTE EFECTIVA: <span class="text-red-500">*</span>
+          </label>
           <div class="flex items-center gap-8 mt-2 radios-texto">
-            <p-radioButton name="donanteEfectiva" [value]="1" [(ngModel)]="donanteEfectiva"
-              inputId="donanteEfectivaSi"></p-radioButton>
+            <p-radioButton
+              name="donanteEfectiva"
+              [value]="1"
+              [(ngModel)]="donanteEfectiva"
+              inputId="donanteEfectivaSi"
+            ></p-radioButton>
             <label for="donanteEfectivaSi" class="mr-6">Si</label>
-            <p-radioButton name="donanteEfectiva" [value]="0" [(ngModel)]="donanteEfectiva"
-              inputId="donanteEfectivaNo"></p-radioButton>
+            <p-radioButton
+              name="donanteEfectiva"
+              [value]="0"
+              [(ngModel)]="donanteEfectiva"
+              inputId="donanteEfectivaNo"
+            ></p-radioButton>
             <label for="donanteEfectivaNo">No</label>
           </div>
         </div>
         <div></div>
 
         <div>
-          <label class="font-bold mb-1 block">FIRMA USUARIA:</label>
+          <label class="font-bold mb-1 block">
+            FIRMA USUARIA: <span class="text-red-500">*</span>
+          </label>
           <div>
             <canvas #canvasUsuaria width="350" height="120" style="
                   border: 1px solid #ccc;
@@ -43,7 +71,9 @@
           </div>
         </div>
         <div>
-          <label class="font-bold mb-1 block">FIRMA DE QUIEN REALIZA LA VISITA:</label>
+          <label class="font-bold mb-1 block">
+            FIRMA DE QUIEN REALIZA LA VISITA: <span class="text-red-500">*</span>
+          </label>
           <div>
             <canvas #canvasVisita width="350" height="120" style="
                   border: 1px solid #ccc;

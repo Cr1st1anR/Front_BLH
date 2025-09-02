@@ -9,3 +9,19 @@
   margin-right: 1.0rem;
   transform: translateY(1.0px);
 }
+
+.ng-invalid {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25) !important;
+}
+
+.text-red-500 {
+  color: #e74c3c;
+}
+
+canvas {
+  &.invalid {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25) !important;
+  }
+}

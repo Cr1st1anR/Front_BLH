@@ -1,0 +1,365 @@
+<div class="pdf-container" id="pdf-content" #pdfContentRef>
+  <!-- PÁGINA 1 -->
+  <div class="page">
+    <!-- ENCABEZADO -->
+    <div class="header-section">
+      <img src="assets/cabecera-friam-037.png" alt="Cabecera FRIAM 037" class="header-image" />
+    </div>
+
+    <!-- OBJETIVO -->
+    <div class="objective-section">
+      <strong>OBJETIVO:</strong> Verificar criterios de inclusión a madres lactantes con excedente de leche humana para
+      ingresar como nueva donante
+    </div>
+
+    <!-- FECHA DE VISITA -->
+    <div class="form-row">
+      <strong>FECHA DE VISITA:</strong>
+      <span class="date-info">Día: <span class="underline">{{ fechaVisita?.day }}</span></span>
+      <span class="date-info">Mes: <span class="underline">{{ fechaVisita?.month }}</span></span>
+      <span class="date-info">Año: <span class="underline">{{ fechaVisita?.year }}</span></span>
+    </div>
+
+    <!-- IDENTIFICACIÓN -->
+    <div class="identification-section">
+      <div class="section-title">IDENTIFICACIÓN DE LA POSIBLE DONANTE:</div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Nombres y Apellidos:</label>
+          <span class="underline large">{{ datosPersonales?.nombre }} {{ datosPersonales?.apellido }}</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>No. Identificación:</label>
+          <span class="underline medium">{{ datosPersonales?.documento }}</span>
+        </div>
+        <div class="form-field spacing">
+          <label>Edad:</label>
+          <span class="underline small">{{ datosPersonales?.edad }}</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Dirección:</label>
+          <span class="underline large">{{ datosPersonales?.direccion }}</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Celular:</label>
+          <span class="underline medium">{{ datosPersonales?.celular }}</span>
+        </div>
+        <div class="form-field spacing">
+          <label>Municipio:</label>
+          <span class="underline medium">{{ datosPersonales?.ciudad }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPCIÓN DE LA SITUACIÓN -->
+    <div class="section-title">DESCRIPCIÓN DE LA SITUACIÓN ENCONTRADA</div>
+
+    <!-- CONDICIONES FÍSICAS -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="question-col">1. CONDICIONES FÍSICAS E HIGIÉNICAS DE LA VIVIENDA</th>
+          <th class="checkbox-col">SI</th>
+          <th class="checkbox-col">NO</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pregunta of preguntasCondicionesFisicas; track $index) {
+          <tr>
+            <td>{{ pregunta.pregunta }}</td>
+            <td class="checkbox-col">{{ pregunta.respuesta === 1 ? 'X' : '' }}</td>
+            <td class="checkbox-col">{{ pregunta.respuesta === 0 ? 'X' : '' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- CONDICIONES PERSONALES -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="question-col">2. CONDICIONES PERSONALES DE LA POSIBLE DONANTE</th>
+          <th class="checkbox-col">SI</th>
+          <th class="checkbox-col">NO</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pregunta of preguntasCondicionesPersonales; track $index) {
+          <tr>
+            <td>{{ pregunta.pregunta }}</td>
+            <td class="checkbox-col">{{ pregunta.respuesta === 1 ? 'X' : '' }}</td>
+            <td class="checkbox-col">{{ pregunta.respuesta === 0 ? 'X' : '' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PÁGINA 2 -->
+  <div class="page">
+    <div class="section-title">EVALUAR LACTANCIA MATERNA</div>
+
+    <table class="lactancia-table">
+      <thead>
+        <tr>
+          <th colspan="3">OBSERVACIÓN DEL AMAMANTAMIENTO</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- MADRE -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>MADRE</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_relajada ? 'X' : '' }}</span>Se la ve relajada
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_enferma ? 'X' : '' }}</span>Se la ve enferma o deprimida
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_comoda ? 'X' : '' }}</span>Está cómoda
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_tensa ? 'X' : '' }}</span>Está tensa o incómoda
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_vinculo_presente ? 'X' : '' }}</span>Está presente el vínculo afectivo madre/bebé
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.madre_vinculo_ausente ? 'X' : '' }}</span>No está presente el vínculo afectivo madre/bebé
+          </td>
+        </tr>
+
+        <!-- BEBÉ -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>BEBÉ</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_saludable ? 'X' : '' }}</span>Se lo ve saludable y bien nutrido
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_somnoliento ? 'X' : '' }}</span>Se lo ve somnoliento o enfermo
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_calmado ? 'X' : '' }}</span>Está calmado y relajado
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_inquieto ? 'X' : '' }}</span>Está inquieto o llorando
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_busca_pecho ? 'X' : '' }}</span>Busca el pecho si tiene hambre
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.bebe_no_busca_pecho ? 'X' : '' }}</span>No busca el pecho
+          </td>
+        </tr>
+
+        <!-- PECHOS -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>PECHOS</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pechos_sanos ? 'X' : '' }}</span>Están sanos
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pechos_enrojecidos ? 'X' : '' }}</span>Están enrojecidos o hinchados
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pechos_sin_dolor ? 'X' : '' }}</span>No presenta dolor o molestias en el pezón
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pechos_con_dolor ? 'X' : '' }}</span>Presentan dolor o molestia en los pezones
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pezon_protactil ? 'X' : '' }}</span>Pezón protuye es protáctil
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.pezon_plano ? 'X' : '' }}</span>Pezón plano no es retráctil
+          </td>
+        </tr>
+
+        <!-- POSICIÓN DEL BEBÉ -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>POSICIÓN DEL BEBÉ DURANTE LA LACTANCIA</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_alineado ? 'X' : '' }}</span>La cabeza y el cuerpo están alineados
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_torcido ? 'X' : '' }}</span>El cuello y la cabeza están torcidos
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_contacto ? 'X' : '' }}</span>Está en contacto con el cuerpo de la madre
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_sin_contacto ? 'X' : '' }}</span>El bebé no está en contacto
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_sostenido ? 'X' : '' }}</span>Todo el cuerpo del bebé está sostenido
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_cabeza_cuello ? 'X' : '' }}</span>Solo la cabeza y el cuello están sostenidos
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_nariz_pezon ? 'X' : '' }}</span>Aproximación al pecho, nariz al pezón
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.posicion_labio_pezon ? 'X' : '' }}</span>Aproximación al pecho, labio inferior/mentón al pezón
+          </td>
+        </tr>
+
+        <!-- AGARRE DEL PECHO -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>AGARRE DEL PECHO</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_boca_abierta ? 'X' : '' }}</span>La boca del bebé está bien abierta
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_boca_cerrada ? 'X' : '' }}</span>La boca no está muy abierta
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_labio_afuera ? 'X' : '' }}</span>Labio inferior hacia afuera
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_labio_adentro ? 'X' : '' }}</span>Labios hacia adentro o hacia adelante
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_menton_cerca ? 'X' : '' }}</span>El mentón y la nariz están cerca del seno
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.agarre_menton_lejos ? 'X' : '' }}</span>El mentón y la nariz están lejos del seno
+          </td>
+        </tr>
+
+        <!-- SUCCIÓN -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>SUCCIÓN</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_lenta ? 'X' : '' }}</span>Succiones lentas, profundas, con pausas
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_rapida ? 'X' : '' }}</span>Succiones rápidas y superficiales
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_mejillas_redondas ? 'X' : '' }}</span>Las mejillas del bebé están redondeadas
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_mejillas_no_inflan ? 'X' : '' }}</span>Mejillas no se inflan
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_vaciamiento ? 'X' : '' }}</span>Vaciamiento del seno
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.succion_sin_vaciamiento ? 'X' : '' }}</span>Madre retira al bebé del pecho y no hay vaciamiento
+          </td>
+        </tr>
+
+        <!-- DEGLUCIÓN -->
+        <tr class="evaluation-row">
+          <td class="category-cell"><strong>DEGLUCIÓN</strong></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.deglucion_se_escucha ? 'X' : '' }}</span>Se escucha y se siente que traga
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.deglucion_no_se_escucha ? 'X' : '' }}</span>No se escucha que traga
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.deglucion_lengua_acanalada ? 'X' : '' }}</span>La lengua está acanalada
+          </td>
+          <td class="criteria-cell">
+            <span class="checkbox-inline">{{ evaluacionLactancia?.deglucion_lengua_plana ? 'X' : '' }}</span>La lengua está plana o la protruye
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- OBSERVACIONES Y RECOMENDACIONES -->
+    <div class="observation-section">
+      <div class="observation-item">
+        <strong>Observaciones durante la visita:</strong>
+        <span class="underline large">{{ datosAdicionales?.observaciones }}</span>
+      </div>
+      <div class="observation-item">
+        <strong>Recomendaciones:</strong>
+        <span class="underline large">{{ datosAdicionales?.recomendaciones }}</span>
+      </div>
+    </div>
+
+    <!-- SECCIÓN FINAL -->
+    <div class="final-section">
+      <div class="checkbox-container">
+        <strong>DONANTE EFECTIVA:</strong>
+        <span class="checkbox-option">
+          SI <span class="checkbox-box">{{ datosAdicionales?.donanteEfectiva === 1 ? 'X' : '' }}</span>
+        </span>
+        <span class="checkbox-option">
+          NO <span class="checkbox-box">{{ datosAdicionales?.donanteEfectiva === 0 ? 'X' : '' }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- FIRMAS -->
+    <div class="signatures-container">
+      <div class="signature-section">
+        <div class="signature-title">FIRMA USUARIA:</div>
+        <div class="signature-box" *ngIf="datosAdicionales?.firmaUsuaria">
+          <img [src]="datosAdicionales.firmaUsuaria" alt="Firma usuaria" class="signature-img">
+        </div>
+      </div>
+      <div class="signature-section">
+        <div class="signature-title">FIRMA DE QUIEN REALIZA LA VISITA:</div>
+        <div class="signature-box" *ngIf="datosAdicionales?.firmaEvaluador">
+          <img [src]="datosAdicionales.firmaEvaluador" alt="Firma evaluador" class="signature-img">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

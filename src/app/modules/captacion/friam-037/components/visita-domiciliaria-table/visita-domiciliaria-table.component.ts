@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { VisitaMadresResponse } from './interfaces/visita-domiciliaria';
 import { VisitaDomiciliariaService } from './services/visita-domiciliaria.service';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
-import { MonthPickerTableComponent } from '../month-picker-table/month-picker-table.component';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { jsPDF } from 'jspdf';
+import { PdfFriam037Component } from '../../../../../utils/pdf-friam-037/pdf-friam-037.component';
 
 @Component({
   selector: 'visita-domiciliaria-table',
@@ -18,13 +20,29 @@ import { ToastModule } from 'primeng/toast';
     HeaderComponent,
     ProgressSpinnerModule,
     ToastModule,
+    ButtonModule,
+    PdfFriam037Component
   ],
   templateUrl: './visita-domiciliaria-table.component.html',
   styleUrl: './visita-domiciliaria-table.component.scss',
   providers: [VisitaDomiciliariaService, MessageService],
 })
 export class VisitaDomiciliariaTableComponent implements OnInit {
+  @ViewChild('pdfComponent') pdfComponent?: PdfFriam037Component;
+
   loading: boolean = false;
+  showPdf = false;
+  generatingPdf = false;
+  currentPdfRowId: number | null = null;
+
+  pdfPayload: {
+    datosPersonales: any;
+    preguntasCondicionesFisicas: any[];
+    preguntasCondicionesPersonales: any[];
+    evaluacionLactancia: any;
+    datosAdicionales: any;
+    fechaVisita: any;
+  } | null = null;
 
   headersTableVisitaDomiciliaria: any[] = [
     {
@@ -40,12 +58,8 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     { header: 'DIRECCION', field: 'direccion', width: '200px', tipo: 'text' },
     { header: 'CELULAR', field: 'celular', width: '200px', tipo: 'number' },
     { header: 'MUNICIPIO', field: 'ciudad', width: '200px', tipo: 'text' },
-    {
-      header: 'ENCUESTA REALIZADA',
-      field: 'encuesta_realizada',
-      width: '200px',
-      tipo: 'text',
-    },
+    { header: 'ENCUESTA REALIZADA', field: 'encuesta_realizada', width: '200px', tipo: 'text' },
+    { header: 'REPORTE', field: 'reporte', width: '150px', tipo: 'action' },
   ];
 
   dataTable: VisitaMadresResponse[] = [];
@@ -93,6 +107,254 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     });
   }
 
+  descargarPDF(rowData: any): void {
+    if (this.generatingPdf) return;
+    this.generatingPdf = true;
+    this.currentPdfRowId = rowData.id;
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Generando PDF',
+      detail: `Generando reporte para ${rowData.nombre} ${rowData.apellido}`,
+      key: 'tr',
+      life: 2000,
+    });
+
+    this.visitaDomiciliariaService.getVisitaMadre(rowData.id.toString()).subscribe({
+      next: (response: any) => {
+        if (!response?.data) {
+          this.generatingPdf = false;
+          this.currentPdfRowId = null;
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Aviso',
+            detail: 'Datos incompletos para generar PDF',
+            key: 'tr',
+            life: 2500,
+          });
+          return;
+        }
+
+        const visitaData = response.data;
+        this.pdfPayload = this.mapResponseToPdfPayload(visitaData, rowData);
+        this.showPdf = true;
+
+        setTimeout(() => this.buildPdf(rowData), 400);
+      },
+      error: () => {
+        this.generatingPdf = false;
+        this.currentPdfRowId = null;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo obtener la información para el PDF',
+          key: 'tr',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  private buildPdf(rowData: any) {
+    const el = this.pdfComponent?.getNativeElement();
+    if (!el) {
+      this.generatingPdf = false;
+      this.currentPdfRowId = null;
+      return;
+    }
+
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    pdf.html(el, {
+      margin: [15, 15, 15, 15],
+      autoPaging: 'text',
+      html2canvas: {
+        scale: 0.72,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      },
+      callback: (doc: jsPDF) => {
+        const fileName = `FRIAM037_${rowData.documento}.pdf`;
+        doc.save(fileName);
+
+        this.generatingPdf = false;
+        this.currentPdfRowId = null;
+        this.showPdf = false;
+        this.pdfPayload = null;
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'PDF',
+          detail: 'PDF generado correctamente',
+          key: 'tr',
+          life: 1800,
+        });
+      },
+    });
+  }
+
+  private mapResponseToPdfPayload(visitaData: any, rowData: any) {
+    // Datos personales
+    const datosPersonales = {
+      nombre: rowData.nombre,
+      apellido: rowData.apellido,
+      documento: rowData.documento,
+      edad: rowData.edad,
+      direccion: rowData.direccion,
+      celular: rowData.celular,
+      ciudad: rowData.ciudad
+    };
+
+    // Fecha de visita
+    const fechaVisita = this.formatDateForPdf(rowData.fecha_visita);
+
+    // Mapear respuestas a preguntas
+    const preguntasCondicionesFisicas = this.mapRespuestasToPreguntas(
+      visitaData.respuestas,
+      1, 6 // IDs 1-6 para condiciones físicas
+    );
+
+    const preguntasCondicionesPersonales = this.mapRespuestasToPreguntas(
+      visitaData.respuestas,
+      7, 16 // IDs 7-16 para condiciones personales
+    );
+
+    // Mapear evaluación de lactancia
+    const evaluacionLactancia = this.mapEvaluacionLactancia(visitaData.evaluacionLactancia);
+
+    // Datos adicionales
+    const datosAdicionales = {
+      observaciones: visitaData.observaciones,
+      recomendaciones: visitaData.recomendaciones,
+      donanteEfectiva: visitaData.donante_efectiva,
+      firmaUsuaria: visitaData.firmaUsuario,
+      firmaEvaluador: visitaData.firmaEvaluador
+    };
+
+    return {
+      datosPersonales,
+      preguntasCondicionesFisicas,
+      preguntasCondicionesPersonales,
+      evaluacionLactancia,
+      datosAdicionales,
+      fechaVisita
+    };
+  }
+
+  private formatDateForPdf(fechaString: string) {
+    try {
+      const fecha = new Date(fechaString);
+      return {
+        day: fecha.getDate().toString().padStart(2, '0'),
+        month: fecha.toLocaleDateString('es-ES', { month: 'long' }),
+        year: fecha.getFullYear().toString()
+      };
+    } catch (error) {
+      return { day: '', month: '', year: '' };
+    }
+  }
+
+  private mapRespuestasToPreguntas(respuestas: any[], idInicio: number, idFin: number) {
+    const preguntasTexto = {
+      1: '¿Cuenta con un espacio adecuado e higiénico para la recolección de leche humana?',
+      2: '¿El espacio se encuentra libre de vectores?',
+      3: '¿El espacio se encuentra libre de posibles contaminantes: detergentes, fungicidas, jabones, Etc.?',
+      4: '¿El espacio para la recolección se encuentra limpio?',
+      5: '¿La posible donante cuenta con lavamanos?',
+      6: '¿Cuenta con sistema de refrigeración?',
+      7: '¿Posible donante con excedente de leche humana?',
+      8: '¿Se evidencia adecuada higiene de la donante?',
+      9: '¿La posible donante se encuentra en buenas condiciones de salud y nutricional?',
+      10: '¿El hijo o hija de la posible donante se encuentra en buenas condiciones de salud?',
+      11: '¿Cuenta con exámenes de Laboratorio negativos para VIH, Serología y Hepatitis B?',
+      12: '¿Se ha realizado tatuajes durante el último año?',
+      13: '¿Ha recibido transfusiones sanguíneas durante el último año?',
+      14: '¿Toma algún medicamento?',
+      15: '¿Consume sustancias psicoactivas, alcohol o más de cinco (5) cigarrillo al día?',
+      16: '¿La posible donante manifiesta utilizar recolectores para la leche humana?'
+    };
+
+    const preguntasResult = [];
+    for (let i = idInicio; i <= idFin; i++) {
+      const respuesta = respuestas.find((r: any) => r.id === i);
+      preguntasResult.push({
+        pregunta: preguntasTexto[i as keyof typeof preguntasTexto],
+        respuesta: respuesta ? respuesta.respuesta : null
+      });
+    }
+    return preguntasResult;
+  }
+
+  private mapEvaluacionLactancia(evaluacion: any) {
+    if (!evaluacion) return {};
+
+    const madre = evaluacion.madre ? evaluacion.madre.split(',').map((v: string) => parseInt(v)) : [];
+    const bebe = evaluacion.bebe ? evaluacion.bebe.split(',').map((v: string) => parseInt(v)) : [];
+    const pechos = evaluacion.pechos ? evaluacion.pechos.split(',').map((v: string) => parseInt(v)) : [];
+    const posicionBebe = evaluacion.posicionBebe ? evaluacion.posicionBebe.split(',').map((v: string) => parseInt(v)) : [];
+    const agarrePecho = evaluacion.agarrePecho ? evaluacion.agarrePecho.split(',').map((v: string) => parseInt(v)) : [];
+    const succion = evaluacion.succion ? evaluacion.succion.split(',').map((v: string) => parseInt(v)) : [];
+    const deglucion = evaluacion.deglucion ? evaluacion.deglucion.split(',').map((v: string) => parseInt(v)) : [];
+
+    return {
+      // Madre
+      madre_relajada: madre[0] === 1,
+      madre_enferma: madre[0] === 0,
+      madre_comoda: madre[1] === 1,
+      madre_tensa: madre[1] === 0,
+      madre_vinculo_presente: madre[2] === 1,
+      madre_vinculo_ausente: madre[2] === 0,
+
+      // Bebé
+      bebe_saludable: bebe[0] === 1,
+      bebe_somnoliento: bebe[0] === 0,
+      bebe_calmado: bebe[1] === 1,
+      bebe_inquieto: bebe[1] === 0,
+      bebe_busca_pecho: bebe[2] === 1,
+      bebe_no_busca_pecho: bebe[2] === 0,
+
+      // Pechos
+      pechos_sanos: pechos[0] === 1,
+      pechos_enrojecidos: pechos[0] === 0,
+      pechos_sin_dolor: pechos[1] === 1,
+      pechos_con_dolor: pechos[1] === 0,
+      pezon_protactil: pechos[2] === 1,
+      pezon_plano: pechos[2] === 0,
+
+      // Posición del bebé
+      posicion_alineado: posicionBebe[0] === 1,
+      posicion_torcido: posicionBebe[0] === 0,
+      posicion_contacto: posicionBebe[1] === 1,
+      posicion_sin_contacto: posicionBebe[1] === 0,
+      posicion_sostenido: posicionBebe[2] === 1,
+      posicion_cabeza_cuello: posicionBebe[2] === 0,
+      posicion_nariz_pezon: posicionBebe[3] === 1,
+      posicion_labio_pezon: posicionBebe[3] === 0,
+
+      // Agarre del pecho
+      agarre_boca_abierta: agarrePecho[0] === 1,
+      agarre_boca_cerrada: agarrePecho[0] === 0,
+      agarre_labio_afuera: agarrePecho[1] === 1,
+      agarre_labio_adentro: agarrePecho[1] === 0,
+      agarre_menton_cerca: agarrePecho[2] === 1,
+      agarre_menton_lejos: agarrePecho[2] === 0,
+
+      // Succión
+      succion_lenta: succion[0] === 1,
+      succion_rapida: succion[0] === 0,
+      succion_mejillas_redondas: succion[1] === 1,
+      succion_mejillas_no_inflan: succion[1] === 0,
+      succion_vaciamiento: succion[2] === 1,
+      succion_sin_vaciamiento: succion[2] === 0,
+
+      // Deglución
+      deglucion_se_escucha: deglucion[0] === 1,
+      deglucion_no_se_escucha: deglucion[0] === 0,
+      deglucion_lengua_acanalada: deglucion[1] === 1,
+      deglucion_lengua_plana: deglucion[1] === 0
+    };
+  }
+
   onRowClick(row: VisitaMadresResponse) {
     this.router.navigate(['/blh/captacion/visita-domiciliaria', row.id]);
   }
@@ -108,7 +370,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       ciudad: item.infoMadre.ciudad,
       fecha_visita: item.fecha_visita,
       edad: this.ageCalculate(item.infoMadre.fechaNacimiento),
-      encuesta_realizada:  'No',
+      encuesta_realizada: 'Si', // Cambiado de 'No' a 'Si' para mostrar el botón PDF
     }));
   }
 

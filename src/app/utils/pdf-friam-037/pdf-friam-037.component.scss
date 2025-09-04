@@ -1,0 +1,294 @@
+.pdf-container {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 1cm;
+  margin: 0 auto;
+  background: white;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  line-height: 1.2;
+  color: black;
+  box-sizing: border-box;
+}
+
+.page {
+  position: relative;
+  page-break-after: always;
+  min-height: 27.7cm;
+}
+
+.page:last-of-type {
+  page-break-after: auto;
+}
+
+.header-section {
+  padding: 0;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+
+  .header-image {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    -o-object-fit: contain;
+  }
+}
+
+.objective-section {
+  margin-bottom: 20px;
+  font-size: 10px;
+}
+
+.form-row {
+  display: flex;
+  margin-bottom: 8px;
+  align-items: center;
+  gap: 15px;
+}
+
+.form-field {
+  display: flex;
+  align-items: center;
+
+  label {
+    font-weight: bold;
+    margin-right: 5px;
+    font-size: 10px;
+  }
+
+  &.spacing {
+    margin-left: 40px;
+  }
+}
+
+.date-info {
+  margin-left: 15px;
+
+  &:first-of-type {
+    margin-left: 10px;
+  }
+}
+
+// .underline {
+//   border-bottom: 1px solid #000;
+//   display: inline-block;
+//   margin: 0 2px;
+//   padding: 1px 4px 2px 4px;
+//   min-height: 18px;
+
+//   &.small {
+//     min-width: 80px;
+//   }
+
+//   &.medium {
+//     min-width: 150px;
+//   }
+
+//   &.large {
+//     min-width: 300px;
+//   }
+// }
+
+.identification-section {
+  margin: 20px 0;
+
+  .section-title {
+    font-weight: bold;
+    margin: 15px 0 8px 0;
+    font-size: 11px;
+  }
+}
+
+.section-title {
+  font-weight: bold;
+  margin: 15px 0 8px 0;
+  font-size: 11px;
+  text-align: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+
+  th, td {
+    border: 1px solid #000;
+    padding: 4px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 9px;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+
+  .question-col {
+    width: 70%;
+  }
+
+  .checkbox-col {
+    width: 30px;
+    text-align: center;
+  }
+}
+
+.lactancia-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+
+  th {
+    background-color: #e0e0e0;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #000;
+    font-size: 9px;
+  }
+
+  td {
+    padding: 5px;
+    border: 1px solid #000;
+    font-size: 8px;
+    vertical-align: middle;
+  }
+
+  .evaluation-row td:first-child {
+    font-weight: bold;
+    background-color: #f5f5f5;
+    width: 15%;
+  }
+
+  .category-cell {
+    font-weight: bold;
+    background-color: #f5f5f5;
+    width: 15%;
+  }
+
+  .criteria-cell {
+    width: 42.5%;
+    padding: 5px;
+    vertical-align: middle;
+  }
+}
+
+.checkbox-inline {
+  border: 1px solid #000;
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 13px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.observation-section {
+  margin: 20px 0;
+
+  .observation-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+
+    strong {
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+  }
+}
+
+.final-section {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 30px;
+
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .checkbox-box {
+        border: 1px solid #000;
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        text-align: center;
+        line-height: 13px;
+      }
+    }
+  }
+}
+
+.signatures-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 40px;
+}
+
+.signature-section {
+  flex: 1;
+  text-align: center;
+
+  .signature-title {
+    font-weight: bold;
+    margin-bottom: 25px;
+    font-size: 10px;
+  }
+
+  .signature-box {
+    border: 1px solid #000;
+    height: 60px;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+
+    .signature-img {
+      max-width: 180px;
+      max-height: 50px;
+      object-fit: contain;
+    }
+  }
+}
+
+@media print {
+  .pdf-container {
+    margin: 0;
+    box-shadow: none;
+    width: 100%;
+    max-width: none;
+  }
+
+  .page {
+    page-break-after: always;
+  }
+
+  .page:last-of-type {
+    page-break-after: auto;
+  }
+
+  .header-section .header-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}

@@ -58,7 +58,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     { header: 'DIRECCION', field: 'direccion', width: '200px', tipo: 'text' },
     { header: 'CELULAR', field: 'celular', width: '200px', tipo: 'number' },
     { header: 'MUNICIPIO', field: 'ciudad', width: '200px', tipo: 'text' },
-    { header: 'ENCUESTA REALIZADA', field: 'encuesta_realizada', width: '200px', tipo: 'text' },
     { header: 'REPORTE', field: 'reporte', width: '150px', tipo: 'action' },
   ];
 
@@ -136,6 +135,20 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
         }
 
         const visitaData = response.data;
+
+        if (!this.visitaCompleta(visitaData)) {
+          this.generatingPdf = false;
+          this.currentPdfRowId = null;
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Aviso',
+            detail: 'Datos incompletos para generar PDF',
+            key: 'tr',
+            life: 2500,
+          });
+          return;
+        }
+
         this.pdfPayload = this.mapResponseToPdfPayload(visitaData, rowData);
         this.showPdf = true;
 
@@ -153,6 +166,16 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
         });
       },
     });
+  }
+
+  private visitaCompleta(visitaData: any): boolean {
+    const respuestasOk =
+      Array.isArray(visitaData.respuestas) &&
+      visitaData.respuestas.length >= 16;
+
+    const evaluacionOk = !!visitaData.evaluacionLactancia;
+
+    return respuestasOk && evaluacionOk;
   }
 
   private buildPdf(rowData: any) {
@@ -174,6 +197,18 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
         backgroundColor: '#ffffff'
       },
       callback: (doc: jsPDF) => {
+        try {
+          const expectedPages = el.querySelectorAll('.page').length;
+          const totalPages = (doc as any).getNumberOfPages();
+          if (totalPages > expectedPages) {
+            for (let p = totalPages; p > expectedPages; p--) {
+              (doc as any).deletePage(p);
+            }
+          }
+        } catch (e) {
+
+        }
+
         const fileName = `FRIAM037_${rowData.documento}.pdf`;
         doc.save(fileName);
 
@@ -194,7 +229,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
   }
 
   private mapResponseToPdfPayload(visitaData: any, rowData: any) {
-    // Datos personales
     const datosPersonales = {
       nombre: rowData.nombre,
       apellido: rowData.apellido,
@@ -205,24 +239,20 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       ciudad: rowData.ciudad
     };
 
-    // Fecha de visita
     const fechaVisita = this.formatDateForPdf(rowData.fecha_visita);
 
-    // Mapear respuestas a preguntas
     const preguntasCondicionesFisicas = this.mapRespuestasToPreguntas(
       visitaData.respuestas,
-      1, 6 // IDs 1-6 para condiciones físicas
+      1, 6
     );
 
     const preguntasCondicionesPersonales = this.mapRespuestasToPreguntas(
       visitaData.respuestas,
-      7, 16 // IDs 7-16 para condiciones personales
+      7, 16
     );
 
-    // Mapear evaluación de lactancia
     const evaluacionLactancia = this.mapEvaluacionLactancia(visitaData.evaluacionLactancia);
 
-    // Datos adicionales
     const datosAdicionales = {
       observaciones: visitaData.observaciones,
       recomendaciones: visitaData.recomendaciones,
@@ -274,15 +304,32 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       16: '¿La posible donante manifiesta utilizar recolectores para la leche humana?'
     };
 
-    const preguntasResult = [];
+    if (!Array.isArray(respuestas) || respuestas.length === 0) {
+      return Array.from({ length: idFin - idInicio + 1 }, (_, k) => ({
+        pregunta: preguntasTexto[idInicio + k as keyof typeof preguntasTexto],
+        respuesta: null
+      }));
+    }
+
+    const minId = Math.min(...respuestas.map(r => r.id));
+    let offset = 0;
+    if (minId !== idInicio) {
+      const esperado = idFin - idInicio + 1;
+      const candidatos = respuestas.filter(r => r.id >= minId).length;
+      if (candidatos >= esperado) {
+        offset = minId - idInicio;
+      }
+    }
+
+    const resultado: any[] = [];
     for (let i = idInicio; i <= idFin; i++) {
-      const respuesta = respuestas.find((r: any) => r.id === i);
-      preguntasResult.push({
+      const resp = respuestas.find(r => r.id === i + offset);
+      resultado.push({
         pregunta: preguntasTexto[i as keyof typeof preguntasTexto],
-        respuesta: respuesta ? respuesta.respuesta : null
+        respuesta: resp ? resp.respuesta : null
       });
     }
-    return preguntasResult;
+    return resultado;
   }
 
   private mapEvaluacionLactancia(evaluacion: any) {
@@ -297,7 +344,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
     const deglucion = evaluacion.deglucion ? evaluacion.deglucion.split(',').map((v: string) => parseInt(v)) : [];
 
     return {
-      // Madre
       madre_relajada: madre[0] === 1,
       madre_enferma: madre[0] === 0,
       madre_comoda: madre[1] === 1,
@@ -305,7 +351,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       madre_vinculo_presente: madre[2] === 1,
       madre_vinculo_ausente: madre[2] === 0,
 
-      // Bebé
       bebe_saludable: bebe[0] === 1,
       bebe_somnoliento: bebe[0] === 0,
       bebe_calmado: bebe[1] === 1,
@@ -313,7 +358,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       bebe_busca_pecho: bebe[2] === 1,
       bebe_no_busca_pecho: bebe[2] === 0,
 
-      // Pechos
       pechos_sanos: pechos[0] === 1,
       pechos_enrojecidos: pechos[0] === 0,
       pechos_sin_dolor: pechos[1] === 1,
@@ -321,7 +365,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       pezon_protactil: pechos[2] === 1,
       pezon_plano: pechos[2] === 0,
 
-      // Posición del bebé
       posicion_alineado: posicionBebe[0] === 1,
       posicion_torcido: posicionBebe[0] === 0,
       posicion_contacto: posicionBebe[1] === 1,
@@ -331,7 +374,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       posicion_nariz_pezon: posicionBebe[3] === 1,
       posicion_labio_pezon: posicionBebe[3] === 0,
 
-      // Agarre del pecho
       agarre_boca_abierta: agarrePecho[0] === 1,
       agarre_boca_cerrada: agarrePecho[0] === 0,
       agarre_labio_afuera: agarrePecho[1] === 1,
@@ -339,7 +381,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       agarre_menton_cerca: agarrePecho[2] === 1,
       agarre_menton_lejos: agarrePecho[2] === 0,
 
-      // Succión
       succion_lenta: succion[0] === 1,
       succion_rapida: succion[0] === 0,
       succion_mejillas_redondas: succion[1] === 1,
@@ -347,7 +388,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       succion_vaciamiento: succion[2] === 1,
       succion_sin_vaciamiento: succion[2] === 0,
 
-      // Deglución
       deglucion_se_escucha: deglucion[0] === 1,
       deglucion_no_se_escucha: deglucion[0] === 0,
       deglucion_lengua_acanalada: deglucion[1] === 1,
@@ -370,7 +410,6 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       ciudad: item.infoMadre.ciudad,
       fecha_visita: item.fecha_visita,
       edad: this.ageCalculate(item.infoMadre.fechaNacimiento),
-      encuesta_realizada: 'Si', // Cambiado de 'No' a 'Si' para mostrar el botón PDF
     }));
   }
 

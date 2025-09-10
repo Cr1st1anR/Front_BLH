@@ -1,0 +1,34 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+/* Fila superior de grupos con menor altura y mismo look del header */
+.group-header th {
+  padding: 4px 6px;
+  height: 26px;
+  text-align: center;
+  vertical-align: middle;
+  background: #224186;   /* mismo color del header */
+  color: #ffffff;        /* mismo color de texto */
+  font-weight: 600;
+  // border: 1px solid white;
+}
+
+/* opcional: mantener el estilo del título */
+.group-title {
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* Evita que el hover de PrimeNG altere colores */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover td {
+  background-color: inherit !important;
+}

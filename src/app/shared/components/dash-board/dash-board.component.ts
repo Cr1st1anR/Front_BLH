@@ -58,6 +58,10 @@ export class DashBoardComponent {
         { label: 'Registro de donante del banco de leche humana',
           subLabel: '(FRIAM-018)',
           route: '/blh/captacion/registro-donante-blh'
+        },
+        { label: 'Control de entradas y salidas de leche humana extraida cruda',
+          subLabel: '(FRIAM-012)',
+          route: '/blh/captacion/control-leche-cruda'
         }
       ]
     },
@@ -82,7 +86,7 @@ export class DashBoardComponent {
 
   }
 
-  closeCallback(e:any): void {    
+  closeCallback(e:any): void {
     this.drawerRef.close(e);
   }
   onSelect(item: any) {

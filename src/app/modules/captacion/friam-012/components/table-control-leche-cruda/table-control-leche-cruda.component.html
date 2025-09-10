@@ -1,0 +1,64 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<app-header [title]="' CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-012)'" />
+
+<div class="container-table">
+  <p-table [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="500px" [columns]="headersControlLecheCruda"
+    [tableStyle]="{ 'min-width': '70rem' }" dataKey="id" [globalFilterFields]="['donante','numFrasco']">
+    <ng-template #header let-columns>
+      <!-- Fila de filtros (1ra fila) -->
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field == 'donante') {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="donante" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+            ariaLabel="Filter DONANTE"></p-columnFilter>
+        </th>
+        }
+        @else if (col.field == 'numFrasco') {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="numFrasco" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+            ariaLabel="Filter N° FRASCO"></p-columnFilter>
+        </th>
+        }
+        @else {
+        <th [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+
+      <!-- Fila de grupos ENTRADA/SALIDA (2da fila, compacta) -->
+      <tr class="group-header">
+        <!-- Quitar ngStyle para que aplique el SCSS -->
+        <th class="grid-lines group-title" [attr.colspan]="12">ENTRADA</th>
+        <th class="grid-lines group-title" [attr.colspan]="2">SALIDA</th>
+      </tr>
+
+      <!-- Fila de encabezados (3ra fila) -->
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns">
+      <tr>
+        @for (col of columns; track $index) {
+        <td class="grid-lines">
+          {{ rowData[col.field] }}
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

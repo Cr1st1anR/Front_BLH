@@ -14,8 +14,9 @@
   <shared-month-picker />
 </div>
 
+<div class="container-table-scroll">
 <div class="container-table">
-  <p-table [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="500px" [columns]="headersControlLecheCruda"
+  <p-table [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="600px" [columns]="headersControlLecheCruda"
     [tableStyle]="{ 'min-width': '70rem' }" dataKey="id" [globalFilterFields]="['donante','numFrasco']">
     <ng-template #header let-columns>
       <tr>
@@ -80,4 +81,5 @@
       </tr>
     </ng-template>
   </p-table>
+</div>
 </div>

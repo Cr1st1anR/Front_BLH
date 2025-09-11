@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterControlComponent } from "../new-register-control/new-register-control.component";
+import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 
 
 @Component({
@@ -17,7 +18,7 @@ import { NewRegisterControlComponent } from "../new-register-control/new-registe
   imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, MonthPickerComponent, NewRegisterControlComponent],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
-  providers: [MessageService]
+  providers: [ControlLecheCrudaService, MessageService]
 })
 export class TableControlLecheCrudaComponent implements OnInit {
 
@@ -49,39 +50,55 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   dataControlLecheCruda: any[] = [];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private controlLecheCrudaService: ControlLecheCrudaService
+  ) { }
 
   ngOnInit(): void {
-    this.loading = true;
-    setTimeout(() => {
-      this.dataControlLecheCruda = [
-        // {
-        //   id: 1,
-        //   gaveta: '01',
-        //   diasPosparto: 7,
-        //   donante: 'María Pérez',
-        //   numFrasco: 'F-0001',
-        //   edadGestacional: '38 semanas',
-        //   volumen: '120 ml',
-        //   fechaExtraccion: '2025-09-01',
-        //   fechaVencimiento: '2025-10-01',
-        //   fechaParto: '2025-08-25',
-        //   procedencia: 'Domicilio',
-        //   fechaEntrada: '2025-09-02',
-        //   responsableEntrada: 'Lic. Gómez',
-        //   fechaSalida: '',
-        //   responsableSalida: ''
-        // }
-      ];
-      this.loading = false;
+    this.loadDataControlLecheCruda();
+  }
 
-      this.messageService.add({
-        severity: this.dataControlLecheCruda.length ? 'success' : 'info',
-        summary: this.dataControlLecheCruda.length ? 'Éxito' : 'Información',
-        detail: this.dataControlLecheCruda.length ? 'Datos cargados correctamente' : 'No hay datos para mostrar',
-        key: 'tr',
-        life: 2000,
-      });
-    }, 800);
+  loadDataControlLecheCruda(): void {
+    this.loading = true;
+
+    setTimeout(() => {
+      try {
+        this.dataControlLecheCruda =
+          this.controlLecheCrudaService.getTableControlLecheCrudaData();
+
+        if (
+          this.dataControlLecheCruda &&
+          this.dataControlLecheCruda.length > 0
+        ) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos cargados correctamente',
+            key: 'tr',
+            life: 2000,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Información',
+            detail: 'No hay datos para mostrar',
+            key: 'tr',
+            life: 2000,
+          });
+        }
+      } catch (error) {
+        this.messageService.add({
+          severity: 'danger',
+          summary: 'Error',
+          detail: 'Hubo un error al cargar los datos',
+          key: 'tr',
+          life: 3000,
+        });
+        console.error('Error al cargar datos:', error);
+      } finally {
+        this.loading = false;
+      }
+    }, 1200);
   }
 }

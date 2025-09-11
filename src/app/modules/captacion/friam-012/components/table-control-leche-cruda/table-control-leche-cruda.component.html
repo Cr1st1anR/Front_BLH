@@ -9,37 +9,15 @@
 
 <app-header [title]="' CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-012)'" />
 
-<div class="registro-header">
-  <div class="field-group">
-    <label class="field-label">CONGELADOR N°</label>
-    <input
-      type="text"
-      pInputText
-      [(ngModel)]="nCongelador"
-      class="rounded-control input-congelador"
-      placeholder="no. congelador"
-    />
-  </div>
-
-  <div class="field-group">
-    <label class="field-label">UBICACIÓN</label>
-    <p-select
-      class="rounded-control select-ubicacion"
-      [options]="opcionesUbicacion"
-      optionLabel="label"
-      optionValue="value"
-      [(ngModel)]="selectUbicacion"
-      placeholder="Seleccione"
-      [showClear]="false"
-    />
-  </div>
+<div class="flex justify-between items-center mx-4 mt-6">
+  <new-register-control />
+  <shared-month-picker />
 </div>
 
 <div class="container-table">
   <p-table [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="500px" [columns]="headersControlLecheCruda"
     [tableStyle]="{ 'min-width': '70rem' }" dataKey="id" [globalFilterFields]="['donante','numFrasco']">
     <ng-template #header let-columns>
-      <!-- Fila de filtros (1ra fila) -->
       <tr>
         @for (col of columns; track $index) {
         @if (col.field == 'donante') {
@@ -60,14 +38,29 @@
         }
       </tr>
 
-      <!-- Fila de grupos ENTRADA/SALIDA (2da fila, compacta) -->
+      <tr>
+        <th [attr.colspan]="columns.length" [ngStyle]="{'background': '#F5F6FA'}">
+          <div class="registro-header-inline">
+            <div class="field-group">
+              <label class="field-label">CONGELADOR N°</label>
+              <input type="text" pInputText [(ngModel)]="nCongelador" class="rounded-control input-congelador"
+                placeholder="no. congelador" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">UBICACIÓN</label>
+              <p-select class="rounded-control select-ubicacion" [options]="opcionesUbicacion" optionLabel="label"
+                optionValue="value" [(ngModel)]="selectUbicacion" [showClear]="false" />
+            </div>
+          </div>
+        </th>
+      </tr>
+
       <tr class="group-header">
-        <!-- Quitar ngStyle para que aplique el SCSS -->
         <th class="grid-lines group-title" [attr.colspan]="12">ENTRADA</th>
         <th class="grid-lines group-title" [attr.colspan]="2">SALIDA</th>
       </tr>
 
-      <!-- Fila de encabezados (3ra fila) -->
       <tr>
         @for (col of columns; track $index) {
         <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">

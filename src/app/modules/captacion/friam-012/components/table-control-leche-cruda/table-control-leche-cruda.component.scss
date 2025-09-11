@@ -1,21 +1,18 @@
-/* ============= CONTENEDOR GENERAL DE LA TABLA ============= */
 .container-table {
-  display: flex;                 // centra internamente el p-table
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 25px;                  // separación externa
+  margin: 4px 25px 25px 25px;
 }
 
-/* ============= CELDAS CON BORDE INTERNO (GRILLA) ============= */
 .grid-lines {
-  border: 1px solid white;       // bordes blancos entre celdas (efecto limpia)
+  border: 1px solid white;
 }
 
-/* ============= FILA DE GRUPO (ENTRADA / SALIDA) ============= */
 .group-header th {
   padding: 4px 6px;
-  height: 26px;                  // menor altura para fila de agrupación
+  height: 26px;
   text-align: center;
   vertical-align: middle;
   background: #224186;
@@ -23,83 +20,71 @@
   font-weight: 600;
 }
 
-/* Título dentro de esas celdas (ajuste visual) */
 .group-title {
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
 
-/* ============= FILA SUPERIOR DE CONTROLES (INPUT + SELECT) ============= */
-/* Nombre actual: filters-row. Originalmente pensado para "filtros".
-   Ahora funciona como contenedor de los campos de CABECERA (datos para crear registro).
-   Puedes renombrarlo si quieres a .top-controls o .header-form-row (ver explicación abajo). */
 .registro-header {
   width: 100%;
-  padding: 2rem 2rem 0 2rem;     // separación respecto a los bordes de la vista
-  display: flex;                 // coloca los grupos en línea
-  gap: 3rem;                     // espacio horizontal entre grupos
-  flex-wrap: wrap;               // permite que salten a otra línea en pantallas pequeñas
-  align-items: flex-start;       // alinea la parte superior de cada grupo
+  padding: 2rem 2rem 0 2rem;
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
-/* ============= GRUPO (ETIQUETA + CONTROL) ============= */
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;                  // espacio entre label y control
+  gap: 0.25rem;
 }
 
-/* Etiquetas encima de cada control */
 .field-label {
   font-weight: 600;
   font-size: 0.95rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  color: #000;
+  text-align: left;
 }
 
-/* ============= ANCHOS BASE DE LOS CONTROLES ============= */
 .select-ubicacion,
 .field-group input {
   width: 340px;
   max-width: 100%;
 }
 
-/* Ancho específico reducido SOLO para el input de número de congelador */
 .input-congelador {
-  width: 200px !important;       // más pequeño (solo un número o pocos dígitos)
+  width: 200px !important;
 }
 
-/* ============= ESTILO VISUAL UNIFICADO (Bordes redondeados) ============= */
 .rounded-control {
   border-radius: 40px !important;
   border: 2px solid #b7bcc2 !important;
   background: #fff;
   font-size: 0.95rem;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ============= ALTURA UNIFORME PARA INPUT Y SELECT ============= */
+.registro-header-inline {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: 0.75rem 0 0rem;
+}
+
 :host ::ng-deep .rounded-control.p-inputtext,
 :host ::ng-deep .rounded-control.p-select {
-  height: 48px;                  // altura fija
-  padding: 0 1.25rem;            // solo horizontal (centrado vertical con flex)
+  height: 48px;
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
   box-sizing: border-box;
   line-height: 1.2;
 }
 
-/* Input (texto) – ya tiene padding arriba; se asegura consistencia */
-:host ::ng-deep .rounded-control.p-inputtext {
-  // sin extra; hereda height y padding
-}
-
-/* Select (PrimeNG) – elimina rellenos que inflen altura */
-:host ::ng-deep .rounded-control.p-select {
-  // hereda height/padding del bloque combinado
-}
-
-/* Etiqueta visible dentro del select */
 :host ::ng-deep .rounded-control .p-select-label {
   padding: 0;
   display: flex;
@@ -108,7 +93,6 @@
   line-height: 1.2;
 }
 
-/* Trigger (ícono flecha) alineado verticalmente */
 :host ::ng-deep .rounded-control .p-select-trigger {
   width: 2rem;
   color: #7a7f86;
@@ -117,21 +101,30 @@
   justify-content: center;
 }
 
-/* ============= ESTADOS DE FOCO / INTERACCIÓN ============= */
 :host ::ng-deep .rounded-control.p-inputtext:focus,
 :host ::ng-deep .rounded-control.p-select.p-focus {
   border-color: #224186 !important;
   box-shadow: 0 0 0 0.15rem rgba(34, 65, 134, 0.2);
 }
 
-/* Placeholder (input y select sin valor) */
 :host ::ng-deep .rounded-control::placeholder,
 :host ::ng-deep .rounded-control .p-select-placeholder {
   color: #9aa0a6;
   font-weight: 400;
 }
 
-/* ============= TABLA: EVITAR HOVER DE COLOR GLOBAL ============= */
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover td {
-  background-color: inherit !important;   // mantiene el fondo original
+  background-color: inherit !important;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr:first-child > th {
+  border-bottom: 0 !important;
+}
+:host ::ng-deep .p-datatable .p-datatable-thead > tr:nth-child(2) > th {
+  border-top: 0 !important;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr:first-child > th {
+  padding-top: 0.1rem;
+  padding-bottom: 0.35rem;
 }

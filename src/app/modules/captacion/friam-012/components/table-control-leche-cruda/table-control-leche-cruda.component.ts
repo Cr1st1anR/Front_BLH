@@ -8,11 +8,13 @@ import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
+import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
+import { NewRegisterControlComponent } from "../new-register-control/new-register-control.component";
 
 
 @Component({
   selector: 'table-control-leche-cruda',
-  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select],
+  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, MonthPickerComponent, NewRegisterControlComponent],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
   providers: [MessageService]

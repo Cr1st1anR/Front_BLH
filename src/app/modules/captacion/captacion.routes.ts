@@ -35,6 +35,13 @@ export const CAPTACION_ROUTES: Routes = [
     ],
   },
   {
+    path: 'visitas-domiciliarias-seguimiento',
+    loadComponent: () =>
+      import(
+        './friam-038/components/principal-page/principal-page.component'
+      ).then((c) => c.PrincipalPageComponent),
+  },
+  {
     path: 'control-leche-cruda',
     loadComponent: () =>
       import('./friam-012/components/table-control-leche-cruda/table-control-leche-cruda.component').then(

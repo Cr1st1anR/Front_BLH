@@ -1,0 +1,13 @@
+<app-header [title]="'VISITAS DOMICILIARIAS DE SEGUIMIENTO PARA MADRES DONANTES DEL PROGRAMA BLH (FRIAM 038)'" />
+
+<div class="flex justify-between items-center mx-4 mt-6">
+  <div></div>
+  <shared-month-picker />
+</div>
+
+<table-madres-seguimiento (rowClick)="onRowClick($event)" />
+
+@if (showDialog && codigoDonante) {
+<primary-dialog-seguimiento [visible]="showDialog" [codigoDonante]="codigoDonante" [idSeguimiento]="idSeguimiento"
+  (dialogClosed)="onDialogClosed()" />
+}

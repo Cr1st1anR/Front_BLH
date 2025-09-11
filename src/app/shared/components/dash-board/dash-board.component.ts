@@ -12,7 +12,6 @@ interface MenuBarItems {
   route?: string;
   subLabel?: string;
   items?: MenuBarItems[];
-
 }
 
 @Component({
@@ -27,20 +26,20 @@ interface MenuBarItems {
     RouterLink,
   ],
   templateUrl: './dash-board.component.html',
-  styleUrl: './dash-board.component.scss'
+  styleUrl: './dash-board.component.scss',
 })
 export class DashBoardComponent {
   @ViewChild('drawerRef') drawerRef!: Drawer;
 
   showFiller = false;
   visible: boolean = false;
-  selectedItem: any = null
+  selectedItem: any = null;
   menuBarItems: MenuBarItems[] = [
     {
       label: 'Inicio',
       icon: 'fa-solid fa-house',
       route: '/blh',
-      items: []
+      items: [],
     },
     {
       label: 'Captacion',
@@ -49,42 +48,44 @@ export class DashBoardComponent {
         {
           label: 'Registro de linea amiga',
           subLabel: '(FRIAM-041)',
-          route: '/blh/captacion/registro-linea-amiga'
+          route: '/blh/captacion/registro-linea-amiga',
         },
-        { label: 'Ruta de recolección de leche humana cruda',
+        {
+          label: 'Ruta de recolección de leche humana cruda',
           subLabel: '(FRIAM-011)',
-          route: '/blh/captacion/recoleccion-leche-humana-cruda'
+          route: '/blh/captacion/recoleccion-leche-humana-cruda',
         },
-        { label: 'Registro de donante del banco de leche humana',
+        {
+          label: 'Registro de donante del banco de leche humana',
           subLabel: '(FRIAM-018)',
-          route: '/blh/captacion/registro-donante-blh'
+          route: '/blh/captacion/registro-donante-blh',
+        },
+        {
+          label: 'Visitas domiciliarias de seguimiento para madres donantes del programa blh',
+          subLabel: '(FRIAM-038)',
+          route: '/blh/captacion/visitas-domiciliarias-seguimiento',
         },
         { label: 'Control de entradas y salidas de leche humana extraida cruda',
           subLabel: '(FRIAM-012)',
           route: '/blh/captacion/control-leche-cruda'
-        }
-      ]
+        },
+      ],
     },
     {
       label: 'Pasteurizacion',
       icon: 'fa-solid fa-flask-vial',
       route: '/pasteurizacion',
-      items: []
+      items: [],
     },
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
       route: '/liberacion',
-      items: []
-    }
+      items: [],
+    },
+  ];
 
-  ]
-
-  constructor(
-    private router:Router
-  ){
-
-  }
+  constructor(private router: Router) {}
 
   closeCallback(e:any): void {
     this.drawerRef.close(e);
@@ -93,9 +94,8 @@ export class DashBoardComponent {
     this.selectedItem = item;
   }
 
-  singOut(){
+  singOut() {
     localStorage.removeItem('token');
     this.router.navigate(['/']);
   }
-
 }

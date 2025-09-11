@@ -1,0 +1,96 @@
+.container-table{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 25px;
+}
+
+.grid-lines{
+    border: 1px solid white;
+}
+
+// Estilos para los botones de acción siguiendo el patrón del friam-011
+:host ::ng-deep {
+  .p-button.p-button-text.p-button-secondary {
+    color: #6c757d;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: #495057;
+    }
+
+    &:disabled {
+      color: #c6c7c8 !important;
+      cursor: not-allowed !important;
+      opacity: 0.4 !important;
+    }
+  }
+
+  .p-button.p-button-text.p-button-success {
+    color: #28a745;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #1e7e34;
+    }
+  }
+
+  .p-button.p-button-text.p-button-danger {
+    color: #dc3545;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #bd2130;
+    }
+  }
+
+  // Estilos específicos para botones deshabilitados
+  .p-button:disabled {
+    color: #c6c7c8 !important;
+    cursor: not-allowed !important;
+    opacity: 0.4 !important;
+
+    &:hover {
+      background-color: transparent !important;
+      color: #c6c7c8 !important;
+    }
+  }
+
+  // Estilos para la tabla
+  .p-table {
+    .p-table-thead > tr > th {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 12px 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 8px 6px;
+      border: 1px solid #e5e7eb;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .p-table-tbody > tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .p-table-tbody > tr:hover {
+      background-color: #f3f4f6;
+    }
+  }
+
+  // Asegurar que el calendario se muestre correctamente
+  .p-datepicker {
+    width: 100% !important;
+
+    &:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+  }
+}

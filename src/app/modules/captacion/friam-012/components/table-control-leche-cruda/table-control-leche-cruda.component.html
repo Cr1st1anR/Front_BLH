@@ -9,6 +9,32 @@
 
 <app-header [title]="' CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-012)'" />
 
+<div class="registro-header">
+  <div class="field-group">
+    <label class="field-label">CONGELADOR N°</label>
+    <input
+      type="text"
+      pInputText
+      [(ngModel)]="nCongelador"
+      class="rounded-control input-congelador"
+      placeholder="no. congelador"
+    />
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">UBICACIÓN</label>
+    <p-select
+      class="rounded-control select-ubicacion"
+      [options]="opcionesUbicacion"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="selectUbicacion"
+      placeholder="Seleccione"
+      [showClear]="false"
+    />
+  </div>
+</div>
+
 <div class="container-table">
   <p-table [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="500px" [columns]="headersControlLecheCruda"
     [tableStyle]="{ 'min-width': '70rem' }" dataKey="id" [globalFilterFields]="['donante','numFrasco']">

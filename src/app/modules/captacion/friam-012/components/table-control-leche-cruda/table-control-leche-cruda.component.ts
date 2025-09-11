@@ -5,10 +5,14 @@ import { TableModule } from 'primeng/table';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
+import { Select } from 'primeng/select';
+
 
 @Component({
   selector: 'table-control-leche-cruda',
-  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule],
+  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
   providers: [MessageService]
@@ -17,7 +21,13 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   loading = false;
 
-  // 14 columnas: 12 ENTRADA + 2 SALIDA
+  nCongelador: string = '';
+  selectUbicacion: string | null = 'BLH - área de almacenamiento';
+
+  opcionesUbicacion = [
+    { label: 'BLH- area de almacenamiento', value: 'BLH - área de almacenamiento' }
+  ];
+
   headersControlLecheCruda: { header: string; field: string; width: string }[] = [
     { header: 'N° GAVETA', field: 'gaveta', width: '120px' },
     { header: 'DIAS POSPARTO', field: 'diasPosparto', width: '140px' },
@@ -40,11 +50,9 @@ export class TableControlLecheCrudaComponent implements OnInit {
   constructor(private messageService: MessageService) {}
 
   ngOnInit(): void {
-    // Simula carga de datos (conecta tu servicio cuando esté listo)
     this.loading = true;
     setTimeout(() => {
       this.dataControlLecheCruda = [
-        // Ejemplo de fila (opcional, puedes dejarlo vacío)
         // {
         //   id: 1,
         //   gaveta: '01',

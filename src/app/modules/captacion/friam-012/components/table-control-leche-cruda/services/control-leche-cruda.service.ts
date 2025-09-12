@@ -10,6 +10,7 @@ export class ControlLecheCrudaService {
   getTableControlLecheCrudaData() {
     return [
       {
+        id: 1,
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -26,6 +27,7 @@ export class ControlLecheCrudaService {
         responsableSalida: 'Alejandra L'
       },
       {
+        id: 2,
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -42,6 +44,7 @@ export class ControlLecheCrudaService {
         responsableSalida: 'Alejandra L'
       },
       {
+        id: 3,
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -58,6 +61,7 @@ export class ControlLecheCrudaService {
         responsableSalida: 'Alejandra L'
       },
       {
+        id: 4,
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -74,6 +78,7 @@ export class ControlLecheCrudaService {
         responsableSalida: 'Alejandra L'
       },
       {
+        id: 5,
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',

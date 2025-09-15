@@ -40,28 +40,11 @@
           }
         </tr>
 
-        <tr>
-          <th [attr.colspan]="columns.length" [ngStyle]="{'background': '#F5F6FA'}">
-            <div class="registro-header-inline">
-              <div class="field-group">
-                <label class="field-label">CONGELADOR N°</label>
-                <input type="text" pInputText [(ngModel)]="nCongelador" class="rounded-control input-congelador"
-                  placeholder="no. congelador" />
-              </div>
-
-              <div class="field-group">
-                <label class="field-label">UBICACIÓN</label>
-                <p-select class="rounded-control select-ubicacion" [options]="opcionesUbicacion" optionLabel="label"
-                  optionValue="value" [(ngModel)]="selectUbicacion" [showClear]="false" />
-              </div>
-            </div>
-          </th>
-        </tr>
-
         <tr class="group-header">
+          <th class="grid-lines group-title" [attr.colspan]="2">INFORMACIÓN DEL CONGELADOR</th>
           <th class="grid-lines group-title" [attr.colspan]="12">ENTRADA</th>
           <th class="grid-lines group-title" [attr.colspan]="2">SALIDA</th>
-          <th class="grid-lines" [ngStyle]="{ 'min-width': '150px' }"></th>
+          <th class="grid-lines" [ngStyle]="{ 'min-width': '150px' }">EDICION</th>
         </tr>
 
         <tr>
@@ -80,8 +63,15 @@
           <td class="grid-lines">
             <p-cellEditor>
               <ng-template #input>
+                @if (col.field === 'ubicacion') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesUbicacion" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full">
+                </p-select>
+                } @else {
                 <input type="text" pInputText [(ngModel)]="rowData[col.field]"
                   [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                }
               </ng-template>
               <ng-template #output>
                 {{ rowData[col.field] }}

@@ -11,6 +11,8 @@ export class ControlLecheCrudaService {
     return [
       {
         id: 1,
+        nCongelador: '001',
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -28,6 +30,8 @@ export class ControlLecheCrudaService {
       },
       {
         id: 2,
+        nCongelador: '001',
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -45,6 +49,8 @@ export class ControlLecheCrudaService {
       },
       {
         id: 3,
+        nCongelador: '002',
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -62,6 +68,8 @@ export class ControlLecheCrudaService {
       },
       {
         id: 4,
+        nCongelador: '002',
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',
@@ -79,6 +87,8 @@ export class ControlLecheCrudaService {
       },
       {
         id: 5,
+        nCongelador: '003',
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: '3',
         diasPosparto: '2 meses',
         donante: '1836',

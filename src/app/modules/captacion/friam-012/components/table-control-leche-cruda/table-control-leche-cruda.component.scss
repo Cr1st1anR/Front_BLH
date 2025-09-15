@@ -25,94 +25,6 @@
   text-transform: uppercase;
 }
 
-.registro-header {
-  width: 100%;
-  padding: 2rem 2rem 0 2rem;
-  display: flex;
-  gap: 3rem;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.field-label {
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #000;
-  text-align: left;
-}
-
-.select-ubicacion,
-.field-group input {
-  width: 340px;
-  max-width: 100%;
-}
-
-.input-congelador {
-  width: 200px !important;
-}
-
-.rounded-control {
-  border-radius: 40px !important;
-  border: 2px solid #b7bcc2 !important;
-  background: #fff;
-  font-size: 0.95rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.registro-header-inline {
-  display: flex;
-  gap: 3rem;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  padding: 0.75rem 0 0rem;
-}
-
-:host ::ng-deep .rounded-control.p-inputtext,
-:host ::ng-deep .rounded-control.p-select {
-  height: 48px;
-  padding: 0 1.25rem;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  line-height: 1.2;
-}
-
-:host ::ng-deep .rounded-control .p-select-label {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  font-size: 0.95rem;
-  line-height: 1.2;
-}
-
-:host ::ng-deep .rounded-control .p-select-trigger {
-  width: 2rem;
-  color: #7a7f86;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:host ::ng-deep .rounded-control.p-inputtext:focus,
-:host ::ng-deep .rounded-control.p-select.p-focus {
-  border-color: #224186 !important;
-  box-shadow: 0 0 0 0.15rem rgba(34, 65, 134, 0.2);
-}
-
-:host ::ng-deep .rounded-control::placeholder,
-:host ::ng-deep .rounded-control .p-select-placeholder {
-  color: #9aa0a6;
-  font-weight: 400;
-}
-
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover td {
   background-color: inherit !important;
 }
@@ -127,4 +39,28 @@
 :host ::ng-deep .p-datatable .p-datatable-thead > tr:first-child > th {
   padding-top: 0.1rem;
   padding-bottom: 0.35rem;
+}
+
+// Estilos específicos para las celdas editables
+:host ::ng-deep .p-cell-editing input[type="text"] {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-cell-editing .p-select {
+  width: 100%;
+}
+
+:host ::ng-deep .p-cell-editing input[type="text"]:focus {
+  border-color: #224186;
+  box-shadow: 0 0 0 2px rgba(34, 65, 134, 0.2);
+  outline: none;
+}
+
+:host ::ng-deep .ng-invalid.ng-dirty {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
 }

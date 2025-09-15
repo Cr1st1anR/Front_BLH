@@ -13,24 +13,7 @@ import { NewRegisterControlComponent } from "../new-register-control/new-registe
 import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
-
-interface ControlLecheCrudaData {
-  id?: number;
-  gaveta: string;
-  diasPosparto: string;
-  donante: string;
-  numFrasco: string;
-  edadGestacional: string;
-  volumen: string;
-  fechaExtraccion: string;
-  fechaVencimiento: string;
-  fechaParto: string;
-  procedencia: string;
-  fechaEntrada: string;
-  responsableEntrada: string;
-  fechaSalida: string;
-  responsableSalida: string;
-}
+import type { ControlLecheCrudaData } from './interfaces/control-leche-cruda.interface';
 
 @Component({
   selector: 'table-control-leche-cruda',
@@ -45,9 +28,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   loading = false;
 
-  nCongelador: string = '';
-  selectUbicacion: string | null = 'BLH - área de almacenamiento';
-
   editingRow: ControlLecheCrudaData | null = null;
   hasNewRowInEditing: boolean = false;
   clonedDataControlLecheCruda: { [s: number]: ControlLecheCrudaData } = {};
@@ -57,6 +37,8 @@ export class TableControlLecheCrudaComponent implements OnInit {
   ];
 
   headersControlLecheCruda: { header: string; field: string; width: string; tipo?: string }[] = [
+    { header: 'CONGELADOR N°', field: 'nCongelador', width: '150px', tipo: 'text' },
+    { header: 'UBICACIÓN', field: 'ubicacion', width: '200px', tipo: 'select' },
     { header: 'N° GAVETA', field: 'gaveta', width: '120px', tipo: 'text' },
     { header: 'DIAS POSPARTO', field: 'diasPosparto', width: '140px', tipo: 'text' },
     { header: 'DONANTE', field: 'donante', width: '220px', tipo: 'text' },
@@ -76,7 +58,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   dataControlLecheCruda: ControlLecheCrudaData[] = [];
 
-  requiredFields: string[] = ['gaveta', 'donante', 'numFrasco', 'volumen', 'fechaEntrada', 'responsableEntrada'];
+  requiredFields: string[] = ['nCongelador', 'ubicacion', 'gaveta', 'donante', 'numFrasco', 'volumen', 'fechaEntrada', 'responsableEntrada'];
 
   constructor(
     private messageService: MessageService,
@@ -225,6 +207,8 @@ export class TableControlLecheCrudaComponent implements OnInit {
     }
 
     const nuevoRegistro: ControlLecheCrudaData = {
+      nCongelador: '',
+      ubicacion: 'BLH - área de almacenamiento',
       gaveta: '',
       diasPosparto: '',
       donante: '',

@@ -18,11 +18,17 @@
   <div class="container-table">
     <p-table #tableControl [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="600px"
       [columns]="headersControlLecheCruda" [tableStyle]="{ 'min-width': '70rem' }" dataKey="id"
-      [globalFilterFields]="['donante','numFrasco']" editMode="row">
+      [globalFilterFields]="['donante','numFrasco','nCongelador']" editMode="row">
       <ng-template #header let-columns>
         <tr>
           @for (col of columns; track $index) {
-          @if (col.field == 'donante') {
+          @if (col.field == 'nCongelador') {
+          <th [ngStyle]="{'background': '#F5F6FA'}">
+            <p-columnFilter type="text" field="nCongelador" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+              ariaLabel="Filter CONGELADOR N°"></p-columnFilter>
+          </th>
+          }
+          @else if (col.field == 'donante') {
           <th [ngStyle]="{'background': '#F5F6FA'}">
             <p-columnFilter type="text" field="donante" [placeholder]="'Buscar '+col.header" [showMenu]="false"
               ariaLabel="Filter DONANTE"></p-columnFilter>

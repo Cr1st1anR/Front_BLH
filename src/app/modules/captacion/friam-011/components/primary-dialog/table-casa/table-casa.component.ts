@@ -142,7 +142,6 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
         )
         .subscribe({
           complete: () => {
-            console.log('Opciones después de cargar:', this.headerTableCasasVisita[1].options);
             setTimeout(() => {
               this.loading = false;
             }, 2000);
@@ -165,6 +164,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
       tap((data) => {
         if (data && data.data && data.data.length > 0) {
           this.headerTableCasasVisita[1].options = data.data;
+          // this.dataLoaded.emit(true);
         } else {
           this.headerTableCasasVisita[1].options = [];
           this.messageService.add({
@@ -173,6 +173,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
             detail: 'No hay madres donantes registradas en el sistema.',
             life: 3000
           });
+          // this.dataLoaded.emit(false);
         }
       })
     );
@@ -288,7 +289,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     this.selectedRow = null;
   }
 
-  onRowEditSave(dataRow: any, index: number, event: MouseEvent) {
+  onRowEditSave(dataRow: any, index: number, event: MouseEvent) {    
     const rowElement = (event.currentTarget as HTMLElement).closest(
       'tr'
     ) as HTMLTableRowElement;

@@ -95,18 +95,18 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       width: '200px',
       tipo: 'number',
     },
-    {
-      header: 'HORA DE SALIDA',
-      field: 'hora_salida',
-      width: '200px',
-      tipo: 'time',
-    },
-    {
-      header: 'HORA DE LLEGADA',
-      field: 'hora_llegada',
-      width: '200px',
-      tipo: 'time',
-    },
+    // {
+    //   header: 'HORA DE SALIDA',
+    //   field: 'hora_salida',
+    //   width: '200px',
+    //   tipo: 'time',
+    // },
+    // {
+    //   header: 'HORA DE LLEGADA',
+    //   field: 'hora_llegada',
+    //   width: '200px',
+    //   tipo: 'time',
+    // },
     {
       header: 'RESPONSABLE TECNICO',
       field: 'nombreEmpleado',
@@ -261,12 +261,12 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
           this.headersRutaRecoleccion[8].options.find(
             (empleado: empleados) => empleado.id === item.id_empleado
           ) || '',
-        hora_salida: item.hora_salida
-          ? this.convertHoursADate(item.hora_salida as string)
-          : '',
-        hora_llegada: item.hora_llegada
-          ? this.convertHoursADate(item.hora_llegada as string)
-          : '',
+        // hora_salida: item.hora_salida
+        //   ? this.convertHoursADate(item.hora_salida as string)
+        //   : '',
+        // hora_llegada: item.hora_llegada
+        //   ? this.convertHoursADate(item.hora_llegada as string)
+        //   : '',
         temperatura_llegada: item.temperatura_llegada
           ? item.temperatura_llegada
           : null,
@@ -444,8 +444,8 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       placa_vehiculo: '',
       kilometraje_inicial: '',
       kilometraje_final: null,
-      hora_salida: '',
-      hora_llegada: null,
+      // hora_salida: '',
+      // hora_llegada: null,
       temperatura_llegada: null,
       temperatura_salida: null,
       total_visitas: null,
@@ -483,20 +483,8 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
         body.kilometraje_final != null
           ? parseFloat((body.kilometraje_final ?? '').toString())
           : null,
-      horaSalida: body.hora_salida
-        ? new Date(body.hora_salida).toLocaleTimeString('es-CO', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          })
-        : null,
-      horaLlegada: body.hora_llegada
-        ? new Date(body.hora_llegada).toLocaleTimeString('es-CO', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          })
-        : null,
+      horaSalida: null,
+      horaLlegada: null,
       temperaturaLlegada: body.temperatura_llegada,
       temperaturaSalida: body.temperatura_salida,
       totalVisitas: body.total_visitas,

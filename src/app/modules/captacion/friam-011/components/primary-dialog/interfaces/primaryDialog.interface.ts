@@ -1,8 +1,11 @@
+import { rutaRecoleccion } from "../../table-list/interfaces/ruta-recoleccion";
+
 export interface TemperaturaData {
     id: number | null;
     caja?: number | null;
     numeroCasa: number | null;
     temperatura: number | null;
+    ruta: rutaRecoleccion | null;
 }
 
 export interface casasVisitaData {
@@ -41,3 +44,29 @@ export interface CajaTable {
     isAddingTemperature: boolean;
     numeroTemperaturas: number;
 }
+export interface TemperaturaRutas {
+    id:                 number;
+    numeroCaja:         number;
+    temperaturaSalida:  number | null;
+    temperaturaLlegada: number | null;
+}
+
+export interface BodyTemperaturaRutas {
+    numeroCasa:  number;
+    temperatura: number;
+    horaSalida:  string;
+    horaLlegada: null;
+    caja:        number;
+    ruta:        object;
+}
+
+export interface BodyTemperaturaCasas {
+    id?:          number;
+    numeroCasa:  number;
+    temperatura: number;
+    horaSalida:  string;
+    horaLlegada: string | null;
+    caja:        number;
+    ruta:        object;
+}
+

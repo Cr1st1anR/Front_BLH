@@ -13,8 +13,9 @@ import { MessageService } from 'primeng/api';
 import { VisitaDomiciliariaService } from '../visita-domiciliaria-table/services/visita-domiciliaria.service';
 import { concatMap, Observable, of, tap } from 'rxjs';
 import { ApiResponse } from '../../../friam-041/components/table-list/interfaces/linea-amiga.interface';
-import { CategoriasResponse, PreguntasResponse } from './interfaces/descripcion-situacion.interface';
+import { BodyRespuestasVisita, CategoriasResponse, PreguntasResponse, RespuestasVisita } from './interfaces/descripcion-situacion.interface';
 import { BodyVisita } from './interfaces/descripcion-situacion.interface';
+import { ResponseMadresDonantes } from '../../../friam-018/components/posibles-donantes-table/interfaces/registro-donante.interface';
 
 @Component({
   selector: 'accordion-visita',
@@ -42,6 +43,7 @@ export class AccordionComponent {
   preguntas: PreguntasResponse[] = [];
   categorias: CategoriasResponse[] = [];
   dataVisitaMadre: any | null = null;
+  respuestasDescripcion: PreguntasResponse[][] = []
 
   @ViewChild(DescripcionSituacionComponent)
   descripcionSituacionComp!: DescripcionSituacionComponent;
@@ -80,14 +82,15 @@ export class AccordionComponent {
   }
 
   loadDataVisitasMadres(): Observable<ApiResponse> {
-    this.saving = true;
 
+    this.saving = true;
     return this._vistaServices.getVisitaMadre(this.idVisita!).pipe(
       tap((data) => {
         if (data && data.data) {
           setTimeout(() => {
             this.loading = false;
             this.saving = false;
+            this.respuestasDescripcion = this.formatData(data.data);
             this.dataVisitaMadre = data.data;
             this.messageService.add({
               severity: 'success',
@@ -130,12 +133,30 @@ export class AccordionComponent {
     );
   }
 
+  formatData(data: any): PreguntasResponse[][] {
+    const dataAux = data.respuestas || [];
+    const agrupado: PreguntasResponse[][] = Object.values(
+      dataAux.reduce((acc: any, item: any) => {
+        const idClasificacion = item.pregunta.clasificacion.id;
+        if (!acc[idClasificacion]) {
+          acc[idClasificacion] = [];
+        }
+        acc[idClasificacion].push(item);
+        return acc;
+      }, {})
+    );
+    console.log(agrupado);
+    return agrupado;
+  }
+
   onCancelar() {
     this.router.navigate(['/blh/captacion/visita-domiciliaria']);
   }
 
   onLoadData() {
     try {
+      debugger
+      const descripcionSituacion = this.descripcionSituacionComp.getFormData();
       // Validar y obtener datos de evaluar lactancia
       const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
 
@@ -155,8 +176,19 @@ export class AccordionComponent {
         evaluacionLactancia: evaluarLactancia
       };
 
-      console.log('Datos a enviar:', bodyVisita);
-      this.saveVisitaMadre(bodyVisita);
+      this.saveVisitaMadre(bodyVisita).pipe(
+        concatMap((dataResponse) =>
+          this.saveRespuestasDescripcion(dataResponse, descripcionSituacion)
+        )
+      ).subscribe({
+        next: () => {
+          setTimeout(() => {
+            this.router.navigate(['/blh/captacion/visita-domiciliaria']);
+          }, 2000);
+        },
+        error: (err) => console.error('Error en cadena:', err)
+      });
+
 
     } catch (error: any) {
       // Mostrar errores de validación
@@ -202,35 +234,59 @@ export class AccordionComponent {
     };
   }
 
-  saveVisitaMadre(body: BodyVisita) {
+  saveVisitaMadre(body: BodyVisita): Observable<ApiResponse> {
     this.saving = true;
 
-    this._vistaServices.postDataVisitaMadres(body).subscribe({
-      next: (response) => {
-        this.saving = false;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: 'Visita guardada correctamente',
-          key: 'tr',
-          life: 3000,
-        });
-
-        setTimeout(() => {
-          this.router.navigate(['/blh/captacion/visita-domiciliaria']);
-        }, 2000);
-      },
-      error: (error) => {
-        this.saving = false;
-        console.error('Error al guardar la visita:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo guardar la visita. Inténtalo nuevamente.',
-          key: 'tr',
-          life: 3000,
-        });
-      }
-    });
+    return this._vistaServices.postDataVisitaMadres(body).pipe(
+      tap({
+        next: () => {
+          this.saving = false;
+        },
+        error: (error) => {
+          this.saving = false;
+          console.error('Error al guardar la visita:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se pudo guardar la visita. Inténtalo nuevamente.',
+            key: 'tr',
+            life: 3000,
+          });
+        }
+      })
+    );
   }
+
+  saveRespuestasDescripcion(dataResponse: any, dataBody: BodyRespuestasVisita[]): Observable<ApiResponse> {
+    dataBody.map(x => {
+      x.visitaMadre = dataResponse.data.id;
+    });
+
+    return this._vistaServices.postRespuestasVisita(dataBody).pipe(
+      tap({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Visita guardada correctamente',
+            key: 'tr',
+            life: 3000,
+          });
+          this.saving = false;
+        },
+        error: (error) => {
+          console.error('Error al guardar las respuestas de la descripción:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se pudieron guardar las respuestas de la descripción. Inténtalo nuevamente.',
+            key: 'tr',
+            life: 3000,
+          });
+        }
+      })
+    );
+  }
+
+
 }

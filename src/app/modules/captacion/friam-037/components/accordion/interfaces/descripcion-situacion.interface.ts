@@ -7,13 +7,26 @@ export interface RespuestasVisita {
   firmaEvaluador: string;
   evaluacionLactancia: EvaluacionLactancia;
   madrePotencial: MadrePotencial;
-  respuestas: Respuestas[]
+  respuestas: Respuesta[]
 }
 
-export interface Respuestas {
+export interface Respuesta {
   id: number;
-  respuesta: number | null;
+  respuesta: number;
+  pregunta: Pregunta;
 }
+
+export interface Pregunta {
+  id: number;
+  descripcion: string;
+  clasificacion: Clasificacion;
+}
+
+export interface Clasificacion {
+  id: number;
+  descripcion: string;
+}
+
 
 export interface EvaluacionLactancia {
   id?: number;
@@ -62,6 +75,7 @@ export interface PreguntasResponse {
   id: number;
   descripcion: string;
   clasificacion: number;
+  respuesta?: number | null;
 }
 
 export interface CategoriasResponse {

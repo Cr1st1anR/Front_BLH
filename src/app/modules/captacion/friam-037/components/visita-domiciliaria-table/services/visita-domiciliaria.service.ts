@@ -296,7 +296,7 @@ export class VisitaDomiciliariaService {
     return this.http.post<ApiResponse>(url, body);
   }
 
-  postRespuestasVisita(body: BodyRespuestasVisita): Observable<ApiResponse> {
+  postRespuestasVisita(body: BodyRespuestasVisita[]): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/SaveRespuestasVisitaMadre`;
     return this.http.post<ApiResponse>(url, body);
   }

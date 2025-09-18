@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'primeng/accordion';
 import { RadioButton } from 'primeng/radiobutton';
-import type { CategoriasResponse, PreguntasResponse, Respuestas, RespuestasVisita } from '../interfaces/descripcion-situacion.interface';
+import type { BodyRespuestasVisita, CategoriasResponse, Pregunta, PreguntasResponse, Respuesta, RespuestasVisita } from '../interfaces/descripcion-situacion.interface';
 
 @Component({
   selector: 'descripcion-situacion',
@@ -13,11 +13,12 @@ import type { CategoriasResponse, PreguntasResponse, Respuestas, RespuestasVisit
 export class DescripcionSituacionComponent implements OnChanges {
 
   @Input() data: RespuestasVisita | null = null;
+  @Input() respuestasDescripcion: PreguntasResponse[][] | null = null;
   @Input() preguntas: PreguntasResponse[] = [];
   @Input() categorias: CategoriasResponse[] = [];
 
   newRegister: object = {};
-  respuestas: Respuestas[] = [];
+  respuestas: PreguntasResponse[][] = [];
   newPreguntas: Array<PreguntasResponse[]> = [];
 
   ngOnChanges(changes: SimpleChanges) {
@@ -25,11 +26,11 @@ export class DescripcionSituacionComponent implements OnChanges {
       this.formQuestions();
     }
 
-    if (this.data && this.data.respuestas && this.data.respuestas.length) {
+    if (this.respuestasDescripcion && this.respuestasDescripcion.length > 0) {
       this.formAnswers();
     } else {
       const flat = (this.preguntas && this.preguntas.length) ? this.preguntas : [];
-      this.respuestas = flat.map((p) => ({ id: p.id, respuesta: null }));
+      this.respuestas = this.formatData(flat);
     }
   }
 
@@ -41,11 +42,25 @@ export class DescripcionSituacionComponent implements OnChanges {
   }
 
   formAnswers() {
-    this.respuestas = this.data!.respuestas || [];
+    this.respuestas = this.respuestasDescripcion!
     console.log(this.respuestas);
   }
 
   getFormData() {
-    return this.respuestas;
+
+    let dataAux : PreguntasResponse[] = [...this.respuestas[0], ...this.respuestas[1]];
+    let newData = dataAux.map((d: PreguntasResponse) => {
+      return {
+        pregunta:d.id,
+        respuesta: d.respuesta,
+        visitaMadre: this.data?.id || null
+      }
+    });
+    return newData as BodyRespuestasVisita[];
+  }
+
+  formatData(data:PreguntasResponse[]){
+    let dataAux = [data.filter((d:any) => d.clasificacion === 1), data.filter((d:any) => d.clasificacion === 2)];
+    return dataAux;
   }
 }

@@ -1,7 +1,7 @@
 export interface ControlLecheCrudaData {
   id?: number;
-  nCongelador?: string; // Nueva propiedad
-  ubicacion?: string;   // Nueva propiedad
+  nCongelador: string;
+  ubicacion: string;
   gaveta: string;
   diasPosparto: string;
   donante: string;
@@ -16,4 +16,6 @@ export interface ControlLecheCrudaData {
   responsableEntrada: string;
   fechaSalida: string;
   responsableSalida: string;
+  fechaRegistro?: string;
+  idFrascoLecheCruda?: number;
 }

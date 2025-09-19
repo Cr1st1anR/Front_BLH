@@ -68,18 +68,36 @@
           @if (col.field != "acciones") {
           <td class="grid-lines">
             <p-cellEditor>
-              <ng-template #input>
+              <ng-template pTemplate="input">
                 @if (col.field === 'ubicacion') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesUbicacion" optionLabel="label"
                   optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
                   styleClass="w-full">
                 </p-select>
+                } @else if (col.field === 'donante') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesDonantes" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar donante">
+                </p-select>
+                } @else if (col.field === 'responsableEntrada' || col.field === 'responsableSalida') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesResponsables" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar responsable">
+                </p-select>
+                } @else if (col.field === 'numFrasco') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
+                  class="bg-gray-100 text-gray-600 cursor-not-allowed" />
+                } @else if (col.tipo === 'date') {
+                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full">
+                </p-datepicker>
                 } @else {
                 <input type="text" pInputText [(ngModel)]="rowData[col.field]"
                   [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
                 }
               </ng-template>
-              <ng-template #output>
+              <ng-template pTemplate="output">
                 {{ rowData[col.field] }}
               </ng-template>
             </p-cellEditor>

@@ -8,16 +8,18 @@ import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterControlComponent } from "../new-register-control/new-register-control.component";
 import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
+
 import type { ControlLecheCrudaData } from './interfaces/control-leche-cruda.interface';
 
 @Component({
   selector: 'table-control-leche-cruda',
-  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, MonthPickerComponent, NewRegisterControlComponent, ButtonModule, RippleModule],
+  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, DatePickerModule, MonthPickerComponent, NewRegisterControlComponent, ButtonModule, RippleModule],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
   providers: [ControlLecheCrudaService, MessageService]
@@ -36,23 +38,43 @@ export class TableControlLecheCrudaComponent implements OnInit {
     { label: 'BLH- area de almacenamiento', value: 'BLH - área de almacenamiento' }
   ];
 
+  opcionesResponsables = [
+    { label: 'Stephania M', value: 'Stephania M' },
+    { label: 'Alejandra L', value: 'Alejandra L' },
+    { label: 'María García', value: 'María García' },
+    { label: 'Carlos Rodriguez', value: 'Carlos Rodriguez' },
+    { label: 'Ana López', value: 'Ana López' },
+    { label: 'Luis Martinez', value: 'Luis Martinez' }
+  ];
+
+  opcionesDonantes = [
+    { label: '1836', value: '1836' },
+    { label: '1837', value: '1837' },
+    { label: '1838', value: '1838' },
+    { label: '1839', value: '1839' },
+    { label: '1840', value: '1840' },
+    { label: '1841', value: '1841' },
+    { label: '1842', value: '1842' },
+    { label: '1843', value: '1843' }
+  ];
+
   headersControlLecheCruda: { header: string; field: string; width: string; tipo?: string }[] = [
     { header: 'CONGELADOR N°', field: 'nCongelador', width: '150px', tipo: 'text' },
     { header: 'UBICACIÓN', field: 'ubicacion', width: '200px', tipo: 'select' },
     { header: 'N° GAVETA', field: 'gaveta', width: '120px', tipo: 'text' },
     { header: 'DIAS POSPARTO', field: 'diasPosparto', width: '140px', tipo: 'text' },
-    { header: 'DONANTE', field: 'donante', width: '220px', tipo: 'text' },
+    { header: 'DONANTE', field: 'donante', width: '220px', tipo: 'select' },
     { header: 'N° FRASCO DE LECHE CRUDA', field: 'numFrasco', width: '220px', tipo: 'text' },
     { header: 'EDAD GESTACIONAL', field: 'edadGestacional', width: '160px', tipo: 'text' },
     { header: 'VOLUMEN', field: 'volumen', width: '120px', tipo: 'text' },
-    { header: 'FECHA DE EXTRACCIÓN', field: 'fechaExtraccion', width: '170px', tipo: 'text' },
-    { header: 'FECHA DE VENCIMIENTO', field: 'fechaVencimiento', width: '170px', tipo: 'text' },
-    { header: 'FECHA DE PARTO', field: 'fechaParto', width: '150px', tipo: 'text' },
+    { header: 'FECHA DE EXTRACCIÓN', field: 'fechaExtraccion', width: '170px', tipo: 'date' },
+    { header: 'FECHA DE VENCIMIENTO', field: 'fechaVencimiento', width: '170px', tipo: 'date' },
+    { header: 'FECHA DE PARTO', field: 'fechaParto', width: '150px', tipo: 'date' },
     { header: 'PROCEDENCIA', field: 'procedencia', width: '180px', tipo: 'text' },
-    { header: 'FECHA DE ENTRADA', field: 'fechaEntrada', width: '150px', tipo: 'text' },
-    { header: 'RESPONSABLE', field: 'responsableEntrada', width: '200px', tipo: 'text' },
-    { header: 'FECHA DE SALIDA', field: 'fechaSalida', width: '150px', tipo: 'text' },
-    { header: 'RESPONSABLE', field: 'responsableSalida', width: '200px', tipo: 'text' },
+    { header: 'FECHA DE ENTRADA', field: 'fechaEntrada', width: '150px', tipo: 'date' },
+    { header: 'RESPONSABLE', field: 'responsableEntrada', width: '200px', tipo: 'select' },
+    { header: 'FECHA DE SALIDA', field: 'fechaSalida', width: '150px', tipo: 'date' },
+    { header: 'RESPONSABLE', field: 'responsableSalida', width: '200px', tipo: 'select' },
     { header: 'ACCIONES', field: 'acciones', width: '150px' }
   ];
 
@@ -206,13 +228,18 @@ export class TableControlLecheCrudaComponent implements OnInit {
       this.cancelCurrentEditing();
     }
 
+    // gen automaticamente el siguiente n7mero de frasco
+    const nextFrascoNumber = this.controlLecheCrudaService.generateNextFrascoNumber();
+    const currentDate = new Date();
+    const fechaRegistro = this.formatDateForBackend(currentDate);
+
     const nuevoRegistro: ControlLecheCrudaData = {
       nCongelador: '',
       ubicacion: 'BLH - área de almacenamiento',
       gaveta: '',
       diasPosparto: '',
       donante: '',
-      numFrasco: '',
+      numFrasco: nextFrascoNumber,
       edadGestacional: '',
       volumen: '',
       fechaExtraccion: '',
@@ -232,6 +259,20 @@ export class TableControlLecheCrudaComponent implements OnInit {
     setTimeout(() => {
       this.table.initRowEdit(nuevoRegistro);
     }, 100);
+  }
+
+  // met auxiliar para formatear fecha para el backend
+  private formatDateForBackend(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  // met auxiliar para extraer el ID del número de frasco
+  private extractIdFromFrascoNumber(frascoNumber: string): number {
+    const parts = frascoNumber.split(' ');
+    return parseInt(parts[1]) || 0;
   }
 
   isFieldInvalid(field: string, dataRow: ControlLecheCrudaData): boolean {

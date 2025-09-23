@@ -73,6 +73,21 @@ export class AccordionComponent implements OnInit, OnDestroy {
     const navigation = this.router.getCurrentNavigation();
     this.datosPrecargados = navigation?.extras?.state?.['personInfo'];
 
+    if (!this.datosPrecargados || !this.datosPrecargados.id) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'No se encontraron datos para mostrar. Redirigiendo...',
+        key: 'tr',
+        life: 2500,
+      });
+
+      setTimeout(() => {
+        this.router.navigate(['/blh/captacion/registro-donante-blh']);
+      }, 1000);
+      return;
+    }
+
     this.route.paramMap.subscribe((params) => {
       this.documento = params.get('documento');
     });

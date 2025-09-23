@@ -11,7 +11,7 @@ import { BodyTemperaturaCasas, BodyTemperaturaRutas } from '../interfaces/primar
 export class primaryDialogServices {
   constructor(private http: HttpClient) { }
 
-  getDataTemperaturaRuta(rutaId: number): Observable<ApiResponse> {
+  getDataTemperaturaCasa(rutaId: number): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/getTemperaturasCasas/${rutaId}`;
     return this.http.get<ApiResponse>(url);
   }

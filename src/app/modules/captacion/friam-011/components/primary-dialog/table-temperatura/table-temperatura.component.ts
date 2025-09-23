@@ -93,7 +93,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   loadDataforTable(idRuta: number): Observable<ApiResponse | null> {
-    return this._primaryService.getDataTemperaturaRuta(idRuta).pipe(
+    return this._primaryService.getDataTemperaturaCasa(idRuta).pipe(
       tap((data) => {
         if (data) {
           this.formatData(data.data);
@@ -184,10 +184,10 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         tipo: 'number',
       },
       { header: 'ACCIONES', field: 'acciones', width: '200px' },
-    ];    
+    ];
     const tempFilter = this.temperaturasRuta.filter(x => x.numeroCaja === cajaNumber)[0];
     const dataRow: any = {
-      id: tempFilter.id || null,
+      id: tempFilter?.id || null,
       caja: cajaNumber,
       horaSalida: null,
       temperaturaSalida: null,
@@ -195,7 +195,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       temperaturaLlegada: null,
     };
     if (temperaturaData.length > 0) {
-      dataRow.horaSalida = temperaturaData[0]?.ruta?.horaSalida || null;
+      debugger
+      dataRow.horaSalida =  temperaturaData[0]?.ruta?.horaSalida || null;
       dataRow.temperaturaSalida = tempFilter.temperaturaSalida != null
         ? parseFloat(
           (tempFilter.temperaturaSalida?.toString() ?? '').split('°')[0]
@@ -302,6 +303,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     this.isAnyTableEditing = true;
   }
   onRowEditSave(dataRow: any, rowIndex: number, tableIndex: number, event: any): void {
+
     const table = this.cajaTables[tableIndex];
     const hasBasicData = dataRow.horaSalida || dataRow.temperaturaSalida || dataRow.horaLlegada || dataRow.temperaturaLlegada;
     const hasTemperatureData = table.numeroTemperaturas > 0;
@@ -353,7 +355,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     // CONSTRUCCION BODY PARA GUARDAR LOS CAMBIOS
 
     const tablaOrigi = this.cajaTables[tableIndex].data[0];
-    const tablaCopy = this.tableAuxCaja[tableIndex].data[0];
+    const tablaCopy = this.tableAuxCaja[tableIndex]?.data[0] || dataRow;
     const diferencias: Record<string, { obj1: any; obj2: any }> = {};
     let inputsBodies: any[] = [];
     let keysAdd: any[] = [];
@@ -411,6 +413,35 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         }
       }
     }
+
+    if (inputsBodies.length === 0) {
+      inputsBodies.push(
+        {
+          opt: 1,
+          id: tablaOrigi.id || null,
+          ruta: { id: this.dataRutaRecoleccion?.id_ruta! },
+          numeroCaja: tablaOrigi["caja"],
+          temperaturaLlegada: tablaOrigi["temperaturaLlegada"],
+          temperaturaSalida: tablaOrigi["temperaturaSalida"],
+        }
+      );
+      inputsBodies.push(
+        {
+          opt: 0,
+          id: null,
+          numeroCasa: 1,
+          temperatura: tablaOrigi["temperature_" + '1'] || null,
+          horaSalida: tablaOrigi["horaSalida"] != null ? typeof tablaOrigi["horaSalida"] != "string" ? tablaOrigi["horaSalida"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaSalida"] : tablaOrigi["horaSalida"],
+          horaLlegada: tablaOrigi["horaLlegada"] != null ? typeof tablaOrigi["horaLlegada"] != "string" ? tablaOrigi["horaLlegada"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaLlegada"] : tablaOrigi["horaLlegada"],
+          caja: tablaOrigi["caja"],
+          ruta: { id: this.dataRutaRecoleccion?.id_ruta! }
+        }
+      )
+
+      this.procesarBodies(tableIndex, dataRow, inputsBodies);
+      return
+    }
+
     const bodiesUniques = inputsBodies.filter(
       (valor, indice, self) =>
         indice === self.findIndex((p) => p.id === valor.id)

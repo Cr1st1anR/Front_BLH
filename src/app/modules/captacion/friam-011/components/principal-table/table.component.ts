@@ -95,18 +95,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       width: '200px',
       tipo: 'number',
     },
-    // {
-    //   header: 'HORA DE SALIDA',
-    //   field: 'hora_salida',
-    //   width: '200px',
-    //   tipo: 'time',
-    // },
-    // {
-    //   header: 'HORA DE LLEGADA',
-    //   field: 'hora_llegada',
-    //   width: '200px',
-    //   tipo: 'time',
-    // },
     {
       header: 'RESPONSABLE TECNICO',
       field: 'nombreEmpleado',
@@ -143,7 +131,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     'placa_vehiculo',
     'nombre_conductor',
     'kilometraje_inicial',
-    'hora_salida',
     'nombreEmpleado',
     'cargo',
   ];
@@ -240,6 +227,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     return this._tableServices.getDataEmpleados().pipe(
       tap((data) => {
         if (data) {
+          debugger
           this.headersRutaRecoleccion[8].options = data.data;
         }
       })
@@ -261,18 +249,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
           this.headersRutaRecoleccion[8].options.find(
             (empleado: empleados) => empleado.id === item.id_empleado
           ) || '',
-        // hora_salida: item.hora_salida
-        //   ? this.convertHoursADate(item.hora_salida as string)
-        //   : '',
-        // hora_llegada: item.hora_llegada
-        //   ? this.convertHoursADate(item.hora_llegada as string)
-        //   : '',
-        temperatura_llegada: item.temperatura_llegada
-          ? item.temperatura_llegada
-          : null,
-        temperatura_salida: item.temperatura_salida
-          ? item.temperatura_salida
-          : null,
         kilometraje_inicial: item.kilometraje_inicial
           ? item.kilometraje_inicial
           : null,
@@ -444,10 +420,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       placa_vehiculo: '',
       kilometraje_inicial: '',
       kilometraje_final: null,
-      // hora_salida: '',
-      // hora_llegada: null,
-      temperatura_llegada: null,
-      temperatura_salida: null,
       total_visitas: null,
       volumen_total: null,
       id_empleado: null,
@@ -483,10 +455,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
         body.kilometraje_final != null
           ? parseFloat((body.kilometraje_final ?? '').toString())
           : null,
-      horaSalida: null,
-      horaLlegada: null,
-      temperaturaLlegada: body.temperatura_llegada,
-      temperaturaSalida: body.temperatura_salida,
       totalVisitas: body.total_visitas,
       volumenTotal: body.volumen_total,
       empleado:

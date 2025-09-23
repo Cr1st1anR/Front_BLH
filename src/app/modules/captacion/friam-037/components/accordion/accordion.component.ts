@@ -1,4 +1,4 @@
-import { Component, Input, input, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
 import { HeaderComponent } from '../../../../../shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +15,6 @@ import { concatMap, Observable, of, tap } from 'rxjs';
 import { ApiResponse } from '../../../friam-041/components/table-list/interfaces/linea-amiga.interface';
 import { BodyRespuestasVisita, CategoriasResponse, PreguntasResponse, RespuestasVisita } from './interfaces/descripcion-situacion.interface';
 import { BodyVisita } from './interfaces/descripcion-situacion.interface';
-import { ResponseMadresDonantes } from '../../../friam-018/components/posibles-donantes-table/interfaces/registro-donante.interface';
 
 @Component({
   selector: 'accordion-visita',
@@ -34,7 +33,7 @@ import { ResponseMadresDonantes } from '../../../friam-018/components/posibles-d
   styleUrl: './accordion.component.scss',
   providers: [MessageService],
 })
-export class AccordionComponent {
+export class AccordionComponent implements OnInit, OnDestroy {
 
   idVisita: string | null = null
   documento: string | null = null;
@@ -44,6 +43,8 @@ export class AccordionComponent {
   categorias: CategoriasResponse[] = [];
   dataVisitaMadre: any | null = null;
   respuestasDescripcion: PreguntasResponse[][] = []
+  private hasUnsavedChanges: boolean = true;
+
 
   @ViewChild(DescripcionSituacionComponent)
   descripcionSituacionComp!: DescripcionSituacionComponent;
@@ -60,6 +61,7 @@ export class AccordionComponent {
   ) { }
 
   ngOnInit() {
+    history.pushState(null, '', window.location.href);
     this.idVisita = this.route.snapshot.paramMap.get('documento');
     this.loading = true;
 
@@ -79,6 +81,34 @@ export class AccordionComponent {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la data de las casas de visita.' });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.hasUnsavedChanges = false;
+  }
+
+  // Interceptar el evento beforeunload para mostrar advertencia
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges) {
+      $event.preventDefault();
+    }
+  }
+
+  // Interceptar navegación hacia atrás
+  @HostListener('window:popstate', ['$event'])
+  onPopState(event: PopStateEvent): void {
+    if (this.hasUnsavedChanges) {
+      const confirmLeave = confirm('Si abandona esta página, la información llenada se perderá. ¿Está seguro de que desea continuar?');
+      if (confirmLeave) {
+        // Usuario confirma que quiere salir
+        this.hasUnsavedChanges = false;
+        window.location.href = '/blh/captacion/visita-domiciliaria';
+      } else {
+        // Usuario cancela - mantener en la página actual
+        history.pushState(null, '', window.location.href);
+      }
+    }
   }
 
   loadDataVisitasMadres(): Observable<ApiResponse> {
@@ -150,12 +180,15 @@ export class AccordionComponent {
   }
 
   onCancelar() {
-    this.router.navigate(['/blh/captacion/visita-domiciliaria']);
+    const confirmCancel = confirm('Si cancela, la información llenada se perderá. ¿Está seguro de que desea continuar?');
+    if (confirmCancel) {
+      this.hasUnsavedChanges = false;
+      this.router.navigate(['/blh/captacion/visita-domiciliaria']);
+    }
   }
 
   onLoadData() {
     try {
-      debugger
       const descripcionSituacion = this.descripcionSituacionComp.getFormData();
       // Validar y obtener datos de evaluar lactancia
       const evaluarLactancia = this.evaluarLactanciaComp.getFormData();
@@ -182,6 +215,7 @@ export class AccordionComponent {
         )
       ).subscribe({
         next: () => {
+          this.hasUnsavedChanges = false;
           setTimeout(() => {
             this.router.navigate(['/blh/captacion/visita-domiciliaria']);
           }, 2000);

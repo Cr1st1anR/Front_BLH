@@ -18,7 +18,6 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { BodyMadreDonante, ResponseMadresDonantes } from '../posibles-donantes-table/interfaces/registro-donante.interface';
 import { RegistroDonanteService } from '../posibles-donantes-table/services/registro-donante.service';
-import { concatMap, Observable, of, tap } from 'rxjs';
 import {
   ApiResponse,
   empleados,
@@ -82,6 +81,7 @@ export class AccordionComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loading = true;
     this.precargaDatos();
+    history.pushState(null, '', window.location.href);
   }
 
   ngOnDestroy(): void {
@@ -99,12 +99,14 @@ export class AccordionComponent implements OnInit, OnDestroy {
   onPopState(event: PopStateEvent): void {
     if (this.hasUnsavedChanges) {
       const confirmLeave = confirm('Si abandona esta página, la información llenada se perderá. ¿Está seguro de que desea continuar?');
-      if (!confirmLeave) {
-        history.pushState(null, '', window.location.href);
-      } else {
+      if (confirmLeave) {
         this.hasUnsavedChanges = false;
-        this.router.navigate(['/blh/captacion/registro-donante-blh']);
+        window.location.href = '/blh/captacion/registro-donante-blh';
+      } else {
+        history.pushState(null, '', window.location.href);
       }
+    } else {
+      history.back();
     }
   }
 

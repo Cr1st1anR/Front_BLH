@@ -34,4 +34,23 @@ export const CAPTACION_ROUTES: Routes = [
       },
     ],
   },
+  {
+    path: 'visita-domiciliaria',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import(
+            './friam-037/components/visita-domiciliaria-table/visita-domiciliaria-table.component'
+          ).then((c) => c.VisitaDomiciliariaTableComponent),
+      },
+      {
+        path: ':documento',
+        loadComponent: () =>
+          import('./friam-037/components/accordion/accordion.component').then(
+            (c) => c.AccordionComponent
+          ),
+      },
+    ],
+  },
 ];

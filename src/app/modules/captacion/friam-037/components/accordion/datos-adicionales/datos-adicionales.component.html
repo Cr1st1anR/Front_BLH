@@ -7,46 +7,28 @@
           <label class="font-bold mb-1 block">
             Observaciones durante la visita: <span class="text-red-500">*</span>
           </label>
-          <textarea
-            pInputTextarea
-            rows="3"
-            class="p-inputtextarea w-full"
-            [(ngModel)]="observacionesVisita"
-            name="observacionesVisita"
-            [class.ng-invalid]="!observacionesVisita || observacionesVisita.trim() === ''"
-          ></textarea>
+          <textarea pInputTextarea rows="3" class="p-inputtextarea w-full" [(ngModel)]="observacionesVisita"
+            name="observacionesVisita" [readonly]="readOnly"
+            [class.ng-invalid]="!readOnly && (!observacionesVisita || observacionesVisita.trim() === '')"></textarea>
         </div>
         <div class="col-span-2">
           <label class="font-bold mb-1 block">
             Recomendaciones: <span class="text-red-500">*</span>
           </label>
-          <textarea
-            pInputTextarea
-            rows="3"
-            class="p-inputtextarea w-full"
-            [(ngModel)]="recomendaciones"
-            name="recomendaciones"
-            [class.ng-invalid]="!recomendaciones || recomendaciones.trim() === ''"
-          ></textarea>
+          <textarea pInputTextarea rows="3" class="p-inputtextarea w-full" [(ngModel)]="recomendaciones"
+            name="recomendaciones" [readonly]="readOnly"
+            [class.ng-invalid]="!readOnly && (!recomendaciones || recomendaciones.trim() === '')"></textarea>
         </div>
         <div>
           <label class="font-bold mb-1 block">
             DONANTE EFECTIVA: <span class="text-red-500">*</span>
           </label>
           <div class="flex items-center gap-8 mt-2 radios-texto">
-            <p-radioButton
-              name="donanteEfectiva"
-              [value]="1"
-              [(ngModel)]="donanteEfectiva"
-              inputId="donanteEfectivaSi"
-            ></p-radioButton>
+            <p-radioButton name="donanteEfectiva" [value]="1" [(ngModel)]="donanteEfectiva" inputId="donanteEfectivaSi"
+              [disabled]="readOnly"></p-radioButton>
             <label for="donanteEfectivaSi" class="mr-6">Si</label>
-            <p-radioButton
-              name="donanteEfectiva"
-              [value]="0"
-              [(ngModel)]="donanteEfectiva"
-              inputId="donanteEfectivaNo"
-            ></p-radioButton>
+            <p-radioButton name="donanteEfectiva" [value]="0" [(ngModel)]="donanteEfectiva" inputId="donanteEfectivaNo"
+              [disabled]="readOnly"></p-radioButton>
             <label for="donanteEfectivaNo">No</label>
           </div>
         </div>
@@ -57,16 +39,16 @@
             FIRMA USUARIA: <span class="text-red-500">*</span>
           </label>
           <div>
-            <canvas #canvasUsuaria width="350" height="120" style="
-                  border: 1px solid #ccc;
-                  border-radius: 8px;
-                  touch-action: none;
-                "></canvas>
+            <canvas #canvasUsuaria width="350" height="120" [class]="readOnly ? 'canvas-disabled' : 'canvas-enabled'"
+              style="border: 1px solid #ccc; border-radius: 8px; touch-action: none;">
+            </canvas>
             <div class="mt-2 flex gap-2">
+              @if (!readOnly) {
               <button type="button" (click)="clearFirmaUsuaria()"
                 class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
                 Limpiar
               </button>
+              }
             </div>
           </div>
         </div>
@@ -75,16 +57,16 @@
             FIRMA DE QUIEN REALIZA LA VISITA: <span class="text-red-500">*</span>
           </label>
           <div>
-            <canvas #canvasVisita width="350" height="120" style="
-                  border: 1px solid #ccc;
-                  border-radius: 8px;
-                  touch-action: none;
-                "></canvas>
+            <canvas #canvasVisita width="350" height="120" [class]="readOnly ? 'canvas-disabled' : 'canvas-enabled'"
+              style="border: 1px solid #ccc; border-radius: 8px; touch-action: none;">
+            </canvas>
             <div class="mt-2 flex gap-2">
+              @if (!readOnly) {
               <button type="button" (click)="clearFirmaVisita()"
                 class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
                 Limpiar
               </button>
+              }
             </div>
           </div>
         </div>

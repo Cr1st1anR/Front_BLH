@@ -17,6 +17,7 @@ import { RespuestasVisita } from '../interfaces/descripcion-situacion.interface'
 export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionalesData, OnChanges, OnInit {
 
   @Input() data: RespuestasVisita | null = null;
+  @Input() readOnly: boolean = false;
   @ViewChild('canvasUsuaria', { static: true })
   canvasUsuariaRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasVisita', { static: true })
@@ -39,28 +40,52 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
         backgroundColor: '#fff',
       }
     );
-    this.signaturePadUsuaria.addEventListener('endStroke', () => {
-      this.firmaUsuaria = this.signaturePadUsuaria.toDataURL();
-      // this.onFieldChange('firmaUsuaria', this.firmaUsuaria);
-    });
+
     this.signaturePadVisita = new SignaturePad(
       this.canvasVisitaRef.nativeElement,
       {
         backgroundColor: '#fff',
       }
     );
-    this.signaturePadVisita.addEventListener('endStroke', () => {
-      this.firmaVisita = this.signaturePadVisita.toDataURL();
-      // this.onFieldChange('firmaVisita', this.firmaVisita);
-    });
+
+    this.updateSignaturePadState();
+
+    if (!this.readOnly) {
+      this.signaturePadUsuaria.addEventListener('endStroke', () => {
+        this.firmaUsuaria = this.signaturePadUsuaria.toDataURL();
+      });
+
+      this.signaturePadVisita.addEventListener('endStroke', () => {
+        this.firmaVisita = this.signaturePadVisita.toDataURL();
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data'].currentValue != null) {
+    if (changes['data']?.currentValue != null) {
       this.formatForm();
-      this.mostrar = true
+      this.mostrar = true;
+    }
+
+    if (changes['readOnly']) {
+      setTimeout(() => {
+        this.updateSignaturePadState();
+      });
     }
   }
+
+  private updateSignaturePadState(): void {
+    if (this.signaturePadUsuaria && this.signaturePadVisita) {
+      if (this.readOnly) {
+        this.signaturePadUsuaria.off();
+        this.signaturePadVisita.off();
+      } else {
+        this.signaturePadUsuaria.on();
+        this.signaturePadVisita.on();
+      }
+    }
+  }
+
   ngAfterViewInit() {
   }
 
@@ -119,13 +144,17 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
   }
 
   clearFirmaUsuaria() {
-    this.signaturePadUsuaria.clear();
-    this.firmaUsuaria = '';
+    if (!this.readOnly) {
+      this.signaturePadUsuaria.clear();
+      this.firmaUsuaria = '';
+    }
   }
 
   clearFirmaVisita() {
-    this.signaturePadVisita.clear();
-    this.firmaVisita = '';
+    if (!this.readOnly) {
+      this.signaturePadVisita.clear();
+      this.firmaVisita = '';
+    }
   }
 
   mostrarFirma(firmaBase64: string, opt: string) {
@@ -133,11 +162,12 @@ export class DatosAdicionalesComponent implements AfterViewInit, DatosAdicionale
       switch (opt) {
         case 'evaluador':
           this.signaturePadUsuaria.fromDataURL(firmaBase64);
+          this.firmaUsuaria = firmaBase64;
           break;
         case 'usuario':
           this.signaturePadVisita.fromDataURL(firmaBase64);
+          this.firmaVisita = firmaBase64;
           break;
-
       }
     }
   }

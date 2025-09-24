@@ -25,3 +25,15 @@ canvas {
     box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25) !important;
   }
 }
+
+.canvas-enabled {
+  cursor: crosshair;
+  background-color: white;
+}
+
+.canvas-disabled {
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+  opacity: 0.6;
+  pointer-events: none;
+}

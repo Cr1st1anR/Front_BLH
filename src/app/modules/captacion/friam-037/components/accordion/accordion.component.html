@@ -21,16 +21,18 @@
 <div class="card flex justify-center accordion-container">
   <p-accordion value="0">
     <descripcion-situacion [preguntas]="preguntas" [categorias]="categorias"
-      [respuestasDescripcion]="respuestasDescripcion" [data]="dataVisitaMadre" />
-    <evaluar-lactancia [data]="dataVisitaMadre" />
-    <datos-adicionales [data]="dataVisitaMadre" />
-
+      [respuestasDescripcion]="respuestasDescripcion" [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
+    <evaluar-lactancia [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
+    <datos-adicionales [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
   </p-accordion>
 </div>
 
-<div class="flex justify-end gap-4 mt-8 pr-8">
+<div class="flex justify-end gap-4 mt-8 pr-8 mb-8">
+  @if (!isReadOnlyMode) {
   <button pButton type="button" label="Guardar" icon="pi pi-save" class="guardar-btn" (click)="onLoadData()"></button>
-
   <button pButton type="button" label="Cancelar" icon="pi pi-times" class="cancelar-btn"
     (click)="onCancelar()"></button>
+  } @else {
+  <button pButton type="button" label="Salir" icon="pi pi-sign-out" class="salir-btn" (click)="onCancelar()"></button>
+  }
 </div>

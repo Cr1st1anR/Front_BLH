@@ -14,13 +14,21 @@
           <div class="radios-texto" [class]="pregunta.descripcion.length > 50 ? 'col-span-2' : 'col-span-1'">
             <label class="font-bold mb-1 block">¿{{pregunta.descripcion}}?</label>
             <div class="flex items-center gap-6 mt-2">
-              <p-radioButton [name]="'pregunta_' + i + '_' + j" [value]="1" [(ngModel)]="respuestas[i][j].respuesta"
-                [inputId]="'pregunta_' + i + '_' + j + '_si'">
+              <p-radioButton
+                [name]="'pregunta_' + i + '_' + j"
+                [value]="1"
+                [(ngModel)]="respuestas[i][j].respuesta"
+                [inputId]="'pregunta_' + i + '_' + j + '_si'"
+                [disabled]="readOnly">
               </p-radioButton>
               <label [for]="'pregunta_' + i + '_' + j + '_si'" class="mr-4">Sí</label>
 
-              <p-radioButton [name]="'pregunta_' + i + '_' + j" [value]="0" [(ngModel)]="respuestas[i][j].respuesta"
-                [inputId]="'pregunta_' + i + '_' + j + '_no'">
+              <p-radioButton
+                [name]="'pregunta_' + i + '_' + j"
+                [value]="0"
+                [(ngModel)]="respuestas[i][j].respuesta"
+                [inputId]="'pregunta_' + i + '_' + j + '_no'"
+                [disabled]="readOnly">
               </p-radioButton>
               <label [for]="'pregunta_' + i + '_' + j + '_no'">No</label>
             </div>

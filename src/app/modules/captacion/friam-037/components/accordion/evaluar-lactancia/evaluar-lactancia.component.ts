@@ -15,6 +15,7 @@ import { VisitaDomiciliariaService } from '../../visita-domiciliaria-table/servi
 export class EvaluarLactanciaComponent implements OnChanges, OnInit {
 
   @Input() data: RespuestasVisita | null = null;
+  @Input() readOnly: boolean = false;
   respuestasAux: RespuestasVisita | null = null;
   title: string = 'EVALUAR LACTANCIA MATERNA';
   subtitle: string = 'OBSERVACIÓN DEL AMAMANTAMIENTO';

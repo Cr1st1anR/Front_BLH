@@ -44,7 +44,7 @@ export class AccordionComponent implements OnInit, OnDestroy {
   dataVisitaMadre: any | null = null;
   respuestasDescripcion: PreguntasResponse[][] = []
   private hasUnsavedChanges: boolean = true;
-
+  isReadOnlyMode: boolean = false;
 
   @ViewChild(DescripcionSituacionComponent)
   descripcionSituacionComp!: DescripcionSituacionComponent;
@@ -87,32 +87,27 @@ export class AccordionComponent implements OnInit, OnDestroy {
     this.hasUnsavedChanges = false;
   }
 
-  // Interceptar el evento beforeunload para mostrar advertencia
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: BeforeUnloadEvent): void {
-    if (this.hasUnsavedChanges) {
+    if (this.hasUnsavedChanges && !this.isReadOnlyMode) {
       $event.preventDefault();
     }
   }
 
-  // Interceptar navegación hacia atrás
   @HostListener('window:popstate', ['$event'])
   onPopState(event: PopStateEvent): void {
-    if (this.hasUnsavedChanges) {
+    if (this.hasUnsavedChanges && !this.isReadOnlyMode) {
       const confirmLeave = confirm('Si abandona esta página, la información llenada se perderá. ¿Está seguro de que desea continuar?');
       if (confirmLeave) {
-        // Usuario confirma que quiere salir
         this.hasUnsavedChanges = false;
         window.location.href = '/blh/captacion/visita-domiciliaria';
       } else {
-        // Usuario cancela - mantener en la página actual
         history.pushState(null, '', window.location.href);
       }
     }
   }
 
   loadDataVisitasMadres(): Observable<ApiResponse> {
-
     this.saving = true;
     return this._vistaServices.getVisitaMadre(this.idVisita!).pipe(
       tap((data) => {
@@ -122,6 +117,13 @@ export class AccordionComponent implements OnInit, OnDestroy {
             this.saving = false;
             this.respuestasDescripcion = this.formatData(data.data);
             this.dataVisitaMadre = data.data;
+
+            this.isReadOnlyMode = this.isVisitaCompleta(data.data);
+
+            if (this.isReadOnlyMode) {
+              this.hasUnsavedChanges = false;
+            }
+
             this.messageService.add({
               severity: 'success',
               summary: 'Éxito',
@@ -137,6 +139,18 @@ export class AccordionComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  private isVisitaCompleta(visitaData: any): boolean {
+    const respuestasCompletas = Array.isArray(visitaData.respuestas) && visitaData.respuestas.length >= 16;
+    const evaluacionCompleta = !!visitaData.evaluacionLactancia;
+    const datosAdicionalesCompletos = !!(visitaData.observaciones &&
+      visitaData.recomendaciones &&
+      visitaData.donante_efectiva !== null &&
+      visitaData.firmaUsuario &&
+      visitaData.firmaEvaluador);
+
+    return respuestasCompletas && evaluacionCompleta && datosAdicionalesCompletos;
   }
 
   loadPreguntas(): Observable<ApiResponse> {
@@ -180,9 +194,13 @@ export class AccordionComponent implements OnInit, OnDestroy {
   }
 
   onCancelar() {
-    const confirmCancel = confirm('Si cancela, la información llenada se perderá. ¿Está seguro de que desea continuar?');
-    if (confirmCancel) {
-      this.hasUnsavedChanges = false;
+    if (!this.isReadOnlyMode) {
+      const confirmCancel = confirm('Si cancela, la información llenada se perderá. ¿Está seguro de que desea continuar?');
+      if (confirmCancel) {
+        this.hasUnsavedChanges = false;
+        this.router.navigate(['/blh/captacion/visita-domiciliaria']);
+      }
+    } else {
       this.router.navigate(['/blh/captacion/visita-domiciliaria']);
     }
   }

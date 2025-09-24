@@ -18,7 +18,8 @@
                   name="pregunta_{{i}}_{{j}}"
                   [value]="0"
                   [(ngModel)]="preguntaPar[0].answer"
-                  inputId="pregunta_si_{{i}}_{{j}}">
+                  inputId="pregunta_si_{{i}}_{{j}}"
+                  [disabled]="readOnly">
                 </p-radioButton>
               </div>
               <div class="flex items-center">
@@ -28,7 +29,8 @@
                   name="pregunta_{{i}}_{{j}}"
                   [value]="1"
                   [(ngModel)]="preguntaPar[0].answer"
-                  inputId="pregunta_no_{{i}}_{{j}}">
+                  inputId="pregunta_no_{{i}}_{{j}}"
+                  [disabled]="readOnly">
                 </p-radioButton>
               </div>
             </div>

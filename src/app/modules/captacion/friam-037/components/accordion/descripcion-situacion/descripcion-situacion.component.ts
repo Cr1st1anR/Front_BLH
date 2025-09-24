@@ -16,6 +16,7 @@ export class DescripcionSituacionComponent implements OnChanges {
   @Input() respuestasDescripcion: PreguntasResponse[][] | null = null;
   @Input() preguntas: PreguntasResponse[] = [];
   @Input() categorias: CategoriasResponse[] = [];
+  @Input() readOnly: boolean = false;
 
   newRegister: object = {};
   respuestas: PreguntasResponse[][] = [];

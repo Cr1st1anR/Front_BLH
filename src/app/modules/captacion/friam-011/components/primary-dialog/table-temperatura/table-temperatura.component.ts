@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
 import { rutaRecoleccion } from '../../table-list/interfaces/ruta-recoleccion';
 import { MessageService } from 'primeng/api';
 import { primaryDialogServices } from '../services/primaryDialog.service';
-import { TemperaturaData, CajaTable, TemperaturaRutas, BodyTemperaturaRutas } from '../interfaces/primaryDialog.interface';
+import { TemperaturaData, CajaTable, TemperaturaRutas, BodyTemperaturaRutas, ResponseTemperaturaCasas, ResponseDataRuta } from '../interfaces/primaryDialog.interface';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
@@ -57,6 +57,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   isAnyTableEditing: boolean = false;
   hasNewEmptyCaja: boolean = false;
   temperaturasRuta: TemperaturaRutas[] = [];
+  dataRuta: any = {} as ResponseDataRuta;
   tableAuxCaja: CajaTable[] = [];
 
   requiredFields: string[] = ['caja'];
@@ -80,8 +81,9 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     ) {
       of(null)
         .pipe(
+          concatMap(() => this.loadDataRuta(this.dataRutaRecoleccion?.id_ruta!)),
           concatMap(() => this.loadDataTemperaturaRuta(this.dataRutaRecoleccion?.id_ruta!)),
-          concatMap(() => this.loadDataforTable(this.dataRutaRecoleccion?.id_ruta!)),
+          concatMap(() => this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!))
         ).subscribe({
           complete: () => {
           },
@@ -92,9 +94,29 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     }
   }
 
-  loadDataforTable(idRuta: number): Observable<ApiResponse | null> {
-    return this._primaryService.getDataTemperaturaCasa(idRuta).pipe(
+  loadDataRuta(idRuta: number): Observable<ApiResponse | null> {
+    return this._primaryService.getRutaRecoleccionById(idRuta).pipe(
       tap((data) => {
+        if (data) {
+          this.dataRuta = data.data;
+        }
+      }),
+      catchError((error) => {
+        this.messageService.add({
+          severity: 'danger',
+          summary: 'Error',
+          detail: 'Hubo un error al obtener datos',
+          key: 'tr',
+          life: 3000,
+        });
+        return of(null);
+      })
+    );
+  }
+
+  loadDataTemperaturaCasa(idRuta: number): Observable<ApiResponse | null> {
+    return this._primaryService.getDataTemperaturaCasa(idRuta).pipe(
+      tap((data) => {        
         if (data) {
           this.formatData(data.data);
           this.dataLoaded.emit(true);
@@ -135,16 +157,45 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     )
   }
   formatData(data: TemperaturaData[]): void {
-    const cajaGroups = this.groupDataByCaja(data);
     this.cajaTables = [];
     this.globalCajaCounter = 1;
-    cajaGroups.forEach((cajaData, index) => {
-      const cajaTable = this.createTableForCaja(this.globalCajaCounter, cajaData);
-      this.cajaTables.push(cajaTable);
-      this.globalCajaCounter++;
-    });
-    this.tableAuxCaja = JSON.parse(JSON.stringify(this.cajaTables));
+    const cajaGroupsOne = this.groupDataByCaja(data);
+    const cajaGroupsTwo = this.groupDataByTemperaturaRuta(this.temperaturasRuta);
+    if (data.length > 0) {
+      cajaGroupsOne.forEach((cajaData, index) => {
+        const cajaTable = this.createTableForCaja(this.globalCajaCounter, cajaData, true);
+        this.cajaTables.push(cajaTable);
+        this.globalCajaCounter++;
+      });
+    }
+    this.globalCajaCounter = 1;
+    if (cajaGroupsOne.length != cajaGroupsTwo.length && cajaGroupsTwo.length > 0) {
+      cajaGroupsTwo.forEach((cajaData, index) => {
+        const cajaTable = this.createTableForCaja(this.globalCajaCounter, cajaData, false);
+        this.cajaTables.push(cajaTable);
+        this.globalCajaCounter++;
+      });
+    }
+    const unique = this.cajaTables.filter(
+      (obj, index, self) =>
+        index === self.findIndex(o => o.cajaNumber === obj.cajaNumber)
+    );
+    this.cajaTables = unique;
+    this.tableAuxCaja = JSON.parse(JSON.stringify(unique));
   }
+
+  groupDataByTemperaturaRuta(data: TemperaturaRutas[]): TemperaturaRutas[][] {
+    const grupos = data.reduce((acc, obj) => {
+      const key = String(obj.numeroCaja);
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(obj);
+      return acc;
+    }, {} as Record<string, TemperaturaRutas[]>);
+    return Object.values(grupos);
+  }
+
   groupDataByCaja(data: TemperaturaData[]): TemperaturaData[][] {
     const grupos = data.reduce((acc, obj) => {
       const key = String(obj.caja);
@@ -156,7 +207,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     }, {} as Record<string, TemperaturaData[]>);
     return Object.values(grupos);
   }
-  createTableForCaja(cajaNumber: number, temperaturaData: any[]): CajaTable {
+  createTableForCaja(cajaNumber: number, temperaturaData: any[], flat?: boolean): CajaTable {
     const baseHeaders = [
       { header: 'No. CAJA', field: 'caja', width: '200px', tipo: 'number' },
       {
@@ -195,14 +246,13 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       temperaturaLlegada: null,
     };
     if (temperaturaData.length > 0) {
-      debugger
-      dataRow.horaSalida =  temperaturaData[0]?.ruta?.horaSalida || null;
+      dataRow.horaSalida = this.dataRuta.horaSalida || null;
       dataRow.temperaturaSalida = tempFilter.temperaturaSalida != null
         ? parseFloat(
           (tempFilter.temperaturaSalida?.toString() ?? '').split('°')[0]
         )
         : null;
-      dataRow.horaLlegada = temperaturaData[0]?.ruta?.horaLlegada || null;
+      dataRow.horaLlegada = this.dataRuta.horaLlegada || null;
       dataRow.temperaturaLlegada = tempFilter.temperaturaLlegada != null
         ? parseFloat(
           (tempFilter.temperaturaLlegada?.toString() ?? '').split('°')[0]
@@ -211,7 +261,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     }
 
     const tempHeaders: any[] = [];
-    if (temperaturaData.length > 0) {
+    if (temperaturaData.length > 0 && flat) {
       temperaturaData.forEach((temp, index) => {
         const tempHeader = {
           header: `TEMPERATURA ${index + 1} (°C)`,
@@ -360,7 +410,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     let inputsBodies: any[] = [];
     let keysAdd: any[] = [];
 
-    for (const key in tablaCopy) {
+    for (const key in tablaOrigi) {
       if (tablaCopy[key] !== tablaOrigi[key]) {
         diferencias[key] = { obj1: tablaCopy[key], obj2: tablaOrigi[key] };
       }
@@ -373,6 +423,17 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         return k;
       }
     });
+
+    if (keys.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Debe ingresar un valor para la nueva temperatura o cancelar la operación.',
+        key: 'tr',
+        life: 3000,
+      });
+      return;
+    }
     for (const key in tablaOrigi) {
       const keyAux = key.toString().split("_");
       if (keyAux.length === 3) {
@@ -429,15 +490,14 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         {
           opt: 0,
           id: null,
-          numeroCasa: 1,
-          temperatura: tablaOrigi["temperature_" + '1'] || null,
+          numeroCasa: keys[keys.length - 1],
+          temperatura: tablaOrigi["temperature_" + keys[keys.length - 1].toString()] || null,
           horaSalida: tablaOrigi["horaSalida"] != null ? typeof tablaOrigi["horaSalida"] != "string" ? tablaOrigi["horaSalida"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaSalida"] : tablaOrigi["horaSalida"],
           horaLlegada: tablaOrigi["horaLlegada"] != null ? typeof tablaOrigi["horaLlegada"] != "string" ? tablaOrigi["horaLlegada"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaLlegada"] : tablaOrigi["horaLlegada"],
           caja: tablaOrigi["caja"],
           ruta: { id: this.dataRutaRecoleccion?.id_ruta! }
         }
       )
-
       this.procesarBodies(tableIndex, dataRow, inputsBodies);
       return
     }
@@ -565,7 +625,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
 
         this.hasNewEmptyCaja = false;
         this.finishEditingWithPrimeNG(tableIndex, dataRow);
-        this.loadDataforTable(this.dataRutaRecoleccion?.id_ruta!);
+        // this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!);
+        // this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!);
       },
       error: () => {
         this.messageService.add({
@@ -684,10 +745,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     return ultimaTemperatura;
   }
 
-  // CORRECCIÓN 3: Mejorar agregarColumnaTemperatura para preservar clonedRow original
   agregarColumnaTemperatura(tableIndex: number) {
     const table = this.cajaTables[tableIndex];
-
     if (table.isAddingTemperature) {
       this.messageService.add({
         severity: 'warn',
@@ -704,7 +763,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       table.clonedRow = { ...table.data[0] };
     }
 
-    const nuevaTemperaturaIndex = table.numeroTemperaturas + 1;
+    const nuevaTemperaturaIndex = Object.keys(table.data[0]).length > 6 ? table.numeroTemperaturas + 1 : 1;
 
     const temperatura = {
       header: `TEMPERATURA ${nuevaTemperaturaIndex} (°C)`,

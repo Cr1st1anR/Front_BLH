@@ -58,7 +58,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
   headerTableCasasVisita: any[] = [
     {
       header: 'CASA No.',
-      field: 'id_casa_visita',
+      field: 'numero_casa',
       width: '200px',
       tipo: 'text',
       disable: false,
@@ -414,6 +414,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
         typeof body.id_madre_donante === 'object'
           ? body.id_madre_donante?.id_madre_donante
           : body.id_madre_donante,
+      numeroCasa: Number(body.numero_casa) || null,
       ruta: this.dataRutaRecoleccion?.id_ruta || null,
       observacion: body.observacion || null,
     };

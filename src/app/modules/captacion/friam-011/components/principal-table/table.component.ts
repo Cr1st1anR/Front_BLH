@@ -227,7 +227,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     return this._tableServices.getDataEmpleados().pipe(
       tap((data) => {
         if (data) {
-          debugger
           this.headersRutaRecoleccion[8].options = data.data;
         }
       })
@@ -316,6 +315,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     if (dataRow.id_ruta === undefined || dataRow.id_ruta === null) {
       this._tableServices.postDataRutaRecoleccion(bodyFormat).subscribe({
         next: (data) => {
+          dataRow.id_ruta = data.data["id"];
           this.messageService.add({
             severity: 'success',
             summary: 'Exito',

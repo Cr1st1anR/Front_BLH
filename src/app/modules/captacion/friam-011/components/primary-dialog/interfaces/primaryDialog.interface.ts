@@ -12,6 +12,7 @@ export interface casasVisitaData {
     id_madre_donante:number | null;
     id_casa_visita: number | null;
     id_ruta: number | null;
+    numero_casa: number | null;
     observacion: string | null;
     id_info_madre?: number;
     nombre?: string | null;
@@ -69,4 +70,26 @@ export interface BodyTemperaturaCasas {
     caja:        number;
     ruta:        object;
 }
+
+export interface ResponseTemperaturaCasas {
+    id:          number;
+    numeroCasa:  number;
+    temperatura: number;
+    caja:        number;
+}
+
+export interface ResponseDataRuta {
+    id:                 number;
+    fecha_registro:     Date;
+    jornada:            string;
+    nombreConductor:    string;
+    placa:              string;
+    kilometrajeInicial: number;
+    kilometrajeFinal:   number;
+    horaSalida:         string;
+    horaLlegada:        string;
+    totalVisitas:       number;
+    volumenTotal:       number;
+}
+
 

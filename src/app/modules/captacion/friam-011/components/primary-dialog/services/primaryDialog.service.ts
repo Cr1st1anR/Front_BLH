@@ -61,5 +61,10 @@ export class primaryDialogServices {
     return this.http.put<ApiResponse>(url, data);
   }
 
+  getRutaRecoleccionById(id: number): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getRutaRecoleccionById/${id}`;
+    return this.http.get<ApiResponse>(url);
+  }
+
 
 }

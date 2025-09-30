@@ -25,7 +25,7 @@
           <p-cellEditor>
             <ng-template #input>
               @if (col.field === 'caja') {
-              <input pInputText type="number" [(ngModel)]="rowData[col.field]" required />
+              <input pInputText type="number" [(ngModel)]="rowData[col.field]" [disabled]="true" />
               } @else if (col.tipo === 'time') {
               <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
                 inputId="icondisplay" [timeOnly]="true">

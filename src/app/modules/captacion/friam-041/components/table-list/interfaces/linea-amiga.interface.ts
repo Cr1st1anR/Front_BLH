@@ -41,5 +41,5 @@ export interface empleados {
 export interface ApiResponse {
     status: number;
     statusmsg: string;
-    data: [];
+    data: [] ;
   }

@@ -3,14 +3,15 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../../../../../environments/environments';
 import { map, Observable } from 'rxjs';
 import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
+import { BodyTemperaturaCasas, BodyTemperaturaRutas } from '../interfaces/primaryDialog.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class primaryDialogServices {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getDataTemperaturaRuta(rutaId: number): Observable<ApiResponse> {
+  getDataTemperaturaCasa(rutaId: number): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/getTemperaturasCasas/${rutaId}`;
     return this.http.get<ApiResponse>(url);
   }
@@ -25,13 +26,13 @@ export class primaryDialogServices {
     return this.http.get<ApiResponse>(url);
   }
 
-  postDataTemperatura(data: any): Observable<ApiResponse> {
+  postDataTemperatura(data: BodyTemperaturaRutas): Observable<ApiResponse> {
     const url = `${environment.ApiBLH}/createTemperaturaCasas`;
     return this.http.post<ApiResponse>(url, data);
   }
 
-  updateDataTemperatura(data: any): Observable<ApiResponse> {
-    const url = `${environment.ApiBLH}/updateTemperaturaCasas`;
+  updateDataTemperatura(id:number, data: BodyTemperaturaCasas): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/updateTemperaturaCasas/${id}`;
     return this.http.put<ApiResponse>(url, data);
   }
 
@@ -39,4 +40,31 @@ export class primaryDialogServices {
     const url = `${environment.ApiBLH}/createCasasVisitas`;
     return this.http.post<ApiResponse>(url, data);
   }
+
+  updateDataCasas(id: number, data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/updateCasas/${id}`;
+    return this.http.put<ApiResponse>(url, data);
+  }
+
+  getTemperaturaRuta(id: number): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getTemperaturaRuta/${id}`;
+    return this.http.get<ApiResponse>(url);
+  }
+
+  postCreateTemperaturaRuta(data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/createTemperaturaRuta`;
+    return this.http.post<ApiResponse>(url, data);
+  }
+
+  updateTemperaturaRuta(id:number, data: BodyTemperaturaRutas): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/updateTemperaturaRuta/${id}`;
+    return this.http.put<ApiResponse>(url, data);
+  }
+
+  getRutaRecoleccionById(id: number): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/getRutaRecoleccionById/${id}`;
+    return this.http.get<ApiResponse>(url);
+  }
+
+
 }

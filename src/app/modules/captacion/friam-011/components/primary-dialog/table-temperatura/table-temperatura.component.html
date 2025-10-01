@@ -1,144 +1,95 @@
 <p-toast position="top-right" key="tr" />
 
-<new-register-temperatura (nuevaColumna)="agregarColumna()" [disabled]="!!editingRow"></new-register-temperatura>
+<new-register-caja (nuevaCaja)="agregarNuevaCaja()" [disabled]="isNewCajaButtonDisabled()"></new-register-caja>
 
-<p-table
-  #tableTemp
-  [value]="dataTableTemp"
-  [scrollable]="true"
-  scrollHeight="300px"
-  [tableStyle]="{ 'min-width': '50rem' }"
-  [columns]="headerTableTemperatura"
-  editMode="row"
-  dataKey="id"
->
-  <ng-template #header let-columns>
-    <tr>
-      @for (col of columns; track $index) {
-      <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
-        {{ col.header }}
-      </th>
-      }
-    </tr>
-  </ng-template>
-  <ng-template
-    #body
-    let-rowData
-    let-columns="columns"
-    let-editing="editing"
-    let-ri="rowIndex"
-  >
-    <tr [pEditableRow]="rowData">
-      @for (col of columns; track $index) { @if (col.field != "acciones") {
-      <td>
-        <p-cellEditor>
-          <ng-template #input>
-            @switch (col.tipo) { @case ("number") { @if (col.field ===
-            't_salida' || col.field === 't_llegada') {
-            <input
-              [type]="col.tipo"
-              pInputText
-              [(ngModel)]="rowData[col.field]"
-              [disabled]="true"
-              [ngClass]="{
-                'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
-              }"
-            />
-            } @else {
-            <input
-              [type]="col.tipo"
-              pInputText
-              [(ngModel)]="rowData[col.field]"
-              [ngClass]="{
-                'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
-              }"
-            />
-            } } @case ("time") {
-            <p-datepicker
-              appendTo="body"
-              [(ngModel)]="rowData[col.field]"
-              [iconDisplay]="'input'"
-              [showIcon]="true"
-              inputId="icondisplay"
-              [timeOnly]="true"
-              [ngClass]="{
-                'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
-              }"
-            >
-              <ng-template #inputicon>
-                <i class="pi pi-clock"></i>
-              </ng-template>
-            </p-datepicker>
-            } }
-          </ng-template>
-          <ng-template #output>
-            @if(col.tipo == "time"){
-            <p-datepicker
-              appendTo="body"
-              [(ngModel)]="rowData[col.field]"
-              [iconDisplay]="'input'"
-              [showIcon]="true"
-              inputId="icondisplay"
-              [timeOnly]="true"
-              [disabled]="true"
-            >
-              <ng-template #inputicon>
-                <i class="pi pi-clock"></i>
-              </ng-template>
-            </p-datepicker>
-            } @else {
-            {{ rowData[col.field] }}
-            }
-          </ng-template>
-        </p-cellEditor>
-      </td>
-      } @else if (col.field === "acciones") {
-      <td>
-        <div class="flex items-center justify-center gap-2">
-          <button
-            *ngIf="!editing"
-            pButton
-            pRipple
-            type="button"
-            pInitEditableRow
-            icon="pi pi-pencil"
-            text
-            rounded
-            severity="secondary"
-            (click)="onRowEditInit(rowData)"
-          ></button>
+@for (cajaTable of cajaTables; track cajaTable.cajaNumber; let i = $index) {
+<div class="mb-4">
+  <p-table [value]="cajaTable.data" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }"
+    [columns]="cajaTable.headers" editMode="row" [dataKey]="'caja'">
 
-          <button
-            *ngIf="editing"
-            pButton
-            pRipple
-            type="button"
-            icon="pi pi-check"
-            text
-            rounded
-            severity="success"
-            (click)="onRowEditSave(rowData, ri, $event)"
-          ></button>
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
 
-          <button
-            *ngIf="editing"
-            pButton
-            pRipple
-            type="button"
-            pCancelEditableRow
-            icon="pi pi-times"
-            text
-            rounded
-            severity="danger"
-            (click)="onRowEditCancel(rowData, ri)"
-          ></button>
-        </div>
-      </td>
-      } }
-    </tr>
-  </ng-template>
-</p-table>
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        @if (col.field != "acciones") {
+        <td>
+          <p-cellEditor>
+            <ng-template #input>
+              @if (col.field === 'caja') {
+              <input pInputText type="number" [(ngModel)]="rowData[col.field]" [disabled]="true" />
+              } @else if (col.tipo === 'time') {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                inputId="icondisplay" [timeOnly]="true">
+                <ng-template #inputicon>
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+              } @else if (col.tipo === 'number') {
+              <input pInputText type="number" [(ngModel)]="rowData[col.field]" step="0.01" />
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" />
+              }
+            </ng-template>
+            <ng-template #output>
+              @if (col.tipo === 'time' && rowData[col.field]) {
+              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                inputId="icondisplay" [timeOnly]="true" [disabled]="true">
+                <ng-template #inputicon>
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+              } @else {
+              {{ rowData[col.field] !== null && rowData[col.field] !== undefined && rowData[col.field] !== '' ? rowData[col.field] : '-' }}
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.field === "acciones") {
+        <td>
+          <div class="flex items-center justify-center gap-2">
+            <!-- LÁPIZ - Basado en #table-frasco exitoso -->
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" [disabled]="isEditButtonDisabled(i)" (click)="onRowEditInit(rowData, ri, i)">
+            </button>
 
-<div *ngIf="dataTableTemp.length == 0" class="p-4 text-center text-gray-500">
+            <!-- BOTÓN + AZUL CON TOOLTIP -->
+            <button *ngIf="editing && cajaTable.editingRowIndex === ri" pButton pRipple type="button" icon="pi pi-plus"
+              text rounded size="small" severity="info" (click)="agregarColumnaTemperatura(i)"
+              pTooltip="Nueva temperatura" tooltipPosition="top">
+            </button>
+
+            <!-- BOTÓN GUARDAR -->
+            <button *ngIf="editing && cajaTable.editingRowIndex === ri" pButton pRipple type="button"
+              icon="pi pi-check" text rounded size="small" severity="success"
+              (click)="onRowEditSave(rowData, ri, i, $event)">
+            </button>
+
+            <!-- BOTÓN CANCELAR -->
+            <button *ngIf="editing && cajaTable.editingRowIndex === ri" pButton pRipple type="button" pCancelEditableRow
+              icon="pi pi-times" text rounded size="small" severity="danger" (click)="onRowEditCancel(rowData, ri, i)">
+            </button>
+          </div>
+        </td>
+        }
+        }
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>
+}
+
+@if (cajaTables.length === 0) {
+<div class="p-4 text-center text-gray-500">
   No hay datos disponibles
 </div>
+}

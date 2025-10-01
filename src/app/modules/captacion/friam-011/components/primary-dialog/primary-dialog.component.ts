@@ -53,7 +53,7 @@ export class PrimaryDialogComponent implements OnChanges {
     this.loading = true;
     setTimeout(() => {
       this.loading = false;
-    }, 1200);
+    }, 1000);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

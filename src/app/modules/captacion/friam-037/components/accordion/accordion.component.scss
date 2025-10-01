@@ -1,0 +1,40 @@
+.accordion-container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  width: 100%;
+}
+
+.guardar-btn {
+  background: #224186 !important;
+  border: 1px solid #224186 !important;
+  color: #fff !important;
+}
+.guardar-btn:hover {
+  background: #456dc4 !important;
+  border: 1px solid #456dc4 !important;
+}
+
+.cancelar-btn {
+  background: #b71c1c !important;
+  border: 1px solid #b71c1c !important;
+  color: #fff !important;
+}
+
+.cancelar-btn:hover {
+  background: #a31515 !important;
+  border: 1px solid #a31515 !important;
+}
+
+.salir-btn {
+  background-color: #224186 !important;
+  border-color: #224186 !important;
+
+  &:hover {
+    background-color: #456dc4 !important;
+    border-color: #456dc4 !important;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5) !important;
+  }
+}

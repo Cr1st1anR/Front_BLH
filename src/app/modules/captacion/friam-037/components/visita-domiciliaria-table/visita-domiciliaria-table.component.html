@@ -1,0 +1,54 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<app-header [title]="'VISITA DOMICILIARIA DE INGRESO PARA MADRES DONANTES DEL PROGRAMA BLH (FRIAM-037)'" />
+
+<div class="container-table">
+  <p-table [value]="dataTable" [scrollable]="true" scrollHeight="500px" [columns]="headersTableVisitaDomiciliaria"
+    [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id">
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [ngStyle]="{ 'min-width': col.width }" class="grid-lines">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns">
+      <tr>
+        @for (col of columns; track $index) {
+        <td (click)="col.field !== 'reporte' ? onRowClick(rowData) : null"
+          [style.cursor]="col.field !== 'reporte' ? 'pointer' : 'default'">
+          @if (col.field === 'reporte') {
+          <button pButton type="button" icon="pi pi-file-pdf" label="PDF" size="small"
+            class="p-button-success p-button-sm" (click)="descargarPDF(rowData); $event.stopPropagation()"
+            [disabled]="generatingPdf && currentPdfRowId === rowData.id" title="Descargar reporte PDF">
+          </button>
+
+          }
+          @else {
+          {{ rowData[col.field] }}
+          }
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<div
+  style="position: fixed; top: -10000px; left: -10000px; width:210mm; background:#fff; z-index:-1; visibility:hidden;">
+  <pdf-friam-037 *ngIf="showPdf" #pdfComponent [datosPersonales]="pdfPayload?.datosPersonales"
+    [preguntasCondicionesFisicas]="pdfPayload?.preguntasCondicionesFisicas || []"
+    [preguntasCondicionesPersonales]="pdfPayload?.preguntasCondicionesPersonales || []"
+    [evaluacionLactancia]="pdfPayload?.evaluacionLactancia" [datosAdicionales]="pdfPayload?.datosAdicionales"
+    [fechaVisita]="pdfPayload?.fechaVisita">
+  </pdf-friam-037>
+</div>

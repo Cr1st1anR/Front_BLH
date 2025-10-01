@@ -1,3 +1,4 @@
+<!-- ...existing code... -->
 <p-toast position="top-right" key="tr" />
 
 @if (loading) {
@@ -9,12 +10,10 @@
 
 <app-header />
 
-
 <div class="flex justify-between items-center mx-4">
   <app-new-register (nuevoRegistro)="agregarFilaVacia()" [disabled]="isAnyRowEditing()" />
   <app-month-picker (dateChange)="filtrarPorFecha($event)" />
 </div>
-
 
 <div class="container-table">
   <p-table #tableVap [value]="dataTableLienaAmiga" [scrollable]="true" scrollHeight="500px"
@@ -83,11 +82,14 @@
               @case ("date") {
               @if (col.field == 'fechaNacimiento') {
               <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'"
-                [showIcon]="true" inputId="icondisplay"
+                [showIcon]="true" inputId="fechaNacAux-{{ri}}"
+                dateFormat="dd/mm/yy"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }@else {
               <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-                inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                inputId="{{col.field}}-{{ri}}"
+                dateFormat="dd/mm/yy"
+                [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }
               }
               @case ("checkbox") {
@@ -148,8 +150,7 @@
                 </div>
               </div>
               }@else if (col.tipo == "date" && col.field != "fechaNacimiento") {
-              <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-                [disabled]="true" inputId="icondisplay" />
+              {{ rowData[col.field] | date:'dd/MM/yyyy':'es-CO' }}
               }
               @else {
               {{rowData[col.field]}}

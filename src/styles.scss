@@ -301,26 +301,103 @@ p-table {
 
 // Custom styles radiobuttom
 p-radiobutton {
-
     .p-radiobutton-checked .p-radiobutton-box {
-        background-color: #224186;
-        border: 1px solid #224186;
-        // :hover{
-        //     background-color: #224186;
-        //     border: 1px solid #224186;
-        // }
+        background-color: #224186 !important;
+        border: 1px solid #224186 !important;
     }
 
+    // Estilos para hover - más específicos
+    .p-radiobutton-box {
+        &:hover {
+            border-color: #224186 !important;
+            background-color: transparent !important;
+        }
+    }
+
+    // Hover cuando está seleccionado - más específico
+    .p-radiobutton-checked .p-radiobutton-box {
+        &:hover {
+            background-color: #1a3269 !important;
+            border-color: #1a3269 !important;
+        }
+    }
+
+    // Focus state
+    .p-radiobutton:not(.p-disabled):has(.p-radiobutton-input:focus) .p-radiobutton-box {
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+    }
 }
 
-// Custom styles p-select
-p-select {
-    &:hover:not(.p-disabled) {
-        border: 1px solid #224186 !important;
+// Estilos adicionales con mayor especificidad para sobrescribir PrimeNG
+.p-radiobutton {
+    .p-radiobutton-box {
+        transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+
+        // Sobrescribir hover por defecto de PrimeNG
+        &:not(.p-radiobutton-checked):hover {
+            border-color: #224186 !important;
+            background-color: transparent !important;
+        }
     }
 
-    &:not(.p-disabled).p-focus {
-        border: 1px solid #224186 !important;
+    &:not(.p-disabled) {
+        .p-radiobutton-box:hover {
+            border-color: #224186 !important;
+        }
+
+        &.p-radiobutton-checked .p-radiobutton-box:hover {
+            background-color: #1a3269 !important;
+            border-color: #1a3269 !important;
+        }
+    }
+
+    &.p-radiobutton-focused .p-radiobutton-box {
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+    }
+}
+
+// Sobrescribir estilos específicos de PrimeNG con máxima especificidad
+:host ::ng-deep .p-radiobutton:not(.p-disabled) .p-radiobutton-box:hover,
+.p-radiobutton:not(.p-disabled) .p-radiobutton-box:hover {
+    border-color: #224186 !important;
+    background-color: transparent !important;
+}
+
+:host ::ng-deep .p-radiobutton:not(.p-disabled).p-radiobutton-checked .p-radiobutton-box:hover,
+.p-radiobutton:not(.p-disabled).p-radiobutton-checked .p-radiobutton-box:hover {
+    background-color: #1a3269 !important;
+    border-color: #1a3269 !important;
+}
+
+// Sobrescribir cualquier estilo de hover verde de PrimeNG
+:host ::ng-deep .p-radiobutton .p-radiobutton-box:hover {
+    border-color: #224186 !important;
+}
+
+:host ::ng-deep .p-radiobutton.p-radiobutton-checked .p-radiobutton-box:hover {
+    background-color: #1a3269 !important;
+    border-color: #1a3269 !important;
+}
+
+// Asegurar que no aparezca verde en ningún estado
+:host ::ng-deep .p-radiobutton .p-radiobutton-box,
+.p-radiobutton .p-radiobutton-box {
+    &:hover {
+        border-color: #224186 !important;
+        background-color: transparent !important;
+    }
+}
+
+:host ::ng-deep .p-radiobutton.p-radiobutton-checked .p-radiobutton-box,
+.p-radiobutton.p-radiobutton-checked .p-radiobutton-box {
+    background-color: #224186 !important;
+    border-color: #224186 !important;
+
+    &:hover {
+        background-color: #1a3269 !important;
+        border-color: #1a3269 !important;
     }
 }
 
@@ -369,4 +446,68 @@ p-select {
             border-color: #1a3570 !important;
         }
     }
+}
+
+// Custom styles p-checkbox
+p-checkbox {
+    .p-checkbox-box {
+        border: 2px solid #ccc !important;
+
+        &:hover {
+            border-color: #224186 !important;
+        }
+    }
+
+    .p-checkbox-checked .p-checkbox-box {
+        background-color: #224186 !important;
+        border-color: #224186 !important;
+
+        &:hover {
+            background-color: #1a3269 !important;
+            border-color: #1a3269 !important;
+        }
+    }
+
+    .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus) .p-checkbox-box {
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+    }
+
+    // Estilos para el ícono del check
+    .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
+        color: white !important;
+    }
+}
+
+// Estilos globales adicionales para checkbox con mayor especificidad
+.p-checkbox {
+    .p-checkbox-box {
+        transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+    }
+
+    &:not(.p-disabled) {
+        .p-checkbox-box:hover {
+            border-color: #224186 !important;
+        }
+
+        &.p-checkbox-checked .p-checkbox-box:hover {
+            background-color: #1a3269 !important;
+            border-color: #1a3269 !important;
+        }
+    }
+
+    &.p-checkbox-focused .p-checkbox-box {
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
+    }
+}
+
+:root {
+  --p-accordion-header-color: #224186 !important;
+  --p-accordion-header-active-color: #224186 !important;
+}
+
+.p-accordionheader:hover,
+.p-accordionheader:focus {
+  color: #1a3366 !important;
 }

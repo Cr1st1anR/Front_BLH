@@ -1,0 +1,38 @@
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<p-toast position="top-right" key="tr" />
+
+@if (saving) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<app-header [title]="
+    'VISITA DOMICILIARIA DE INGRESO PARA MADRES DONANTES DEL PROGRAMA BLH (FRIAM-037)'
+  " />
+
+<div class="card flex justify-center accordion-container">
+  <p-accordion value="0">
+    <descripcion-situacion [preguntas]="preguntas" [categorias]="categorias"
+      [respuestasDescripcion]="respuestasDescripcion" [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
+    <evaluar-lactancia [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
+    <datos-adicionales [data]="dataVisitaMadre" [readOnly]="isReadOnlyMode" />
+  </p-accordion>
+</div>
+
+<div class="flex justify-end gap-4 mt-8 pr-8 mb-8">
+  @if (!isReadOnlyMode) {
+  <button pButton type="button" label="Guardar" icon="pi pi-save" class="guardar-btn" (click)="onLoadData()"></button>
+  <button pButton type="button" label="Cancelar" icon="pi pi-times" class="cancelar-btn"
+    (click)="onCancelar()"></button>
+  } @else {
+  <button pButton type="button" label="Salir" icon="pi pi-sign-out" class="salir-btn" (click)="onCancelar()"></button>
+  }
+</div>

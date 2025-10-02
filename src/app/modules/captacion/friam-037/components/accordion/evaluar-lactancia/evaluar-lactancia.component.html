@@ -1,0 +1,44 @@
+<p-accordion-panel value="1">
+  <p-accordion-header>{{title}}</p-accordion-header>
+  <p-accordion-content>
+    <div style="max-height: 600px; overflow-y: auto; padding-right: 12px">
+      <h3 class="subtitulo-accordion text-base font-semibold">{{subtitle}}</h3>
+      <div class="mb-6"></div>
+      <div class="grid grid-cols-2 gap-x-24 gap-y-12 mb-12">
+        @for (item of formData; track $index; let i = $index) {
+        <div>
+          <h4 class="subtitulo-accordion font-bold mb-6 ml-8 my-4">{{item.title}}</h4>
+          <div class="flex flex-col gap-6">
+            @for (preguntaPar of item.questions; track $index; let j = $index) {
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex items-center">
+                <label [for]="'pregunta_si_' + i + '_' + j"
+                  class="flex-1 text-left ml-8">{{preguntaPar[0].question}}</label>
+                <p-radioButton
+                  name="pregunta_{{i}}_{{j}}"
+                  [value]="0"
+                  [(ngModel)]="preguntaPar[0].answer"
+                  inputId="pregunta_si_{{i}}_{{j}}"
+                  [disabled]="readOnly">
+                </p-radioButton>
+              </div>
+              <div class="flex items-center">
+                <label [for]="'pregunta_no_' + i + '_' + j"
+                  class="flex-1 text-left ml-8">{{preguntaPar[1].question}}</label>
+                <p-radioButton
+                  name="pregunta_{{i}}_{{j}}"
+                  [value]="1"
+                  [(ngModel)]="preguntaPar[0].answer"
+                  inputId="pregunta_no_{{i}}_{{j}}"
+                  [disabled]="readOnly">
+                </p-radioButton>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </p-accordion-content>
+</p-accordion-panel>

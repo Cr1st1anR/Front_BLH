@@ -101,7 +101,7 @@
     margin: 0;
     padding: 5px 10px;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700 !important;
     border-bottom: 1px solid black;
     padding-bottom: 17px;
     text-align: center;
@@ -122,6 +122,7 @@
 
         label {
           font-weight: bold;
+          font-weight: normal;
           display: inline-block;
           margin-right: 5px;
           font-size: 10px;
@@ -399,5 +400,35 @@
 
   .page:last-of-type {
     page-break-after: auto;
+  }
+}
+
+.header-section {
+  padding: 0;
+  margin-bottom: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: none; /* dejamos que la imagen lleve todo el diseño */
+
+  .header-image {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto; /* altura automática para evitar zoom */
+    object-fit: contain; /* mantiene la imagen completa sin recorte */
+    -o-object-fit: contain;
+  }
+}
+
+@media print {
+  .header-section {
+    margin-bottom: 4px;
+  }
+
+  .header-section .header-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
   }
 }

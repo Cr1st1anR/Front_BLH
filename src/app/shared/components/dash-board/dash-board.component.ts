@@ -61,6 +61,11 @@ export class DashBoardComponent {
           route: '/blh/captacion/registro-donante-blh',
         },
         {
+          label: 'Visita domiciliaria de ingreso para madres donantes del programa blh',
+          subLabel: '(FRIAM-037)',
+          route: '/blh/captacion/visita-domiciliaria',
+        },
+        {
           label: 'Visitas domiciliarias de seguimiento para madres donantes del programa blh',
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
@@ -88,6 +93,8 @@ export class DashBoardComponent {
   constructor(private router: Router) {}
 
   closeCallback(e:any): void {
+    console.log(e);
+
     this.drawerRef.close(e);
   }
   onSelect(item: any) {

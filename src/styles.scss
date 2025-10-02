@@ -501,3 +501,13 @@ p-checkbox {
         box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25) !important;
     }
 }
+
+:root {
+  --p-accordion-header-color: #224186 !important;
+  --p-accordion-header-active-color: #224186 !important;
+}
+
+.p-accordionheader:hover,
+.p-accordionheader:focus {
+  color: #1a3366 !important;
+}

@@ -51,15 +51,17 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
   @Output() dataLoaded = new EventEmitter<boolean>();
   @ViewChild('tableCasas') table!: Table;
   dataTableCasas: any[] = [];
-  clonedTableCasasVisita: { [s: number]: casasVisitaData } = {};
+  // clones indexed by _uid (string) para mantener key estable
+  clonedTableCasasVisita: { [s: string]: casasVisitaData } = {};
+  private tempIdCounter = -1; // id temporal para _uid de filas nuevas
 
   headerTableCasasVisita: any[] = [
     {
       header: 'CASA No.',
-      field: 'id_casa_visita',
+      field: 'numero_casa',
       width: '200px',
       tipo: 'text',
-      disable: true,
+      disable: false,
     },
     {
       header: 'CODIGO',
@@ -118,7 +120,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     private _primaryService: primaryDialogServices,
     private editingStateService: EditingStateService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.editingStateService.registerCancelCallback(this.componentId, () => {
@@ -126,61 +128,63 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     });
   }
 
-ngOnChanges(changes: SimpleChanges) {
-  if (
-    changes['dataRutaRecoleccion'] &&
-    changes['dataRutaRecoleccion'].currentValue
-  ) {
-    of(null)
-      .pipe(
-        concatMap(() => this.loadDataMadresDonanates()),
-        concatMap(() =>
-          this.loadDataforTable(this.dataRutaRecoleccion?.id_ruta!)
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      changes['dataRutaRecoleccion'] &&
+      changes['dataRutaRecoleccion'].currentValue
+    ) {
+      of(null)
+        .pipe(
+          concatMap(() => this.loadDataMadresDonanates()),
+          concatMap(() =>
+            this.loadDataforTable(this.dataRutaRecoleccion?.id_ruta!)
+          )
         )
-      )
-      .subscribe({
-        complete: () => {
-          console.log('Opciones después de cargar:', this.headerTableCasasVisita[1].options);
-          setTimeout(() => {
+        .subscribe({
+          complete: () => {
+            setTimeout(() => {
+              this.loading = false;
+            }, 2000);
+          },
+          error: (err) => {
             this.loading = false;
-          }, 2000);
-        },
-        error: (err) => {
-          this.loading = false;
-          console.error('Error en la secuencia de peticiones', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'No se pudo cargar la data de las casas de visita.',
-          });
-        },
-      });
-  }
-}
-
-loadDataMadresDonanates(): Observable<ApiResponse> {
-  return this._primaryService.getMadresDonantes().pipe(
-    tap((data) => {
-      if (data && data.data && data.data.length > 0) {
-        this.headerTableCasasVisita[1].options = data.data;
-      } else {
-        this.headerTableCasasVisita[1].options = [];
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Sin datos',
-          detail: 'No hay madres donantes registradas en el sistema.',
-          life: 3000
+            console.error('Error en la secuencia de peticiones', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'No se pudo cargar la data de las casas de visita.',
+            });
+          },
         });
-      }
-    })
-  );
-}
+    }
+  }
+
+  loadDataMadresDonanates(): Observable<ApiResponse> {
+    return this._primaryService.getMadresDonantes().pipe(
+      tap((data) => {
+        if (data && data.data && data.data.length > 0) {
+          this.headerTableCasasVisita[1].options = data.data;
+          // this.dataLoaded.emit(true);
+        } else {
+          this.headerTableCasasVisita[1].options = [];
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Sin datos',
+            detail: 'No hay madres donantes registradas en el sistema.',
+            life: 3000
+          });
+          // this.dataLoaded.emit(false);
+        }
+      })
+    );
+  }
 
   loadDataforTable(idRuta: number): Observable<ApiResponse> {
     return this._primaryService.getDataCasasRuta(idRuta).pipe(
       tap((data) => {
         if (data) {
-          this.dataTableCasas = this.formatData(data.data);
+          // asegurar el tipo real de data.data para TypeScript
+          this.dataTableCasas = this.formatData(data.data as casasVisitaData[]);
           if (this.dataTableCasas.length > 0) {
             this.messageService.add({
               severity: 'success',
@@ -203,6 +207,8 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
     return data.map((item) => {
       return {
         ...item,
+        // _uid estable por fila: prefijo con 'c_' para evitar colisiones con ids numéricos
+        _uid: item.id_casa_visita !== null && item.id_casa_visita !== undefined ? `c_${item.id_casa_visita}` : `tmp_${this.tempIdCounter--}`,
         nombre:
           item.nombre && item.apellido
             ? item.nombre + ' ' + item.apellido
@@ -227,28 +233,22 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
 
   crearNuevoRegistroCasa() {
     if (this.hasNewRowInEditing) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail:
-          'Debe guardar o cancelar la fila actual antes de crear una nueva',
-        key: 'tr',
-        life: 3000,
-      });
+      // ...existing code...
       return;
     }
     if (this.editingRow && this.table) {
       this.table.cancelRowEdit(this.editingRow);
       this.editingRow = null;
     }
-    const nuevoRegistro: casasVisitaData = {
-      id_ruta: null,
+    const nuevoRegistro: any = {
+      id_ruta: this.dataRutaRecoleccion?.id_ruta || null,
       id_casa_visita: null,
       id_madre_donante: null,
       nombre: null,
       direccion: null,
       celular: null,
       observacion: null,
+      _uid: `tmp_${this.tempIdCounter--}`, // uid temporal estable
     };
     this.dataTableCasas.unshift(nuevoRegistro);
     this.selectedRow = [nuevoRegistro];
@@ -267,7 +267,7 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
     this.selectedRow = [];
   }
 
-  onRowEditInit(dataRow: casasVisitaData): void {
+  onRowEditInit(dataRow: any): void {
     if (
       this.hasNewRowInEditing &&
       (!this.editingRow || this.editingRow.id_casa_visita === null)
@@ -281,18 +281,15 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
       });
       return;
     }
-    this.editingStateService.startEditing(
-      this.componentId,
-      dataRow.id_casa_visita
-    );
-    this.clonedTableCasasVisita[dataRow.id_casa_visita as number] = {
-      ...dataRow,
-    };
+    const uid = dataRow._uid;
+    this.editingStateService.startEditing(this.componentId, uid);
+    // clonar por _uid
+    this.clonedTableCasasVisita[uid] = { ...dataRow };
     this.editingRow = dataRow;
     this.selectedRow = null;
   }
 
-  onRowEditSave(dataRow: casasVisitaData, index: number, event: MouseEvent) {
+  onRowEditSave(dataRow: any, index: number, event: MouseEvent) {    
     const rowElement = (event.currentTarget as HTMLElement).closest(
       'tr'
     ) as HTMLTableRowElement;
@@ -309,25 +306,36 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
       });
       return;
     }
-    this.editingRow = null;
-    this.hasNewRowInEditing = false;
-    this.editingStateService.cancelEditing();
-    delete this.clonedTableCasasVisita[dataRow.id_casa_visita as number];
+
+    const uid = dataRow._uid as string | undefined;
     const bodyFormat = this.formatInputBody(dataRow);
-    if (
-      dataRow.id_casa_visita === undefined ||
-      dataRow.id_casa_visita === null
-    ) {
+
+    // NUEVO registro -> POST
+    if (dataRow.id_casa_visita === undefined || dataRow.id_casa_visita === null) {
       this._primaryService.postDataCasasVisitas(bodyFormat).subscribe({
-        next: (data) => {
+        next: (res) => {
+          // si backend devuelve id, asignarlo sin tocar _uid
+          let created: any = (res as any)?.data;
+          // si el backend retorna lista, tomar el primer elemento
+          if (Array.isArray(created)) created = created[0];
+          if (created && created.id_casa_visita !== undefined) {
+            dataRow.id_casa_visita = created.id_casa_visita;
+          }
           this.messageService.add({
             severity: 'success',
-            summary: 'Exito',
+            summary: 'Éxito',
             detail: 'Datos guardados',
             key: 'tr',
             life: 3000,
           });
           this.table.saveRowEdit(dataRow, rowElement);
+          // limpieza: eliminar clon asociado al _uid
+          if (uid && this.clonedTableCasasVisita[uid]) {
+            delete this.clonedTableCasasVisita[uid];
+          }
+          this.hasNewRowInEditing = false;
+          this.editingRow = null;
+          this.editingStateService.cancelEditing();
         },
         error: (error) => {
           this.messageService.add({
@@ -337,30 +345,64 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
             key: 'tr',
             life: 3000,
           });
+          // dejar en edición para reintentar
         },
       });
     } else {
-      // this._primaryService.putDataRutaRecoleccion(bodyFormat).subscribe({
-      //   next: (data) => {
-      //     this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos actualizados', key: 'tr', life: 3000 });
-      //     this.table.saveRowEdit(dataRow, rowElement);
-      //   },
-      //   error: (error) => {
-      //     this.messageService.add({ severity: 'danger', summary: 'Error', detail: 'Hubo un error al actualizar', key: 'tr', life: 3000 });
-      //   }
-      // })
+      // EXISTENTE -> PUT usando id real
+      const idToUpdate = dataRow.id_casa_visita as number;
+      this._primaryService.updateDataCasas(idToUpdate, bodyFormat).subscribe({
+        next: (res) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos actualizados',
+            key: 'tr',
+            life: 3000,
+          });
+          this.table.saveRowEdit(dataRow, rowElement);
+          // limpiar clon y cancelar edición
+          if (uid && this.clonedTableCasasVisita[uid]) {
+            delete this.clonedTableCasasVisita[uid];
+          }
+          this.editingRow = null;
+          this.hasNewRowInEditing = false;
+          this.editingStateService.cancelEditing();
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'danger',
+            summary: 'Error',
+            detail: 'Hubo un error al actualizar',
+            key: 'tr',
+            life: 3000,
+          });
+          // restaurar clon por _uid si existe
+          if (uid && this.clonedTableCasasVisita[uid]) {
+            const idx = this.dataTableCasas.findIndex((r) => r._uid === uid);
+            if (idx !== -1) {
+              this.dataTableCasas[idx] = this.clonedTableCasasVisita[uid];
+            }
+            delete this.clonedTableCasasVisita[uid];
+          }
+        },
+      });
     }
   }
 
-  onRowEditCancel(dataRow: casasVisitaData, index: number): void {
+  onRowEditCancel(dataRow: any, index: number): void {
+    const uid = dataRow._uid as string | undefined;
     if (dataRow.id_casa_visita === null) {
+      // fila nueva -> eliminar
       this.dataTableCasas.splice(index, 1);
       this.dataTableCasas = [...this.dataTableCasas];
       this.hasNewRowInEditing = false;
     } else {
-      this.dataTableCasas[index] =
-        this.clonedTableCasasVisita[dataRow.id_casa_visita as number];
-      delete this.clonedTableCasasVisita[dataRow.id_casa_visita as number];
+      // restaurar por _uid
+      if (uid && this.clonedTableCasasVisita[uid]) {
+        this.dataTableCasas[index] = this.clonedTableCasasVisita[uid];
+        delete this.clonedTableCasasVisita[uid];
+      }
     }
     this.editingRow = null;
     this.editingStateService.cancelEditing();
@@ -372,6 +414,7 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
         typeof body.id_madre_donante === 'object'
           ? body.id_madre_donante?.id_madre_donante
           : body.id_madre_donante,
+      numeroCasa: Number(body.numero_casa) || null,
       ruta: this.dataRutaRecoleccion?.id_ruta || null,
       observacion: body.observacion || null,
     };
@@ -394,26 +437,16 @@ loadDataMadresDonanates(): Observable<ApiResponse> {
     if (this.editingRow && this.table) {
       try {
         this.table.cancelRowEdit(this.editingRow);
-      } catch (error) {}
-      const index = this.dataTableCasas.findIndex(
-        (row) => row === this.editingRow
-      );
+      } catch (error) { }
+      const index = this.dataTableCasas.findIndex((row) => row === this.editingRow);
       if (index !== -1) {
+        const uid = (this.editingRow._uid as string | undefined);
         if (this.editingRow.id_casa_visita === null) {
           this.dataTableCasas.splice(index, 1);
         } else {
-          if (
-            this.clonedTableCasasVisita[
-              this.editingRow.id_casa_visita as number
-            ]
-          ) {
-            this.dataTableCasas[index] =
-              this.clonedTableCasasVisita[
-                this.editingRow.id_casa_visita as number
-              ];
-            delete this.clonedTableCasasVisita[
-              this.editingRow.id_casa_visita as number
-            ];
+          if (uid && this.clonedTableCasasVisita[uid]) {
+            this.dataTableCasas[index] = this.clonedTableCasasVisita[uid];
+            delete this.clonedTableCasasVisita[uid];
           }
         }
       }

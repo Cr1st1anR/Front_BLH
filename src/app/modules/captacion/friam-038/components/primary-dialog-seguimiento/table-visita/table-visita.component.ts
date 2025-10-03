@@ -73,7 +73,7 @@ export class TableVisitaComponent implements OnInit, OnChanges {
     private readonly primaryDialogSeguimientoService: PrimaryDialogSeguimientoService,
     private readonly messageService: MessageService,
     private readonly router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDataTableVisita();
@@ -130,146 +130,164 @@ export class TableVisitaComponent implements OnInit, OnChanges {
 
   // MÉTODO ACTUALIZADO: Crear nueva visita con API
   crearNuevaVisita() {
-    if (this.hasNewRowInEditing || this.editingRow) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la edición actual antes de crear una nueva visita',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    if (!this.codigoDonante) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se puede crear visita sin código de donante',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    // Calcular el siguiente número de visita
-    const maxNoVisita = this.dataTableVisita.length > 0
-      ? Math.max(...this.dataTableVisita.map(v => v.no_visita || 0))
-      : 0;
-
-    const nuevaVisita: VisitaTabla = {
-      id_visita: 0, // Temporal
-      no_visita: maxNoVisita + 1,
-      fecha_visita: '',
-      isNew: true
-    };
-
-    this.dataTableVisita.push(nuevaVisita);
-    this.dataTableVisita = [...this.dataTableVisita];
-    this.hasNewRowInEditing = true;
-    this.editingRow = nuevaVisita;
-
-    setTimeout(() => {
-      this.table.initRowEdit(nuevaVisita);
-    }, 100);
+  if (this.hasNewRowInEditing || this.editingRow) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Advertencia',
+      detail: 'Debe guardar o cancelar la edición actual antes de crear una nueva visita',
+      key: 'tr',
+      life: 3000,
+    });
+    return;
   }
+
+  if (!this.codigoDonante) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se puede crear visita sin código de donante',
+      key: 'tr',
+      life: 3000,
+    });
+    return;
+  }
+
+  // ✅ CORRECCIÓN: Calcular número basado en orden cronológico
+  const siguienteNumero = this.dataTableVisita.length + 1;
+
+  const nuevaVisita: VisitaTabla = {
+    id_visita: 0, // Temporal
+    no_visita: siguienteNumero, // ✅ Número secuencial correcto
+    fecha_visita: '',
+    isNew: true
+  };
+
+  // ✅ AGREGAR AL FINAL (no al principio)
+  this.dataTableVisita.push(nuevaVisita);
+  this.dataTableVisita = [...this.dataTableVisita];
+  this.hasNewRowInEditing = true;
+  this.editingRow = nuevaVisita;
+
+  setTimeout(() => {
+    this.table.initRowEdit(nuevaVisita);
+  }, 100);
+}
 
   // MÉTODO ACTUALIZADO: Guardar con API
+  // En table-visita.component.ts - MÉTODO onRowEditSave
+  // CAMBIAR esta parte:
+
   onRowEditSave(rowData: any, index: number, event: MouseEvent) {
-    if (!rowData.fecha_visita) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'La fecha de visita es obligatoria',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    // Formatear fecha para API (YYYY-MM-DD)
-    let fechaParaAPI = '';
-    if (rowData.fecha_visita instanceof Date) {
-      const year = rowData.fecha_visita.getFullYear();
-      const month = (rowData.fecha_visita.getMonth() + 1).toString().padStart(2, '0');
-      const day = rowData.fecha_visita.getDate().toString().padStart(2, '0');
-      fechaParaAPI = `${year}-${month}-${day}`;
-
-      // Formatear para mostrar (DD/MM/YYYY)
-      rowData.fecha_visita = `${day}/${month}/${year}`;
-    }
-
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
-
-    if (rowData.isNew) {
-      // Crear nueva visita en API
-      this.primaryDialogSeguimientoService.crearNuevaVisita(this.codigoDonante!, fechaParaAPI)
-        .subscribe({
-          next: (response) => {
-            console.log('Visita creada:', response);
-
-            // Actualizar con ID real si viene en la respuesta
-            if (response?.data?.id) {
-              rowData.id_visita = response.data.id;
-            } else {
-              rowData.id_visita = Date.now(); // Temporal
-            }
-
-            delete rowData.isNew;
-            this.hasNewRowInEditing = false;
-            this.editingRow = null;
-            this.table.saveRowEdit(rowData, rowElement);
-
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: 'Nueva visita creada correctamente',
-              key: 'tr',
-              life: 2000,
-            });
-          },
-          error: (error) => {
-            console.error('Error al crear visita:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Error al crear la visita',
-              key: 'tr',
-              life: 3000,
-            });
-          }
-        });
-    } else {
-      // Actualizar visita existente en API
-      this.primaryDialogSeguimientoService.actualizarFechaVisita(rowData.id_visita, fechaParaAPI)
-        .subscribe({
-          next: (response) => {
-            console.log('Visita actualizada:', response);
-            delete this.clonedVisitas[rowData.id_visita as string];
-            this.editingRow = null;
-            this.table.saveRowEdit(rowData, rowElement);
-
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: 'Fecha de visita actualizada correctamente',
-              key: 'tr',
-              life: 2000,
-            });
-          },
-          error: (error) => {
-            console.error('Error al actualizar visita:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Error al actualizar la fecha de visita',
-              key: 'tr',
-              life: 3000,
-            });
-          }
-        });
-    }
+  if (!rowData.fecha_visita) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'La fecha de visita es obligatoria',
+      key: 'tr',
+      life: 3000,
+    });
+    return;
   }
+
+  // ✅ CORRECCIÓN PARA ZONA HORARIA
+  let fechaParaAPI = '';
+  let fechaParaMostrar = '';
+
+  if (rowData.fecha_visita instanceof Date) {
+    // Usar la fecha local sin conversión de zona horaria
+    const year = rowData.fecha_visita.getFullYear();
+    const month = (rowData.fecha_visita.getMonth() + 1).toString().padStart(2, '0');
+    const day = rowData.fecha_visita.getDate().toString().padStart(2, '0');
+
+    fechaParaAPI = `${year}-${month}-${day}`;
+    fechaParaMostrar = `${day}/${month}/${year}`;
+  } else if (typeof rowData.fecha_visita === 'string') {
+    // Si ya es string, mantenerlo
+    fechaParaAPI = rowData.fecha_visita;
+    fechaParaMostrar = this.formatearFechaParaMostrar(rowData.fecha_visita);
+  }
+
+  // Actualizar para mostrar
+  rowData.fecha_visita = fechaParaMostrar;
+
+  const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+
+  if (rowData.isNew) {
+    // ✅ CREAR NUEVA VISITA EN API
+    this.primaryDialogSeguimientoService.crearNuevaVisita(this.codigoDonante!, fechaParaAPI)
+      .subscribe({
+        next: (response) => {
+          console.log('Visita creada:', response);
+
+          this.hasNewRowInEditing = false;
+          this.editingRow = null;
+
+          // ✅ RECARGAR DATOS para mantener orden correcto
+          this.loadDataTableVisita();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Nueva visita creada correctamente',
+            key: 'tr',
+            life: 2000,
+          });
+        },
+        error: (error) => {
+          console.error('Error al crear visita:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al crear la visita',
+            key: 'tr',
+            life: 3000,
+          });
+        }
+      });
+  } else {
+    // ✅ ACTUALIZAR VISITA EXISTENTE EN API
+    this.primaryDialogSeguimientoService.actualizarFechaVisita(rowData.id_visita, fechaParaAPI)
+      .subscribe({
+        next: (response) => {
+          console.log('Visita actualizada:', response);
+          delete this.clonedVisitas[rowData.id_visita as string];
+          this.editingRow = null;
+          this.table.saveRowEdit(rowData, rowElement);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Fecha de visita actualizada correctamente',
+            key: 'tr',
+            life: 2000,
+          });
+        },
+        error: (error) => {
+          console.error('Error al actualizar visita:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al actualizar la fecha de visita',
+            key: 'tr',
+            life: 3000,
+          });
+        }
+      });
+  }
+}
+
+// ✅ AGREGAR ESTE MÉTODO AUXILIAR
+private formatearFechaParaMostrar(fecha: string): string {
+  if (!fecha) return 'Sin fecha';
+
+  // Si viene en formato YYYY-MM-DD, convertir a DD/MM/YYYY
+  if (fecha.includes('-')) {
+    const [year, month, day] = fecha.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  return fecha; // Si ya está en formato DD/MM/YYYY
+}
 
   // MANTENER: Resto de métodos sin cambios
   onRowEditInit(rowData: any): void {
@@ -316,8 +334,8 @@ export class TableVisitaComponent implements OnInit, OnChanges {
 
   isEditing(rowData: any): boolean {
     return this.editingRow &&
-           ((this.editingRow.id_visita === rowData.id_visita) ||
-            (this.editingRow.isNew && rowData.isNew));
+      ((this.editingRow.id_visita === rowData.id_visita) ||
+        (this.editingRow.isNew && rowData.isNew));
   }
 
   isAnyRowEditing(): boolean {

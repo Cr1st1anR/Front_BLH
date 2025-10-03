@@ -1,17 +1,17 @@
-import { MadreDonante } from "./madre-donante.interface";
-
 export interface VisitaSeguimiento {
   id: number;
   fecha: string;
-  madreDonante: MadreDonante;
+  madreDonante: {
+    id: number;
+    madrePotencial?: any;
+  };
 }
 
-export interface CrearVisitaRequest {
-  idMadreDonante: number;
-  fecha: string;
-}
-
-export interface ActualizarFechaRequest {
-  idVisita: number;
-  nuevaFecha: string;
+// Interface para la tabla de visitas (formato frontend)
+export interface VisitaTabla {
+  id_visita: number;
+  no_visita: number;
+  fecha_visita: string;
+  id_seguimiento?: number;
+  isNew?: boolean;
 }

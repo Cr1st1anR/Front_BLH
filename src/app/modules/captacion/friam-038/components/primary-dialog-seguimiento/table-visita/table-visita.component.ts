@@ -1,5 +1,6 @@
+// table-visita.component.ts - INTEGRAR API
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -11,6 +12,7 @@ import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { Table } from 'primeng/table';
+import { VisitaTabla } from '../../interfaces/visita-seguimiento.interface';
 
 @Component({
   selector: 'table-visita-seguimiento',
@@ -28,8 +30,9 @@ import { Table } from 'primeng/table';
   styleUrl: './table-visita.component.scss',
   providers: [PrimaryDialogSeguimientoService, MessageService],
 })
-export class TableVisitaComponent implements OnInit {
+export class TableVisitaComponent implements OnInit, OnChanges {
   @Input() idSeguimiento: number | null = null;
+  @Input() codigoDonante: string | null = null; // AGREGAR este input
   @Output() eyeClicked = new EventEmitter<any>();
 
   @ViewChild('tableVisitas') table!: Table;
@@ -39,7 +42,7 @@ export class TableVisitaComponent implements OnInit {
   hasNewRowInEditing: boolean = false;
   clonedVisitas: { [s: string]: any } = {};
 
-  headersTableVisita: any[] = [
+  readonly headersTableVisita = [
     {
       header: 'No. visita',
       field: 'no_visita',
@@ -64,60 +67,68 @@ export class TableVisitaComponent implements OnInit {
     },
   ];
 
-  dataTableVisita: any[] = [];
+  dataTableVisita: VisitaTabla[] = [];
 
   constructor(
-    private _primaryDialogSeguimientoService: PrimaryDialogSeguimientoService,
-    private messageService: MessageService,
-    private router: Router
+    private readonly primaryDialogSeguimientoService: PrimaryDialogSeguimientoService,
+    private readonly messageService: MessageService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadDataTableVisita();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['codigoDonante'] && changes['codigoDonante'].currentValue) {
+      this.loadDataTableVisita();
+    }
+  }
+
+  // MÉTODO ACTUALIZADO: Cargar datos desde API
   loadDataTableVisita(): void {
     this.loading = true;
 
-    setTimeout(() => {
-      try {
-        this.dataTableVisita =
-          this._primaryDialogSeguimientoService.getTableVistaData(
-            this.idSeguimiento || undefined
-          );
+    this.primaryDialogSeguimientoService.getTableVistaData(this.codigoDonante || undefined)
+      .subscribe({
+        next: (visitas: VisitaTabla[]) => {
+          this.dataTableVisita = visitas;
 
-        if (this.dataTableVisita && this.dataTableVisita.length > 0) {
+          if (visitas.length > 0) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: `${visitas.length} visita${visitas.length > 1 ? 's' : ''} cargada${visitas.length > 1 ? 's' : ''}`,
+              key: 'tr',
+              life: 2000,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Información',
+              detail: 'No hay visitas registradas para esta madre',
+              key: 'tr',
+              life: 2000,
+            });
+          }
+
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al cargar visitas:', error);
           this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos cargados correctamente',
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al cargar las visitas',
             key: 'tr',
-            life: 2000,
+            life: 3000,
           });
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos para mostrar',
-            key: 'tr',
-            life: 2000,
-          });
+          this.loading = false;
         }
-      } catch (error) {
-        this.messageService.add({
-          severity: 'danger',
-          summary: 'Error',
-          detail: 'Hubo un error al cargar los datos',
-          key: 'tr',
-          life: 3000,
-        });
-        console.error('Error al cargar datos:', error);
-      } finally {
-        this.loading = false;
-      }
-    }, 1200);
+      });
   }
 
+  // MÉTODO ACTUALIZADO: Crear nueva visita con API
   crearNuevaVisita() {
     if (this.hasNewRowInEditing || this.editingRow) {
       this.messageService.add({
@@ -130,20 +141,29 @@ export class TableVisitaComponent implements OnInit {
       return;
     }
 
+    if (!this.codigoDonante) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se puede crear visita sin código de donante',
+        key: 'tr',
+        life: 3000,
+      });
+      return;
+    }
+
     // Calcular el siguiente número de visita
     const maxNoVisita = this.dataTableVisita.length > 0
       ? Math.max(...this.dataTableVisita.map(v => v.no_visita || 0))
       : 0;
 
-    const nuevaVisita = {
-      id_visita: null,
+    const nuevaVisita: VisitaTabla = {
+      id_visita: 0, // Temporal
       no_visita: maxNoVisita + 1,
-      fecha_visita: null,
-      id_seguimiento: this.idSeguimiento,
-      isNew: true // Marcador para identificar registros nuevos
+      fecha_visita: '',
+      isNew: true
     };
 
-    // Añadir al final de la tabla (push en lugar de unshift)
     this.dataTableVisita.push(nuevaVisita);
     this.dataTableVisita = [...this.dataTableVisita];
     this.hasNewRowInEditing = true;
@@ -154,6 +174,104 @@ export class TableVisitaComponent implements OnInit {
     }, 100);
   }
 
+  // MÉTODO ACTUALIZADO: Guardar con API
+  onRowEditSave(rowData: any, index: number, event: MouseEvent) {
+    if (!rowData.fecha_visita) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'La fecha de visita es obligatoria',
+        key: 'tr',
+        life: 3000,
+      });
+      return;
+    }
+
+    // Formatear fecha para API (YYYY-MM-DD)
+    let fechaParaAPI = '';
+    if (rowData.fecha_visita instanceof Date) {
+      const year = rowData.fecha_visita.getFullYear();
+      const month = (rowData.fecha_visita.getMonth() + 1).toString().padStart(2, '0');
+      const day = rowData.fecha_visita.getDate().toString().padStart(2, '0');
+      fechaParaAPI = `${year}-${month}-${day}`;
+
+      // Formatear para mostrar (DD/MM/YYYY)
+      rowData.fecha_visita = `${day}/${month}/${year}`;
+    }
+
+    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+
+    if (rowData.isNew) {
+      // Crear nueva visita en API
+      this.primaryDialogSeguimientoService.crearNuevaVisita(this.codigoDonante!, fechaParaAPI)
+        .subscribe({
+          next: (response) => {
+            console.log('Visita creada:', response);
+
+            // Actualizar con ID real si viene en la respuesta
+            if (response?.data?.id) {
+              rowData.id_visita = response.data.id;
+            } else {
+              rowData.id_visita = Date.now(); // Temporal
+            }
+
+            delete rowData.isNew;
+            this.hasNewRowInEditing = false;
+            this.editingRow = null;
+            this.table.saveRowEdit(rowData, rowElement);
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Nueva visita creada correctamente',
+              key: 'tr',
+              life: 2000,
+            });
+          },
+          error: (error) => {
+            console.error('Error al crear visita:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error al crear la visita',
+              key: 'tr',
+              life: 3000,
+            });
+          }
+        });
+    } else {
+      // Actualizar visita existente en API
+      this.primaryDialogSeguimientoService.actualizarFechaVisita(rowData.id_visita, fechaParaAPI)
+        .subscribe({
+          next: (response) => {
+            console.log('Visita actualizada:', response);
+            delete this.clonedVisitas[rowData.id_visita as string];
+            this.editingRow = null;
+            this.table.saveRowEdit(rowData, rowElement);
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Fecha de visita actualizada correctamente',
+              key: 'tr',
+              life: 2000,
+            });
+          },
+          error: (error) => {
+            console.error('Error al actualizar visita:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error al actualizar la fecha de visita',
+              key: 'tr',
+              life: 3000,
+            });
+          }
+        });
+    }
+  }
+
+  // MANTENER: Resto de métodos sin cambios
   onRowEditInit(rowData: any): void {
     if (this.hasNewRowInEditing || this.editingRow) {
       this.messageService.add({
@@ -170,55 +288,6 @@ export class TableVisitaComponent implements OnInit {
     this.clonedVisitas[rowData.id_visita as string] = { ...rowData };
   }
 
-  onRowEditSave(rowData: any, index: number, event: MouseEvent) {
-    if (!rowData.fecha_visita) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'La fecha de visita es obligatoria',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    // Formatear la fecha
-    if (rowData.fecha_visita instanceof Date) {
-      const day = rowData.fecha_visita.getDate().toString().padStart(2, '0');
-      const month = (rowData.fecha_visita.getMonth() + 1).toString().padStart(2, '0');
-      const year = rowData.fecha_visita.getFullYear();
-      rowData.fecha_visita = `${day}/${month}/${year}`;
-    }
-
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
-
-    if (rowData.isNew) {
-      // Lógica para guardar nueva visita
-      console.log('Guardando nueva visita:', rowData);
-      delete rowData.isNew;
-      rowData.id_visita = Date.now(); // Simulamos un ID generado
-      this.hasNewRowInEditing = false;
-    } else {
-      // Lógica para actualizar visita existente
-      console.log('Actualizando visita:', rowData);
-      delete this.clonedVisitas[rowData.id_visita as string];
-    }
-
-    // Cerrar el modo de edición y limpiar variables
-    this.editingRow = null;
-
-    // Importante: cerrar el modo de edición en la tabla
-    this.table.saveRowEdit(rowData, rowElement);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: 'Visita guardada correctamente',
-      key: 'tr',
-      life: 2000,
-    });
-  }
-
   onRowEditCancel(rowData: any, index: number): void {
     if (rowData.isNew) {
       this.dataTableVisita.splice(index, 1);
@@ -232,8 +301,7 @@ export class TableVisitaComponent implements OnInit {
   }
 
   onRowClick(row: any) {
-    if (this.editingRow || this.hasNewRowInEditing) return; // No permitir navegación si hay una fila en edición
-
+    if (this.editingRow || this.hasNewRowInEditing) return;
     console.log('Fila seleccionada:', row);
     this.router.navigate(['/blh/captacion/visitas-domiciliarias-seguimiento'], {
       queryParams: { noVisita: row.no_visita },
@@ -252,17 +320,14 @@ export class TableVisitaComponent implements OnInit {
             (this.editingRow.isNew && rowData.isNew));
   }
 
-  // Método para verificar si hay alguna fila en edición
   isAnyRowEditing(): boolean {
     return this.editingRow !== null || this.hasNewRowInEditing;
   }
 
-  // Método para verificar si un botón específico debe estar deshabilitado
   isEditButtonDisabled(rowData: any): boolean {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // Método para verificar si el botón de ojo debe estar deshabilitado
   isEyeButtonDisabled(rowData: any): boolean {
     return this.isAnyRowEditing();
   }

@@ -14,18 +14,24 @@ export class TableMadresSeguimientoService {
     return this.http.get(`${environment.ApiBLH}/getMadresDonantesAptas`);
   }
 
-  getVisitasPorMadre(idMadre: number): Observable<any> {
-    return this.http.get(`${environment.ApiBLH}/getVisitasPorMadre/${idMadre}`);
+    // NUEVO: Método para obtener visitas por código de donante
+  getVisitasPorCodigoDonante(codigoDonante: string): Observable<any> {
+    // Convertir codigoDonante (string) a idMadreDonante (number)
+    const idMadreDonante = parseInt(codigoDonante);
+    return this.http.get(`${environment.ApiBLH}/getVisitasPorMadre/${idMadreDonante}`);
   }
 
-  crearVisitaSeguimiento(idMadreDonante: number, fecha: string): Observable<any> {
+  // NUEVO: Método para crear visita por código de donante
+  crearVisitaPorCodigoDonante(codigoDonante: string, fecha: string): Observable<any> {
+    const idMadreDonante = parseInt(codigoDonante);
     return this.http.post(`${environment.ApiBLH}/crearVisitaSeguimiento`, {
       idMadreDonante,
       fecha
     });
   }
 
-  actualizarFechaVisita(idVisita: number, nuevaFecha: string): Observable<any> {
+  // NUEVO: Método para actualizar fecha de visita
+  actualizarFechaVisitaPorId(idVisita: number, nuevaFecha: string): Observable<any> {
     return this.http.put(`${environment.ApiBLH}/actualizarFechaVisita`, {
       idVisita,
       nuevaFecha

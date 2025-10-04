@@ -12,9 +12,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Dialog } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { TableVisitaComponent } from './table-visita/table-visita.component';
 import { SecondaryDialogCondicionesComponent } from "../secondary-dialog-condiciones/secondary-dialog-condiciones.component";
-import { ButtonModule } from 'primeng/button';
 import { NewRegisterVisitaComponent } from "./new-register-visita/new-register-visita.component";
 
 @Component({
@@ -29,7 +29,7 @@ import { NewRegisterVisitaComponent } from "./new-register-visita/new-register-v
     ButtonModule,
     SecondaryDialogCondicionesComponent,
     NewRegisterVisitaComponent
-],
+  ],
   templateUrl: './primary-dialog-seguimiento.component.html',
   styleUrl: './primary-dialog-seguimiento.component.scss',
   providers: [MessageService],
@@ -45,41 +45,44 @@ export class PrimaryDialogSeguimientoComponent implements OnChanges {
   secondaryDialogVisible: boolean = false;
   selectedVisitaData: any = null;
 
-  constructor(private messageService: MessageService) {}
-
-  onNuevaVisita() {
-    this.tableVisitaComp.crearNuevaVisita();
-  }
-
-  // Método para verificar si el botón de nueva visita debe estar deshabilitado
-  isNewVisitaButtonDisabled(): boolean {
-    return this.tableVisitaComp ? this.tableVisitaComp.isAnyRowEditing() : false;
-  }
+  constructor(private readonly messageService: MessageService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible'] && changes['visible'].currentValue) {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Información',
-        detail: `Cargando datos para donante: ${this.codigoDonante}`,
-        key: 'tr',
-        life: 2000,
-      });
+    if (changes['visible']?.currentValue && this.codigoDonante) {
+      this.mostrarMensajeCarga();
     }
   }
 
-  closeDialog() {
+  onNuevaVisita(): void {
+    this.tableVisitaComp.crearNuevaVisita();
+  }
+
+  isNewVisitaButtonDisabled(): boolean {
+    return this.tableVisitaComp?.isAnyRowEditing() ?? false;
+  }
+
+  closeDialog(): void {
     this.visible = false;
     this.dialogClosed.emit();
   }
 
-  onEyeClicked(visitaData: any) {
+  onEyeClicked(visitaData: any): void {
     this.selectedVisitaData = visitaData;
     this.secondaryDialogVisible = true;
   }
 
-  onSecondaryDialogClosed() {
+  onSecondaryDialogClosed(): void {
     this.secondaryDialogVisible = false;
     this.selectedVisitaData = null;
+  }
+
+  private mostrarMensajeCarga(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Información',
+      detail: `Cargando datos para donante: ${this.codigoDonante}`,
+      key: 'tr',
+      life: 2000,
+    });
   }
 }

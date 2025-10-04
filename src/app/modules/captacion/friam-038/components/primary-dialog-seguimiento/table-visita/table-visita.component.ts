@@ -41,6 +41,8 @@ export class TableVisitaComponent implements OnInit, OnChanges {
   clonedVisitas: { [s: string]: any } = {};
   dataTableVisita: VisitaTabla[] = [];
 
+  private isInitialLoad: boolean = true;
+
   readonly headersTableVisita = [
     { header: 'No. visita', field: 'no_visita', width: '100px', tipo: 'number' },
     { header: 'FECHA DE VISITA', field: 'fecha_visita', width: '200px', tipo: 'date' },
@@ -55,17 +57,25 @@ export class TableVisitaComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    this.loadDataTableVisita();
+    if (this.codigoDonante) {
+      this.loadDataTableVisita();
+      this.isInitialLoad = false;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['codigoDonante']?.currentValue) {
+    if (changes['codigoDonante']?.currentValue && !this.isInitialLoad) {
       this.loadDataTableVisita();
+    } else if (changes['codigoDonante']?.currentValue && this.isInitialLoad) {
+      this.loadDataTableVisita();
+      this.isInitialLoad = false;
     }
   }
 
   loadDataTableVisita(): void {
     if (!this.codigoDonante) return;
+
+    if (this.loading) return;
 
     this.loading = true;
 

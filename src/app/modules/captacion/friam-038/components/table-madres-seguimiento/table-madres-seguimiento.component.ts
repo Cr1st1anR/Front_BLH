@@ -20,55 +20,42 @@ export class TableMadresSeguimientoComponent implements OnInit {
   loading: boolean = false;
 
   readonly headersMadresSeguimiento = [
-    {
-      header: 'CODIGO DONANTE',
-      field: 'codigo_donante',
-      width: '50px',
-      tipo: 'number',
-    },
-    {
-      header: 'NOMBRES',
-      field: 'nombres',
-      width: '200px',
-      tipo: 'text',
-    },
-    {
-      header: 'APELLIDOS',
-      field: 'apellidos',
-      width: '200px',
-      tipo: 'text',
-    },
-    {
-      header: 'DONANTE',
-      field: 'donante',
-      width: '150px',
-      tipo: 'text',
-    },
-    {
-      header: 'FECHA VISITA',
-      field: 'fecha_visita',
-      width: '80px',
-      tipo: 'date',
-    },
+    { header: 'CODIGO DONANTE', field: 'codigo_donante', width: '50px', tipo: 'number' },
+    { header: 'NOMBRES', field: 'nombres', width: '200px', tipo: 'text' },
+    { header: 'APELLIDOS', field: 'apellidos', width: '200px', tipo: 'text' },
+    { header: 'DONANTE', field: 'donante', width: '150px', tipo: 'text' },
+    { header: 'FECHA VISITA', field: 'fecha_visita', width: '80px', tipo: 'date' },
   ];
 
   dataMadresSeguimiento: MadreTabla[] = [];
 
   constructor(
     private readonly tableMadresSeguimientoService: TableMadresSeguimientoService,
-    private readonly messageService: MessageService) { }
+    private readonly messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.loadDataMadresSeguimiento();
   }
 
+  // ✅ MÉTODO ACTUALIZADO: Cargar madres con sus primeras visitas
   private loadDataMadresSeguimiento(): void {
     this.loading = true;
 
-    this.tableMadresSeguimientoService.getMadresDonantesAptas()
+    this.tableMadresSeguimientoService.getMadresDonantesAptasConVisitas()
       .subscribe({
-        next: (response: any) => {
-          this.handleApiResponse(response);
+        next: (madresConVisitas$) => {
+          // El servicio retorna un Observable anidado, necesitamos suscribirnos
+          madresConVisitas$.subscribe({
+            next: (madresConVisitas: any[]) => {
+              this.dataMadresSeguimiento = this.transformarDatosParaTabla(madresConVisitas);
+              this.showSuccessMessage();
+              this.loading = false;
+            },
+            error: (error: any) => {
+              this.handleApiError(error);
+            }
+          });
         },
         error: (error) => {
           this.handleApiError(error);
@@ -76,44 +63,32 @@ export class TableMadresSeguimientoComponent implements OnInit {
       });
   }
 
-  private handleApiResponse(response: any): void {
-    let madres: MadreDonante[] = [];
-
-    if (response?.data && Array.isArray(response.data)) {
-      madres = response.data;
-    } else if (Array.isArray(response)) {
-      madres = response;
-    } else {
-      this.showErrorMessage('Formato de respuesta inesperado');
-      this.loading = false;
-      return;
-    }
-
-    this.dataMadresSeguimiento = this.transformarDatosParaTabla(madres);
-    this.showSuccessMessage();
-    this.loading = false;
-  }
-
-  private handleApiError(error: any): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudieron cargar los datos de las madres donantes',
-      key: 'tr',
-      life: 3000,
-    });
-    this.loading = false;
-  }
-
-  private transformarDatosParaTabla(madres: MadreDonante[]): MadreTabla[] {
+  // ✅ MÉTODO ACTUALIZADO: Transformar datos incluyendo primera visita
+  private transformarDatosParaTabla(madres: any[]): MadreTabla[] {
     return madres.map(madre => ({
       id_seguimiento: madre.id,
       codigo_donante: madre.id.toString(),
       nombres: madre.madrePotencial?.infoMadre?.nombre || 'Sin nombre',
       apellidos: madre.madrePotencial?.infoMadre?.apellido || 'Sin apellido',
       donante: this.mapearTipoDonante(madre.tipoDonante),
-      fecha_visita: null // Se cargará después con la primera visita
+      fecha_visita: this.formatearPrimeraVisita(madre.primeraVisita) // ✅ COMPLETADO
     }));
+  }
+
+  // ✅ NUEVO MÉTODO: Formatear fecha de primera visita
+  private formatearPrimeraVisita(primeraVisita: any): string {
+    if (!primeraVisita || !primeraVisita.fecha) {
+      return 'Sin visitas';
+    }
+
+    // La fecha viene en formato YYYY-MM-DD desde el backend
+    const fecha = primeraVisita.fecha;
+    if (typeof fecha === 'string' && fecha.includes('-')) {
+      const [year, month, day] = fecha.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
+    return 'Fecha inválida';
   }
 
   private mapearTipoDonante(tipo: string): string {
@@ -127,7 +102,7 @@ export class TableMadresSeguimientoComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Éxito',
-        detail: `${cantidad} madre${cantidad > 1 ? 's' : ''} donante${cantidad > 1 ? 's' : ''} cargada${cantidad > 1 ? 's' : ''}`,
+        detail: `${cantidad} madre${cantidad > 1 ? 's' : ''} donante${cantidad > 1 ? 's' : ''} cargada${cantidad > 1 ? 's' : ''} con sus visitas`,
         key: 'tr',
         life: 2000,
       });
@@ -140,6 +115,17 @@ export class TableMadresSeguimientoComponent implements OnInit {
         life: 2000,
       });
     }
+  }
+
+  private handleApiError(error: any): void {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar los datos de las madres donantes',
+      key: 'tr',
+      life: 3000,
+    });
+    this.loading = false;
   }
 
   private showErrorMessage(detail: string): void {

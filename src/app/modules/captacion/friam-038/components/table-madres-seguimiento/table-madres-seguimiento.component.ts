@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import type { MadreDonante, MadreTabla } from '../interfaces/madre-donante.interface';
+import type { MadreTabla } from '../interfaces/madre-donante.interface';
 
 @Component({
   selector: 'table-madres-seguimiento',
@@ -32,20 +32,18 @@ export class TableMadresSeguimientoComponent implements OnInit {
   constructor(
     private readonly tableMadresSeguimientoService: TableMadresSeguimientoService,
     private readonly messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDataMadresSeguimiento();
   }
 
-  // ✅ MÉTODO ACTUALIZADO: Cargar madres con sus primeras visitas
   private loadDataMadresSeguimiento(): void {
     this.loading = true;
 
     this.tableMadresSeguimientoService.getMadresDonantesAptasConVisitas()
       .subscribe({
         next: (madresConVisitas$) => {
-          // El servicio retorna un Observable anidado, necesitamos suscribirnos
           madresConVisitas$.subscribe({
             next: (madresConVisitas: any[]) => {
               this.dataMadresSeguimiento = this.transformarDatosParaTabla(madresConVisitas);
@@ -63,7 +61,6 @@ export class TableMadresSeguimientoComponent implements OnInit {
       });
   }
 
-  // ✅ MÉTODO ACTUALIZADO: Transformar datos incluyendo primera visita
   private transformarDatosParaTabla(madres: any[]): MadreTabla[] {
     return madres.map(madre => ({
       id_seguimiento: madre.id,
@@ -75,13 +72,11 @@ export class TableMadresSeguimientoComponent implements OnInit {
     }));
   }
 
-  // ✅ NUEVO MÉTODO: Formatear fecha de primera visita
   private formatearPrimeraVisita(primeraVisita: any): string {
     if (!primeraVisita || !primeraVisita.fecha) {
       return 'Sin visitas';
     }
 
-    // La fecha viene en formato YYYY-MM-DD desde el backend
     const fecha = primeraVisita.fecha;
     if (typeof fecha === 'string' && fecha.includes('-')) {
       const [year, month, day] = fecha.split('-');

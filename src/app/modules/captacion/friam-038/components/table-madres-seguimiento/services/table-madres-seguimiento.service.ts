@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
 
 @Injectable({
@@ -15,11 +15,9 @@ export class TableMadresSeguimientoService {
     return this.http.get(`${environment.ApiBLH}/getMadresDonantesAptas`);
   }
 
-  // ✅ NUEVO: Obtener madres donantes con su primera visita
   getMadresDonantesAptasConVisitas(): Observable<any> {
     return this.getMadresDonantesAptas().pipe(
       map((response: any) => {
-        // Extraer datos de madres
         let madres: any[] = [];
         if (response?.data && Array.isArray(response.data)) {
           madres = response.data;
@@ -27,15 +25,17 @@ export class TableMadresSeguimientoService {
           madres = response;
         }
 
-        // Crear observables para obtener primera visita de cada madre
         const visitasObservables = madres.map(madre =>
-          this.getPrimeraVisitaPorMadre(madre.id)
+          this.getPrimeraVisitaPorMadre(madre.id).pipe(
+            catchError((error) => {
+              console.warn(`Error al obtener visitas de madre ${madre.id}:`, error);
+              return of(null);
+            })
+          )
         );
 
-        // Ejecutar todas las consultas en paralelo
         return forkJoin(visitasObservables).pipe(
           map((todasLasVisitas: any[]) => {
-            // Combinar madres con sus primeras visitas
             return madres.map((madre, index) => {
               const primeraVisita = todasLasVisitas[index];
               return {
@@ -49,7 +49,6 @@ export class TableMadresSeguimientoService {
     );
   }
 
-  // ✅ NUEVO: Obtener solo la primera visita de una madre
   private getPrimeraVisitaPorMadre(idMadreDonante: number): Observable<any> {
     return this.http.get(`${environment.ApiBLH}/getVisitasPorMadre/${idMadreDonante}`).pipe(
       map((response: any) => {
@@ -60,7 +59,6 @@ export class TableMadresSeguimientoService {
           visitas = response;
         }
 
-        // Retornar solo la primera visita (más antigua)
         return visitas.length > 0 ? visitas[0] : null;
       })
     );

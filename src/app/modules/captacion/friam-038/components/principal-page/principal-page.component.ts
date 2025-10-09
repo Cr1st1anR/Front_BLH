@@ -3,7 +3,6 @@ import { TableMadresSeguimientoComponent } from '../table-madres-seguimiento/tab
 import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PrimaryDialogSeguimientoComponent } from '../primary-dialog-seguimiento/primary-dialog-seguimiento.component';
-import { MonthPickerComponent } from 'src/app/shared/components/month-picker/month-picker.component';
 
 @Component({
   selector: 'principal-page-seguimiento',
@@ -11,7 +10,6 @@ import { MonthPickerComponent } from 'src/app/shared/components/month-picker/mon
     TableMadresSeguimientoComponent,
     HeaderComponent,
     PrimaryDialogSeguimientoComponent,
-    MonthPickerComponent,
   ],
   templateUrl: './principal-page.component.html',
   styleUrl: './principal-page.component.scss',
@@ -21,7 +19,7 @@ export class PrincipalPageComponent implements OnInit {
   idSeguimiento: number | null = null;
   showDialog: boolean = false;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit() {
     // Escuchar cambios en query parameters

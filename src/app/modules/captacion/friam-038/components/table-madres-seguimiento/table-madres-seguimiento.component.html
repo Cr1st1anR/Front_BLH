@@ -9,9 +9,22 @@
 
 <div class="container-table">
   <p-table [value]="dataMadresSeguimiento" [scrollable]="true" scrollHeight="500px" [columns]="headersMadresSeguimiento"
-    [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id_seguimiento">
+    [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id_seguimiento"
+    [globalFilterFields]="['codigo_donante']">
 
     <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field === 'codigo_donante') {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="codigo_donante" [placeholder]="'Buscar código donante'" [showMenu]="false"
+            ariaLabel="Filter Codigo Donante"></p-columnFilter>
+        </th>
+        } @else {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
       <tr>
         @for (col of columns; track $index) {
         <th [style.width]="col.width" [style.min-width]="col.width">{{ col.header }}</th>

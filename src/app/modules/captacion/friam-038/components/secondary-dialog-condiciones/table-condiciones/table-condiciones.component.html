@@ -1,0 +1,59 @@
+<p-toast position="top-right" key="tr-secondary" />
+
+<!-- LOADING SPINNER -->
+<div *ngIf="loading" class="flex justify-center items-center py-8">
+  <p-progressSpinner strokeWidth="4" animationDuration="2s" [style]="{ width: '50px', height: '50px' }">
+  </p-progressSpinner>
+  <span class="ml-3 text-gray-600">Cargando preguntas...</span>
+</div>
+
+<!-- TABLA ORIGINAL RESTAURADA -->
+<div *ngIf="!loading" class="table-container">
+  <table class="conditions-table">
+    <thead>
+      <tr class="header-row">
+        <th class="condition-header">CONDICIONES DE LA SITUACION ENCONTRADA</th>
+        <th class="option-header">SI</th>
+        <th class="option-header">NO</th>
+        <th class="option-header">N/A</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let condicion of condicionesData; let i = index" class="condition-row">
+
+        <!-- PREGUNTA/CONDICIÓN -->
+        <td class="condition-cell">
+          {{ (i + 1) + '. ' + condicion.pregunta }}
+        </td>
+
+        <!-- RADIO BUTTON SÍ -->
+        <td class="option-cell">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="1"
+            [checked]="condicion.respuesta === 1" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, 1)" class="radio-input">
+        </td>
+
+        <!-- RADIO BUTTON NO -->
+        <td class="option-cell">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="0"
+            [checked]="condicion.respuesta === 0" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, 0)" class="radio-input">
+        </td>
+
+        <!-- RADIO BUTTON N/A -->
+        <td class="option-cell">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="null"
+            [checked]="condicion.respuesta === null" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, null)" class="radio-input">
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MENSAJE SI NO HAY DATOS -->
+<div *ngIf="!loading && condicionesData.length === 0" class="no-data">
+  <i class="pi pi-info-circle"></i>
+  <span class="ml-2">No se encontraron preguntas para evaluar</span>
+</div>

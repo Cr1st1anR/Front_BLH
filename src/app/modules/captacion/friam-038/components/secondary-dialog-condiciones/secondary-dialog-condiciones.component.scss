@@ -1,0 +1,317 @@
+.guardar-btn {
+  background: #224186 !important;
+  border: 1px solid #224186 !important;
+  color: #fff !important;
+}
+.guardar-btn:hover {
+  background: #456dc4 !important;
+  border: 1px solid #456dc4 !important;
+}
+
+.cancelar-btn {
+  background: #b71c1c !important;
+  border: 1px solid #b71c1c !important;
+  color: #fff !important;
+}
+.cancelar-btn:hover {
+  background: #a31515 !important;
+  border: 1px solid #a31515 !important;
+}
+
+// Estilos para campos requeridos
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+  min-height: 20px;
+}
+
+.ng-invalid {
+  border-color: red !important;
+}
+
+// Estilos para la sección de observaciones y recomendaciones (SIN FONDO)
+.observaciones-recomendaciones-section {
+  margin-top: 2rem;
+  padding: 1.5rem 0; // Solo padding vertical, sin padding horizontal
+  // Removemos border y background-color
+
+  .textarea-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .textarea-label {
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      &.ng-invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+  }
+}
+
+// Estilos para la sección de firmas (SIN FONDO)
+.firmas-section {
+  margin-top: 2rem;
+  padding: 1.5rem 0; // Solo padding vertical, sin padding horizontal
+  // Removemos border y background-color
+
+  .firma-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .firma-label {
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    .signature-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      .signature-canvas {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background-color: white;
+        touch-action: none;
+        cursor: crosshair;
+
+        &:hover {
+          border-color: #9ca3af;
+        }
+
+        &.canvas-invalid {
+          border-color: #ef4444 !important;
+          border-width: 2px !important;
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+      }
+
+      .signature-controls {
+        display: flex;
+        gap: 0.5rem;
+
+        .clear-button {
+          padding: 0.5rem 1rem;
+          background-color: #f3f4f6;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          color: #374151;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+          }
+
+          &:active {
+            background-color: #d1d5db;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .observaciones-recomendaciones-section,
+  .firmas-section {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    padding: 1rem 0; // Solo padding vertical en responsive también
+  }
+
+  .signature-canvas {
+    width: 100% !important;
+    max-width: 300px !important;
+  }
+}
+
+// Estilos globales para el diálogo
+:host ::ng-deep {
+  .p-dialog {
+    .p-dialog-content {
+      padding: 2rem;
+    }
+  }
+
+  // Asegurar que los textareas tengan el estilo correcto
+  .p-inputtextarea {
+    width: 100% !important;
+    font-family: inherit;
+
+    &:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    &.ng-invalid {
+      border-color: #ef4444 !important;
+    }
+  }
+}
+
+// ✅ ESTILOS PARA MODO SOLO LECTURA
+.modo-solo-lectura-banner {
+  background-color: #e1f5fe;
+  border: 1px solid #01579b;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #01579b;
+  font-weight: 500;
+
+  .pi-info-circle {
+    font-size: 1.2rem;
+  }
+}
+
+// Canvas en modo solo lectura
+.canvas-readonly {
+  opacity: 0.7;
+  cursor: not-allowed !important;
+  background-color: #f9f9f9 !important;
+}
+
+// Textareas en modo solo lectura
+textarea[readonly] {
+  background-color: #f9f9f9 !important;
+  cursor: default !important;
+  border-color: #e0e0e0 !important;
+}
+
+// Botones deshabilitados
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+// ✅ ESTILOS MEJORADOS PARA SIGNATUREPAD
+.signature-canvas {
+  cursor: crosshair !important;
+  display: block;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #ffffff !important;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  &:hover:not(.canvas-readonly) {
+    border-color: #cbd5e0;
+    box-shadow: 0 0 0 1px #cbd5e0;
+  }
+
+  &:focus:not(.canvas-readonly) {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+  }
+}
+
+.canvas-readonly {
+  opacity: 0.7;
+  cursor: not-allowed !important;
+  background-color: #f9f9f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.canvas-invalid {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 1px #e53e3e !important;
+}
+
+// Botones de control
+.clear-button {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background: #c53030;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Estilos para modo solo lectura existentes...
+.modo-solo-lectura-banner {
+  background-color: #e1f5fe;
+  border: 1px solid #01579b;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #01579b;
+  font-weight: 500;
+
+  .pi-info-circle {
+    font-size: 1.2rem;
+  }
+}
+
+textarea[readonly] {
+  background-color: #f9f9f9 !important;
+  cursor: default !important;
+  border-color: #e0e0e0 !important;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}

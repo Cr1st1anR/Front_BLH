@@ -6,10 +6,8 @@ export interface rutaRecoleccion {
   placa_vehiculo?: string
   kilometraje_inicial?: number | string | null
   kilometraje_final?: number | string | null
-  hora_salida: string | Date
-  hora_llegada: string| Date | null
-  temperatura_llegada: number | string | null
-  temperatura_salida: number | string | null
+  hora_salida?: string | Date
+  hora_llegada?: string| Date | null
   total_visitas?: number | null
   volumen_total?: number | null
   id_empleado?: number | null

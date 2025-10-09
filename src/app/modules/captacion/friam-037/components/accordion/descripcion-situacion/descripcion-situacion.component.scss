@@ -1,0 +1,10 @@
+.subtitulo-accordion {
+  color: #456dc4;
+  font-weight: bold;
+}
+
+.radios-texto p-radiobutton + label {
+  margin-left: -0.9rem;
+  margin-right: 1.0rem;
+  transform: translateY(1.0px);
+}

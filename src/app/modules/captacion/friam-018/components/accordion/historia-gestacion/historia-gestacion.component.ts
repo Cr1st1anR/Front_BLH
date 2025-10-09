@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'primeng/accordion';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -6,6 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
 import { CommonModule } from '@angular/common';
 import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.interface';
+import { ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
 
 @Component({
   selector: 'historia-gestacion',
@@ -20,9 +21,11 @@ import type { HistoriaGestacionData } from '../interfaces/historia-gestacion.int
   templateUrl: './historia-gestacion.component.html',
   styleUrl: './historia-gestacion.component.scss',
 })
-export class HistoriaGestacionComponent implements HistoriaGestacionData {
+export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChanges {
+  @Input() datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
+
   lugarControlPrenatal: string = '';
-  tipoIPS: string = '';
+  tipoIPS: number = 0;
   asistioControl: number | null = null;
   pesoInicial: string = '';
   pesoFinal: string = '';
@@ -33,7 +36,26 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData {
 
   formErrors: { [key: string]: string } = {};
   isFormValid: boolean = false;
+  visible: boolean = false;
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
+      this.formatForm();
+      this.visible = true;
+    }
+  }
+
+  formatForm() {
+    this.lugarControlPrenatal = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.lugarControlPrenatal : '';
+    this.tipoIPS = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.tipoIps : 0;
+    this.asistioControl =  this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.asistioControlPrenatal : null;
+    this.pesoInicial = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.pesoGestacionInicial : '';
+    this.pesoFinal = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.pesoGestacionFinal : '';
+    this.talla = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.talla : '';
+    this.tipoParto = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.preTermino === 1 ? 'pretermino' : 'termino' : '';
+    this.semanasGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.semanas : null;
+    this.fechaParto = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.gestacion.fechaParto!) : undefined;
+  }
   validateNumericField(value: string): boolean {
     const numValue = parseFloat(value);
     return !isNaN(numValue) && numValue > 0;
@@ -52,7 +74,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData {
           : '';
 
       case 'tipoIPS':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -60,27 +82,27 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData {
         return value === null ? 'Debe seleccionar una opcion' : '';
 
       case 'pesoInicial':
-        if (!value || value.trim() === '')
+        if (!value || value.toString().trim() === '')
           return 'El peso inicial es obligatorio';
         if (!this.validateNumericField(value))
           return 'El peso inicial debe ser un número válido mayor a 0';
         return '';
 
       case 'pesoFinal':
-        if (!value || value.trim() === '')
+        if (!value || value.toString().trim() === '')
           return 'El peso final es obligatorio';
         if (!this.validateNumericField(value))
           return 'El peso final debe ser un número válido mayor a 0';
         return '';
 
       case 'talla':
-        if (!value || value.trim() === '') return 'La talla es obligatoria';
+        if (!value || value.toString().trim() === '') return 'La talla es obligatoria';
         if (!this.validateNumericField(value))
           return 'La talla debe ser un número válido mayor a 0';
         return '';
 
       case 'tipoParto':
-        return !value || value.trim() === ''
+        return !value || value.toString().trim() === ''
           ? 'Debe seleccionar una opcion'
           : '';
 
@@ -156,6 +178,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData {
     }
 
     return {
+      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.id : null,
       lugarControlPrenatal: this.lugarControlPrenatal,
       tipoIPS: this.tipoIPS,
       asistioControl: this.asistioControl,

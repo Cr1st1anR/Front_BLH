@@ -270,7 +270,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
       });
       return;
     }
-    delete this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
+
     const bodyFormat = this.formatInputBody(dataRow);
 
     if (
@@ -301,6 +301,45 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
           },
         });
     } else {
+      // existente -> actualizar usando tu servicio updateDataFrascos
+      const idToUpdate = dataRow.id_frascos_recolectados as number;
+      const index = this.dataTableFrascosLeche.findIndex((r) => r === dataRow);
+
+      this._secondaryDialogServices.updateDataFrascos(idToUpdate, bodyFormat).subscribe({
+        next: (res) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos actualizados',
+            key: 'tr',
+            life: 3000,
+          });
+          // aplicar cambios visibles y limpiar clon
+          if (index !== -1) {
+            this.dataTableFrascosLeche[index] = dataRow;
+            this.dataTableFrascosLeche = [...this.dataTableFrascosLeche];
+          }
+          try {
+            this.table.saveRowEdit(dataRow, rowElement);
+          } catch (err) {}
+          delete this.clonedTableFrascos[idToUpdate];
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'danger',
+            summary: 'Error',
+            detail: 'Hubo un error al actualizar',
+            key: 'tr',
+            life: 3000,
+          });
+          // restaurar clon si existe
+          if (index !== -1 && this.clonedTableFrascos[idToUpdate]) {
+            this.dataTableFrascosLeche[index] = this.clonedTableFrascos[idToUpdate];
+            delete this.clonedTableFrascos[idToUpdate];
+            this.dataTableFrascosLeche = [...this.dataTableFrascosLeche];
+          }
+        },
+      });
     }
   }
 
@@ -373,7 +412,11 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
         : null,
       termo: body.termo,
       gaveta: body.gaveta,
-      congelador: body.id_congelador,
+      // si el campo id_congelador es un objeto, enviar su id
+      congelador:
+        body.id_congelador && typeof body.id_congelador === 'object'
+          ? (body.id_congelador as any).id
+          : body.id_congelador,
       casaVisita: this.frascosData?.id_casa_visita,
     };
   }

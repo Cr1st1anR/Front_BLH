@@ -9,16 +9,30 @@
 
 <app-header [title]="'REGISTRO DE DONANTE DEL BANCO DE LECHE HUMANA (FRIAM 018)'" />
 
-<div class="flex justify-between items-center mx-4 mt-6">
-  <div></div>
-  <month-picker-table (dateChange)="filtrarPorFecha($event)" />
-</div>
-
 <div class="container-table">
   <p-table [value]="dataRegistroDonante" [scrollable]="true" scrollHeight="500px"
-    [columns]="headersTablePosiblesDonantes" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single"
-    dataKey="id">
+    [columns]="headersTablePosiblesDonantes" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
+    [globalFilterFields]="['codDonante', 'documento']">
     <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field == "codDonante") {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="codDonante" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+            ariaLabel="Filter COD. DONANTE"></p-columnFilter>
+        </th>
+        }
+        @else if (col.field == "documento") {
+        <th [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="documento" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+            ariaLabel="Filter NO. DOC"></p-columnFilter>
+        </th>
+        }
+        @else {
+        <th [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
       <tr>
         @for (col of columns; track $index) {
         <th [ngStyle]="{ 'min-width': col.width }" class="grid-lines">
@@ -28,13 +42,20 @@
       </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns">
-      <tr (click)="onRowClick(rowData)" style="cursor: pointer"
-        [class.donante-efectiva]="rowData.donanteEfectiva === 1">
+      <tr [ngClass]="rowData['backgroundColorRow']">
         @for (col of columns; track $index) {
-        <td>
-          @if (col.field === 'entidad') {
-          {{ rowData.entidad?.nombre || rowData.entidad || "" }}
-          } @else {
+        <td (click)="col.field !== 'reporte' ? onRowClick(rowData) : null"
+          [style.cursor]="col.field !== 'reporte' ? 'pointer' : 'default'"
+          [ngClass]="col.field === 'laboratorio' && rowData['labVencido'] ? 'lab-fecha-vencida' : ''">
+          @if (col.field === 'reporte') {
+          @if (rowData.MadreDonante && rowData.MadreDonante.donanteApta === 1) {
+          <button pButton type="button" icon="pi pi-file-pdf" label="PDF" size="small"
+            class="p-button-success p-button-sm" (click)="descargarPDF(rowData); $event.stopPropagation()"
+            [disabled]="generatingPdf && currentPdfRowId === rowData.id" title="Descargar reporte PDF">
+          </button>
+          }
+          }
+          @else {
           {{ rowData[col.field] }}
           }
         </td>
@@ -42,4 +63,12 @@
       </tr>
     </ng-template>
   </p-table>
+</div>
+
+<div
+  style="position: fixed; top: -10000px; left: -10000px; width:210mm; background:#fff; z-index:-1; visibility:hidden;">
+  <pdf-friam-018 *ngIf="showPdf" #pdfComponent [datosInscripcion]="pdfPayload?.datosInscripcion"
+    [historiaGestacion]="pdfPayload?.historiaGestacion" [examenesLab]="pdfPayload?.examenesLab"
+    [medicamentos]="pdfPayload?.medicamentos">
+  </pdf-friam-018>
 </div>

@@ -38,5 +38,9 @@ export class secondaryDialogServices {
     return this.http.post<ApiResponse>(url, data );
   }
 
+    updateDataFrascos(id: number, data: any): Observable<ApiResponse> {
+    const url = `${environment.ApiBLH}/updateFrascos/${id}`;
+    return this.http.put<ApiResponse>(url, data);
+  }
 
 }

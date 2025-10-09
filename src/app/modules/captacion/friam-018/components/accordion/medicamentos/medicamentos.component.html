@@ -4,9 +4,9 @@
     <form class="grid grid-cols-2 gap-6">
       <div>
         <label class="font-bold">Medicamentos: <span class="required">*</span></label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos" name="medicamentos"
-          [disabled]="ningunMedicamento" required (ngModelChange)="onFieldChange('medicamentos', $event)"
-          [class.ng-invalid]="formErrors['medicamentos']" />
+        <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos"
+          name="medicamentos" [disabled]="ningunMedicamento" required
+          (ngModelChange)="onFieldChange('medicamentos', $event)" [class.ng-invalid]="formErrors['medicamentos']" />
         <div class="flex items-center mt-2">
           <label class="mr-2">Ninguno:</label>
           <p-checkbox binary="true" [(ngModel)]="ningunMedicamento" name="ningunMedicamento" inputId="ningunMedicamento"
@@ -19,7 +19,8 @@
 
       <div>
         <label class="font-bold">Psicoactivos: <span class="required">*</span></label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="psicoactivos" name="psicoactivos" required
+        <input pInputText type="text" class="w-full"
+          [(ngModel)]="psicoactivos" name="psicoactivos" required
           (ngModelChange)="onFieldChange('psicoactivos', $event)" [class.ng-invalid]="formErrors['psicoactivos']" />
         <small class="error-message" *ngIf="formErrors['psicoactivos']">
           {{ formErrors['psicoactivos'] }}
@@ -28,8 +29,8 @@
 
       <div>
         <label class="font-bold">Recibió educación en: <span class="required">*</span></label>
-        <input pInputText type="text" class="w-full" [(ngModel)]="recibioEducacion" name="recibioEducacion" required
-          (ngModelChange)="onFieldChange('recibioEducacion', $event)"
+        <input pInputText type="text" class="w-full" [(ngModel)]="recibioEducacion"
+          name="recibioEducacion" required (ngModelChange)="onFieldChange('recibioEducacion', $event)"
           [class.ng-invalid]="formErrors['recibioEducacion']" />
         <small class="error-message" *ngIf="formErrors['recibioEducacion']">
           {{ formErrors['recibioEducacion'] }}
@@ -39,8 +40,9 @@
       <div>
         <label class="font-bold">Responsable del registro: <span class="required">*</span></label>
         <p-select [checkmark]="true" [filter]="true" filterBy="nombre" appendTo="body" [options]="empleadosOpt"
-          [(ngModel)]="selectedEmpleado" optionLabel="nombre" [showClear]="true" placeholder="Seleccione un responsable"
-          class="w-full md:w-56" name="responsable" required (ngModelChange)="onFieldChange('selectedEmpleado', $event)"
+          [(ngModel)]="selectedEmpleado" optionLabel="nombre" [showClear]="true"
+          placeholder="Seleccione un responsable" class="w-full md:w-56" name="responsable" required
+          (ngModelChange)="onFieldChange('selectedEmpleado', $event)"
           [class.ng-invalid]="formErrors['selectedEmpleado']" />
         <small class="error-message" *ngIf="formErrors['selectedEmpleado']">
           {{ formErrors['selectedEmpleado'] }}
@@ -51,10 +53,10 @@
         <label class="font-bold">Si es donante menor de edad, firma de adulto acompañante:</label>
         <div>
           <canvas #canvasAcompanante width="350" height="120" style="
-              border: 1px solid #ccc;
-              border-radius: 8px;
-              touch-action: none;
-            "></canvas>
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                touch-action: none;
+              "></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaAcompanante()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -94,10 +96,10 @@
         <label class="font-bold">FIRMA DEL DONANTE: <span class="required">*</span></label>
         <div>
           <canvas #canvasDonante width="350" height="120" style="
-              border: 1px solid #ccc;
-              border-radius: 8px;
-              touch-action: none;
-            " [class.canvas-invalid]="formErrors['firmaDonante']"></canvas>
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                touch-action: none;
+              " [class.canvas-invalid]="formErrors['firmaDonante']"></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaDonante()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -114,10 +116,10 @@
         <label class="font-bold">PROFESIONAL RESPONSABLE: <span class="required">*</span></label>
         <div>
           <canvas #canvasProfesional width="350" height="120" style="
-              border: 1px solid #ccc;
-              border-radius: 8px;
-              touch-action: none;
-            " [class.canvas-invalid]="formErrors['profesionalResponsable']"></canvas>
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                touch-action: none;
+              " [class.canvas-invalid]="formErrors['profesionalResponsable']"></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaProfesional()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">

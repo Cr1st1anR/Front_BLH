@@ -5,7 +5,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
 import type { DatosInscripcionData } from '../interfaces/datos-inscripcion.interface';
-import { RegistroDonanteData } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
+import { ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -23,37 +23,62 @@ import { CommonModule } from '@angular/common';
 })
 export class DatosInscripcionComponent implements DatosInscripcionData, OnChanges {
 
-  @Input() datosPrecargados: RegistroDonanteData = {} as RegistroDonanteData;
+  @Input() datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
 
   nombre: string = '';
+  celular: string = '';
+  profesion: string = '';
+  fechaNacimiento: Date | undefined;
+  barrio: string = '';
+  telefono: string = '';
   donanteExclusiva: number | null = null;
+  departamento: string = '';
+  direccion: string = '';
+  nombreHijo: string = '';
+  eps: string = '';
+  ciudad: string = '';
+  documento: string = '';
+
   recoleccionDomicilio: number | null = null;
   donante_EoI: string = '';
   fechaDiligenciamiento: Date | undefined;
-  fechaNacimiento: Date | undefined;
   edad: number | null = null;
   capacitacion: string = '';
   codDonante: number | null = null;
   pesoBebe: number | null = null;
-  eps: string = '';
-  nombreHijo: string = '';
-  departamento: string = '';
-  profesion: string = '';
 
-
+  visible:boolean = false;
   formErrors: { [key: string]: string } = {};
   isFormValid: boolean = false;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.documento) {
+    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
       this.formatForm();
     }
   }
 
   formatForm() {
-    this.nombre = this.datosPrecargados.nombre + ' ' + this.datosPrecargados.apellido;
-    this.fechaNacimiento = this.datosPrecargados.fechaNacimiento ? new Date(this.datosPrecargados.fechaNacimiento) : undefined;
-    this.edad = this.ageCalculate(this.datosPrecargados.fechaNacimiento) || null;
+    this.fechaDiligenciamiento = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.fecha_diligenciamiento!) : new Date();
+    this.nombre = this.datosPrecargados.infoMadre.nombre || '';
+    this.celular = this.datosPrecargados.infoMadre.celular;
+    this.profesion = this.datosPrecargados.infoMadre.profesion || '';
+    this.barrio = this.datosPrecargados.infoMadre.barrio;
+    this.telefono = this.datosPrecargados.infoMadre.telefono;
+    this.donanteExclusiva = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.donanteExclusivo : null;
+    this.departamento = this.datosPrecargados.infoMadre.departamento || '';
+    this.direccion = this.datosPrecargados.infoMadre.direccion;
+    this.nombreHijo = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.hijosMadre[0]?.nombre || '' : '';
+    this.eps = this.datosPrecargados.infoMadre.eps || '';
+    this.ciudad = this.datosPrecargados.infoMadre.ciudad || '';
+    this.recoleccionDomicilio = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.recoleccionDomicilio : null;
+    this.pesoBebe = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.hijosMadre[0]?.peso ? parseFloat(this.datosPrecargados.MadreDonante.hijosMadre[0]?.peso!) : null : null;
+    this.documento = this.datosPrecargados.infoMadre.documento;
+    this.codDonante = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.id : null;
+    this.donante_EoI = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.tipoDonante! : '';
+    this.capacitacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.capacitado! : '';
+    this.fechaNacimiento = this.datosPrecargados.infoMadre.fechaNacimiento ? new Date(this.datosPrecargados.infoMadre.fechaNacimiento) : undefined;
+    this.edad = this.ageCalculate(this.datosPrecargados.infoMadre.fechaNacimiento) || null;
+    this.visible = true;
   }
 
   validateDocumento(documento: string): boolean {
@@ -85,7 +110,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'El nombre es obligatorio' : '';
 
     case 'celular':
-      const celular = this.datosPrecargados.celular;
+      const celular = this.celular;
       if (!celular || String(celular).trim() === '') {
         return 'El celular es obligatorio';
       }
@@ -101,11 +126,11 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'La profesión/oficio es obligatoria' : '';
 
     case 'barrio':
-      const barrio = this.datosPrecargados.barrio;
+      const barrio = this.barrio;
       return !barrio || String(barrio).trim() === '' ? 'El barrio/vereda es obligatorio' : '';
 
     case 'telefono':
-      const telefono = this.datosPrecargados.telefono;
+      const telefono = this.telefono;
       return !telefono || String(telefono).trim() === '' ? 'El teléfono es obligatorio' : '';
 
     case 'donanteExclusiva':
@@ -115,7 +140,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'El departamento es obligatorio' : '';
 
     case 'direccion':
-      const direccion = this.datosPrecargados.direccion;
+      const direccion = this.direccion;
       return !direccion || String(direccion).trim() === '' ? 'La dirección es obligatoria' : '';
 
     case 'nombreHijo':
@@ -125,7 +150,7 @@ validateField(fieldName: string, value: any): string {
       return !value || value.trim() === '' ? 'La EPS es obligatoria' : '';
 
     case 'ciudad':
-      const ciudad = this.datosPrecargados.ciudad;
+      const ciudad = this.ciudad;
       return !ciudad || String(ciudad).trim() === '' ? 'La ciudad es obligatoria' : '';
 
     case 'recoleccionDomicilio':
@@ -142,7 +167,7 @@ validateField(fieldName: string, value: any): string {
       return '';
 
     case 'documento':
-      const documento = this.datosPrecargados.documento;
+      const documento = this.documento;
       if (!documento || String(documento).trim() === '') {
         return 'El documento de identidad es obligatorio';
       }
@@ -191,7 +216,7 @@ validateField(fieldName: string, value: any): string {
         case 'direccion':
         case 'ciudad':
         case 'documento':
-          value = this.datosPrecargados[field];
+          value = this.datosPrecargados.infoMadre[field];
           break;
         default:
           value = (this as any)[field];
@@ -230,28 +255,29 @@ validateField(fieldName: string, value: any): string {
     event.target.value = value;
   }
 
-  getFormData() {
+  getFormData() {    
     if (!this.validateForm()) {
       throw new Error('Formulario inválido. Por favor, corrija los errores antes de continuar.');
     }
 
     return {
+      id: this.datosPrecargados.infoMadre ? this.datosPrecargados.infoMadre.id : null,
       nombre: this.nombre,
-      celular: this.datosPrecargados.celular,
+      celular: this.celular,
       fechaNacimiento: this.fechaNacimiento,
       profesion: this.profesion,
-      barrio: this.datosPrecargados.barrio,
-      telefono: this.datosPrecargados.telefono,
+      barrio: this.barrio,
+      telefono: this.telefono,
       donanteExclusiva: this.donanteExclusiva,
       departamento: this.departamento,
-      direccion: this.datosPrecargados.direccion,
+      direccion: this.direccion,
       nombreHijo: this.nombreHijo,
       eps: this.eps,
-      ciudad: this.datosPrecargados.ciudad,
+      ciudad: this.ciudad,
       recoleccionDomicilio: this.recoleccionDomicilio,
       pesoBebe: this.pesoBebe,
       edad: this.edad,
-      documento: this.datosPrecargados.documento,
+      documento: this.documento,
       codDonante: this.codDonante,
       donante_EoI: this.donante_EoI,
       fechaDiligenciamiento: this.fechaDiligenciamiento,

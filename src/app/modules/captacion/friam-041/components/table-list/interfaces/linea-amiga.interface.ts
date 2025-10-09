@@ -34,12 +34,12 @@ export interface empleados {
     cargo: string;
     telefono: number;
     correo: string | null;
-    createdAt: string; 
-    updatedAt: string;  
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ApiResponse {
     status: number;
     statusmsg: string;
-    data: [];
+    data: [] ;
   }

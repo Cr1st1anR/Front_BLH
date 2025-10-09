@@ -4,6 +4,7 @@ import {
   ElementRef,
   Input,
   OnChanges,
+  OnInit,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -14,9 +15,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
 import SignaturePad from 'signature_pad';
 import type { MedicamentosData } from '../interfaces/medicamentos.interface';
-import { empleados } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
+import { ApiResponse, empleados } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
 import { SelectModule } from 'primeng/select';
 import { CommonModule } from '@angular/common';
+import { Empleado, InfoMadre, MadreDonante, ResponseMadresDonantes } from '../../posibles-donantes-table/interfaces/registro-donante.interface';
+import { concatMap, Observable, of, tap } from 'rxjs';
+import { RegistroDonanteService } from '../../posibles-donantes-table/services/registro-donante.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'medicamentos',
@@ -33,9 +38,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './medicamentos.component.scss',
 })
 export class MedicamentosComponent
-  implements MedicamentosData, AfterViewInit, OnChanges
-{
-  @Input() empleadosOpt!: empleados[];
+  implements MedicamentosData, OnInit, OnChanges {
+  @Input() datosPrecargados: ResponseMadresDonantes = {} as ResponseMadresDonantes;
   @ViewChild('canvasAcompanante', { static: true })
   canvasAcompananteRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasDonante', { static: true })
@@ -53,6 +57,7 @@ export class MedicamentosComponent
   firmaDonante: string = '';
   profesionalResponsable: string = '';
   selectedEmpleado: empleados | null = null;
+  empleadosOpt: empleados[] = []
 
   private signaturePadAcompanante!: SignaturePad;
   private signaturePadDonante!: SignaturePad;
@@ -60,8 +65,15 @@ export class MedicamentosComponent
 
   formErrors: { [key: string]: string } = {};
   isFormValid: boolean = false;
+  visible: boolean = false;
 
-  ngAfterViewInit() {
+  constructor(
+    private messageService: MessageService,
+    private _registroDonanteService: RegistroDonanteService) {
+
+  }
+
+  ngOnInit(): void {
     this.signaturePadAcompanante = new SignaturePad(
       this.canvasAcompananteRef.nativeElement,
       { backgroundColor: '#fff' }
@@ -88,15 +100,65 @@ export class MedicamentosComponent
       this.profesionalResponsable = this.signaturePadProfesional.toDataURL();
       this.onFieldChange('profesionalResponsable', this.profesionalResponsable);
     });
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (
-      changes['empleadosOpt'] &&
-      changes['empleadosOpt'].currentValue.length > 0
-    ) {
-      this.empleadosOpt = changes['empleadosOpt'].currentValue;
+    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
+      of(null)
+        .pipe(concatMap(() => this.loadDataEmpleados()))
+        .subscribe({
+          complete: () => {
+            this.formatForm();
+          },
+          error: (err) => {
+            console.error('Error en la secuencia de peticiones', err);
+          },
+        });
     }
+  }
+
+  formatForm() {
+    if (this.datosPrecargados.MadreDonante) {
+      const empleadoEncontrado = this.empleadosOpt.find(emp => emp.id === this.datosPrecargados.MadreDonante.empleado.id);
+      if (empleadoEncontrado) {
+        this.selectedEmpleado = empleadoEncontrado;
+      }
+    }
+
+    this.medicamentos = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.medicamento : '';
+    this.psicoactivos = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.psicoactivos : '';
+    this.recibioEducacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.recibioEducacion! : '';
+    this.donanteApta = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.donanteApta : null;
+    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaAcompañante!, 'Acompanante');
+    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaDonante!, 'Donante');
+    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaProfesional!, 'Profesional');
+  }
+
+  loadDataEmpleados(): Observable<ApiResponse | null> {
+    return this._registroDonanteService.getDataEmpleados().pipe(
+      tap((response) => {
+        this.empleadosOpt = [];
+        if (response && response.data.length > 0) {
+          this.empleadosOpt = response.data;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos cargados correctamente',
+            key: 'tr',
+            life: 2000,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Información',
+            detail: 'No hay datos para mostrar',
+            key: 'tr',
+            life: 2000,
+          });
+        }
+      })
+    );
   }
 
   validateField(fieldName: string, value: any): string {
@@ -121,15 +183,15 @@ export class MedicamentosComponent
       case 'donanteApta':
         return value === null ? 'Debe seleccionar una opcion' : '';
 
-      case 'firmaDonante':
-        return !value || value.trim() === ''
-          ? 'La firma del donante es obligatoria'
-          : '';
+      // case 'firmaDonante':
+      //   return !value || value.trim() === ''
+      //     ? 'La firma del donante es obligatoria'
+      //     : '';
 
-      case 'profesionalResponsable':
-        return !value || value.trim() === ''
-          ? 'La firma del profesional responsable es obligatoria'
-          : '';
+      // case 'profesionalResponsable':
+      //   return !value || value.trim() === ''
+      //     ? 'La firma del profesional responsable es obligatoria'
+      //     : '';
 
       case 'firmaAcompanante':
         return '';
@@ -192,6 +254,7 @@ export class MedicamentosComponent
     }
 
     return {
+      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.id : null,
       medicamentos: this.medicamentos,
       ningunMedicamento: this.ningunMedicamento,
       psicoactivos: this.psicoactivos,
@@ -222,4 +285,21 @@ export class MedicamentosComponent
     this.profesionalResponsable = '';
     this.onFieldChange('profesionalResponsable', this.profesionalResponsable);
   }
+
+  mostrarFirma(firmaBase64: string, opt: string) {
+    if (firmaBase64 && firmaBase64.length > 0) {
+      switch (opt) {
+        case 'Acompanante':
+          this.signaturePadAcompanante.fromDataURL(firmaBase64);
+          break;
+        case 'Donante':
+          this.signaturePadDonante.fromDataURL(firmaBase64);
+          break;
+        case 'Profesional':
+          this.signaturePadProfesional.fromDataURL(firmaBase64);
+          break;
+      }
+    }
+  }
+
 }

@@ -30,9 +30,9 @@ export class TableService {
     return this.http.put<ApiResponse>(url, data );
   }
 
-  postDataRutaRecoleccion(data: any): Observable<ApiResponse> {
+  postDataRutaRecoleccion(data: any): Observable<any> {
     const url = `${environment.ApiBLH}/createRutaRecoleccion`;
-    return this.http.post<ApiResponse>(url, data );
+    return this.http.post<any>(url, data );
   }
 
   

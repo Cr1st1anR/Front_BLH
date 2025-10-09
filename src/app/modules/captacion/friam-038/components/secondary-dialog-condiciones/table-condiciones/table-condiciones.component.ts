@@ -1,86 +1,130 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TableModule } from 'primeng/table';
-import { RadioButtonModule } from 'primeng/radiobutton';
+import { Component, Input, OnInit, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SecondaryDialogCondicionesService } from '../services/secondary-dialog-condiciones.service';
+
+interface CondicionData {
+  id_pregunta: number;
+  pregunta: string;
+  respuesta: number | null | undefined;
+}
 
 @Component({
   selector: 'table-condiciones',
-  imports: [
-    CommonModule,
-    TableModule,
-    RadioButtonModule,
-    FormsModule,
-    ToastModule,
-  ],
+  imports: [CommonModule, FormsModule, ToastModule, ProgressSpinnerModule],
   templateUrl: './table-condiciones.component.html',
-  styleUrl: './table-condiciones.component.scss',
-  providers: [MessageService],
+  styleUrl: './table-condiciones.component.scss'
 })
-export class TableCondicionesComponent implements OnInit {
-  condiciones: any[] = [];
-  opcionesRespuesta: string[] = ['SI', 'NO', 'N/A'];
+export class TableCondicionesComponent implements OnInit, OnChanges {
+  @Input() visitaData: any = null;
+  @Input() modoSoloLectura: boolean = false;
+
+  condicionesData: CondicionData[] = [];
+  loading: boolean = false;
 
   constructor(
+    private secondaryDialogService: SecondaryDialogCondicionesService,
     private messageService: MessageService,
-    private _secondaryDialogService: SecondaryDialogCondicionesService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadCondiciones();
+    this.cargarPreguntas();
   }
 
-  loadCondiciones(): void {
-    this.condiciones = this._secondaryDialogService.getCondicionesSituacion();
+  ngOnChanges(changes: SimpleChanges): void {
+    // No recargar preguntas en cambios
   }
 
-  onRespuestaChange(condicion: any, valor: string): void {
-    condicion.respuesta = valor;
-    console.log(`Condición ${condicion.id}: ${valor}`);
+  cargarPreguntas(): void {
+    this.loading = true;
+    this.secondaryDialogService.getPreguntas().subscribe({
+      next: (response) => {
+        console.log('✅ Preguntas cargadas:', response);
 
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Respuesta actualizada',
-      detail: `${condicion.descripcion}: ${valor}`,
-      key: 'tr',
-      life: 1500,
+        if (response?.data) {
+          this.condicionesData = response.data.map((pregunta: any) => ({
+            id_pregunta: pregunta.id,
+            pregunta: pregunta.pregunta,
+            respuesta: undefined
+          }));
+
+          console.log('✅ Condiciones inicializadas:', this.condicionesData);
+        }
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar preguntas:', error);
+        this.loading = false;
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar las preguntas del formulario',
+          key: 'tr-secondary',
+          life: 3000,
+        });
+      }
     });
   }
 
-  getCondicionesData(): any[] {
-    return this.condiciones;
+  cargarRespuestasExistentes(respuestasMap: Map<number, number | null>): void {
+    console.log('🔄 Aplicando respuestas existentes:', respuestasMap);
+
+    this.condicionesData.forEach(condicion => {
+      if (respuestasMap.has(condicion.id_pregunta)) {
+        const respuesta = respuestasMap.get(condicion.id_pregunta);
+        condicion.respuesta = respuesta;
+        console.log(`✅ Cargada respuesta para pregunta ${condicion.id_pregunta}: ${respuesta}`);
+      }
+    });
+
+    this.cdr.detectChanges();
   }
 
-  validateCondiciones(): { isValid: boolean; pendientes: number } {
-    const condicionesPendientes = this.condiciones.filter(c => c.respuesta === null);
-    return {
-      isValid: condicionesPendientes.length === 0,
-      pendientes: condicionesPendientes.length
-    };
-  }
+  actualizarRespuesta(preguntaId: number, respuesta: number | null): void {
+    if (this.modoSoloLectura) return;
 
-  guardarCondiciones(): void {
-    const validation = this.validateCondiciones();
-
-    if (validation.isValid) {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Todas las condiciones han sido evaluadas',
-        key: 'tr',
-        life: 3000,
-      });
-    } else {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: `Faltan ${validation.pendientes} condiciones por evaluar`,
-        key: 'tr',
-        life: 3000,
-      });
+    const condicion = this.condicionesData.find(c => c.id_pregunta === preguntaId);
+    if (condicion) {
+      condicion.respuesta = respuesta;
+      console.log(`✅ Respuesta actualizada: Pregunta ${preguntaId} = ${respuesta}`);
     }
+  }
+
+  validateCondiciones(): { isValid: boolean; message: string } {
+    if (this.modoSoloLectura) return { isValid: true, message: '' };
+
+    const condicionesSinResponder = this.condicionesData.filter(
+      (c) => c.respuesta === undefined
+    );
+
+    if (condicionesSinResponder.length > 0) {
+      return {
+        isValid: false,
+        message: `Faltan ${condicionesSinResponder.length} condiciones por evaluar`,
+      };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  getRespuestasParaAPI(): Array<{ idPregunta: number; respuesta: number | null }> {
+    return this.condicionesData.map(condicion => ({
+      idPregunta: condicion.id_pregunta,
+      respuesta: condicion.respuesta === undefined ? null : condicion.respuesta
+    }));
+  }
+
+  getCondicionesData(): Array<{ id_pregunta: number; respuesta: number | null | undefined }> {
+    return this.condicionesData.map(condicion => ({
+      id_pregunta: condicion.id_pregunta,
+      respuesta: condicion.respuesta
+    }));
   }
 }

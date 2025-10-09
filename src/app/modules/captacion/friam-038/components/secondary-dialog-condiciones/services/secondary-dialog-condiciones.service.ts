@@ -1,56 +1,45 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DatosCompletos } from '../../interfaces/datos-completos.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SecondaryDialogCondicionesService {
-  private baseUrl = 'http://localhost:8000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Obtener preguntas del formulario FRIAM-038
+  /**
+   * Obtener preguntas del formulario FRIAM-038
+   */
   getPreguntas(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/getPreguntasFriam038`);
+    return this.http.get(`${environment.ApiBLH}/getPreguntasFriam038`);
   }
 
-  // Guardar formulario completo (respuestas + datos)
+  /**
+   * Guardar formulario completo (respuestas + datos de visita)
+   */
   guardarFormularioCompleto(datos: DatosCompletos): Observable<any> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-
-    console.log('🔄 Enviando datos al servidor:', datos);
-
-    return this.http.post(
-      `${this.baseUrl}/guardarRespuestasYDatos`,
-      datos,
-      { headers }
-    ).pipe(
-      map((response: any) => {
-        console.log('✅ Respuesta del servidor:', response);
-        return response;
-      }),
+    return this.http.post(`${environment.ApiBLH}/guardarRespuestasYDatos`, datos).pipe(
+      map((response: any) => response),
       catchError(error => {
-        console.error('❌ Error en la petición:', error);
+        console.error('Error en guardarFormularioCompleto:', error);
         throw error;
       })
     );
   }
 
-  // Obtener detalles completos de una visita
+  /**
+   * Obtener detalles completos de una visita específica
+   */
   getDetallesVisita(idVisita: number): Observable<any> {
-    return this.http.get(`${this.baseUrl}/getDetallesVisita/${idVisita}`).pipe(
+    return this.http.get(`${environment.ApiBLH}/getDetallesVisita/${idVisita}`).pipe(
       map((response: any) => {
-        console.log('🔍 Respuesta completa del servidor:', response);
-
-        if (response && response.data) {
+        if (response?.data) {
           const visita = response.data;
-
-          // Mapear correctamente los datos
           return {
             datosVisitaSeguimiento: visita.datosVisitaSeguimiento,
             respuestas: visita.respuestas || [],
@@ -61,11 +50,10 @@ export class SecondaryDialogCondicionesService {
             }
           };
         }
-
         return null;
       }),
       catchError(error => {
-        console.error('❌ Error al obtener detalles de visita:', error);
+        console.error('Error en getDetallesVisita:', error);
         throw error;
       })
     );

@@ -5,12 +5,8 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SecondaryDialogCondicionesService } from '../services/secondary-dialog-condiciones.service';
-
-interface CondicionData {
-  id_pregunta: number;
-  pregunta: string;
-  respuesta: number | null | undefined;
-}
+import type { CondicionData, RespuestaAPI } from '../../interfaces/pregunta.interface';
+import type { ValidationResult } from '../../interfaces/validation.interface';
 
 @Component({
   selector: 'table-condiciones',
@@ -26,79 +22,99 @@ export class TableCondicionesComponent implements OnInit, OnChanges {
   loading: boolean = false;
 
   constructor(
-    private secondaryDialogService: SecondaryDialogCondicionesService,
-    private messageService: MessageService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private readonly secondaryDialogService: SecondaryDialogCondicionesService,
+    private readonly messageService: MessageService,
+    private readonly cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.cargarPreguntas();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // No recargar preguntas en cambios
+    // Solo observar cambios relevantes sin acciones adicionales
   }
 
-  cargarPreguntas(): void {
+  /**
+   * Cargar preguntas desde la API
+   */
+  private cargarPreguntas(): void {
     this.loading = true;
+
     this.secondaryDialogService.getPreguntas().subscribe({
       next: (response) => {
-        console.log('✅ Preguntas cargadas:', response);
-
-        if (response?.data) {
-          this.condicionesData = response.data.map((pregunta: any) => ({
-            id_pregunta: pregunta.id,
-            pregunta: pregunta.pregunta,
-            respuesta: undefined
-          }));
-
-          console.log('✅ Condiciones inicializadas:', this.condicionesData);
-        }
-
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.procesarRespuestaPreguntas(response);
       },
       error: (error) => {
-        console.error('❌ Error al cargar preguntas:', error);
-        this.loading = false;
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar las preguntas del formulario',
-          key: 'tr-secondary',
-          life: 3000,
-        });
+        this.manejarErrorCargaPreguntas(error);
       }
     });
   }
 
-  cargarRespuestasExistentes(respuestasMap: Map<number, number | null>): void {
-    console.log('🔄 Aplicando respuestas existentes:', respuestasMap);
+  /**
+   * Procesar respuesta de preguntas de la API
+   */
+  private procesarRespuestaPreguntas(response: any): void {
+    if (response?.data) {
+      this.condicionesData = response.data.map((pregunta: any) => ({
+        id_pregunta: pregunta.id,
+        pregunta: pregunta.pregunta,
+        respuesta: undefined
+      }));
+    }
 
+    this.loading = false;
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Manejar errores en carga de preguntas
+   */
+  private manejarErrorCargaPreguntas(error: any): void {
+    console.error('Error al cargar preguntas:', error);
+    this.loading = false;
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar las preguntas del formulario',
+      key: 'tr-secondary',
+      life: 3000,
+    });
+  }
+
+  /**
+   * Cargar respuestas existentes en el componente
+   */
+  cargarRespuestasExistentes(respuestasMap: Map<number, number | null>): void {
     this.condicionesData.forEach(condicion => {
       if (respuestasMap.has(condicion.id_pregunta)) {
-        const respuesta = respuestasMap.get(condicion.id_pregunta);
-        condicion.respuesta = respuesta;
-        console.log(`✅ Cargada respuesta para pregunta ${condicion.id_pregunta}: ${respuesta}`);
+        condicion.respuesta = respuestasMap.get(condicion.id_pregunta);
       }
     });
 
     this.cdr.detectChanges();
   }
 
+  /**
+   * Actualizar respuesta de una pregunta específica
+   */
   actualizarRespuesta(preguntaId: number, respuesta: number | null): void {
     if (this.modoSoloLectura) return;
 
     const condicion = this.condicionesData.find(c => c.id_pregunta === preguntaId);
     if (condicion) {
       condicion.respuesta = respuesta;
-      console.log(`✅ Respuesta actualizada: Pregunta ${preguntaId} = ${respuesta}`);
     }
   }
 
-  validateCondiciones(): { isValid: boolean; message: string } {
-    if (this.modoSoloLectura) return { isValid: true, message: '' };
+  /**
+   * Validar que todas las condiciones tengan respuesta
+   */
+  validateCondiciones(): ValidationResult {
+    if (this.modoSoloLectura) {
+      return { isValid: true, message: '' };
+    }
 
     const condicionesSinResponder = this.condicionesData.filter(
       (c) => c.respuesta === undefined
@@ -114,17 +130,31 @@ export class TableCondicionesComponent implements OnInit, OnChanges {
     return { isValid: true, message: '' };
   }
 
-  getRespuestasParaAPI(): Array<{ idPregunta: number; respuesta: number | null }> {
+  /**
+   * Obtener respuestas en formato para envío a API
+   */
+  getRespuestasParaAPI(): RespuestaAPI[] {
     return this.condicionesData.map(condicion => ({
       idPregunta: condicion.id_pregunta,
       respuesta: condicion.respuesta === undefined ? null : condicion.respuesta
     }));
   }
 
-  getCondicionesData(): Array<{ id_pregunta: number; respuesta: number | null | undefined }> {
-    return this.condicionesData.map(condicion => ({
-      id_pregunta: condicion.id_pregunta,
-      respuesta: condicion.respuesta
-    }));
+  /**
+   * Obtener datos de condiciones para validación
+   */
+  getCondicionesData(): CondicionData[] {
+    return this.condicionesData;
+  }
+
+  /**
+   * Obtener estadísticas de respuestas
+   */
+  getEstadisticasRespuestas(): { completadas: number; total: number } {
+    const completadas = this.condicionesData.filter(c => c.respuesta !== undefined).length;
+    return {
+      completadas,
+      total: this.condicionesData.length
+    };
   }
 }

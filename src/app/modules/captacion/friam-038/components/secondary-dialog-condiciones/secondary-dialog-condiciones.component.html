@@ -1,19 +1,16 @@
 <div class="card flex justify-center">
   <p-dialog
     [header]="'Detalles de Visita No. ' + (visitaData?.no_visita || '') + (modoSoloLectura ? ' (Completada)' : '')"
-    [modal]="true"
-    [(visible)]="visible"
-    [style]="{ width: '90rem' }"
-    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
-    [maximizable]="true"
-    (onHide)="closeDialog()"
+    [modal]="true" [(visible)]="visible" [style]="{ width: '90rem' }"
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true" (onHide)="closeDialog()"
     [draggable]="false">
 
     <p-toast position="top-right" key="tr-secondary" />
 
     <!-- SPINNER DE CARGA PRINCIPAL -->
     @if (loading) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
       <div class="flex flex-col items-center gap-3">
         <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
           [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
@@ -32,9 +29,7 @@
       </div>
 
       <!-- TABLA DE CONDICIONES CON DATOS DE VISITA -->
-      <table-condiciones
-        [visitaData]="visitaData"
-        [modoSoloLectura]="modoSoloLectura" />
+      <table-condiciones [visitaData]="visitaData" [modoSoloLectura]="modoSoloLectura" />
 
       <!-- Sección de observaciones y recomendaciones -->
       <div class="observaciones-recomendaciones-section mt-6">
@@ -44,16 +39,9 @@
             <label class="textarea-label font-bold">
               OBSERVACIONES: <span class="required" *ngIf="!modoSoloLectura">*</span>
             </label>
-            <textarea
-              pInputTextarea
-              [(ngModel)]="observaciones"
-              name="observaciones"
-              rows="4"
-              cols="30"
-              class="w-full"
+            <textarea pInputTextarea [(ngModel)]="observaciones" name="observaciones" rows="4" cols="30" class="w-full"
               [placeholder]="modoSoloLectura ? '' : 'Escriba sus observaciones aquí...'"
-              (ngModelChange)="onFieldChange('observaciones', $event)"
-              [class.ng-invalid]="formErrors['observaciones']"
+              (ngModelChange)="onFieldChange('observaciones', $event)" [class.ng-invalid]="formErrors['observaciones']"
               [readonly]="modoSoloLectura">
             </textarea>
             <small class="error-message" *ngIf="formErrors['observaciones']">
@@ -66,17 +54,11 @@
             <label class="textarea-label font-bold">
               RECOMENDACIONES Y/O EDUCACION: <span class="required" *ngIf="!modoSoloLectura">*</span>
             </label>
-            <textarea
-              pInputTextarea
-              [(ngModel)]="recomendacionesEducacion"
-              name="recomendacionesEducacion"
-              rows="4"
-              cols="30"
-              class="w-full"
+            <textarea pInputTextarea [(ngModel)]="recomendacionesEducacion" name="recomendacionesEducacion" rows="4"
+              cols="30" class="w-full"
               [placeholder]="modoSoloLectura ? '' : 'Escriba las recomendaciones y/o educación aquí...'"
               (ngModelChange)="onFieldChange('recomendacionesEducacion', $event)"
-              [class.ng-invalid]="formErrors['recomendacionesEducacion']"
-              [readonly]="modoSoloLectura">
+              [class.ng-invalid]="formErrors['recomendacionesEducacion']" [readonly]="modoSoloLectura">
             </textarea>
             <small class="error-message" *ngIf="formErrors['recomendacionesEducacion']">
               {{ formErrors['recomendacionesEducacion'] }}
@@ -96,25 +78,14 @@
             </label>
             <div class="signature-container">
 
-              <canvas
-                #canvasUsuaria
-                width="350"
-                height="120"
-                class="signature-canvas"
-                [class.canvas-invalid]="formErrors['firmaUsuaria']"
-                [class.canvas-readonly]="modoSoloLectura"
-                [style.pointer-events]="modoSoloLectura ? 'none' : 'auto'"
-                [style.background-color]="'#ffffff'"
-                [style.border]="'2px solid #e2e8f0'"
-                [style.border-radius]="'8px'">
+              <canvas #canvasUsuaria width="350" height="120" class="signature-canvas"
+                [class.canvas-invalid]="formErrors['firmaUsuaria']" [class.canvas-readonly]="modoSoloLectura"
+                [style.pointer-events]="modoSoloLectura ? 'none' : 'auto'" [style.background-color]="'#ffffff'"
+                [style.border]="'2px solid #e2e8f0'" [style.border-radius]="'8px'">
               </canvas>
 
               <div class="signature-controls mt-2 flex gap-2" *ngIf="!modoSoloLectura">
-                <button
-                  type="button"
-                  (click)="clearFirmaUsuaria()"
-                  class="clear-button"
-                  [disabled]="modoSoloLectura">
+                <button type="button" (click)="clearFirmaUsuaria()" class="clear-button" [disabled]="modoSoloLectura">
                   Limpiar
                 </button>
               </div>
@@ -131,25 +102,14 @@
             </label>
             <div class="signature-container">
 
-              <canvas
-                #canvasVisitante
-                width="350"
-                height="120"
-                class="signature-canvas"
-                [class.canvas-invalid]="formErrors['firmaVisitante']"
-                [class.canvas-readonly]="modoSoloLectura"
-                [style.pointer-events]="modoSoloLectura ? 'none' : 'auto'"
-                [style.background-color]="'#ffffff'"
-                [style.border]="'2px solid #e2e8f0'"
-                [style.border-radius]="'8px'">
+              <canvas #canvasVisitante width="350" height="120" class="signature-canvas"
+                [class.canvas-invalid]="formErrors['firmaVisitante']" [class.canvas-readonly]="modoSoloLectura"
+                [style.pointer-events]="modoSoloLectura ? 'none' : 'auto'" [style.background-color]="'#ffffff'"
+                [style.border]="'2px solid #e2e8f0'" [style.border-radius]="'8px'">
               </canvas>
 
               <div class="signature-controls mt-2 flex gap-2" *ngIf="!modoSoloLectura">
-                <button
-                  type="button"
-                  (click)="clearFirmaVisitante()"
-                  class="clear-button"
-                  [disabled]="modoSoloLectura">
+                <button type="button" (click)="clearFirmaVisitante()" class="clear-button" [disabled]="modoSoloLectura">
                   Limpiar
                 </button>
               </div>
@@ -164,26 +124,15 @@
       <!-- BOTONES -->
       <div class="flex justify-end gap-4 mt-8 pr-0">
         <!-- Botón principal (Guardar/Cerrar) -->
-        <button
-          pButton
-          type="button"
-          [label]="textoBotonPrincipal"
+        <button pButton type="button" [label]="textoBotonPrincipal"
           [icon]="modoSoloLectura ? 'pi pi-times' : (guardandoDatos ? 'pi pi-spin pi-spinner' : 'pi pi-save')"
           [class]="modoSoloLectura ? 'cancelar-btn' : 'guardar-btn'"
-          (click)="modoSoloLectura ? closeDialog() : onGuardar()"
-          [disabled]="guardandoDatos">
+          (click)="modoSoloLectura ? closeDialog() : onGuardar()" [disabled]="guardandoDatos">
         </button>
 
         <!-- Botón Cancelar (solo si no es solo lectura) -->
-        <button
-          *ngIf="!modoSoloLectura"
-          pButton
-          type="button"
-          label="Cancelar"
-          icon="pi pi-times"
-          class="cancelar-btn"
-          (click)="closeDialog()"
-          [disabled]="guardandoDatos">
+        <button *ngIf="!modoSoloLectura" pButton type="button" label="Cancelar" icon="pi pi-times" class="cancelar-btn"
+          (click)="closeDialog()" [disabled]="guardandoDatos">
         </button>
       </div>
 

@@ -2,10 +2,7 @@
 
 <!-- LOADING SPINNER -->
 <div *ngIf="loading" class="flex justify-center items-center py-8">
-  <p-progressSpinner
-    strokeWidth="4"
-    animationDuration="2s"
-    [style]="{ width: '50px', height: '50px' }">
+  <p-progressSpinner strokeWidth="4" animationDuration="2s" [style]="{ width: '50px', height: '50px' }">
   </p-progressSpinner>
   <span class="ml-3 text-gray-600">Cargando preguntas...</span>
 </div>
@@ -31,38 +28,23 @@
 
         <!-- RADIO BUTTON SÍ -->
         <td class="option-cell">
-          <input
-            type="radio"
-            [name]="'pregunta_' + condicion.id_pregunta"
-            [value]="1"
-            [checked]="condicion.respuesta === 1"
-            [disabled]="modoSoloLectura"
-            (change)="actualizarRespuesta(condicion.id_pregunta, 1)"
-            class="radio-input">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="1"
+            [checked]="condicion.respuesta === 1" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, 1)" class="radio-input">
         </td>
 
         <!-- RADIO BUTTON NO -->
         <td class="option-cell">
-          <input
-            type="radio"
-            [name]="'pregunta_' + condicion.id_pregunta"
-            [value]="0"
-            [checked]="condicion.respuesta === 0"
-            [disabled]="modoSoloLectura"
-            (change)="actualizarRespuesta(condicion.id_pregunta, 0)"
-            class="radio-input">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="0"
+            [checked]="condicion.respuesta === 0" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, 0)" class="radio-input">
         </td>
 
         <!-- RADIO BUTTON N/A -->
         <td class="option-cell">
-          <input
-            type="radio"
-            [name]="'pregunta_' + condicion.id_pregunta"
-            [value]="null"
-            [checked]="condicion.respuesta === null"
-            [disabled]="modoSoloLectura"
-            (change)="actualizarRespuesta(condicion.id_pregunta, null)"
-            class="radio-input">
+          <input type="radio" [name]="'pregunta_' + condicion.id_pregunta" [value]="null"
+            [checked]="condicion.respuesta === null" [disabled]="modoSoloLectura"
+            (change)="actualizarRespuesta(condicion.id_pregunta, null)" class="radio-input">
         </td>
 
       </tr>

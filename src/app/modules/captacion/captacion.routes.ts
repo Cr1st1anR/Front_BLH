@@ -60,4 +60,11 @@ export const CAPTACION_ROUTES: Routes = [
         './friam-038/components/principal-page/principal-page.component'
       ).then((c) => c.PrincipalPageComponent),
   },
+  {
+    path: 'registro-leche-extraida',
+    loadComponent: () =>
+      import(
+        './friam-016/components/principal-page-leche-extraida/principal-page-leche-extraida.component'
+      ).then((c) => c.PrincipalPageLecheExtraidaComponent),
+  },
 ];

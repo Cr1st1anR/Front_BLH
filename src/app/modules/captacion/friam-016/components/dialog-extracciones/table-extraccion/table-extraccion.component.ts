@@ -7,3 +7,4 @@ import { Component } from '@angular/core';
   styleUrl: './table-extraccion.component.scss',
 })
 export class TableExtraccionComponent { }
+3.

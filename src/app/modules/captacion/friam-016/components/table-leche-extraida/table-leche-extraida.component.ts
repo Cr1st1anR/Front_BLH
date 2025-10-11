@@ -6,4 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './table-leche-extraida.component.html',
   styleUrl: './table-leche-extraida.component.scss',
 })
-export class TableLecheExtraidaComponent { }
+export class TableLecheExtraidaComponent {}

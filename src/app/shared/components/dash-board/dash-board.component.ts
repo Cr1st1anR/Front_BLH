@@ -65,10 +65,15 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-037)',
           route: '/blh/captacion/visita-domiciliaria',
         },
-         {
+        {
           label: 'Visitas domiciliarias de seguimiento para madres donantes del programa blh',
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
+        },
+        {
+          label: 'Registro de leche materna extraida en sala de extracción de blh',
+          subLabel: '(FRIAM-016)',
+          route: '/blh/captacion/registro-leche-extraida',
         },
       ],
     },
@@ -86,9 +91,9 @@ export class DashBoardComponent {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
-  closeCallback(e:any): void {
+  closeCallback(e: any): void {
     console.log(e);
 
     this.drawerRef.close(e);

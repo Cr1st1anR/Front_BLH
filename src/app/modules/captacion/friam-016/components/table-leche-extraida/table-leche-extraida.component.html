@@ -1,1 +1,43 @@
-<p>table-leche-extraida works!</p>,
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table [value]="dataLecheExtraida" [scrollable]="true" scrollHeight="500px" [columns]="headersLecheExtraida"
+    [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id_extraccion">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th>{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns">
+      <tr style="cursor: pointer">
+        @for (col of columns; track $index) {
+        <td>
+          {{ rowData[col.field] }}
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+
+   <!-- <ng-template #body let-rowData let-columns="columns">
+      <tr (click)="onRowClick(rowData)" style="cursor: pointer">
+        @for (col of columns; track $index) {
+        <td>
+          {{ rowData[col.field] }}
+        </td>
+        }
+      </tr>
+    </ng-template> -->

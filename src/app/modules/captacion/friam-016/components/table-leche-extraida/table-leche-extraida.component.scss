@@ -4,6 +4,8 @@
   justify-content: center;
   align-items: center;
   margin: 25px;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .grid-lines {
@@ -14,6 +16,17 @@
 .new-row {
   background-color: #f8f9fa;
   border-left: 3px solid #224186;
+}
+
+/* Overlay clickeable para modo readonly */
+.clickeable-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  cursor: pointer;
 }
 
 /* Estilos para los botones de acción siguiendo el patrón del friam-038 */
@@ -63,22 +76,29 @@
     }
   }
 
-  // Estilos para la tabla
+  // Estilos para la tabla - ACTUALIZADOS PARA MAYOR TAMAÑO
   .p-table {
+    width: 100%;
+
     .p-table-thead > tr > th {
       background-color: #224186;
       color: white;
       font-weight: bold;
       text-align: center;
-      padding: 12px 8px;
+      padding: 15px 12px;
       border: 1px solid #e5e7eb;
+      font-size: 14px;
+      white-space: nowrap;
     }
 
     .p-table-tbody > tr > td {
-      padding: 8px 6px;
+      padding: 12px 10px;
       border: 1px solid #e5e7eb;
       vertical-align: middle;
       text-align: center;
+      font-size: 13px;
+      white-space: nowrap;
+      position: relative; // Para el overlay clickeable
     }
 
     .p-table-tbody > tr:nth-child(even) {
@@ -88,11 +108,22 @@
     .p-table-tbody > tr:hover {
       background-color: #f3f4f6;
     }
+
+    // Asegurar que el scroll funcione correctamente
+    .p-table-scrollable-wrapper {
+      overflow: auto;
+    }
+
+    .p-table-scrollable-header,
+    .p-table-scrollable-body {
+      overflow-x: auto;
+    }
   }
 
   // Estilos para inputs en modo edición
   .p-inputtext {
     width: 100% !important;
+    min-width: 120px;
 
     &:focus {
       border-color: #224186 !important;
@@ -101,11 +132,11 @@
   }
 }
 
-/* Estilos para el header de CONSEJERIA */
+/* Estilos para el header de CONSEJERIA - AJUSTADOS PARA MAYOR TAMAÑO */
 .consejeria-header-main {
   background-color: #224186;
   color: white;
-  padding: 8px 4px;
+  padding: 15px 8px;
   border: 1px solid #ddd;
   vertical-align: middle;
 }
@@ -120,9 +151,9 @@
 .consejeria-main-title {
   text-align: center;
   font-weight: bold;
-  font-size: 12px;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -135,8 +166,8 @@
   flex: 1;
   text-align: center;
   font-weight: bold;
-  font-size: 10px;
-  padding: 2px 4px;
+  font-size: 12px;
+  padding: 4px 6px;
   border-right: 1px solid rgba(255, 255, 255, 0.3);
 
   &:last-child {
@@ -144,9 +175,9 @@
   }
 }
 
-/* Estilos para las celdas de datos */
+/* Estilos para las celdas de datos - AJUSTADOS PARA MAYOR TAMAÑO */
 .consejeria-cell {
-  padding: 8px 4px;
+  padding: 12px 8px;
   border: 1px solid #ddd;
   vertical-align: middle;
 }
@@ -162,7 +193,7 @@
   flex: 1;
   display: flex;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 6px;
   border-right: 1px solid #eee;
 
   &:last-child {
@@ -172,7 +203,7 @@
 
 .radio-group {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   justify-content: center;
 }
@@ -180,22 +211,22 @@
 .radio-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .radio-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #333;
   cursor: pointer;
   margin: 0;
   white-space: nowrap;
 }
 
-/* Personalización de radio buttons de PrimeNG */
+/* Personalización de radio buttons de PrimeNG - AUMENTADOS */
 ::ng-deep .p-radiobutton {
   .p-radiobutton-box {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border: 2px solid #224186;
 
     &.p-highlight {
@@ -204,34 +235,68 @@
     }
 
     .p-radiobutton-icon {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       background-color: white;
+    }
+
+    // Estilos específicos para radio buttons deshabilitados pero seleccionados
+    &:disabled.p-highlight {
+      background-color: #224186 !important;
+      border-color: #224186 !important;
+      opacity: 1 !important;
+
+      .p-radiobutton-icon {
+        background-color: white !important;
+      }
+    }
+
+    // Estilos para radio buttons deshabilitados no seleccionados
+    &:disabled:not(.p-highlight) {
+      background-color: #f8f9fa;
+      border-color: #dee2e6;
+      opacity: 0.6;
     }
   }
 }
 
-/* Responsividad */
+/* Responsividad mejorada */
+@media (max-width: 1200px) {
+  .container-table {
+    margin: 15px;
+  }
+
+  :host ::ng-deep .p-table .p-table-thead > tr > th {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  :host ::ng-deep .p-table .p-table-tbody > tr > td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 768px) {
   .consejeria-main-title {
-    font-size: 10px;
-    margin-bottom: 6px;
+    font-size: 12px;
+    margin-bottom: 8px;
   }
 
   .consejeria-sub-item {
-    font-size: 9px;
-    padding: 1px 2px;
+    font-size: 11px;
+    padding: 3px 4px;
   }
 
   .radio-label {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .radio-group {
-    gap: 4px;
+    gap: 8px;
   }
 
   .consejeria-section {
-    padding: 0 2px;
+    padding: 0 4px;
   }
 }

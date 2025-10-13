@@ -7,36 +7,28 @@
 </div>
 }
 
-<div class="container-table">
-  <p-table
-    #tableLecheExtraida
-    [value]="dataLecheExtraida"
-    [scrollable]="true"
-    scrollHeight="600px"
-    [columns]="headersLecheExtraida"
-    [tableStyle]="{ 'min-width': '100rem', 'width': '100%' }"
-    selectionMode="single"
-    dataKey="id_extraccion"
-    editMode="row"
-    [style]="{ width: '100%' }">
+<div class="container-table px-2">
+  <p-table #tableLecheExtraida [value]="dataLecheExtraida" [scrollable]="true" scrollHeight="600px"
+    [columns]="headersLecheExtraida" [tableStyle]="{ 'min-width': '100rem', 'width': '100%' }" selectionMode="single"
+    dataKey="id_extraccion" editMode="row" [style]="{ width: '100%' }">
 
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
-          @if (col.tipo === 'consejeria') {
-            <!-- Header de CONSEJERIA dividido horizontalmente -->
-            <th [style.width]="col.width" class="consejeria-header-main">
-              <div class="consejeria-header-container">
-                <div class="consejeria-main-title">{{ col.header }}</div>
-                <div class="consejeria-sub-headers">
-                  <div class="consejeria-sub-item">INDIVIDUAL</div>
-                  <div class="consejeria-sub-item">GRUPAL</div>
-                </div>
-              </div>
-            </th>
-          } @else {
-            <th [style.width]="col.width">{{ col.header }}</th>
-          }
+        @if (col.tipo === 'consejeria') {
+        <!-- Header de CONSEJERIA dividido horizontalmente -->
+        <th [style.width]="col.width" class="consejeria-header-main">
+          <div class="consejeria-header-container">
+            <div class="consejeria-main-title">{{ col.header }}</div>
+            <div class="consejeria-sub-headers">
+              <div class="consejeria-sub-item">INDIVIDUAL</div>
+              <div class="consejeria-sub-item">GRUPAL</div>
+            </div>
+          </div>
+        </th>
+        } @else {
+        <th [style.width]="col.width">{{ col.header }}</th>
+        }
         }
       </tr>
     </ng-template>
@@ -44,52 +36,47 @@
     <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns" let-editing="editing">
       <tr [pEditableRow]="rowData" [class.new-row]="rowData.isNew">
         @for (col of columns; track $index) {
-          @if (col.tipo === 'text' || col.tipo === 'number') {
-            <!-- Campos editables normales -->
-            <td [style.width]="col.width" [style.min-width]="col.width">
-              <p-cellEditor>
-                <ng-template pTemplate="input">
-                  <input
-                    pInputText
-                    type="text"
-                    [(ngModel)]="rowData[col.field]"
-                    class="w-full p-2 border border-gray-300 rounded"
-                    [placeholder]="'Ingrese ' + col.header.toLowerCase()">
-                </ng-template>
-                <ng-template pTemplate="output">
-                  <span (click)="onRowClick(rowData)" style="cursor: pointer">
-                    {{ rowData[col.field] || '-' }}
-                  </span>
-                </ng-template>
-              </p-cellEditor>
-            </td>
-          } @else if (col.tipo === 'date') {
-            <!-- Campo de fecha (no editable) -->
-            <td [style.width]="col.width" [style.min-width]="col.width">
+        @if (col.tipo === 'text' || col.tipo === 'number') {
+        <!-- Campos editables normales -->
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]"
+                class="w-full p-2 border border-gray-300 rounded" [placeholder]="'Ingrese ' + col.header.toLowerCase()">
+            </ng-template>
+            <ng-template pTemplate="output">
               <span (click)="onRowClick(rowData)" style="cursor: pointer">
-                {{ rowData[col.field] }}
+                {{ rowData[col.field] || '-' }}
               </span>
-            </td>
-          } @else if (col.tipo === 'consejeria') {
-            <!-- Celda de CONSEJERIA con radio buttons -->
-            <td class="consejeria-cell" [style.width]="col.width" [style.min-width]="col.width">
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'date') {
+        <!-- Campo de fecha (no editable) -->
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <span (click)="onRowClick(rowData)" style="cursor: pointer">
+            {{ rowData[col.field] }}
+          </span>
+        </td>
+        } @else if (col.tipo === 'consejeria') {
+        <!-- Celda de CONSEJERIA con radio buttons EDITABLES -->
+        <td class="consejeria-cell" [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <!-- MODO EDICIÓN -->
+            <ng-template pTemplate="input">
               <div class="consejeria-container">
                 <!-- INDIVIDUAL -->
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton
-                        [name]="'individual_' + rowIndex"
-                        [value]="1"
+                      <p-radioButton [name]="'individual_' + rowIndex" [value]="1"
                         [ngModel]="getConsejeriaValue(rowData, 'individual')"
                         (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
                         [inputId]="'individual_si_' + rowIndex" />
                       <label [for]="'individual_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton
-                        [name]="'individual_' + rowIndex"
-                        [value]="0"
+                      <p-radioButton [name]="'individual_' + rowIndex" [value]="0"
                         [ngModel]="getConsejeriaValue(rowData, 'individual')"
                         (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
                         [inputId]="'individual_no_' + rowIndex" />
@@ -102,18 +89,14 @@
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton
-                        [name]="'grupal_' + rowIndex"
-                        [value]="1"
+                      <p-radioButton [name]="'grupal_' + rowIndex" [value]="1"
                         [ngModel]="getConsejeriaValue(rowData, 'grupal')"
                         (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
                         [inputId]="'grupal_si_' + rowIndex" />
                       <label [for]="'grupal_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton
-                        [name]="'grupal_' + rowIndex"
-                        [value]="0"
+                      <p-radioButton [name]="'grupal_' + rowIndex" [value]="0"
                         [ngModel]="getConsejeriaValue(rowData, 'grupal')"
                         (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
                         [inputId]="'grupal_no_' + rowIndex" />
@@ -122,65 +105,79 @@
                   </div>
                 </div>
               </div>
-            </td>
-          } @else if (col.tipo === 'acciones') {
-            <!-- Columna de ACCIONES -->
-            <td [style.width]="col.width" [style.min-width]="col.width">
-              <div class="flex items-center justify-center gap-2">
-                <button
-                  *ngIf="!editing"
-                  pButton
-                  pRipple
-                  type="button"
-                  pInitEditableRow
-                  icon="pi pi-pencil"
-                  text
-                  rounded
-                  severity="secondary"
-                  (click)="onRowEditInit(rowData)"
-                  [disabled]="isEditButtonDisabled(rowData)"
-                  pTooltip="Editar registro"
-                  tooltipPosition="top">
-                </button>
+            </ng-template>
 
-                <button
-                  *ngIf="editing"
-                  pButton
-                  pRipple
-                  type="button"
-                  icon="pi pi-check"
-                  text
-                  rounded
-                  severity="success"
-                  (click)="onRowEditSave(rowData, rowIndex, $event)"
-                  pTooltip="Guardar"
-                  tooltipPosition="top">
-                </button>
+            <!-- MODO VISUALIZACIÓN (NO EDITABLE) -->
+            <ng-template pTemplate="output">
+              <div class="consejeria-container">
+                <!-- INDIVIDUAL -->
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'individual_readonly_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
+                        [inputId]="'individual_readonly_si_' + rowIndex" [disabled]="true" />
+                      <label [for]="'individual_readonly_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'individual_readonly_' + rowIndex" [value]="0"
+                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
+                        [inputId]="'individual_readonly_no_' + rowIndex" [disabled]="true" />
+                      <label [for]="'individual_readonly_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
 
-                <button
-                  *ngIf="editing"
-                  pButton
-                  pRipple
-                  type="button"
-                  pCancelEditableRow
-                  icon="pi pi-times"
-                  text
-                  rounded
-                  severity="danger"
-                  (click)="onRowEditCancel(rowData, rowIndex)"
-                  pTooltip="Cancelar"
-                  tooltipPosition="top">
-                </button>
+                <!-- GRUPAL -->
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'grupal_readonly_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData, 'grupal')" [inputId]="'grupal_readonly_si_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'grupal_readonly_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'grupal_readonly_' + rowIndex" [value]="0"
+                        [ngModel]="getConsejeriaValue(rowData, 'grupal')" [inputId]="'grupal_readonly_no_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'grupal_readonly_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </td>
-          } @else {
-            <!-- Celdas normales no editables -->
-            <td [style.width]="col.width" [style.min-width]="col.width">
-              <span (click)="onRowClick(rowData)" style="cursor: pointer">
-                {{ rowData[col.field] }}
-              </span>
-            </td>
-          }
+
+              <!-- Hacer clickeable el área para seleccionar la fila -->
+              <div class="clickeable-overlay" (click)="onRowClick(rowData)"></div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'acciones') {
+        <!-- Columna de ACCIONES -->
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar registro" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+        </td>
+        } @else {
+        <!-- Celdas normales no editables -->
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <span (click)="onRowClick(rowData)" style="cursor: pointer">
+            {{ rowData[col.field] }}
+          </span>
+        </td>
+        }
         }
       </tr>
     </ng-template>

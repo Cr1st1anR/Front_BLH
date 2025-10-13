@@ -14,17 +14,84 @@
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
-        <th>{{ col.header }}</th>
+          @if (col.tipo === 'consejeria') {
+            <!-- Header de CONSEJERIA dividido horizontalmente -->
+            <th [style.width]="col.width" class="consejeria-header-main">
+              <div class="consejeria-header-container">
+                <div class="consejeria-main-title">{{ col.header }}</div>
+                <div class="consejeria-sub-headers">
+                  <div class="consejeria-sub-item">INDIVIDUAL</div>
+                  <div class="consejeria-sub-item">GRUPAL</div>
+                </div>
+              </div>
+            </th>
+          } @else {
+            <th [style.width]="col.width">{{ col.header }}</th>
+          }
         }
       </tr>
     </ng-template>
 
-    <ng-template #body let-rowData let-columns="columns">
+    <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns">
       <tr style="cursor: pointer">
         @for (col of columns; track $index) {
-        <td>
-          {{ rowData[col.field] }}
-        </td>
+          @if (col.tipo === 'consejeria') {
+            <!-- Celda de CONSEJERIA con radio buttons -->
+            <td class="consejeria-cell">
+              <div class="consejeria-container">
+                <!-- INDIVIDUAL -->
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton
+                        [name]="'individual_' + rowIndex"
+                        [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
+                        (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
+                        [inputId]="'individual_si_' + rowIndex" />
+                      <label [for]="'individual_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton
+                        [name]="'individual_' + rowIndex"
+                        [value]="0"
+                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
+                        (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
+                        [inputId]="'individual_no_' + rowIndex" />
+                      <label [for]="'individual_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- GRUPAL -->
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton
+                        [name]="'grupal_' + rowIndex"
+                        [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData, 'grupal')"
+                        (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
+                        [inputId]="'grupal_si_' + rowIndex" />
+                      <label [for]="'grupal_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton
+                        [name]="'grupal_' + rowIndex"
+                        [value]="0"
+                        [ngModel]="getConsejeriaValue(rowData, 'grupal')"
+                        (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
+                        [inputId]="'grupal_no_' + rowIndex" />
+                      <label [for]="'grupal_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          } @else {
+            <!-- Celdas normales -->
+            <td>{{ rowData[col.field] }}</td>
+          }
         }
       </tr>
     </ng-template>

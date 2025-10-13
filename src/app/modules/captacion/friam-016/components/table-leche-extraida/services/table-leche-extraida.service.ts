@@ -19,6 +19,10 @@ export class TableLecheExtraidaService {
         telefono: '3104478896',
         eps: 'Sanitas',
         procedencia: '255',
+        consejeria: {
+          individual: null,
+          grupal: null
+        }
       },
       {
         id_extraccion: 2,
@@ -30,6 +34,10 @@ export class TableLecheExtraidaService {
         telefono: '3104478896',
         eps: 'Sanitas',
         procedencia: '255',
+        consejeria: {
+          individual: null,
+          grupal: null
+        }
       },
       {
         id_extraccion: 3,
@@ -41,6 +49,10 @@ export class TableLecheExtraidaService {
         telefono: '3104478896',
         eps: 'Sanitas',
         procedencia: '255',
+        consejeria: {
+          individual: null,
+          grupal: null
+        }
       },
       {
         id_extraccion: 4,
@@ -52,8 +64,11 @@ export class TableLecheExtraidaService {
         telefono: '3104478896',
         eps: 'Sanitas',
         procedencia: '255',
+        consejeria: {
+          individual: null,
+          grupal: null
+        }
       },
     ];
   }
-
 }

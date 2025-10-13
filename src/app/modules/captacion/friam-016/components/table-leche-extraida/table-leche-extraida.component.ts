@@ -5,18 +5,20 @@ import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormsModule } from '@angular/forms';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
 
 @Component({
   selector: 'table-leche-extraida',
-  imports: [TableModule, CommonModule, ProgressSpinnerModule, ToastModule],
+  imports: [TableModule, CommonModule, ProgressSpinnerModule, ToastModule, RadioButtonModule, FormsModule],
   templateUrl: './table-leche-extraida.component.html',
   styleUrl: './table-leche-extraida.component.scss',
   providers: [TableLecheExtraidaService, MessageService]
 })
 export class TableLecheExtraidaComponent {
 
-    loading: boolean = false;
+  loading: boolean = false;
 
   headersLecheExtraida: any[] = [
     {
@@ -67,6 +69,12 @@ export class TableLecheExtraidaComponent {
       width: '200px',
       tipo: 'number',
     },
+    {
+      header: 'CONSEJERIA',
+      field: 'consejeria',
+      width: '320px',
+      tipo: 'consejeria',
+    },
   ];
 
   dataLecheExtraida: any[] = [];
@@ -75,7 +83,7 @@ export class TableLecheExtraidaComponent {
     private tableLecheExtraidaService: TableLecheExtraidaService,
     private messageService: MessageService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDataLecheExtraida();
@@ -124,9 +132,30 @@ export class TableLecheExtraidaComponent {
     }, 1200);
   }
 
-  // onRowClick(row: any) {
-  //   console.log('Fila seleccionada:', row);
-  //   // Emitir el evento al componente padre en lugar de navegar directamente
-  //   this.rowClick.emit(row);
-  // }
+  /**
+   * Obtener el valor de consejería de forma segura
+   */
+  getConsejeriaValue(rowData: any, type: 'individual' | 'grupal'): number | null {
+    return rowData?.consejeria?.[type] ?? null;
+  }
+
+  /**
+   * Actualizar el valor de consejería individual
+   */
+  onConsejeriaIndividualChange(rowIndex: number, value: number): void {
+    if (!this.dataLecheExtraida[rowIndex].consejeria) {
+      this.dataLecheExtraida[rowIndex].consejeria = {};
+    }
+    this.dataLecheExtraida[rowIndex].consejeria.individual = value;
+  }
+
+  /**
+   * Actualizar el valor de consejería grupal
+   */
+  onConsejeriaGrupalChange(rowIndex: number, value: number): void {
+    if (!this.dataLecheExtraida[rowIndex].consejeria) {
+      this.dataLecheExtraida[rowIndex].consejeria = {};
+    }
+    this.dataLecheExtraida[rowIndex].consejeria.grupal = value;
+  }
 }

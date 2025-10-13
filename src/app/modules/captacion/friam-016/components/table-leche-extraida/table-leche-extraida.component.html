@@ -12,12 +12,13 @@
     #tableLecheExtraida
     [value]="dataLecheExtraida"
     [scrollable]="true"
-    scrollHeight="500px"
+    scrollHeight="600px"
     [columns]="headersLecheExtraida"
-    [tableStyle]="{ 'min-width': '50rem' }"
+    [tableStyle]="{ 'min-width': '100rem', 'width': '100%' }"
     selectionMode="single"
     dataKey="id_extraccion"
-    editMode="row">
+    editMode="row"
+    [style]="{ width: '100%' }">
 
     <ng-template #header let-columns>
       <tr>
@@ -45,7 +46,7 @@
         @for (col of columns; track $index) {
           @if (col.tipo === 'text' || col.tipo === 'number') {
             <!-- Campos editables normales -->
-            <td>
+            <td [style.width]="col.width" [style.min-width]="col.width">
               <p-cellEditor>
                 <ng-template pTemplate="input">
                   <input
@@ -64,14 +65,14 @@
             </td>
           } @else if (col.tipo === 'date') {
             <!-- Campo de fecha (no editable) -->
-            <td>
+            <td [style.width]="col.width" [style.min-width]="col.width">
               <span (click)="onRowClick(rowData)" style="cursor: pointer">
                 {{ rowData[col.field] }}
               </span>
             </td>
           } @else if (col.tipo === 'consejeria') {
             <!-- Celda de CONSEJERIA con radio buttons -->
-            <td class="consejeria-cell">
+            <td class="consejeria-cell" [style.width]="col.width" [style.min-width]="col.width">
               <div class="consejeria-container">
                 <!-- INDIVIDUAL -->
                 <div class="consejeria-section">
@@ -124,7 +125,7 @@
             </td>
           } @else if (col.tipo === 'acciones') {
             <!-- Columna de ACCIONES -->
-            <td>
+            <td [style.width]="col.width" [style.min-width]="col.width">
               <div class="flex items-center justify-center gap-2">
                 <button
                   *ngIf="!editing"
@@ -174,7 +175,7 @@
             </td>
           } @else {
             <!-- Celdas normales no editables -->
-            <td>
+            <td [style.width]="col.width" [style.min-width]="col.width">
               <span (click)="onRowClick(rowData)" style="cursor: pointer">
                 {{ rowData[col.field] }}
               </span>

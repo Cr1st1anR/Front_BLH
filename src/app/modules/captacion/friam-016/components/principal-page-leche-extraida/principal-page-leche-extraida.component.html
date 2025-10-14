@@ -8,4 +8,8 @@
   </div>
 </div>
 
-<table-leche-extraida />
+<table-leche-extraida (rowClick)="onRowClick($event)" />
+
+@if (showDialog && selectedRowData) {
+<dialog-extracciones [visible]="showDialog" [rowData]="selectedRowData" (dialogClosed)="onDialogClosed()" />
+}

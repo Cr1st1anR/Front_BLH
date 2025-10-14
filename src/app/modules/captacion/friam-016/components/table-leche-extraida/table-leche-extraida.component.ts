@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -8,7 +8,6 @@ import { ToastModule } from 'primeng/toast';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
 import { Table } from 'primeng/table';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
 import { InputTextModule } from 'primeng/inputtext';
@@ -23,7 +22,6 @@ import { InputTextModule } from 'primeng/inputtext';
     RadioButtonModule,
     FormsModule,
     ButtonModule,
-    TooltipModule,
     InputTextModule
   ],
   templateUrl: './table-leche-extraida.component.html',
@@ -33,6 +31,7 @@ import { InputTextModule } from 'primeng/inputtext';
 export class TableLecheExtraidaComponent {
 
   @ViewChild('tableLecheExtraida') table!: Table;
+  @Output() rowClick = new EventEmitter<any>();
 
   loading: boolean = false;
   hasNewRowInEditing: boolean = false;
@@ -274,7 +273,9 @@ export class TableLecheExtraidaComponent {
 
   onRowClick(rowData: any): void {
     if (this.isAnyRowEditing()) return;
+
     console.log('Fila seleccionada:', rowData);
+    this.rowClick.emit(rowData);
   }
 
   isEditing(rowData: any): boolean {

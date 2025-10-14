@@ -18,17 +18,6 @@
   border-left: 3px solid #224186;
 }
 
-/* Overlay clickeable para modo readonly */
-.clickeable-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  cursor: pointer;
-}
-
 /* Estilos para los botones de acción siguiendo el patrón del friam-038 */
 :host ::ng-deep {
   .p-button.p-button-text.p-button-secondary {
@@ -76,7 +65,7 @@
     }
   }
 
-  // Estilos para la tabla - ACTUALIZADOS PARA MAYOR TAMAÑO
+  // ✅ CAMBIO PRINCIPAL: Estilos para la tabla con hover específico
   .p-table {
     width: 100%;
 
@@ -98,15 +87,25 @@
       text-align: center;
       font-size: 13px;
       white-space: nowrap;
-      // position: relative; // Para el overlay clickeable
     }
 
     .p-table-tbody > tr:nth-child(even) {
       background-color: #f9fafb;
     }
 
-    .p-table-tbody > tr:hover {
-      background-color: #f3f4f6;
+    // ✅ HOVER ESPECÍFICO: Solo para filas clickeables (no en edición)
+    .p-table-tbody > tr {
+      // Hover por defecto (cuando cursor es pointer)
+      &[style*="cursor: pointer"]:hover {
+        background-color: #e5e7eb !important;
+      }
+
+      // Sin hover cuando está en edición (cursor: default)
+      &[style*="cursor: default"] {
+        &:hover {
+          background-color: inherit !important;
+        }
+      }
     }
 
     // Asegurar que el scroll funcione correctamente
@@ -118,6 +117,16 @@
     .p-table-scrollable-body {
       overflow-x: auto;
     }
+  }
+
+  // ✅ IMPORTANTE: Sobreescribir hover por defecto de PrimeNG
+  .p-datatable .p-datatable-tbody > tr:hover td {
+    background-color: inherit !important;
+  }
+
+  // ✅ HOVER ESPECÍFICO: Solo para filas con cursor pointer
+  .p-datatable .p-datatable-tbody > tr[style*="cursor: pointer"]:hover td {
+    background-color: #e5e7eb !important;
   }
 
   // Estilos para inputs en modo edición
@@ -180,7 +189,6 @@
   padding: 12px 8px;
   border: 1px solid #ddd;
   vertical-align: middle;
-  position: relative;
 }
 
 .consejeria-container {

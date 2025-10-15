@@ -1,3 +1,250 @@
 :host {
   display: block;
 }
+
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.new-row {
+  background-color: #f8f9fa;
+  border-left: 3px solid #224186;
+}
+
+/* Estilos para el header de EXTRACCIÓN */
+.extraccion-header-main {
+  background-color: #224186;
+  color: white;
+  padding: 15px 8px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.extraccion-header-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+}
+
+.extraccion-main-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.extraccion-sub-headers {
+  display: flex;
+  justify-content: space-between;
+}
+
+.extraccion-sub-item {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+/* Estilos para las celdas de datos */
+.extraccion-cell {
+  padding: 12px 8px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.extraccion-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.extraccion-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 6px;
+  border-right: 1px solid #eee;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.extraccion-input {
+  width: 100% !important;
+  max-width: 80px;
+  padding: 6px 8px !important;
+  text-align: center;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px;
+  font-size: 13px;
+
+  &.time-input {
+    font-family: 'Courier New', monospace;
+  }
+
+  &.ml-input {
+    max-width: 60px;
+  }
+
+  &:focus {
+    border-color: #224186 !important;
+    box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+  }
+}
+
+.extraccion-display {
+  font-size: 13px;
+  color: #333;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+/* Estilos generales de la tabla */
+:host ::ng-deep {
+  .p-table {
+    width: 100%;
+
+    .p-table-thead > tr > th {
+      background-color: #224186;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 15px 12px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 12px 10px;
+      border: 1px solid #e5e7eb;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .p-table-tbody > tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+  }
+
+  /* Estilos para botones */
+  .p-button.p-button-text.p-button-secondary {
+    color: #6c757d;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: #495057;
+    }
+
+    &:disabled {
+      color: #c6c7c8 !important;
+      cursor: not-allowed !important;
+      opacity: 0.4 !important;
+    }
+  }
+
+  .p-button.p-button-text.p-button-success {
+    color: #28a745;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #1e7e34;
+    }
+  }
+
+  .p-button.p-button-text.p-button-danger {
+    color: #dc3545;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #bd2130;
+    }
+  }
+
+  /* Estilos para inputs generales */
+  .p-inputtext {
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+    }
+  }
+
+  /* Estilos para el calendario */
+  .p-datepicker {
+    width: 100% !important;
+
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+    }
+  }
+}
+
+/* Responsividad */
+@media (max-width: 1200px) {
+  .container-table {
+    margin: 15px 0;
+  }
+
+  :host ::ng-deep .p-table .p-table-thead > tr > th {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  :host ::ng-deep .p-table .p-table-tbody > tr > td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .extraccion-main-title {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .extraccion-sub-item {
+    font-size: 11px;
+    padding: 3px 4px;
+  }
+
+  .extraccion-input {
+    font-size: 12px;
+    padding: 4px 6px !important;
+
+    &.time-input {
+      max-width: 70px;
+    }
+
+    &.ml-input {
+      max-width: 50px;
+    }
+  }
+
+  .extraccion-display {
+    font-size: 12px;
+  }
+
+  .extraccion-section {
+    padding: 0 4px;
+  }
+}

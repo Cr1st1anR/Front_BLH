@@ -1,47 +1,59 @@
 <div class="card flex justify-center">
-  <p-dialog [header]="getDialogTitle()" [modal]="true" [(visible)]="visible" [style]="{ width: '80rem' }"
-    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true" (onHide)="onHide()" [draggable]="false">
+  <p-dialog [header]="getDialogTitle()" [modal]="true" [(visible)]="visible" [style]="{ width: '90rem' }"
+    [breakpoints]="{ '1199px': '85vw', '575px': '95vw' }" [maximizable]="true" (onHide)="onHide()" [draggable]="false">
 
     <p-toast position="top-right" key="tr-dialog" />
 
     <!-- SPINNER DE CARGA -->
     @if (loading) {
-    <div
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="loading-overlay">
       <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
-        [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+        [style]="{ width: '70px', height: '70px' }">
+      </p-progress-spinner>
     </div>
     }
 
     <!-- CONTENIDO DEL DIALOG -->
     <div class="dialog-content">
-      <h3>Detalles de la Extracción</h3>
 
-      <!-- Información básica de la fila seleccionada -->
-      <div class="info-grid">
-        <div class="info-item">
-          <label>Fecha de Registro:</label>
-          <span>{{ rowData?.fecha_registro || 'N/A' }}</span>
+      <!-- Información básica de la extracción -->
+      <div class="info-section">
+        <h3 class="section-title">Información del Registro</h3>
+
+        <div class="info-grid">
+          @for (info of getBasicInfo(); track $index) {
+          <div class="info-item">
+            <label>{{ info.label }}:</label>
+            <span>{{ info.value }}</span>
+          </div>
+          }
         </div>
-        <div class="info-item">
-          <label>Apellidos y Nombre:</label>
-          <span>{{ rowData?.apellidos_nombre || 'N/A' }}</span>
-        </div>
-        <div class="info-item">
-          <label>Edad:</label>
-          <span>{{ rowData?.edad || 'N/A' }}</span>
-        </div>
-        <div class="info-item">
-          <label>Identificación:</label>
-          <span>{{ rowData?.identificacion || 'N/A' }}</span>
+
+        <!-- Información de consejería -->
+        <div class="consejeria-info">
+          <div class="info-item full-width">
+            <label>Consejería Recibida:</label>
+            <span [class.no-data]="getConsejeriaInfo() === 'No especificada'">
+              {{ getConsejeriaInfo() }}
+            </span>
+          </div>
         </div>
       </div>
 
-      <!-- Placeholder para componentes futuros -->
-      <div class="components-placeholder">
-        <p class="text-gray-500 text-center italic">
-          Aquí se mostrarán los componentes table-extraccion y new-register-extraccion próximamente
-        </p>
+      <!-- Sección de extracciones -->
+      <div class="extracciones-section">
+        <h3 class="section-title">Registro de Extracciones</h3>
+
+        <!-- Botón para nueva extracción -->
+        <new-register-extraccion
+          (nuevaExtraccion)="onNuevaExtraccion()"
+          [disabled]="isNewExtraccionButtonDisabled()">
+        </new-register-extraccion>
+
+        <!-- Tabla de extracciones -->
+        <table-extraccion
+          [idExtraccion]="rowData?.id_extraccion">
+        </table-extraccion>
       </div>
     </div>
 

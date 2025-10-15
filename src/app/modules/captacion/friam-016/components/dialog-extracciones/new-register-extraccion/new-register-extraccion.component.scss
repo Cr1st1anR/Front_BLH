@@ -1,3 +1,14 @@
-:host {
+:host ::ng-deep {
   display: block;
+  p-button {
+    button {
+      background: #224186 !important;
+      border: 1px solid #224186 !important;
+      color: white !important;
+      &:not(:disabled):hover {
+        background: #456dc4 !important;
+        border: 1px solid #456dc4 !important;
+      }
+    }
+  }
 }

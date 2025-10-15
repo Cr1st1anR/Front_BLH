@@ -13,15 +13,18 @@ import { DialogExtraccionesComponent } from "../dialog-extracciones/dialog-extra
     TableLecheExtraidaComponent,
     NewRegisterButtonComponent,
     DialogExtraccionesComponent
-],
+  ],
   templateUrl: './principal-page-leche-extraida.component.html',
   styleUrl: './principal-page-leche-extraida.component.scss',
 })
 export class PrincipalPageLecheExtraidaComponent {
   @ViewChild(TableLecheExtraidaComponent) tableComponent!: TableLecheExtraidaComponent;
 
+  // Estados del componente
   showDialog: boolean = false;
   selectedRowData: any = null;
+
+  // ==================== GETTERS ====================
 
   /**
    * Obtener el estado de hasNewRowInEditing desde el componente de la tabla
@@ -29,6 +32,8 @@ export class PrincipalPageLecheExtraidaComponent {
   get hasNewRowInEditing(): boolean {
     return this.tableComponent?.hasNewRowInEditing || false;
   }
+
+  // ==================== MÉTODOS PÚBLICOS ====================
 
   /**
    * Crear un nuevo registro delegando al componente de la tabla

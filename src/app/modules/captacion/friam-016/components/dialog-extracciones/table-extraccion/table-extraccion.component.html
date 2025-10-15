@@ -1,1 +1,210 @@
-<p>table-extraccion works!</p>,
+<p-toast position="top-right" key="tr-extraccion" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableExtracciones [value]="dataExtracciones" [scrollable]="true" scrollHeight="400px"
+    [columns]="headersExtracciones" [tableStyle]="{ 'min-width': '80rem', 'width': '100%' }"
+    dataKey="id_registro_extraccion" editMode="row">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'extraccion_1' || col.tipo === 'extraccion_2') {
+        <th [style.width]="col.width" class="extraccion-header-main">
+          <div class="extraccion-header-container">
+            <div class="extraccion-main-title">{{ col.header }}</div>
+            <div class="extraccion-sub-headers">
+              @if (col.tipo === 'extraccion_1') {
+              <div class="extraccion-sub-item">AM (HH:MM)</div>
+              <div class="extraccion-sub-item">ML</div>
+              } @else {
+              <div class="extraccion-sub-item">PM (HH:MM)</div>
+              <div class="extraccion-sub-item">ML</div>
+              }
+            </div>
+          </div>
+        </th>
+        } @else {
+        <th [style.width]="col.width">{{ col.header }}</th>
+        }
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns" let-editing="editing">
+      <tr [pEditableRow]="rowData" [class.new-row]="rowData.isNew">
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'date') {
+        <td [style.width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker
+                [(ngModel)]="rowData.fecha_aux"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha"
+                appendTo="body"
+                class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span>{{ rowData.fecha_display || 'Sin fecha' }}</span>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'extraccion_1') {
+        <td class="extraccion-cell" [style.width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <div class="extraccion-container">
+                <div class="extraccion-section">
+                  <input
+                    pInputText
+                    type="text"
+                    [(ngModel)]="rowData.extraccion_1.am"
+                    placeholder="08:30"
+                    class="extraccion-input time-input"
+                    maxlength="5">
+                </div>
+                <div class="extraccion-section">
+                  <input
+                    pInputText
+                    type="number"
+                    [(ngModel)]="rowData.extraccion_1.ml"
+                    placeholder="120"
+                    class="extraccion-input ml-input"
+                    min="1"
+                    max="999">
+                </div>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="output">
+              <div class="extraccion-container">
+                <div class="extraccion-section">
+                  <span class="extraccion-display">{{ rowData.extraccion_1?.am || '-' }}</span>
+                </div>
+                <div class="extraccion-section">
+                  <span class="extraccion-display">{{ rowData.extraccion_1?.ml || '-' }}</span>
+                </div>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'extraccion_2') {
+        <td class="extraccion-cell" [style.width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <div class="extraccion-container">
+                <div class="extraccion-section">
+                  <input
+                    pInputText
+                    type="text"
+                    [(ngModel)]="rowData.extraccion_2.pm"
+                    placeholder="14:45"
+                    class="extraccion-input time-input"
+                    maxlength="5">
+                </div>
+                <div class="extraccion-section">
+                  <input
+                    pInputText
+                    type="number"
+                    [(ngModel)]="rowData.extraccion_2.ml"
+                    placeholder="95"
+                    class="extraccion-input ml-input"
+                    min="1"
+                    max="999">
+                </div>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="output">
+              <div class="extraccion-container">
+                <div class="extraccion-section">
+                  <span class="extraccion-display">{{ rowData.extraccion_2?.pm || '-' }}</span>
+                </div>
+                <div class="extraccion-section">
+                  <span class="extraccion-display">{{ rowData.extraccion_2?.ml || '-' }}</span>
+                </div>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'text') {
+        <td [style.width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input
+                pInputText
+                type="text"
+                [(ngModel)]="rowData[col.field]"
+                class="w-full p-2 border border-gray-300 rounded"
+                [placeholder]="'Ingrese ' + col.header.toLowerCase()">
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span>{{ rowData[col.field] || '-' }}</span>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'acciones') {
+        <td [style.width]="col.width">
+          <div class="flex items-center justify-center gap-2">
+            <button
+              *ngIf="!editing"
+              pButton
+              pRipple
+              type="button"
+              pInitEditableRow
+              icon="pi pi-pencil"
+              text
+              rounded
+              severity="secondary"
+              (click)="onRowEditInit(rowData)"
+              [disabled]="isEditButtonDisabled(rowData)">
+            </button>
+
+            <button
+              *ngIf="editing"
+              pButton
+              pRipple
+              type="button"
+              icon="pi pi-check"
+              text
+              rounded
+              severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)">
+            </button>
+
+            <button
+              *ngIf="editing"
+              pButton
+              pRipple
+              type="button"
+              pCancelEditableRow
+              icon="pi pi-times"
+              text
+              rounded
+              severity="danger"
+              (click)="onRowEditCancel(rowData, rowIndex)">
+            </button>
+          </div>
+        </td>
+        } @else {
+        <td [style.width]="col.width">
+          <span>{{ rowData[col.field] }}</span>
+        </td>
+        }
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataExtracciones || dataExtracciones.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay extracciones registradas</p>
+  }
+</div>

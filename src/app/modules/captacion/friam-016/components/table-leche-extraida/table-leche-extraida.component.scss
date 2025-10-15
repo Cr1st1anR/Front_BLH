@@ -65,7 +65,7 @@
     }
   }
 
-  // ✅ CAMBIO PRINCIPAL: Estilos para la tabla con hover específico
+  // Estilos para la tabla con hover específico
   .p-table {
     width: 100%;
 
@@ -93,7 +93,7 @@
       background-color: #f9fafb;
     }
 
-    // ✅ HOVER ESPECÍFICO: Solo para filas clickeables (no en edición)
+    // Hover específico: Solo para filas clickeables (no en edición)
     .p-table-tbody > tr {
       // Hover por defecto (cuando cursor es pointer)
       &[style*="cursor: pointer"]:hover {
@@ -119,12 +119,12 @@
     }
   }
 
-  // ✅ IMPORTANTE: Sobreescribir hover por defecto de PrimeNG
+  // Sobreescribir hover por defecto de PrimeNG
   .p-datatable .p-datatable-tbody > tr:hover td {
     background-color: inherit !important;
   }
 
-  // ✅ HOVER ESPECÍFICO: Solo para filas con cursor pointer
+  // Hover específico: Solo para filas con cursor pointer
   .p-datatable .p-datatable-tbody > tr[style*="cursor: pointer"]:hover td {
     background-color: #e5e7eb !important;
   }
@@ -133,6 +133,16 @@
   .p-inputtext {
     width: 100% !important;
     min-width: 120px;
+
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+    }
+  }
+
+  // ✅ AGREGAR: Estilos para el calendario (igual que en table-visita)
+  .p-datepicker {
+    width: 100% !important;
 
     &:focus {
       border-color: #224186 !important;

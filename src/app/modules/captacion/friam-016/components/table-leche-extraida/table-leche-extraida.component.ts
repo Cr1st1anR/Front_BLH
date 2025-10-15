@@ -11,6 +11,7 @@ import { ButtonModule } from 'primeng/button';
 import { Table } from 'primeng/table';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
 import { InputTextModule } from 'primeng/inputtext';
+import { DatePickerModule } from 'primeng/datepicker';
 
 @Component({
   selector: 'table-leche-extraida',
@@ -22,7 +23,8 @@ import { InputTextModule } from 'primeng/inputtext';
     RadioButtonModule,
     FormsModule,
     ButtonModule,
-    InputTextModule
+    InputTextModule,
+    DatePickerModule
   ],
   templateUrl: './table-leche-extraida.component.html',
   styleUrl: './table-leche-extraida.component.scss',
@@ -55,7 +57,7 @@ export class TableLecheExtraidaComponent {
       header: 'EDAD',
       field: 'edad',
       width: '200px',
-      tipo: 'number',
+      tipo: 'edad',
     },
     {
       header: 'IDENTIFICACIÓN',
@@ -119,13 +121,9 @@ export class TableLecheExtraidaComponent {
 
     setTimeout(() => {
       try {
-        this.dataLecheExtraida =
-          this.tableLecheExtraidaService.getTableLecheExtraidaData();
+        this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
 
-        if (
-          this.dataLecheExtraida &&
-          this.dataLecheExtraida.length > 0
-        ) {
+        if (this.dataLecheExtraida && this.dataLecheExtraida.length > 0) {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -158,50 +156,54 @@ export class TableLecheExtraidaComponent {
   }
 
   crearNuevoRegistroLecheExtraida(): void {
-    if (this.hasNewRowInEditing) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar el registro actual antes de crear uno nuevo',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    const nuevoRegistro: any = {
-      id_extraccion: null,
-      fecha_registro: new Date().toLocaleDateString('es-ES'),
-      apellidos_nombre: '',
-      edad: '',
-      identificacion: '',
-      municipio: '',
-      telefono: '',
-      eps: '',
-      procedencia: '',
-      consejeria: {
-        individual: null,
-        grupal: null
-      },
-      _uid: `tmp_${this.tempIdCounter--}`,
-      isNew: true
-    };
-
-    this.dataLecheExtraida.push(nuevoRegistro);
-    this.dataLecheExtraida = [...this.dataLecheExtraida];
-    this.hasNewRowInEditing = true;
-    this.editingRow = nuevoRegistro;
-
-    setTimeout(() => this.table.initRowEdit(nuevoRegistro), 100);
-
+  if (this.hasNewRowInEditing) {
     this.messageService.add({
-      severity: 'info',
-      summary: 'Nuevo registro',
-      detail: 'Se ha creado un nuevo registro. Complete los campos requeridos.',
+      severity: 'warn',
+      summary: 'Advertencia',
+      detail: 'Debe guardar o cancelar el registro actual antes de crear uno nuevo',
       key: 'tr',
-      life: 2000,
+      life: 3000,
     });
+    return;
   }
+
+  const fechaActualColombia = new Date();
+
+  const nuevoRegistro: any = {
+    id_extraccion: null,
+    fecha_registro: this.formatearFechaParaMostrar(fechaActualColombia),
+    fecha_registro_aux: fechaActualColombia,
+    apellidos_nombre: '',
+    edad: '',
+    fecha_nacimiento_aux: null,
+    identificacion: '',
+    municipio: '',
+    telefono: '',
+    eps: '',
+    procedencia: '',
+    consejeria: {
+      individual: null,
+      grupal: null
+    },
+    _uid: `tmp_${this.tempIdCounter--}`,
+    isNew: true
+  };
+
+  this.dataLecheExtraida.push(nuevoRegistro);
+  this.dataLecheExtraida = [...this.dataLecheExtraida];
+  this.hasNewRowInEditing = true;
+  this.editingRow = nuevoRegistro;
+
+  setTimeout(() => this.table.initRowEdit(nuevoRegistro), 100);
+
+  this.messageService.add({
+    severity: 'info',
+    summary: 'Nuevo registro',
+    detail: 'Se ha creado un nuevo registro. Complete los campos requeridos.',
+    key: 'tr',
+    life: 2000,
+  });
+}
 
   onRowEditInit(dataRow: any): void {
     if (this.isAnyRowEditing()) {
@@ -224,9 +226,15 @@ export class TableLecheExtraidaComponent {
       consejeria: {
         individual: dataRow.consejeria?.individual ?? null,
         grupal: dataRow.consejeria?.grupal ?? null
-      }
+      },
+      fecha_registro_aux: this.parsearFechaParaCalendario(dataRow.fecha_registro),
+      fecha_nacimiento_aux: dataRow.fecha_nacimiento_aux || null
     };
     this.editingRow = dataRow;
+
+    if (!dataRow.fecha_registro_aux) {
+      dataRow.fecha_registro_aux = this.parsearFechaParaCalendario(dataRow.fecha_registro);
+    }
 
     if (!dataRow.isNew) {
       this.hasNewRowInEditing = true;
@@ -234,6 +242,8 @@ export class TableLecheExtraidaComponent {
   }
 
   onRowEditSave(dataRow: any, index: number, event: MouseEvent): void {
+    this.procesarFechas(dataRow);
+
     if (!this.validateRequiredFields(dataRow)) {
       return;
     }
@@ -316,6 +326,67 @@ export class TableLecheExtraidaComponent {
     this.dataLecheExtraida[rowIndex].consejeria.grupal = value;
   }
 
+ageCalculate(age: Date): number {
+  const fechaNacimiento = new Date(age);
+  const fechaActual = new Date();
+
+  const offsetColombia = -5 * 60;
+  const offsetLocal = fechaActual.getTimezoneOffset();
+  const diffMinutos = offsetLocal - offsetColombia;
+
+  const fechaActualColombia = new Date(fechaActual.getTime() + (diffMinutos * 60000));
+
+  const edad = fechaActualColombia.getFullYear() - fechaNacimiento.getFullYear();
+  const mes = fechaActualColombia.getMonth() - fechaNacimiento.getMonth();
+
+  if (mes < 0 || (mes === 0 && fechaActualColombia.getDate() < fechaNacimiento.getDate())) {
+    return edad - 1;
+  }
+  return edad;
+}
+
+private procesarFechas(dataRow: any): void {
+  if (dataRow.fecha_registro_aux) {
+    dataRow.fecha_registro = this.formatearFechaParaMostrar(dataRow.fecha_registro_aux);
+  }
+
+  if (dataRow.fecha_nacimiento_aux) {
+    const fechaNacimiento = new Date(dataRow.fecha_nacimiento_aux);
+    dataRow.edad = this.ageCalculate(fechaNacimiento);
+  }
+}
+
+private formatearFechaParaMostrar(fecha: Date): string {
+  if (!fecha) return 'Sin fecha';
+
+  const fechaColombia = new Date(fecha.getTime());
+
+  const day = fechaColombia.getDate().toString().padStart(2, '0');
+  const month = (fechaColombia.getMonth() + 1).toString().padStart(2, '0');
+  const year = fechaColombia.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+private parsearFechaParaCalendario(fechaString: string | Date): Date | null {
+  if (!fechaString || fechaString === 'Sin fecha') return null;
+
+  if (fechaString instanceof Date) return fechaString;
+
+  if (typeof fechaString !== 'string') return null;
+
+  if (fechaString.includes('/')) {
+    const [day, month, year] = fechaString.split('/');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0, 0);
+  }
+
+  if (fechaString.includes('-')) {
+    const [year, month, day] = fechaString.split('-');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0, 0);
+  }
+
+  return null;
+}
 
   private getRowId(dataRow: any): string {
     return dataRow.id_extraccion?.toString() || dataRow._uid || 'unknown';

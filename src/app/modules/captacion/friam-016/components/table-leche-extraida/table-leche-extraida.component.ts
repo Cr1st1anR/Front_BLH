@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, OnInit, Input } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
@@ -34,14 +34,19 @@ export class TableLecheExtraidaComponent implements OnInit {
   @ViewChild('tableLecheExtraida') table!: Table;
   @Output() rowClick = new EventEmitter<any>();
 
+  // ✅ NUEVO: Input para recibir filtro de fecha desde el componente padre
+  @Input() filtroFecha: { year: number; month: number } | null = null;
+
   // Estados del componente
   loading: boolean = false;
   hasNewRowInEditing: boolean = false;
   editingRow: any = null;
   clonedLecheExtraida: { [s: string]: any } = {};
 
-  // Datos y configuración de la tabla
+  // ✅ NUEVO: Datos originales y filtrados
   dataLecheExtraida: any[] = [];
+  dataLecheExtraidaFiltered: any[] = [];
+
   readonly headersLecheExtraida: any[] = [
     {
       header: 'FECHA DE REGISTRO',
@@ -117,6 +122,12 @@ export class TableLecheExtraidaComponent implements OnInit {
     this.loadDataLecheExtraida();
   }
 
+  // ✅ NUEVO: Método público para aplicar filtro por fecha
+  public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
+    this.filtroFecha = filtro;
+    this.aplicarFiltros();
+  }
+
   // ==================== MÉTODOS PRINCIPALES ====================
 
   /**
@@ -128,8 +139,13 @@ export class TableLecheExtraidaComponent implements OnInit {
     // Simular delay de carga
     setTimeout(() => {
       try {
+        // ✅ CAMBIO: Cargar datos originales
         this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
-        this.showSuccessMessage(`${this.dataLecheExtraida.length} registros cargados correctamente`);
+        
+        // ✅ NUEVO: Aplicar filtros después de cargar
+        this.aplicarFiltros();
+        
+        this.showSuccessMessage(`${this.dataLecheExtraidaFiltered.length} registros cargados correctamente`);
       } catch (error) {
         this.showErrorMessage('Error al cargar los datos');
         console.error('Error al cargar datos:', error);
@@ -149,8 +165,11 @@ export class TableLecheExtraidaComponent implements OnInit {
     }
 
     const nuevoRegistro = this.createNewRecord();
+    
+    // ✅ CAMBIO: Agregar a datos originales y aplicar filtros
     this.dataLecheExtraida.push(nuevoRegistro);
-    this.dataLecheExtraida = [...this.dataLecheExtraida];
+    this.aplicarFiltros();
+    
     this.hasNewRowInEditing = true;
     this.editingRow = nuevoRegistro;
 
@@ -204,8 +223,12 @@ export class TableLecheExtraidaComponent implements OnInit {
    */
   onRowEditCancel(dataRow: any, index: number): void {
     if (dataRow.isNew) {
-      this.dataLecheExtraida.splice(index, 1);
-      this.dataLecheExtraida = [...this.dataLecheExtraida];
+      // ✅ CAMBIO: Remover de datos originales y aplicar filtros
+      const originalIndex = this.dataLecheExtraida.findIndex(item => item._uid === dataRow._uid);
+      if (originalIndex !== -1) {
+        this.dataLecheExtraida.splice(originalIndex, 1);
+      }
+      this.aplicarFiltros();
     } else {
       this.restoreOriginalData(dataRow, index);
     }
@@ -250,6 +273,45 @@ export class TableLecheExtraidaComponent implements OnInit {
 
   onConsejeriaGrupalChange(rowIndex: number, value: number): void {
     this.updateConsejeriaValue(rowIndex, 'grupal', value);
+  }
+
+  // ==================== MÉTODOS DE FILTROS ====================
+
+  /**
+   * ✅ NUEVO: Aplicar todos los filtros
+   */
+  private aplicarFiltros(): void {
+    let datosFiltrados = [...this.dataLecheExtraida];
+
+    // Aplicar filtro por fecha si existe
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
+
+    this.dataLecheExtraidaFiltered = datosFiltrados;
+  }
+
+  /**
+   * ✅ NUEVO: Filtrar por mes y año
+   */
+  private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
+    return datos.filter(item => {
+      if (!item.fecha_registro) return false;
+
+      // Parsear la fecha del registro (formato dd/mm/yyyy)
+      const fechaParts = item.fecha_registro.split('/');
+      if (fechaParts.length !== 3) return false;
+
+      const dia = parseInt(fechaParts[0]);
+      const mes = parseInt(fechaParts[1]);
+      const ano = parseInt(fechaParts[2]);
+
+      // Validar que la fecha sea válida
+      if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return false;
+
+      // Comparar mes y año
+      return mes === filtro.month && ano === filtro.year;
+    });
   }
 
   // ==================== MÉTODOS PRIVADOS ====================
@@ -310,13 +372,30 @@ export class TableLecheExtraidaComponent implements OnInit {
    * Actualizar valor de consejería
    */
   private updateConsejeriaValue(rowIndex: number, type: 'individual' | 'grupal', value: number): void {
-    if (!this.dataLecheExtraida[rowIndex].consejeria) {
-      this.dataLecheExtraida[rowIndex].consejeria = {
-        individual: null,
-        grupal: null
-      };
+    // ✅ CAMBIO: Usar datos filtrados para el índice, pero actualizar en datos originales
+    const filteredRow = this.dataLecheExtraidaFiltered[rowIndex];
+    const originalIndex = this.dataLecheExtraida.findIndex(item => 
+      this.getRowId(item) === this.getRowId(filteredRow)
+    );
+
+    if (originalIndex !== -1) {
+      if (!this.dataLecheExtraida[originalIndex].consejeria) {
+        this.dataLecheExtraida[originalIndex].consejeria = {
+          individual: null,
+          grupal: null
+        };
+      }
+      this.dataLecheExtraida[originalIndex].consejeria[type] = value;
+      
+      // También actualizar en datos filtrados
+      if (!filteredRow.consejeria) {
+        filteredRow.consejeria = {
+          individual: null,
+          grupal: null
+        };
+      }
+      filteredRow.consejeria[type] = value;
     }
-    this.dataLecheExtraida[rowIndex].consejeria[type] = value;
   }
 
   /**
@@ -442,6 +521,9 @@ export class TableLecheExtraidaComponent implements OnInit {
       dataRow.isNew = false;
       delete dataRow._uid;
 
+      // ✅ CAMBIO: Aplicar filtros después de guardar
+      this.aplicarFiltros();
+      
       this.resetEditingState();
       this.table.saveRowEdit(dataRow, rowElement);
       this.showSuccessMessage('Registro guardado correctamente');
@@ -458,6 +540,9 @@ export class TableLecheExtraidaComponent implements OnInit {
       this.editingRow = null;
       this.hasNewRowInEditing = false;
 
+      // ✅ CAMBIO: Aplicar filtros después de actualizar
+      this.aplicarFiltros();
+
       this.table.saveRowEdit(dataRow, rowElement);
       this.showSuccessMessage('Registro actualizado correctamente');
     }, 500);
@@ -471,13 +556,21 @@ export class TableLecheExtraidaComponent implements OnInit {
     const originalData = this.clonedLecheExtraida[rowId];
 
     if (originalData) {
-      this.dataLecheExtraida[index] = {
-        ...originalData,
-        consejeria: {
-          individual: originalData.consejeria?.individual ?? null,
-          grupal: originalData.consejeria?.grupal ?? null
-        }
-      };
+      // ✅ CAMBIO: Restaurar en datos originales
+      const originalIndex = this.dataLecheExtraida.findIndex(item => this.getRowId(item) === rowId);
+      if (originalIndex !== -1) {
+        this.dataLecheExtraida[originalIndex] = {
+          ...originalData,
+          consejeria: {
+            individual: originalData.consejeria?.individual ?? null,
+            grupal: originalData.consejeria?.grupal ?? null
+          }
+        };
+      }
+      
+      // Aplicar filtros para actualizar la vista
+      this.aplicarFiltros();
+      
       delete this.clonedLecheExtraida[rowId];
     }
   }
@@ -490,14 +583,16 @@ export class TableLecheExtraidaComponent implements OnInit {
       const index = this.dataLecheExtraida.findIndex(item => item._uid === this.editingRow!._uid);
       if (index !== -1) {
         this.dataLecheExtraida.splice(index, 1);
-        this.dataLecheExtraida = [...this.dataLecheExtraida];
+        this.aplicarFiltros();
       }
     } else if (this.editingRow) {
       const rowId = this.getRowId(this.editingRow);
       const index = this.dataLecheExtraida.findIndex(item => this.getRowId(item) === rowId);
 
       if (index !== -1 && this.clonedLecheExtraida[rowId]) {
-        this.restoreOriginalData(this.editingRow, index);
+        this.dataLecheExtraida[index] = this.clonedLecheExtraida[rowId];
+        this.aplicarFiltros();
+        delete this.clonedLecheExtraida[rowId];
       }
     }
 

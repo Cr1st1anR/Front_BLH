@@ -19,6 +19,7 @@ import { DialogExtraccionesComponent } from "../dialog-extracciones/dialog-extra
 })
 export class PrincipalPageLecheExtraidaComponent {
   @ViewChild(TableLecheExtraidaComponent) tableComponent!: TableLecheExtraidaComponent;
+  @ViewChild(MonthPickerComponent) monthPickerComponent!: MonthPickerComponent;
 
   // Estados del componente
   showDialog: boolean = false;
@@ -59,5 +60,17 @@ export class PrincipalPageLecheExtraidaComponent {
   onDialogClosed(): void {
     this.showDialog = false;
     this.selectedRowData = null;
+  }
+
+  /**
+   * ✅ CORREGIDO: Manejar cambio en el month picker siguiendo el patrón de friam-041
+   */
+  onMonthPickerChange(filtro: { year: number; month: number }): void {
+    console.log('Month picker cambió:', filtro);
+    
+    if (this.tableComponent) {
+      // Aplicar filtro por fecha
+      this.tableComponent.filtrarPorFecha(filtro);
+    }
   }
 }

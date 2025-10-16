@@ -83,6 +83,51 @@ export class TableLecheExtraidaService {
           individual: 1,
           grupal: null
         }
+      },
+      {
+        id_extraccion: 6,
+        fecha_registro: '25/09/2025',
+        apellidos_nombre: 'Valentina Herrera Castillo',
+        edad: 28,
+        identificacion: '33456789',
+        municipio: 'Pasto',
+        telefono: '3145678901',
+        eps: 'Famisanar',
+        procedencia: '888',
+        consejeria: {
+          individual: 1,
+          grupal: null
+        }
+      },
+      {
+        id_extraccion: 7,
+        fecha_registro: '20/09/2025',
+        apellidos_nombre: 'Paola Andrea López García',
+        edad: 30,
+        identificacion: '41234567',
+        municipio: 'Ipiales',
+        telefono: '3176543210',
+        eps: 'Coomeva',
+        procedencia: '999',
+        consejeria: {
+          individual: null,
+          grupal: 1
+        }
+      },
+      {
+        id_extraccion: 8,
+        fecha_registro: '05/11/2025',
+        apellidos_nombre: 'Diana Carolina Ruiz Morales',
+        edad: 25,
+        identificacion: '50123456',
+        municipio: 'Tumaco',
+        telefono: '3198765432',
+        eps: 'Salud Total',
+        procedencia: '777',
+        consejeria: {
+          individual: 1,
+          grupal: 1
+        }
       }
     ];
   }

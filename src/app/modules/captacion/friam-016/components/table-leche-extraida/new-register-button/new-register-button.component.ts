@@ -8,10 +8,10 @@ import { ButtonModule } from 'primeng/button';
   styleUrl: './new-register-button.component.scss',
 })
 export class NewRegisterButtonComponent {
-  @Input() disabled: boolean = false;
+  @Input() disabled = false;
   @Output() nuevoRegistro = new EventEmitter<void>();
 
-  crearNuevoRegistro() {
+  crearNuevoRegistro(): void {
     this.nuevoRegistro.emit();
   }
 }

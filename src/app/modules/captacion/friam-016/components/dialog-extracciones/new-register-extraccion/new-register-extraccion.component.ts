@@ -8,10 +8,10 @@ import { ButtonModule } from 'primeng/button';
   styleUrl: './new-register-extraccion.component.scss',
 })
 export class NewRegisterExtraccionComponent {
-  @Input() disabled: boolean = false;
+  @Input() disabled = false;
   @Output() nuevaExtraccion = new EventEmitter<void>();
 
-  crearNuevaExtraccion() {
+  crearNuevaExtraccion(): void {
     this.nuevaExtraccion.emit();
   }
 }

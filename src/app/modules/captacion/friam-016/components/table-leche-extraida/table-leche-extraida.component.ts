@@ -1,15 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, Output, EventEmitter, OnInit, Input } from '@angular/core';
-import { MessageService } from 'primeng/api';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
-import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { Table } from 'primeng/table';
-import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
+import { InputTextModule } from 'primeng/inputtext';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { Table, TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
 
 @Component({
@@ -30,22 +29,18 @@ import { TableLecheExtraidaService } from './services/table-leche-extraida.servi
   providers: [MessageService]
 })
 export class TableLecheExtraidaComponent implements OnInit {
-
   @ViewChild('tableLecheExtraida') table!: Table;
   @Output() rowClick = new EventEmitter<any>();
-
-  // ✅ NUEVO: Input para recibir filtro de fecha desde el componente padre
   @Input() filtroFecha: { year: number; month: number } | null = null;
 
-  // Estados del componente
-  loading: boolean = false;
-  hasNewRowInEditing: boolean = false;
+  loading = false;
+  hasNewRowInEditing = false;
   editingRow: any = null;
-  clonedLecheExtraida: { [s: string]: any } = {};
-
-  // ✅ NUEVO: Datos originales y filtrados
   dataLecheExtraida: any[] = [];
   dataLecheExtraidaFiltered: any[] = [];
+
+  private clonedLecheExtraida: { [s: string]: any } = {};
+  private tempIdCounter = -1;
 
   readonly headersLecheExtraida: any[] = [
     {
@@ -110,54 +105,43 @@ export class TableLecheExtraidaComponent implements OnInit {
     },
   ];
 
-  // Utilidades
-  private tempIdCounter: number = -1;
-
   constructor(
     private tableLecheExtraidaService: TableLecheExtraidaService,
     private messageService: MessageService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadDataLecheExtraida();
   }
 
-  // ✅ MODIFICADO: Método público para aplicar filtro por fecha
-public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
-  this.filtroFecha = filtro;
-  this.aplicarFiltros();
-}
+  filtrarPorFecha(filtro: { year: number; month: number } | null): void {
+    this.filtroFecha = filtro;
+    this.aplicarFiltros();
+    this.mostrarNotificacionFiltro();
+  }
 
-  // ==================== MÉTODOS PRINCIPALES ====================
+  aplicarFiltroInicialConNotificacion(filtro: { year: number; month: number } | null): void {
+    this.filtroFecha = filtro;
+    this.aplicarFiltros();
+    this.mostrarNotificacionFiltro();
+  }
 
-  /**
-   * Cargar datos de la tabla
-   */
   loadDataLecheExtraida(): void {
-  this.loading = true;
+    this.loading = true;
 
-  // Simular delay de carga
-  setTimeout(() => {
-    try {
-      // ✅ MODIFICADO: Cargar datos originales
-      this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
-      
-      // ✅ MODIFICADO: Inicializar datos filtrados con todos los datos
-      this.dataLecheExtraidaFiltered = [...this.dataLecheExtraida];
-      
-      this.showSuccessMessage(`${this.dataLecheExtraida.length} registros cargados correctamente`);
-    } catch (error) {
-      this.showErrorMessage('Error al cargar los datos');
-      console.error('❌ Error al cargar datos:', error);
-    } finally {
-      this.loading = false;
-    }
-  }, 800);
-}
+    setTimeout(() => {
+      try {
+        this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
+        this.dataLecheExtraidaFiltered = [...this.dataLecheExtraida];
+      } catch (error) {
+        this.showErrorMessage('Error al cargar los datos');
+        console.error('Error al cargar datos:', error);
+      } finally {
+        this.loading = false;
+      }
+    }, 800);
+  }
 
-  /**
-   * Crear nuevo registro
-   */
   crearNuevoRegistroLecheExtraida(): void {
     if (this.hasNewRowInEditing) {
       this.showWarningMessage('Debe guardar o cancelar el registro actual antes de crear uno nuevo');
@@ -165,8 +149,6 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     }
 
     const nuevoRegistro = this.createNewRecord();
-    
-    // ✅ CAMBIO: Agregar a datos originales y aplicar filtros
     this.dataLecheExtraida.push(nuevoRegistro);
     this.aplicarFiltros();
     
@@ -177,9 +159,6 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     this.showInfoMessage('Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
-  /**
-   * Iniciar edición de fila
-   */
   onRowEditInit(dataRow: any): void {
     if (this.isAnyRowEditing()) {
       this.showWarningMessage('Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -199,9 +178,6 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     }
   }
 
-  /**
-   * Guardar edición de fila
-   */
   onRowEditSave(dataRow: any, index: number, event: MouseEvent): void {
     this.procesarFechas(dataRow);
 
@@ -218,12 +194,8 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     }
   }
 
-  /**
-   * Cancelar edición de fila
-   */
   onRowEditCancel(dataRow: any, index: number): void {
     if (dataRow.isNew) {
-      // ✅ CAMBIO: Remover de datos originales y aplicar filtros
       const originalIndex = this.dataLecheExtraida.findIndex(item => item._uid === dataRow._uid);
       if (originalIndex !== -1) {
         this.dataLecheExtraida.splice(originalIndex, 1);
@@ -236,15 +208,10 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     this.resetEditingState();
   }
 
-  /**
-   * Click en fila
-   */
   onRowClick(rowData: any): void {
     if (this.isAnyRowEditing()) return;
     this.rowClick.emit(rowData);
   }
-
-  // ==================== MÉTODOS DE VALIDACIÓN Y ESTADO ====================
 
   isEditing(rowData: any): boolean {
     return this.editingRow !== null &&
@@ -260,8 +227,6 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ==================== MÉTODOS DE CONSEJERÍA ====================
-
   getConsejeriaValue(rowData: any, type: 'individual' | 'grupal'): number | null {
     return rowData?.consejeria?.[type] ?? null;
   }
@@ -274,68 +239,46 @@ public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
     this.updateConsejeriaValue(rowIndex, 'grupal', value);
   }
 
-  // ==================== MÉTODOS DE FILTROS ====================
+  private aplicarFiltros(): void {
+    let datosFiltrados = [...this.dataLecheExtraida];
 
-  /**
- * ✅ MODIFICADO: Aplicar todos los filtros
- */
-private aplicarFiltros(): void {
-  let datosFiltrados = [...this.dataLecheExtraida];
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
 
-  // ✅ NUEVO: Filtrar por fecha si está presente
-  if (this.filtroFecha) {
-    datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    this.dataLecheExtraidaFiltered = datosFiltrados;
   }
 
-  this.dataLecheExtraidaFiltered = datosFiltrados;
-}
+  private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
+    return datos.filter(item => {
+      if (!item.fecha_registro) return false;
 
-  /**
- * ✅ MODIFICADO: Filtrar por mes y año
- */
-private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
+      const fechaParts = item.fecha_registro.split('/');
+      if (fechaParts.length !== 3) return false;
 
-  const resultados = datos.filter(item => {
-    if (!item.fecha_registro) {
-      return false;
-    }
+      const [dia, mes, ano] = fechaParts.map((part: string) => parseInt(part));
+      if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return false;
 
-    // Parsear la fecha del registro (formato dd/mm/yyyy)
-    const fechaParts = item.fecha_registro.split('/');
-    if (fechaParts.length !== 3) {
-      return false;
-    }
+      return mes === filtro.month && ano === filtro.year;
+    });
+  }
 
-    const dia = parseInt(fechaParts[0]);
-    const mes = parseInt(fechaParts[1]);
-    const ano = parseInt(fechaParts[2]);
-
-    // Validar que la fecha sea válida
-    if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
-      return false;
-    }
-
-    // Comparar mes y año
-    const coincide = mes === filtro.month && ano === filtro.year;
+  private mostrarNotificacionFiltro(): void {
+    const mensaje = this.dataLecheExtraidaFiltered.length > 0
+      ? 'Datos cargados para la fecha seleccionada'
+      : 'No hay datos para la fecha seleccionada';
     
-    return coincide;
-  });
+    const tipo = this.dataLecheExtraidaFiltered.length > 0 ? 'success' : 'info';
+    this.showMessage(tipo, mensaje);
+  }
 
-  return resultados;
-}
-
-  // ==================== MÉTODOS PRIVADOS ====================
-
-  /**
-   * Crear nuevo registro con valores por defecto
-   */
   private createNewRecord(): any {
-    const fechaActualColombia = new Date();
+    const fechaActual = new Date();
 
     return {
       id_extraccion: null,
-      fecha_registro: this.formatearFechaParaMostrar(fechaActualColombia),
-      fecha_registro_aux: fechaActualColombia,
+      fecha_registro: this.formatearFechaParaMostrar(fechaActual),
+      fecha_registro_aux: fechaActual,
       apellidos_nombre: '',
       edad: '',
       fecha_nacimiento_aux: null,
@@ -344,18 +287,12 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
       telefono: '',
       eps: '',
       procedencia: '',
-      consejeria: {
-        individual: null,
-        grupal: null
-      },
+      consejeria: { individual: null, grupal: null },
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
   }
 
-  /**
-   * Clonar fila para edición
-   */
   private cloneRowForEditing(dataRow: any): void {
     const rowId = this.getRowId(dataRow);
     this.clonedLecheExtraida[rowId] = {
@@ -369,53 +306,36 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
     };
   }
 
-  /**
-   * Inicializar campos auxiliares
-   */
   private initializeAuxiliaryFields(dataRow: any): void {
     if (!dataRow.fecha_registro_aux) {
       dataRow.fecha_registro_aux = this.parsearFechaParaCalendario(dataRow.fecha_registro);
     }
   }
 
-  /**
-   * Actualizar valor de consejería
-   */
   private updateConsejeriaValue(rowIndex: number, type: 'individual' | 'grupal', value: number): void {
-    // ✅ CAMBIO: Usar datos filtrados para el índice, pero actualizar en datos originales
     const filteredRow = this.dataLecheExtraidaFiltered[rowIndex];
     const originalIndex = this.dataLecheExtraida.findIndex(item => 
       this.getRowId(item) === this.getRowId(filteredRow)
     );
 
-    if (originalIndex !== -1) {
-      if (!this.dataLecheExtraida[originalIndex].consejeria) {
-        this.dataLecheExtraida[originalIndex].consejeria = {
-          individual: null,
-          grupal: null
-        };
+    if (originalIndex === -1) return;
+
+    const ensureConsejeria = (row: any) => {
+      if (!row.consejeria) {
+        row.consejeria = { individual: null, grupal: null };
       }
-      this.dataLecheExtraida[originalIndex].consejeria[type] = value;
-      
-      // También actualizar en datos filtrados
-      if (!filteredRow.consejeria) {
-        filteredRow.consejeria = {
-          individual: null,
-          grupal: null
-        };
-      }
-      filteredRow.consejeria[type] = value;
-    }
+    };
+
+    ensureConsejeria(this.dataLecheExtraida[originalIndex]);
+    ensureConsejeria(filteredRow);
+
+    this.dataLecheExtraida[originalIndex].consejeria[type] = value;
+    filteredRow.consejeria[type] = value;
   }
 
-  /**
-   * Calcular edad basada en fecha de nacimiento (zona horaria Colombia UTC-5)
-   */
   private ageCalculate(birthDate: Date): number {
     const fechaNacimiento = new Date(birthDate);
     const fechaActual = new Date();
-
-    // Ajuste para zona horaria de Colombia (UTC-5)
     const offsetColombia = -5 * 60;
     const offsetLocal = fechaActual.getTimezoneOffset();
     const diffMinutos = offsetLocal - offsetColombia;
@@ -431,24 +351,16 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
     return edad;
   }
 
-  /**
-   * Procesar fechas antes de guardar
-   */
   private procesarFechas(dataRow: any): void {
-    // Procesar fecha de registro
     if (dataRow.fecha_registro_aux) {
       dataRow.fecha_registro = this.formatearFechaParaMostrar(dataRow.fecha_registro_aux);
     }
 
-    // Procesar fecha de nacimiento y calcular edad
     if (dataRow.fecha_nacimiento_aux) {
       dataRow.edad = this.ageCalculate(dataRow.fecha_nacimiento_aux);
     }
   }
 
-  /**
-   * Formatear fecha para mostrar (dd/mm/yyyy)
-   */
   private formatearFechaParaMostrar(fecha: Date): string {
     if (!fecha) return 'Sin fecha';
 
@@ -459,9 +371,6 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
     return `${day}/${month}/${year}`;
   }
 
-  /**
-   * Parsear fecha desde string para calendario
-   */
   private parsearFechaParaCalendario(fechaString: string | Date): Date | null {
     if (!fechaString || fechaString === 'Sin fecha') return null;
     if (fechaString instanceof Date) return fechaString;
@@ -480,18 +389,12 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
     return null;
   }
 
-  /**
-   * Obtener ID único de la fila
-   */
   private getRowId(dataRow: any): string {
     return dataRow.id_extraccion?.toString() || dataRow._uid || 'unknown';
   }
 
-  /**
-   * Validar campos obligatorios
-   */
   private validateRequiredFields(dataRow: any): boolean {
-    const requiredFieldsMap = {
+    const requiredFields = {
       'apellidos_nombre': 'Apellidos y Nombre',
       'edad': 'Edad',
       'identificacion': 'Identificación',
@@ -501,48 +404,36 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
       'procedencia': 'Procedencia'
     };
 
-    // Validar campos de texto
-    for (const [field, label] of Object.entries(requiredFieldsMap)) {
+    for (const [field, label] of Object.entries(requiredFields)) {
       const value = dataRow[field];
       if (!value || value.toString().trim() === '') {
-        this.showErrorMessage(`El campo ${label} es obligatorio`);
+        this.showMessage('error', `El campo ${label} es obligatorio`);
         return false;
       }
     }
 
-    // Validar consejería
-    const individualSeleccionado = dataRow.consejeria?.individual !== null && dataRow.consejeria?.individual !== undefined;
-    const grupalSeleccionado = dataRow.consejeria?.grupal !== null && dataRow.consejeria?.grupal !== undefined;
-
-    if (!individualSeleccionado && !grupalSeleccionado) {
-      this.showErrorMessage('Debe seleccionar al menos una opción de consejería (Individual o Grupal)');
+    const hasConsejeria = dataRow.consejeria?.individual !== null || dataRow.consejeria?.grupal !== null;
+    if (!hasConsejeria) {
+      this.showMessage('error', 'Debe seleccionar al menos una opción de consejería (Individual o Grupal)');
       return false;
     }
 
     return true;
   }
 
-  /**
-   * Guardar nuevo registro (simulado)
-   */
   private guardarNuevoRegistro(dataRow: any, rowElement: HTMLTableRowElement): void {
     setTimeout(() => {
-      dataRow.id_extraccion = Date.now(); // Simular ID del backend
+      dataRow.id_extraccion = Date.now();
       dataRow.isNew = false;
       delete dataRow._uid;
 
-      // ✅ CAMBIO: Aplicar filtros después de guardar
       this.aplicarFiltros();
-      
       this.resetEditingState();
       this.table.saveRowEdit(dataRow, rowElement);
-      this.showSuccessMessage('Registro guardado correctamente');
+      this.showMessage('success', 'Registro guardado correctamente');
     }, 500);
   }
 
-  /**
-   * Actualizar registro existente (simulado)
-   */
   private actualizarRegistroExistente(dataRow: any, rowElement: HTMLTableRowElement): void {
     setTimeout(() => {
       const rowId = this.getRowId(dataRow);
@@ -550,44 +441,33 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
       this.editingRow = null;
       this.hasNewRowInEditing = false;
 
-      // ✅ CAMBIO: Aplicar filtros después de actualizar
       this.aplicarFiltros();
-
       this.table.saveRowEdit(dataRow, rowElement);
-      this.showSuccessMessage('Registro actualizado correctamente');
+      this.showMessage('success', 'Registro actualizado correctamente');
     }, 500);
   }
 
-  /**
-   * Restaurar datos originales
-   */
   private restoreOriginalData(dataRow: any, index: number): void {
     const rowId = this.getRowId(dataRow);
     const originalData = this.clonedLecheExtraida[rowId];
 
-    if (originalData) {
-      // ✅ CAMBIO: Restaurar en datos originales
-      const originalIndex = this.dataLecheExtraida.findIndex(item => this.getRowId(item) === rowId);
-      if (originalIndex !== -1) {
-        this.dataLecheExtraida[originalIndex] = {
-          ...originalData,
-          consejeria: {
-            individual: originalData.consejeria?.individual ?? null,
-            grupal: originalData.consejeria?.grupal ?? null
-          }
-        };
-      }
-      
-      // Aplicar filtros para actualizar la vista
-      this.aplicarFiltros();
-      
-      delete this.clonedLecheExtraida[rowId];
+    if (!originalData) return;
+
+    const originalIndex = this.dataLecheExtraida.findIndex(item => this.getRowId(item) === rowId);
+    if (originalIndex !== -1) {
+      this.dataLecheExtraida[originalIndex] = {
+        ...originalData,
+        consejeria: {
+          individual: originalData.consejeria?.individual ?? null,
+          grupal: originalData.consejeria?.grupal ?? null
+        }
+      };
     }
+    
+    this.aplicarFiltros();
+    delete this.clonedLecheExtraida[rowId];
   }
 
-  /**
-   * Cancelar edición actual
-   */
   private cancelCurrentEditing(): void {
     if (this.editingRow?.isNew) {
       const index = this.dataLecheExtraida.findIndex(item => item._uid === this.editingRow!._uid);
@@ -609,53 +489,48 @@ private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number })
     this.resetEditingState();
   }
 
-  /**
-   * Resetear estado de edición
-   */
   private resetEditingState(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
   }
 
-  // ==================== MÉTODOS DE MENSAJES ====================
+  private showMessage(severity: 'success' | 'error' | 'warn' | 'info', detail: string): void {
+    const summaryMap = {
+      success: 'Éxito',
+      error: 'Error',
+      warn: 'Advertencia',
+      info: 'Información'
+    };
+
+    const lifeMap = {
+      success: 2000,
+      error: 3000,
+      warn: 3000,
+      info: 2000
+    };
+
+    this.messageService.add({
+      severity,
+      summary: summaryMap[severity],
+      detail,
+      key: 'tr',
+      life: lifeMap[severity]
+    });
+  }
 
   private showSuccessMessage(message: string): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: message,
-      key: 'tr',
-      life: 2000,
-    });
+    this.showMessage('success', message);
   }
 
   private showErrorMessage(message: string): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: message,
-      key: 'tr',
-      life: 3000,
-    });
+    this.showMessage('error', message);
   }
 
   private showWarningMessage(message: string): void {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Advertencia',
-      detail: message,
-      key: 'tr',
-      life: 3000,
-    });
+    this.showMessage('warn', message);
   }
 
   private showInfoMessage(message: string): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Información',
-      detail: message,
-      key: 'tr',
-      life: 2000,
-    });
+    this.showMessage('info', message);
   }
 }

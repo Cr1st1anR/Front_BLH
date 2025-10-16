@@ -4,7 +4,6 @@
 
     <p-toast position="top-right" key="tr-dialog" />
 
-    <!-- SPINNER DE CARGA -->
     @if (loading) {
     <div class="loading-overlay">
       <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
@@ -12,13 +11,10 @@
     </div>
     }
 
-    <!-- CONTENIDO DEL DIALOG -->
     <div class="dialog-content">
 
-      <!-- Botón para nueva extracción -->
       <new-register-extraccion (nuevaExtraccion)="onNuevaExtraccion()" [disabled]="isNewExtraccionButtonDisabled()" />
 
-      <!-- Tabla de extracciones -->
       <table-extraccion [idExtraccion]="rowData?.id_extraccion" />
 
     </div>

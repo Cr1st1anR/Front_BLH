@@ -8,53 +8,19 @@
     @if (loading) {
     <div class="loading-overlay">
       <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
-        [style]="{ width: '70px', height: '70px' }">
-      </p-progress-spinner>
+        [style]="{ width: '70px', height: '70px' }" />
     </div>
     }
 
     <!-- CONTENIDO DEL DIALOG -->
     <div class="dialog-content">
 
-      <!-- Información básica de la extracción -->
-      <div class="info-section">
-        <h3 class="section-title">Información del Registro</h3>
+      <!-- Botón para nueva extracción -->
+      <new-register-extraccion (nuevaExtraccion)="onNuevaExtraccion()" [disabled]="isNewExtraccionButtonDisabled()" />
 
-        <div class="info-grid">
-          @for (info of getBasicInfo(); track $index) {
-          <div class="info-item">
-            <label>{{ info.label }}:</label>
-            <span>{{ info.value }}</span>
-          </div>
-          }
-        </div>
+      <!-- Tabla de extracciones -->
+      <table-extraccion [idExtraccion]="rowData?.id_extraccion" />
 
-        <!-- Información de consejería -->
-        <div class="consejeria-info">
-          <div class="info-item full-width">
-            <label>Consejería Recibida:</label>
-            <span [class.no-data]="getConsejeriaInfo() === 'No especificada'">
-              {{ getConsejeriaInfo() }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección de extracciones -->
-      <div class="extracciones-section">
-        <h3 class="section-title">Registro de Extracciones</h3>
-
-        <!-- Botón para nueva extracción -->
-        <new-register-extraccion
-          (nuevaExtraccion)="onNuevaExtraccion()"
-          [disabled]="isNewExtraccionButtonDisabled()">
-        </new-register-extraccion>
-
-        <!-- Tabla de extracciones -->
-        <table-extraccion
-          [idExtraccion]="rowData?.id_extraccion">
-        </table-extraccion>
-      </div>
     </div>
 
   </p-dialog>

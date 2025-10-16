@@ -19,12 +19,12 @@ export class DialogExtraccionesService {
         fecha: '2025-10-15',
         fecha_display: '15/10/2025',
         extraccion_1: {
-          am: '08:30', // Hora en formato 24h
-          ml: 120     // Mililitros
+          am: '08:30',
+          ml: 120
         },
         extraccion_2: {
-          pm: '14:45', // Hora en formato 24h
-          ml: 95      // Mililitros
+          pm: '14:45',
+          ml: 95
         },
         motivo_consulta: 'Control rutinario postparto',
         observaciones: 'Madre presenta buena técnica de extracción'
@@ -73,13 +73,13 @@ export class DialogExtraccionesService {
    * Crear nueva extracción
    * TODO: Implementar llamada al backend
    */
-  crearExtraccion(idExtraccion: number, fecha: string) {
+  crearExtraccion(idExtraccion: number, fecha: string | null) {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           id_registro_extraccion: Date.now(),
-          fecha: fecha,
-          fecha_display: this.formatearFecha(fecha),
+          fecha: null, // ✅ CAMBIO: No establecer fecha automáticamente
+          fecha_display: 'Sin fecha', // ✅ CAMBIO: Texto indicativo
           extraccion_1: {
             am: null,
             ml: null
@@ -118,5 +118,4 @@ export class DialogExtraccionesService {
     }
     return fecha;
   }
-
 }

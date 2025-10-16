@@ -9,7 +9,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { Table } from 'primeng/table';
-// ✅ CAMBIO: Usar tu servicio existente
 import { DialogExtraccionesService } from '../services/dialog-extracciones.service';
 
 @Component({
@@ -43,18 +42,17 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
 
   // Headers de la tabla
   readonly headersExtracciones: any[] = [
-    { header: 'FECHA', field: 'fecha', width: '150px', tipo: 'date' },
-    { header: 'EXTRACCIÓN 1', field: 'extraccion_1', width: '200px', tipo: 'extraccion_1' },
-    { header: 'EXTRACCIÓN 2', field: 'extraccion_2', width: '200px', tipo: 'extraccion_2' },
+    { header: 'FECHA', field: 'fecha', width: '160px', tipo: 'date' },
+    { header: 'EXTRACCIÓN 1', field: 'extraccion_1', width: '240px', tipo: 'extraccion_1' },
+    { header: 'EXTRACCIÓN 2', field: 'extraccion_2', width: '240px', tipo: 'extraccion_2' },
     { header: 'MOTIVO DE CONSULTA', field: 'motivo_consulta', width: '250px', tipo: 'text' },
-    { header: 'OBSERVACIONES', field: 'observaciones', width: '250px', tipo: 'text' },
+    { header: 'OBSERVACIONES', field: 'observaciones', width: '350px', tipo: 'text' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'acciones' }
   ];
 
   private isInitialLoad: boolean = true;
 
   constructor(
-    // ✅ CAMBIO: Usar tu servicio existente
     private dialogExtraccionesService: DialogExtraccionesService,
     private messageService: MessageService
   ) { }
@@ -85,10 +83,22 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
 
     this.loading = true;
 
-    // ✅ CAMBIO: Usar tu servicio existente
     this.dialogExtraccionesService.getExtracciones(this.idExtraccion)
       .then((extracciones: any) => {
-        this.dataExtracciones = extracciones;
+        this.dataExtracciones = extracciones.map((item: any) => ({
+          ...item,
+          // ✅ FIX: Inicializar fechas auxiliares para evitar problemas de zona horaria
+          fecha_aux: item.fecha ? this.parsearFechaSegura(item.fecha) : null,
+          // ✅ FIX: Inicializar horas auxiliares para el selector
+          extraccion_1: {
+            ...item.extraccion_1,
+            am_aux: item.extraccion_1?.am ? this.convertHoursToDate(item.extraccion_1.am) : null
+          },
+          extraccion_2: {
+            ...item.extraccion_2,
+            pm_aux: item.extraccion_2?.pm ? this.convertHoursToDate(item.extraccion_2.pm) : null
+          }
+        }));
         this.mostrarMensajeCarga(extracciones);
         this.loading = false;
       })
@@ -104,21 +114,34 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
   crearNuevaExtraccion(): void {
     if (!this.validarCreacionExtraccion()) return;
 
-    const fechaActual = new Date();
-    const fechaString = fechaActual.toISOString().split('T')[0];
-
+    // ✅ CAMBIO: No enviar fecha automáticamente
     this.loading = true;
 
-    // ✅ CAMBIO: Usar tu servicio existente
-    this.dialogExtraccionesService.crearExtraccion(this.idExtraccion!, fechaString)
+    // ✅ CAMBIO: Pasar null en lugar de fecha actual
+    this.dialogExtraccionesService.crearExtraccion(this.idExtraccion!, null)
       .then((nuevaExtraccion: any) => {
+        // ✅ CAMBIO: No inicializar fecha_aux automáticamente
+        nuevaExtraccion.fecha_aux = null; // Usuario debe seleccionar manualmente
+        nuevaExtraccion.fecha_display = 'Sin fecha'; // Mostrar texto indicativo
+        
+        nuevaExtraccion.extraccion_1 = {
+          am: null,
+          ml: null,
+          am_aux: null
+        };
+        nuevaExtraccion.extraccion_2 = {
+          pm: null,
+          ml: null,
+          pm_aux: null
+        };
+
         this.dataExtracciones.push(nuevaExtraccion);
         this.dataExtracciones = [...this.dataExtracciones];
         this.hasNewRowInEditing = true;
         this.editingRow = nuevaExtraccion;
 
         setTimeout(() => this.table.initRowEdit(nuevaExtraccion), 100);
-        this.mostrarInfo('Nueva extracción creada. Complete los campos requeridos.');
+        this.mostrarInfo('Nueva extracción creada. Seleccione la fecha y complete los campos requeridos.');
         this.loading = false;
       })
       .catch((error) => {
@@ -136,12 +159,34 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
       return;
     }
 
+    // ✅ FIX: Clonar correctamente incluyendo todos los campos auxiliares
     this.editingRow = { ...rowData };
-    this.clonedExtracciones[rowData.id_registro_extraccion] = { ...rowData };
+    this.clonedExtracciones[rowData.id_registro_extraccion] = {
+      ...rowData,
+      fecha_aux: rowData.fecha_aux ? new Date(rowData.fecha_aux) : null,
+      extraccion_1: {
+        am: rowData.extraccion_1?.am || null,
+        ml: rowData.extraccion_1?.ml || null,
+        am_aux: rowData.extraccion_1?.am_aux ? new Date(rowData.extraccion_1.am_aux) : null
+      },
+      extraccion_2: {
+        pm: rowData.extraccion_2?.pm || null,
+        ml: rowData.extraccion_2?.ml || null,
+        pm_aux: rowData.extraccion_2?.pm_aux ? new Date(rowData.extraccion_2.pm_aux) : null
+      }
+    };
 
-    // Inicializar fecha auxiliar para el calendario
-    if (rowData.fecha) {
-      rowData.fecha_aux = new Date(rowData.fecha);
+    // Inicializar fecha auxiliar si no existe
+    if (!rowData.fecha_aux && rowData.fecha) {
+      rowData.fecha_aux = this.parsearFechaSegura(rowData.fecha);
+    }
+
+    // ✅ FIX: Inicializar horas auxiliares si no existen
+    if (rowData.extraccion_1?.am && !rowData.extraccion_1.am_aux) {
+      rowData.extraccion_1.am_aux = this.convertHoursToDate(rowData.extraccion_1.am);
+    }
+    if (rowData.extraccion_2?.pm && !rowData.extraccion_2.pm_aux) {
+      rowData.extraccion_2.pm_aux = this.convertHoursToDate(rowData.extraccion_2.pm);
     }
   }
 
@@ -149,10 +194,24 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
    * Guardar edición de fila
    */
   onRowEditSave(rowData: any, index: number, event: MouseEvent): void {
-    // Procesar fecha
+    // ✅ AGREGAR: Validar que la fecha esté seleccionada
+    if (!rowData.fecha_aux) {
+      this.mostrarError('Debe seleccionar una fecha para la extracción');
+      return;
+    }
+
+    // ✅ FIX: Procesar fechas con manejo correcto de zona horaria
     if (rowData.fecha_aux) {
       rowData.fecha = this.formatearFechaParaAPI(rowData.fecha_aux);
       rowData.fecha_display = this.formatearFechaParaMostrar(rowData.fecha_aux);
+    }
+
+    // ✅ FIX: Procesar horas desde los selectores
+    if (rowData.extraccion_1?.am_aux) {
+      rowData.extraccion_1.am = this.convertDateToHours(rowData.extraccion_1.am_aux);
+    }
+    if (rowData.extraccion_2?.pm_aux) {
+      rowData.extraccion_2.pm = this.convertDateToHours(rowData.extraccion_2.pm_aux);
     }
 
     if (!this.validateRequiredFields(rowData)) {
@@ -177,7 +236,24 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
       this.dataExtracciones = [...this.dataExtracciones];
       this.hasNewRowInEditing = false;
     } else {
-      this.dataExtracciones[index] = this.clonedExtracciones[rowData.id_registro_extraccion];
+      // ✅ FIX: Restaurar correctamente todos los valores originales
+      const clonedData = this.clonedExtracciones[rowData.id_registro_extraccion];
+      if (clonedData) {
+        this.dataExtracciones[index] = {
+          ...clonedData,
+          fecha_aux: clonedData.fecha_aux ? new Date(clonedData.fecha_aux) : null,
+          extraccion_1: {
+            am: clonedData.extraccion_1?.am || null,
+            ml: clonedData.extraccion_1?.ml || null,
+            am_aux: clonedData.extraccion_1?.am_aux ? new Date(clonedData.extraccion_1.am_aux) : null
+          },
+          extraccion_2: {
+            pm: clonedData.extraccion_2?.pm || null,
+            ml: clonedData.extraccion_2?.ml || null,
+            pm_aux: clonedData.extraccion_2?.pm_aux ? new Date(clonedData.extraccion_2.pm_aux) : null
+          }
+        };
+      }
       delete this.clonedExtracciones[rowData.id_registro_extraccion];
     }
     this.editingRow = null;
@@ -199,37 +275,37 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ==================== MÉTODOS AUXILIARES ====================
+  // ==================== MÉTODOS AUXILIARES DE FECHA Y HORA ====================
 
   /**
-   * Formatear hora en formato 24 horas (Colombia)
+   * ✅ FIX: Parsear fecha de manera segura evitando problemas de zona horaria
    */
-  formatearHora24(hora: string): string {
-    if (!hora) return '';
+  private parsearFechaSegura(fechaString: string): Date | null {
+    if (!fechaString) return null;
 
-    // Si ya está en formato 24h (HH:MM), devolverla tal como está
-    const regex24h = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (regex24h.test(hora)) {
-      return hora;
+    if (fechaString.includes('-')) {
+      // Formato: yyyy-mm-dd
+      const [year, month, day] = fechaString.split('-').map(Number);
+      // ✅ CLAVE: Usar mediodía para evitar problemas de zona horaria
+      return new Date(year, month - 1, day, 12, 0, 0, 0);
     }
 
-    return hora;
+    if (fechaString.includes('/')) {
+      // Formato: dd/mm/yyyy
+      const [day, month, year] = fechaString.split('/').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0, 0);
+    }
+
+    return null;
   }
 
   /**
-   * Validar formato de hora
-   */
-  isValidTimeFormat(hora: string): boolean {
-    if (!hora) return true; // Permitir vacío
-
-    const regex24h = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return regex24h.test(hora);
-  }
-
-  /**
-   * Formatear fecha para API (yyyy-mm-dd)
+   * ✅ FIX: Formatear fecha para API manteniendo zona horaria local
    */
   private formatearFechaParaAPI(fecha: Date): string {
+    if (!fecha) return '';
+
+    // ✅ CLAVE: Usar métodos locales para evitar conversión UTC
     const year = fecha.getFullYear();
     const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
     const day = fecha.getDate().toString().padStart(2, '0');
@@ -237,9 +313,11 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Formatear fecha para mostrar (dd/mm/yyyy)
+   * ✅ FIX: Formatear fecha para mostrar
    */
   private formatearFechaParaMostrar(fecha: Date): string {
+    if (!fecha) return 'Sin fecha';
+
     const year = fecha.getFullYear();
     const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
     const day = fecha.getDate().toString().padStart(2, '0');
@@ -247,9 +325,50 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
   }
 
   /**
+   * ✅ NUEVO: Convertir hora string a Date para el selector (como en table-temperatura)
+   */
+  convertHoursToDate(hora: string): Date | null {
+    if (!hora) return null;
+
+    const [horas, minutos] = hora.split(':').map(Number);
+    if (isNaN(horas) || isNaN(minutos)) return null;
+
+    const fecha = new Date();
+    fecha.setHours(horas, minutos, 0, 0);
+    return fecha;
+  }
+
+  /**
+   * ✅ NUEVO: Convertir Date del selector a string de hora
+   */
+  convertDateToHours(fecha: Date): string {
+    if (!fecha) return '';
+
+    const horas = fecha.getHours().toString().padStart(2, '0');
+    const minutos = fecha.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
+  }
+
+  /**
+   * Validar formato de hora
+   */
+  isValidTimeFormat(hora: string): boolean {
+    if (!hora) return true;
+
+    const regex24h = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return regex24h.test(hora);
+  }
+
+  /**
    * Validar campos obligatorios
    */
   private validateRequiredFields(rowData: any): boolean {
+    // ✅ AGREGAR: Validar que la fecha esté seleccionada
+    if (!rowData.fecha_aux) {
+      this.mostrarError('Debe seleccionar una fecha para la extracción');
+      return false;
+    }
+
     // Validar que al menos una extracción tenga datos
     const extraccion1Completa = rowData.extraccion_1?.am && rowData.extraccion_1?.ml;
     const extraccion2Completa = rowData.extraccion_2?.pm && rowData.extraccion_2?.ml;
@@ -305,7 +424,6 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
    * Guardar nueva extracción
    */
   private guardarNuevaExtraccion(rowData: any, rowElement: HTMLTableRowElement): void {
-    // ✅ CAMBIO: Usar tu servicio existente
     this.dialogExtraccionesService.actualizarExtraccion(rowData.id_registro_extraccion, rowData)
       .then((response) => {
         console.log('Nueva extracción guardada:', response);
@@ -323,7 +441,6 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
    * Actualizar extracción existente
    */
   private actualizarExtraccionExistente(rowData: any, rowElement: HTMLTableRowElement): void {
-    // ✅ CAMBIO: Usar tu servicio existente
     this.dialogExtraccionesService.actualizarExtraccion(rowData.id_registro_extraccion, rowData)
       .then((response) => {
         console.log('Extracción actualizada:', response);

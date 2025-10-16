@@ -45,70 +45,13 @@ export class DialogExtraccionesComponent implements OnChanges {
    */
   getDialogTitle(): string {
     if (!this.rowData) {
-      return 'Detalles de Extracción';
+      return 'Extracciones';
     }
 
     const nombre = this.rowData.apellidos_nombre || 'Sin nombre';
-    const identificacion = this.rowData.identificacion || 'Sin ID';
+    const identificacion = this.rowData.identificacion || 'Sin CC';
 
-    return `Extracciones - ${nombre} (ID: ${identificacion})`;
-  }
-
-  /**
-   * Obtener información básica formateada
-   */
-  getBasicInfo(): { label: string; value: string }[] {
-    if (!this.rowData) return [];
-
-    return [
-      {
-        label: 'Fecha de Registro',
-        value: this.rowData.fecha_registro || 'N/A'
-      },
-      {
-        label: 'Apellidos y Nombre',
-        value: this.rowData.apellidos_nombre || 'N/A'
-      },
-      {
-        label: 'Edad',
-        value: this.rowData.edad?.toString() || 'N/A'
-      },
-      {
-        label: 'Identificación',
-        value: this.rowData.identificacion || 'N/A'
-      },
-      {
-        label: 'Municipio',
-        value: this.rowData.municipio || 'N/A'
-      },
-      {
-        label: 'Teléfono',
-        value: this.rowData.telefono || 'N/A'
-      },
-      {
-        label: 'EPS',
-        value: this.rowData.eps || 'N/A'
-      },
-      {
-        label: 'Procedencia',
-        value: this.rowData.procedencia || 'N/A'
-      }
-    ];
-  }
-
-  /**
-   * Obtener información de consejería
-   */
-  getConsejeriaInfo(): string {
-    if (!this.rowData?.consejeria) return 'No especificada';
-
-    const individual = this.rowData.consejeria.individual === 1 ? 'Individual: Sí' :
-                      this.rowData.consejeria.individual === 0 ? 'Individual: No' : '';
-    const grupal = this.rowData.consejeria.grupal === 1 ? 'Grupal: Sí' :
-                   this.rowData.consejeria.grupal === 0 ? 'Grupal: No' : '';
-
-    const partes = [individual, grupal].filter(Boolean);
-    return partes.length > 0 ? partes.join(' | ') : 'No especificada';
+    return `${nombre} (Identificación: ${identificacion})`;
   }
 
   /**
@@ -149,7 +92,7 @@ export class DialogExtraccionesComponent implements OnChanges {
     console.log('Dialog abierto con datos:', this.rowData);
 
     if (this.rowData) {
-      this.showInfoMessage(`Abriendo extracciones para: ${this.rowData.apellidos_nombre}`);
+      this.showInfoMessage(`Cargando extracciones para: ${this.rowData.apellidos_nombre}`);
     }
   }
 

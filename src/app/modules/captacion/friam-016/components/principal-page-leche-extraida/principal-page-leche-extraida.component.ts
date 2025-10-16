@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { TableLecheExtraidaComponent } from "../table-leche-extraida/table-leche-extraida.component";
@@ -17,13 +17,29 @@ import { DialogExtraccionesComponent } from "../dialog-extracciones/dialog-extra
   templateUrl: './principal-page-leche-extraida.component.html',
   styleUrl: './principal-page-leche-extraida.component.scss',
 })
-export class PrincipalPageLecheExtraidaComponent {
+export class PrincipalPageLecheExtraidaComponent implements OnInit, AfterViewInit {
   @ViewChild(TableLecheExtraidaComponent) tableComponent!: TableLecheExtraidaComponent;
   @ViewChild(MonthPickerComponent) monthPickerComponent!: MonthPickerComponent;
 
   // Estados del componente
   showDialog: boolean = false;
   selectedRowData: any = null;
+
+  // ✅ NUEVO: Variable para controlar la inicialización
+  private isInitialized = false;
+  private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  // ==================== LIFECYCLE HOOKS ====================
+
+  ngOnInit(): void {
+    // ✅ MODIFICADO: Solo preparar el filtro, no aplicarlo aún
+    this.prepararFiltroMesActual();
+  }
+
+  ngAfterViewInit(): void {
+    // ✅ MODIFICADO: Esperar a que la tabla se inicialice y luego aplicar filtro
+    this.esperarInicializacionTabla();
+  }
 
   // ==================== GETTERS ====================
 
@@ -49,7 +65,6 @@ export class PrincipalPageLecheExtraidaComponent {
    * Manejar el click en una fila de la tabla
    */
   onRowClick(rowData: any): void {
-    console.log('Fila seleccionada en principal-page:', rowData);
     this.selectedRowData = rowData;
     this.showDialog = true;
   }
@@ -63,7 +78,7 @@ export class PrincipalPageLecheExtraidaComponent {
   }
 
   /**
-   * ✅ CORREGIDO: Manejar cambio en el month picker siguiendo el patrón de friam-041
+   * Manejar cambio en el month picker
    */
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     console.log('Month picker cambió:', filtro);
@@ -71,6 +86,53 @@ export class PrincipalPageLecheExtraidaComponent {
     if (this.tableComponent) {
       // Aplicar filtro por fecha
       this.tableComponent.filtrarPorFecha(filtro);
+    }
+  }
+
+  // ==================== MÉTODOS PRIVADOS ====================
+
+  /**
+   * ✅ MODIFICADO: Solo preparar el filtro del mes actual
+   */
+  private prepararFiltroMesActual(): void {
+    const fechaActual = new Date();
+    this.filtroMesActualPendiente = {
+      year: fechaActual.getFullYear(),
+      month: fechaActual.getMonth() + 1 // getMonth() retorna 0-11, necesitamos 1-12
+    };
+  }
+
+  /**
+   * ✅ NUEVO: Esperar a que la tabla esté inicializada antes de aplicar filtro
+   */
+  private esperarInicializacionTabla(): void {
+    // Intentar aplicar el filtro cada 100ms hasta que la tabla esté lista
+    const intervalo = setInterval(() => {
+      if (this.tableComponent && this.tableComponent.dataLecheExtraida.length > 0 && !this.isInitialized) {
+        this.aplicarFiltroMesActual();
+        clearInterval(intervalo);
+      }
+    }, 100);
+
+    // Timeout de seguridad: después de 5 segundos, aplicar de todas formas
+    setTimeout(() => {
+      if (!this.isInitialized) {
+        this.aplicarFiltroMesActual();
+        clearInterval(intervalo);
+      }
+    }, 5000);
+  }
+
+  /**
+   * ✅ MODIFICADO: Aplicar filtro automático del mes actual
+   */
+  private aplicarFiltroMesActual(): void {
+    if (this.isInitialized || !this.filtroMesActualPendiente) return;
+
+    if (this.tableComponent && this.tableComponent.dataLecheExtraida.length > 0) {
+      this.tableComponent.filtrarPorFecha(this.filtroMesActualPendiente);
+      this.isInitialized = true;
+      this.filtroMesActualPendiente = null; // Limpiar
     }
   }
 }

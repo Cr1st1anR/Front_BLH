@@ -122,11 +122,11 @@ export class TableLecheExtraidaComponent implements OnInit {
     this.loadDataLecheExtraida();
   }
 
-  // ✅ NUEVO: Método público para aplicar filtro por fecha
-  public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
-    this.filtroFecha = filtro;
-    this.aplicarFiltros();
-  }
+  // ✅ MODIFICADO: Método público para aplicar filtro por fecha
+public filtrarPorFecha(filtro: { year: number; month: number } | null): void {
+  this.filtroFecha = filtro;
+  this.aplicarFiltros();
+}
 
   // ==================== MÉTODOS PRINCIPALES ====================
 
@@ -134,26 +134,26 @@ export class TableLecheExtraidaComponent implements OnInit {
    * Cargar datos de la tabla
    */
   loadDataLecheExtraida(): void {
-    this.loading = true;
+  this.loading = true;
 
-    // Simular delay de carga
-    setTimeout(() => {
-      try {
-        // ✅ CAMBIO: Cargar datos originales
-        this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
-        
-        // ✅ NUEVO: Aplicar filtros después de cargar
-        this.aplicarFiltros();
-        
-        this.showSuccessMessage(`${this.dataLecheExtraidaFiltered.length} registros cargados correctamente`);
-      } catch (error) {
-        this.showErrorMessage('Error al cargar los datos');
-        console.error('Error al cargar datos:', error);
-      } finally {
-        this.loading = false;
-      }
-    }, 800);
-  }
+  // Simular delay de carga
+  setTimeout(() => {
+    try {
+      // ✅ MODIFICADO: Cargar datos originales
+      this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
+      
+      // ✅ MODIFICADO: Inicializar datos filtrados con todos los datos
+      this.dataLecheExtraidaFiltered = [...this.dataLecheExtraida];
+      
+      this.showSuccessMessage(`${this.dataLecheExtraida.length} registros cargados correctamente`);
+    } catch (error) {
+      this.showErrorMessage('Error al cargar los datos');
+      console.error('❌ Error al cargar datos:', error);
+    } finally {
+      this.loading = false;
+    }
+  }, 800);
+}
 
   /**
    * Crear nuevo registro
@@ -241,7 +241,6 @@ export class TableLecheExtraidaComponent implements OnInit {
    */
   onRowClick(rowData: any): void {
     if (this.isAnyRowEditing()) return;
-    console.log('Fila seleccionada:', rowData);
     this.rowClick.emit(rowData);
   }
 
@@ -278,41 +277,52 @@ export class TableLecheExtraidaComponent implements OnInit {
   // ==================== MÉTODOS DE FILTROS ====================
 
   /**
-   * ✅ NUEVO: Aplicar todos los filtros
-   */
-  private aplicarFiltros(): void {
-    let datosFiltrados = [...this.dataLecheExtraida];
+ * ✅ MODIFICADO: Aplicar todos los filtros
+ */
+private aplicarFiltros(): void {
+  let datosFiltrados = [...this.dataLecheExtraida];
 
-    // Aplicar filtro por fecha si existe
-    if (this.filtroFecha) {
-      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
-    }
-
-    this.dataLecheExtraidaFiltered = datosFiltrados;
+  // ✅ NUEVO: Filtrar por fecha si está presente
+  if (this.filtroFecha) {
+    datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
   }
+
+  this.dataLecheExtraidaFiltered = datosFiltrados;
+}
 
   /**
-   * ✅ NUEVO: Filtrar por mes y año
-   */
-  private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
-    return datos.filter(item => {
-      if (!item.fecha_registro) return false;
+ * ✅ MODIFICADO: Filtrar por mes y año
+ */
+private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
 
-      // Parsear la fecha del registro (formato dd/mm/yyyy)
-      const fechaParts = item.fecha_registro.split('/');
-      if (fechaParts.length !== 3) return false;
+  const resultados = datos.filter(item => {
+    if (!item.fecha_registro) {
+      return false;
+    }
 
-      const dia = parseInt(fechaParts[0]);
-      const mes = parseInt(fechaParts[1]);
-      const ano = parseInt(fechaParts[2]);
+    // Parsear la fecha del registro (formato dd/mm/yyyy)
+    const fechaParts = item.fecha_registro.split('/');
+    if (fechaParts.length !== 3) {
+      return false;
+    }
 
-      // Validar que la fecha sea válida
-      if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return false;
+    const dia = parseInt(fechaParts[0]);
+    const mes = parseInt(fechaParts[1]);
+    const ano = parseInt(fechaParts[2]);
 
-      // Comparar mes y año
-      return mes === filtro.month && ano === filtro.year;
-    });
-  }
+    // Validar que la fecha sea válida
+    if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
+      return false;
+    }
+
+    // Comparar mes y año
+    const coincide = mes === filtro.month && ano === filtro.year;
+    
+    return coincide;
+  });
+
+  return resultados;
+}
 
   // ==================== MÉTODOS PRIVADOS ====================
 

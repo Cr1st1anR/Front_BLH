@@ -9,7 +9,7 @@ export interface TemperaturaData {
 }
 
 export interface casasVisitaData {
-    id_madre_donante:number | null;
+    id_madre_donante: any | null;
     id_casa_visita: number | null;
     id_ruta: number | null;
     numero_casa: number | null;

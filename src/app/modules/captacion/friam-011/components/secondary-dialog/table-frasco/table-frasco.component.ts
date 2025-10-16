@@ -418,6 +418,8 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
           ? (body.id_congelador as any).id
           : body.id_congelador,
       casaVisita: this.frascosData?.id_casa_visita,
+      madreDonante: this.frascosData?.id_madre_donante["id_madre_donante"],
+      recoleccion: 1
     };
   }
 

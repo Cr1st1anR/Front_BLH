@@ -10,7 +10,6 @@ import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-import { NewRegisterControlComponent } from "../new-register-control/new-register-control.component";
 import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -19,7 +18,7 @@ import type { ControlLecheCrudaData } from './interfaces/control-leche-cruda.int
 
 @Component({
   selector: 'table-control-leche-cruda',
-  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, DatePickerModule, MonthPickerComponent, NewRegisterControlComponent, ButtonModule, RippleModule],
+  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, DatePickerModule, MonthPickerComponent, ButtonModule, RippleModule],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
   providers: [ControlLecheCrudaService, MessageService]

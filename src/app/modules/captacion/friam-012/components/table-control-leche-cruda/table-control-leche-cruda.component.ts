@@ -30,7 +30,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
   loading = false;
 
   editingRow: ControlLecheCrudaData | null = null;
-  hasNewRowInEditing: boolean = false;
   clonedDataControlLecheCruda: { [s: number]: ControlLecheCrudaData } = {};
 
   opcionesUbicacion = [
@@ -134,17 +133,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   onRowEditInit(dataRow: ControlLecheCrudaData): void {
-    if (this.hasNewRowInEditing && (!this.editingRow || this.editingRow.id === undefined)) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la fila nueva antes de editar otra.',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
     if (this.editingRow && this.table) {
       this.cancelCurrentEditing();
     }
@@ -169,109 +157,25 @@ export class TableControlLecheCrudaComponent implements OnInit {
     }
 
     this.editingRow = null;
-    this.hasNewRowInEditing = false;
     delete this.clonedDataControlLecheCruda[dataRow.id as number];
 
-    // logica de guardado cuando se implemente el backend
-    if (dataRow.id === undefined) {
-      // aquivcd simulamos creacion de nuevo registroo
-      dataRow.id = Math.max(...this.dataControlLecheCruda.map(d => d.id || 0)) + 1;
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Datos guardados',
-        key: 'tr',
-        life: 3000,
-      });
-    } else {
-      // sim actualizacion
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Datos actualizados',
-        key: 'tr',
-        life: 3000,
-      });
-    }
+    // Lógica de actualización cuando se implemente el backend
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Éxito',
+      detail: 'Datos actualizados',
+      key: 'tr',
+      life: 3000,
+    });
 
     this.table.saveRowEdit(dataRow, rowElement);
   }
 
   onRowEditCancel(dataRow: ControlLecheCrudaData, index: number): void {
-    if (dataRow.id === undefined) {
-      // es una nueva fila, eliminarla
-      this.dataControlLecheCruda.splice(index, 1);
-      this.dataControlLecheCruda = [...this.dataControlLecheCruda];
-      this.hasNewRowInEditing = false;
-    } else {
-      // restaurar datos originales
-      this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[dataRow.id as number];
-      delete this.clonedDataControlLecheCruda[dataRow.id as number];
-    }
+    // Restaurar datos originales
+    this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[dataRow.id as number];
+    delete this.clonedDataControlLecheCruda[dataRow.id as number];
     this.editingRow = null;
-  }
-
-  agregarFilaVacia(): void {
-    if (this.hasNewRowInEditing) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la fila actual antes de crear una nueva',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    if (this.editingRow && this.table) {
-      this.cancelCurrentEditing();
-    }
-
-    // gen automaticamente el siguiente n7mero de frasco
-    const nextFrascoNumber = this.controlLecheCrudaService.generateNextFrascoNumber();
-    const currentDate = new Date();
-    const fechaRegistro = this.formatDateForBackend(currentDate);
-
-    const nuevoRegistro: ControlLecheCrudaData = {
-      nCongelador: '',
-      ubicacion: 'BLH - área de almacenamiento',
-      gaveta: '',
-      diasPosparto: '',
-      donante: '',
-      numFrasco: nextFrascoNumber,
-      edadGestacional: '',
-      volumen: '',
-      fechaExtraccion: '',
-      fechaVencimiento: '',
-      fechaParto: '',
-      procedencia: '',
-      fechaEntrada: '',
-      responsableEntrada: '',
-      fechaSalida: '',
-      responsableSalida: ''
-    };
-
-    this.dataControlLecheCruda.push(nuevoRegistro);
-    this.dataControlLecheCruda = [...this.dataControlLecheCruda];
-    this.hasNewRowInEditing = true;
-
-    setTimeout(() => {
-      this.table.initRowEdit(nuevoRegistro);
-    }, 100);
-  }
-
-  // met auxiliar para formatear fecha para el backend
-  private formatDateForBackend(date: Date): string {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-
-  // met auxiliar para extraer el ID del número de frasco
-  private extractIdFromFrascoNumber(frascoNumber: string): number {
-    const parts = frascoNumber.split(' ');
-    return parseInt(parts[1]) || 0;
   }
 
   isFieldInvalid(field: string, dataRow: ControlLecheCrudaData): boolean {
@@ -286,35 +190,24 @@ export class TableControlLecheCrudaComponent implements OnInit {
       try {
         this.table.cancelRowEdit(this.editingRow);
       } catch (error) {
-        // iggnorar errores del cancelrowedit
+        // Ignorar errores del cancelRowEdit
       }
 
       const index = this.dataControlLecheCruda.findIndex(
         (row) => row === this.editingRow
       );
       if (index !== -1) {
-        if (this.editingRow.id === undefined) {
-          // es una nueva fila, eliminarla
-          this.dataControlLecheCruda.splice(index, 1);
-          this.dataControlLecheCruda = [...this.dataControlLecheCruda];
-        } else {
-          // restaurar datos originales si existen
-          if (this.clonedDataControlLecheCruda[this.editingRow.id as number]) {
-            this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[this.editingRow.id as number];
-            delete this.clonedDataControlLecheCruda[this.editingRow.id as number];
-          }
+        // Restaurar datos originales si existen
+        if (this.clonedDataControlLecheCruda[this.editingRow.id as number]) {
+          this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[this.editingRow.id as number];
+          delete this.clonedDataControlLecheCruda[this.editingRow.id as number];
         }
       }
       this.editingRow = null;
-      this.hasNewRowInEditing = false;
     }
   }
 
-  isAnyRowEditing(): boolean {
-    return this.editingRow !== null || this.hasNewRowInEditing;
-  }
-
   isEditButtonDisabled(rowData: ControlLecheCrudaData): boolean {
-    return this.isAnyRowEditing() && this.editingRow !== rowData;
+    return this.editingRow !== null && this.editingRow !== rowData;
   }
 }

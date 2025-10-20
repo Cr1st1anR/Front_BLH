@@ -9,12 +9,8 @@
 
 <app-header [title]="' CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-012)'" />
 
-<div class="flex justify-between items-center mx-4 mt-6">
-  <div></div>
-  <shared-month-picker />
-</div>
 
-<div class="container-table-scroll">
+<div class="container-table-scroll mt-16">
   <div class="container-table">
     <p-table #tableControl [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="600px"
       [columns]="headersControlLecheCruda" [tableStyle]="{ 'min-width': '70rem' }" dataKey="id"

@@ -1,141 +1,169 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import {
+  ControlLecheCrudaData,
+  EntradasSalidasApiResponse,
+  EmpleadoResponse,
+  ApiResponse
+} from '../interfaces/control-leche-cruda.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ControlLecheCrudaService {
 
-  constructor() { }
 
-  getTableControlLecheCrudaData() {
-    return [
-      {
-        id: 1,
-        nCongelador: '001',
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: '3',
-        diasPosparto: '2 meses',
-        donante: '1836',
-        numFrasco: 'LHC25 1130',
-        edadGestacional: '38.1',
-        volumen: '170',
-        fechaExtraccion: '01/09/2025',
-        fechaVencimiento: '15/09/2025',
-        fechaParto: '10/06/2025',
-        procedencia: 'Domicilio',
-        fechaEntrada: '02/09/2025',
-        responsableEntrada: 'Stephania M',
-        fechaSalida: '05/09/2025',
-        responsableSalida: 'Alejandra L',
-        fechaRegistro: '02/09/2025',
-        idFrascoLecheCruda: 1130
-      },
-      {
-        id: 2,
-        nCongelador: '001',
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: '3',
-        diasPosparto: '2 meses',
-        donante: '1836',
-        numFrasco: 'LHC25 1131',
-        edadGestacional: '38.1',
-        volumen: '170',
-        fechaExtraccion: '01/09/2025',
-        fechaVencimiento: '15/09/2025',
-        fechaParto: '10/06/2025',
-        procedencia: 'Domicilio',
-        fechaEntrada: '02/09/2025',
-        responsableEntrada: 'Stephania M',
-        fechaSalida: '05/09/2025',
-        responsableSalida: 'Alejandra L',
-        fechaRegistro: '02/09/2025',
-        idFrascoLecheCruda: 1131
-      },
-      {
-        id: 3,
-        nCongelador: '002',
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: '3',
-        diasPosparto: '2 meses',
-        donante: '1836',
-        numFrasco: 'LHC25 1132',
-        edadGestacional: '38.1',
-        volumen: '170',
-        fechaExtraccion: '01/09/2025',
-        fechaVencimiento: '15/09/2025',
-        fechaParto: '10/06/2025',
-        procedencia: 'Domicilio',
-        fechaEntrada: '02/09/2025',
-        responsableEntrada: 'Stephania M',
-        fechaSalida: '05/09/2025',
-        responsableSalida: 'Alejandra L',
-        fechaRegistro: '02/09/2025',
-        idFrascoLecheCruda: 1132
-      },
-      {
-        id: 4,
-        nCongelador: '002',
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: '3',
-        diasPosparto: '2 meses',
-        donante: '1836',
-        numFrasco: 'LHC25 1133',
-        edadGestacional: '38.1',
-        volumen: '170',
-        fechaExtraccion: '01/09/2025',
-        fechaVencimiento: '15/09/2025',
-        fechaParto: '10/06/2025',
-        procedencia: 'Domicilio',
-        fechaEntrada: '02/09/2025',
-        responsableEntrada: 'Stephania M',
-        fechaSalida: '05/09/2025',
-        responsableSalida: 'Alejandra L',
-        fechaRegistro: '02/09/2025',
-        idFrascoLecheCruda: 1133
-      },
-      {
-        id: 5,
-        nCongelador: '003',
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: '3',
-        diasPosparto: '2 meses',
-        donante: '1836',
-        numFrasco: 'LHC25 1134',
-        edadGestacional: '38.1',
-        volumen: '170',
-        fechaExtraccion: '01/09/2025',
-        fechaVencimiento: '15/09/2025',
-        fechaParto: '10/06/2025',
-        procedencia: 'Domicilio',
-        fechaEntrada: '02/09/2025',
-        responsableEntrada: 'Stephania M',
-        fechaSalida: '05/09/2025',
-        responsableSalida: 'Alejandra L',
-        fechaRegistro: '02/09/2025',
-        idFrascoLecheCruda: 1134
-      },
-    ]
+  constructor(private http: HttpClient) { }
+
+  /**
+   * Obtener entradas y salidas de leche cruda por mes y año
+   */
+  getEntradasSalidasLecheCruda(mes: number, anio: number): Observable<ControlLecheCrudaData[]> {
+    return this.http.get<ApiResponse<EntradasSalidasApiResponse[]>>(
+      `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`
+    ).pipe(
+      map(response => this.mapApiResponseToTableData(response.data))
+    );
   }
 
-  // met para generar el siguiente número de frasco
+  /**
+   * Obtener lista de empleados
+   */
+  getEmpleados(): Observable<EmpleadoResponse[]> {
+    return this.http.get<ApiResponse<EmpleadoResponse[]>>(`${environment.ApiBLH}/getEmpleados`)
+      .pipe(map(response => response.data));
+  }
+
+  /**
+   * Mapear la respuesta de la API a los datos de la tabla
+   */
+  private mapApiResponseToTableData(apiData: EntradasSalidasApiResponse[]): ControlLecheCrudaData[] {
+    return apiData.map(item => {
+      // Determinar la fuente de datos (frascoRecolectado o extraccion)
+      const esFrasco = item.frascoRecolectado !== null;
+      const esExtraccion = item.extraccion !== null;
+
+      // Obtener datos según la fuente
+      const volumen = esFrasco ? item.frascoRecolectado!.volumen.toString() :
+        esExtraccion ? item.extraccion!.cantidad.toString() : '';
+
+      const fechaExtraccion = esFrasco ? item.frascoRecolectado!.fechaDeExtraccion :
+        esExtraccion ? item.extraccion!.fechaExtraccion : '';
+
+      const gaveta = esFrasco ? item.frascoRecolectado!.gaveta.toString() :
+        esExtraccion ? item.extraccion!.gaveta.toString() : '';
+
+      const congeladorId = esFrasco ? item.frascoRecolectado!.congelador.id :
+        esExtraccion ? item.extraccion!.congelador.id : '';
+
+      // Calcular fecha de vencimiento (15 días después de la fecha de extracción)
+      const fechaVencimiento = this.calcularFechaVencimiento(fechaExtraccion);
+
+      // Calcular días posparto
+      const diasPosparto = this.calcularDiasPosparto(
+        item.madreDonante.madrePotencial.infoMadre.fechaParto,
+        fechaExtraccion
+      );
+
+      // Generar número de frasco con la lógica LHC + año + id
+      const numFrasco = this.generateFrascoNumber(item.id);
+
+      return {
+        id: item.id,
+        nCongelador: congeladorId.toString().padStart(3, '0'),
+        ubicacion: 'BLH - área de almacenamiento', // Valor por defecto
+        gaveta: gaveta,
+        diasPosparto: diasPosparto,
+        donante: item.madreDonante.id.toString(),
+        numFrasco: numFrasco,
+        edadGestacional: '', // No viene en la API, se puede calcular si es necesario
+        volumen: volumen,
+        fechaExtraccion: this.formatearFecha(fechaExtraccion),
+        fechaVencimiento: this.formatearFecha(fechaVencimiento),
+        fechaParto: this.formatearFecha(item.madreDonante.madrePotencial.infoMadre.fechaParto),
+        procedencia: item.procedencia || '',
+        fechaEntrada: item.fechaEntrada ? this.formatearFecha(item.fechaEntrada) : '',
+        responsableEntrada: '', // Se llenará con los empleados
+        fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
+        responsableSalida: '', // Se llenará con los empleados
+        fechaRegistro: this.formatearFecha(fechaExtraccion),
+        idFrascoLecheCruda: item.id
+      };
+    });
+  }
+
+  /**
+   * Generar número de frasco con formato LHC + año + id
+   */
+  private generateFrascoNumber(id: number): string {
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    return `LHC${currentYear} ${id}`;
+  }
+
+  /**
+   * Calcular fecha de vencimiento (15 días después de la fecha de extracción)
+   */
+  private calcularFechaVencimiento(fechaExtraccion: string): string {
+    if (!fechaExtraccion) return '';
+
+    const fecha = new Date(fechaExtraccion);
+    fecha.setDate(fecha.getDate() + 15);
+    return fecha.toISOString().split('T')[0];
+  }
+
+  /**
+   * Calcular días posparto
+   */
+  private calcularDiasPosparto(fechaParto: string, fechaExtraccion: string): string {
+    if (!fechaParto || !fechaExtraccion) return '';
+
+    const parto = new Date(fechaParto);
+    const extraccion = new Date(fechaExtraccion);
+    const diffTime = Math.abs(extraccion.getTime() - parto.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 30) {
+      return `${diffDays} días`;
+    } else {
+      const meses = Math.floor(diffDays / 30);
+      const diasRestantes = diffDays % 30;
+      return diasRestantes > 0 ? `${meses} meses ${diasRestantes} días` : `${meses} meses`;
+    }
+  }
+
+  /**
+   * Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+   */
+  private formatearFecha(fecha: string): string {
+    if (!fecha) return '';
+
+    const date = new Date(fecha);
+    if (isNaN(date.getTime())) return '';
+
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const anio = date.getFullYear();
+
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  // Métodos heredados del código original para mantener compatibilidad
+  getTableControlLecheCrudaData(): ControlLecheCrudaData[] {
+    // Método mantenido para compatibilidad, pero ya no se usará
+    return [];
+  }
+
   generateNextFrascoNumber(): string {
     const currentDate = new Date();
-    const currentYear = currentDate.getFullYear().toString().slice(-2); // obtenmeos los ultimos 2 dgitos del año
-
-    // Simulamos obtener el último ID de la base de datos
-    // En tu implementación real, esto vendría del backend
+    const currentYear = currentDate.getFullYear().toString().slice(-2);
     const lastId = this.getLastFrascoId();
     const nextId = lastId + 1;
-
     return `LHC${currentYear} ${nextId}`;
   }
 
-  // Simula obtener el último ID de frasco de la base de datos
   private getLastFrascoId(): number {
-    const data = this.getTableControlLecheCrudaData();
-    if (data.length === 0) return 1129; // Valor inicial si no hay datos
-
-    // Encuentra el ID más alto
-    return Math.max(...data.map(item => item.idFrascoLecheCruda || 0));
+    return 1129; // Valor por defecto
   }
 }

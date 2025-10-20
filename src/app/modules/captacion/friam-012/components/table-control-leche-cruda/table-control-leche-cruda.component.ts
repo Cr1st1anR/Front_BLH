@@ -13,12 +13,28 @@ import { MonthPickerComponent } from "src/app/shared/components/month-picker/mon
 import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
+import { HttpClientModule } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
-import type { ControlLecheCrudaData } from './interfaces/control-leche-cruda.interface';
+import type { ControlLecheCrudaData, EmpleadoResponse } from './interfaces/control-leche-cruda.interface';
 
 @Component({
   selector: 'table-control-leche-cruda',
-  imports: [HeaderComponent, CommonModule, TableModule, ProgressSpinnerModule, ToastModule, FormsModule, InputTextModule, Select, DatePickerModule, MonthPickerComponent, ButtonModule, RippleModule],
+  imports: [
+    HeaderComponent,
+    CommonModule,
+    TableModule,
+    ProgressSpinnerModule,
+    ToastModule,
+    FormsModule,
+    InputTextModule,
+    Select,
+    DatePickerModule,
+    MonthPickerComponent,
+    ButtonModule,
+    RippleModule,
+    HttpClientModule
+  ],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
   providers: [ControlLecheCrudaService, MessageService]
@@ -32,29 +48,16 @@ export class TableControlLecheCrudaComponent implements OnInit {
   editingRow: ControlLecheCrudaData | null = null;
   clonedDataControlLecheCruda: { [s: number]: ControlLecheCrudaData } = {};
 
+  // Datos desde el backend
+  empleados: EmpleadoResponse[] = [];
+  donantes: { label: string; value: string }[] = [];
+
   opcionesUbicacion = [
     { label: 'BLH- area de almacenamiento', value: 'BLH - área de almacenamiento' }
   ];
 
-  opcionesResponsables = [
-    { label: 'Stephania M', value: 'Stephania M' },
-    { label: 'Alejandra L', value: 'Alejandra L' },
-    { label: 'María García', value: 'María García' },
-    { label: 'Carlos Rodriguez', value: 'Carlos Rodriguez' },
-    { label: 'Ana López', value: 'Ana López' },
-    { label: 'Luis Martinez', value: 'Luis Martinez' }
-  ];
-
-  opcionesDonantes = [
-    { label: '1836', value: '1836' },
-    { label: '1837', value: '1837' },
-    { label: '1838', value: '1838' },
-    { label: '1839', value: '1839' },
-    { label: '1840', value: '1840' },
-    { label: '1841', value: '1841' },
-    { label: '1842', value: '1842' },
-    { label: '1843', value: '1843' }
-  ];
+  opcionesResponsables: { label: string; value: string }[] = [];
+  opcionesDonantes: { label: string; value: string }[] = [];
 
   headersControlLecheCruda: { header: string; field: string; width: string; tipo?: string }[] = [
     { header: 'CONGELADOR N°', field: 'nCongelador', width: '150px', tipo: 'text' },
@@ -80,27 +83,46 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   requiredFields: string[] = ['nCongelador', 'ubicacion', 'gaveta', 'donante', 'numFrasco', 'volumen', 'fechaEntrada', 'responsableEntrada'];
 
+  // Mes y año actuales para la carga inicial
+  mesActual: number = new Date().getMonth() + 1;
+  anioActual: number = new Date().getFullYear();
+
   constructor(
     private messageService: MessageService,
     private controlLecheCrudaService: ControlLecheCrudaService
   ) { }
 
   ngOnInit(): void {
-    this.loadDataControlLecheCruda();
+    this.loadInitialData();
   }
 
-  loadDataControlLecheCruda(): void {
+  /**
+   * Cargar datos iniciales (empleados y datos de control)
+   */
+  loadInitialData(): void {
     this.loading = true;
 
-    setTimeout(() => {
-      try {
-        this.dataControlLecheCruda =
-          this.controlLecheCrudaService.getTableControlLecheCrudaData();
+    forkJoin({
+      empleados: this.controlLecheCrudaService.getEmpleados(),
+      controlData: this.controlLecheCrudaService.getEntradasSalidasLecheCruda(this.mesActual, this.anioActual)
+    }).subscribe({
+      next: (response) => {
+        // Procesar empleados
+        this.empleados = response.empleados;
+        this.opcionesResponsables = this.empleados.map(emp => ({
+          label: emp.nombre,
+          value: emp.nombre
+        }));
 
-        if (
-          this.dataControlLecheCruda &&
-          this.dataControlLecheCruda.length > 0
-        ) {
+        // Procesar datos de control
+        this.dataControlLecheCruda = response.controlData;
+
+        // Extraer donantes únicos de los datos
+        this.extractDonantesList(this.dataControlLecheCruda);
+
+        this.loading = false;
+
+        if (this.dataControlLecheCruda.length > 0) {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
@@ -112,24 +134,93 @@ export class TableControlLecheCrudaComponent implements OnInit {
           this.messageService.add({
             severity: 'info',
             summary: 'Información',
-            detail: 'No hay datos para mostrar',
+            detail: 'No hay datos para mostrar en el período seleccionado',
             key: 'tr',
             life: 2000,
           });
         }
-      } catch (error) {
+      },
+      error: (error) => {
+        this.loading = false;
         this.messageService.add({
-          severity: 'danger',
+          severity: 'error',
           summary: 'Error',
           detail: 'Hubo un error al cargar los datos',
           key: 'tr',
           life: 3000,
         });
         console.error('Error al cargar datos:', error);
-      } finally {
-        this.loading = false;
       }
-    }, 1200);
+    });
+  }
+
+  /**
+   * Cargar datos de control de leche cruda por mes y año
+   */
+  loadDataControlLecheCruda(mes?: number, anio?: number): void {
+    this.loading = true;
+
+    const mesConsulta = mes || this.mesActual;
+    const anioConsulta = anio || this.anioActual;
+
+    this.controlLecheCrudaService.getEntradasSalidasLecheCruda(mesConsulta, anioConsulta)
+      .subscribe({
+        next: (data) => {
+          this.dataControlLecheCruda = data;
+          this.extractDonantesList(data);
+          this.loading = false;
+
+          if (data.length > 0) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Datos cargados correctamente',
+              key: 'tr',
+              life: 2000,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Información',
+              detail: 'No hay datos para mostrar en el período seleccionado',
+              key: 'tr',
+              life: 2000,
+            });
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Hubo un error al cargar los datos',
+            key: 'tr',
+            life: 3000,
+          });
+          console.error('Error al cargar datos:', error);
+        }
+      });
+  }
+
+  /**
+   * Extraer lista única de donantes de los datos
+   */
+  private extractDonantesList(data: ControlLecheCrudaData[]): void {
+    const donantesUnicos = [...new Set(data.map(item => item.donante))];
+    this.opcionesDonantes = donantesUnicos.map(donante => ({
+      label: donante,
+      value: donante
+    }));
+  }
+
+  /**
+   * Método para manejar cambios en el month-picker
+   * Este método será llamado desde el componente month-picker
+   */
+  onMonthYearChange(event: { mes: number; anio: number }): void {
+    this.mesActual = event.mes;
+    this.anioActual = event.anio;
+    this.loadDataControlLecheCruda(event.mes, event.anio);
   }
 
   onRowEditInit(dataRow: ControlLecheCrudaData): void {
@@ -159,7 +250,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
     this.editingRow = null;
     delete this.clonedDataControlLecheCruda[dataRow.id as number];
 
-    // Lógica de actualización cuando se implemente el backend
+    // TODO: Implementar actualización en el backend cuando esté disponible
     this.messageService.add({
       severity: 'success',
       summary: 'Éxito',

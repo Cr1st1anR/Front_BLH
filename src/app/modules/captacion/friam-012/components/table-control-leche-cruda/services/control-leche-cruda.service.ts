@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, map, of } from 'rxjs';
+import { environment } from 'src/environments/environments';
 import {
   ControlLecheCrudaData,
   EntradasSalidasApiResponse,
   EmpleadoResponse,
   ApiResponse
 } from '../interfaces/control-leche-cruda.interface';
-import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +24,14 @@ export class ControlLecheCrudaService {
     return this.http.get<ApiResponse<EntradasSalidasApiResponse[]>>(
       `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`
     ).pipe(
-      map(response => this.mapApiResponseToTableData(response.data))
+      map(response => {
+        // Si la respuesta es exitosa pero no hay datos, devolver array vacío
+        if (!response.data || response.data.length === 0) {
+          return [];
+        }
+        return this.mapApiResponseToTableData(response.data);
+      })
+      // Ya no necesitamos catchError para el 204
     );
   }
 

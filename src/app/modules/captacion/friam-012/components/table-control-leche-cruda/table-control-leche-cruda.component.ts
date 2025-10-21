@@ -126,7 +126,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
-            detail: 'Datos cargados correctamente',
+            detail: 'Datos cargados para la fecha seleccionada',
             key: 'tr',
             life: 2000,
           });
@@ -134,7 +134,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
           this.messageService.add({
             severity: 'info',
             summary: 'Información',
-            detail: 'No hay datos para mostrar en el período seleccionado',
+            detail: 'No hay datos para la fecha seleccionada',
             key: 'tr',
             life: 2000,
           });
@@ -142,6 +142,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
+        this.dataControlLecheCruda = []; // Limpiar datos en caso de error
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -174,7 +175,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Éxito',
-              detail: 'Datos cargados correctamente',
+              detail: 'Datos cargados para la fecha seleccionada',
               key: 'tr',
               life: 2000,
             });
@@ -182,7 +183,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
             this.messageService.add({
               severity: 'info',
               summary: 'Información',
-              detail: 'No hay datos para mostrar en el período seleccionado',
+              detail: 'No hay datos para la fecha seleccionada',
               key: 'tr',
               life: 2000,
             });
@@ -190,6 +191,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
         },
         error: (error) => {
           this.loading = false;
+          this.dataControlLecheCruda = []; // Limpiar la tabla cuando hay error
           this.messageService.add({
             severity: 'error',
             summary: 'Error',

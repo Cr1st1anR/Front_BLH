@@ -72,12 +72,12 @@
                 @if (col.field === 'ubicacion') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesUbicacion" optionLabel="label"
                   optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
-                  styleClass="w-full">
+                  styleClass="w-full" [disabled]="true">
                 </p-select>
                 } @else if (col.field === 'donante') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesDonantes" optionLabel="label"
                   optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
-                  styleClass="w-full" placeholder="Seleccionar donante">
+                  styleClass="w-full" placeholder="Seleccionar donante" [disabled]="true">
                 </p-select>
                 } @else if (col.field === 'responsableEntrada' || col.field === 'responsableSalida') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesResponsables" optionLabel="label"
@@ -87,14 +87,26 @@
                 } @else if (col.field === 'numFrasco') {
                 <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
                   class="bg-gray-100 text-gray-600 cursor-not-allowed" />
-                } @else if (col.tipo === 'date') {
+                } @else if (col.field === 'gaveta') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                } @else if (col.field === 'procedencia') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                } @else if (col.field === 'fechaEntrada' || col.field === 'fechaSalida') {
                 <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
                   dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
                   [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full">
                 </p-datepicker>
+                } @else if (col.tipo === 'date') {
+                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full"
+                  [disabled]="true">
+                </p-datepicker>
                 } @else {
-                <input type="text" pInputText [(ngModel)]="rowData[col.field]"
-                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
+                  class="bg-gray-100 text-gray-600 cursor-not-allowed" />
                 }
               </ng-template>
               <ng-template pTemplate="output">

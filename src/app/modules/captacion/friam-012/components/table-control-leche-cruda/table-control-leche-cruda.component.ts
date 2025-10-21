@@ -81,7 +81,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   dataControlLecheCruda: ControlLecheCrudaData[] = [];
 
-  requiredFields: string[] = ['nCongelador', 'ubicacion', 'gaveta', 'donante', 'numFrasco', 'volumen', 'fechaEntrada', 'responsableEntrada'];
+  requiredFields: string[] = ['gaveta', 'fechaEntrada', 'responsableEntrada'];
 
   // Mes y año actuales para la carga inicial
   mesActual: number = new Date().getMonth() + 1;

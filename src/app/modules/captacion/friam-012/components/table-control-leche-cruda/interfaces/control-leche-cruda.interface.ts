@@ -27,6 +27,20 @@ export interface EntradasSalidasApiResponse {
   procedencia: string | null;
   fechaEntrada: string | null;
   fechaSalida: string | null;
+  empleadoEntrada: {
+    id: number;
+    nombre: string;
+    cargo: string;
+    telefono: number;
+    correo: string;
+  } | null;
+  empleadoSalida: {
+    id: number;
+    nombre: string;
+    cargo: string;
+    telefono: number;
+    correo: string;
+  } | null;
   madreDonante: {
     id: number;
     donanteExclusivo: number;

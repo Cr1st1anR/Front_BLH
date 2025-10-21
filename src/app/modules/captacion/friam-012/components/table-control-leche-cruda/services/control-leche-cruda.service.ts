@@ -22,16 +22,29 @@ export class ControlLecheCrudaService {
    */
   getEntradasSalidasLecheCruda(mes: number, anio: number): Observable<ControlLecheCrudaData[]> {
     return this.http.get<ApiResponse<EntradasSalidasApiResponse[]>>(
-      `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`
+      `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`,
+      { observe: 'response' } // ✅ Observar la respuesta completa
     ).pipe(
       map(response => {
-        // Si la respuesta es exitosa pero no hay datos, devolver array vacío
-        if (!response.data || response.data.length === 0) {
+        // ✅ Verificar el status de la respuesta
+        if (response.status === 204 || !response.body || !response.body.data) {
+          return []; // No hay datos, devolver array vacío
+        }
+
+        if (response.body.data.length === 0) {
           return [];
         }
-        return this.mapApiResponseToTableData(response.data);
+
+        return this.mapApiResponseToTableData(response.body.data);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // ✅ Manejar errores HTTP
+        if (error.status === 204) {
+          return of([]); // Devolver array vacío para 204
+        }
+        // Para otros errores, reenviar el error
+        throw error;
       })
-      // Ya no necesitamos catchError para el 204
     );
   }
 
@@ -54,16 +67,16 @@ export class ControlLecheCrudaService {
 
       // Obtener datos según la fuente
       const volumen = esFrasco ? item.frascoRecolectado!.volumen.toString() :
-        esExtraccion ? item.extraccion!.cantidad.toString() : '';
+                     esExtraccion ? item.extraccion!.cantidad.toString() : '';
 
       const fechaExtraccion = esFrasco ? item.frascoRecolectado!.fechaDeExtraccion :
-        esExtraccion ? item.extraccion!.fechaExtraccion : '';
+                             esExtraccion ? item.extraccion!.fechaExtraccion : '';
 
       const gaveta = esFrasco ? item.frascoRecolectado!.gaveta.toString() :
-        esExtraccion ? item.extraccion!.gaveta.toString() : '';
+                    esExtraccion ? item.extraccion!.gaveta.toString() : '';
 
       const congeladorId = esFrasco ? item.frascoRecolectado!.congelador.id :
-        esExtraccion ? item.extraccion!.congelador.id : '';
+                          esExtraccion ? item.extraccion!.congelador.id : '';
 
       // Calcular fecha de vencimiento (15 días después de la fecha de extracción)
       const fechaVencimiento = this.calcularFechaVencimiento(fechaExtraccion);
@@ -74,31 +87,46 @@ export class ControlLecheCrudaService {
         fechaExtraccion
       );
 
+      // ✅ NUEVO: Obtener edad gestacional desde la base de datos
+      const edadGestacional = this.obtenerEdadGestacional(item.madreDonante.gestacion);
+
       // Generar número de frasco con la lógica LHC + año + id
       const numFrasco = this.generateFrascoNumber(item.id);
 
       return {
         id: item.id,
         nCongelador: congeladorId.toString().padStart(3, '0'),
-        ubicacion: 'BLH - área de almacenamiento', // Valor por defecto
+        ubicacion: 'BLH - área de almacenamiento',
         gaveta: gaveta,
         diasPosparto: diasPosparto,
         donante: item.madreDonante.id.toString(),
         numFrasco: numFrasco,
-        edadGestacional: '', // No viene en la API, se puede calcular si es necesario
+        edadGestacional: edadGestacional, // ✅ Ahora con datos reales
         volumen: volumen,
         fechaExtraccion: this.formatearFecha(fechaExtraccion),
         fechaVencimiento: this.formatearFecha(fechaVencimiento),
         fechaParto: this.formatearFecha(item.madreDonante.madrePotencial.infoMadre.fechaParto),
         procedencia: item.procedencia || '',
         fechaEntrada: item.fechaEntrada ? this.formatearFecha(item.fechaEntrada) : '',
-        responsableEntrada: '', // Se llenará con los empleados
+        responsableEntrada: '',
         fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
-        responsableSalida: '', // Se llenará con los empleados
+        responsableSalida: '',
         fechaRegistro: this.formatearFecha(fechaExtraccion),
         idFrascoLecheCruda: item.id
       };
     });
+  }
+
+  /**
+   * Obtener edad gestacional desde los datos de la base de datos
+   */
+  private obtenerEdadGestacional(gestacion: any): string {
+    if (!gestacion || !gestacion.semanas) {
+      return ''; // Sin datos de gestación
+    }
+
+    // Formatear las semanas como decimal (ej: 38.1, 40.0)
+    return gestacion.semanas.toString() + '.0';
   }
 
   /**

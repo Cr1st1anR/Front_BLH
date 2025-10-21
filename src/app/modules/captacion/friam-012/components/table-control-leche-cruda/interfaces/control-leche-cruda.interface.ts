@@ -40,6 +40,19 @@ export interface EntradasSalidasApiResponse {
     firmaAcompañante: string;
     activo: number;
     fecha_diligenciamiento: string;
+    gestacion: {
+      id: number;
+      lugarControlPrenatal: string;
+      asistioControlPrenatal: number;
+      tipoIps: number;
+      pesoGestacionInicial: number;
+      pesoGestacionFinal: number;
+      talla: number;
+      partoTermino: number;
+      preTermino: number;
+      semanas: number;
+      fechaParto: string;
+    } | null;
     madrePotencial: {
       id: number;
       educacion_presencial: number;

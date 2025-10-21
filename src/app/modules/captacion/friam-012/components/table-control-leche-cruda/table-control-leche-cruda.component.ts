@@ -128,7 +128,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
             summary: 'Éxito',
             detail: 'Datos cargados para la fecha seleccionada',
             key: 'tr',
-            life: 2000,
+            life: 3000,
           });
         } else {
           this.messageService.add({
@@ -136,7 +136,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
             summary: 'Información',
             detail: 'No hay datos para la fecha seleccionada',
             key: 'tr',
-            life: 2000,
+            life: 3000,
           });
         }
       },
@@ -177,7 +177,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
               summary: 'Éxito',
               detail: 'Datos cargados para la fecha seleccionada',
               key: 'tr',
-              life: 2000,
+              life: 3000,
             });
           } else {
             this.messageService.add({
@@ -185,7 +185,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
               summary: 'Información',
               detail: 'No hay datos para la fecha seleccionada',
               key: 'tr',
-              life: 2000,
+              life: 3000,
             });
           }
         },

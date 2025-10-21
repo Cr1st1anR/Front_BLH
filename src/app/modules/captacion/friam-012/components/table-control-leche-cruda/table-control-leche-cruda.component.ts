@@ -215,12 +215,12 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   /**
    * Método para manejar cambios en el month-picker
-   * Este método será llamado desde el componente month-picker
+   * Adaptamos { year, month } a { mes, anio } que espera nuestro servicio
    */
-  onMonthYearChange(event: { mes: number; anio: number }): void {
-    this.mesActual = event.mes;
-    this.anioActual = event.anio;
-    this.loadDataControlLecheCruda(event.mes, event.anio);
+  onMonthYearChange(event: { year: number; month: number }): void {
+    this.mesActual = event.month;
+    this.anioActual = event.year;
+    this.loadDataControlLecheCruda(event.month, event.year);
   }
 
   onRowEditInit(dataRow: ControlLecheCrudaData): void {

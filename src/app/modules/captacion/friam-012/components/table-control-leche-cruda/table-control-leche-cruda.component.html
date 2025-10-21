@@ -11,7 +11,7 @@
 
 <div class="flex justify-between items-center mx-4 mt-6">
   <div></div>
-  <shared-month-picker />
+  <shared-month-picker (dateChange)="onMonthYearChange($event)" />
 </div>
 
 <div class="container-table-scroll">

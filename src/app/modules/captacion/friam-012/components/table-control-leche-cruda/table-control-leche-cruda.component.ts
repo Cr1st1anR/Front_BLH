@@ -252,7 +252,14 @@ export class TableControlLecheCrudaComponent implements OnInit {
     this.editingRow = null;
     delete this.clonedDataControlLecheCruda[dataRow.id as number];
 
-    // TODO: Implementar actualización en el backend cuando esté disponible
+    // TODO: Aquí implementarías la llamada al backend para actualizar
+    // Cuando implementes el PUT, enviarás:
+    // {
+    //   responsableEntrada: dataRow.responsableEntrada, // nombre del empleado
+    //   responsableSalida: dataRow.responsableSalida,   // nombre del empleado
+    //   // ... otros campos
+    // }
+
     this.messageService.add({
       severity: 'success',
       summary: 'Éxito',

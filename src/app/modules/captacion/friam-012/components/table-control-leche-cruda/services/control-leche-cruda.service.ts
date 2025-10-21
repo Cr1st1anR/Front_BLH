@@ -87,7 +87,7 @@ export class ControlLecheCrudaService {
         fechaExtraccion
       );
 
-      // ✅ NUEVO: Obtener edad gestacional desde la base de datos
+      // Obtener edad gestacional desde la base de datos
       const edadGestacional = this.obtenerEdadGestacional(item.madreDonante.gestacion);
 
       // Generar número de frasco con la lógica LHC + año + id
@@ -101,16 +101,16 @@ export class ControlLecheCrudaService {
         diasPosparto: diasPosparto,
         donante: item.madreDonante.id.toString(),
         numFrasco: numFrasco,
-        edadGestacional: edadGestacional, // ✅ Ahora con datos reales
+        edadGestacional: edadGestacional,
         volumen: volumen,
         fechaExtraccion: this.formatearFecha(fechaExtraccion),
         fechaVencimiento: this.formatearFecha(fechaVencimiento),
         fechaParto: this.formatearFecha(item.madreDonante.madrePotencial.infoMadre.fechaParto),
         procedencia: item.procedencia || '',
         fechaEntrada: item.fechaEntrada ? this.formatearFecha(item.fechaEntrada) : '',
-        responsableEntrada: '',
+        responsableEntrada: item.empleadoEntrada ? item.empleadoEntrada.nombre : '',
         fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
-        responsableSalida: '',
+        responsableSalida: item.empleadoSalida ? item.empleadoSalida.nombre : '',
         fechaRegistro: this.formatearFecha(fechaExtraccion),
         idFrascoLecheCruda: item.id
       };

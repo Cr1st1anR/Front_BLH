@@ -1,110 +1,98 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ApiResponse } from '../../interfaces/api-response.interface';
+import { LecheSalaExtraccion } from '../../interfaces/leche-sala-extraccion.interface';
+import { LecheExtraidaCreate } from '../../interfaces/leche-extraida-create.interface';
+import { LecheExtraidaTable } from '../../interfaces/leche-extraida-table.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TableLecheExtraidaService {
 
-  constructor() { }
+  // Subject para manejar actualizaciones de datos
+  private dataUpdated = new BehaviorSubject<boolean>(false);
+  public dataUpdated$ = this.dataUpdated.asObservable();
 
-  getTableLecheExtraidaData() {
-    return [
-      {
-        id_extraccion: 1,
-        fecha_registro: '14/10/2025',
-        apellidos_nombre: 'Camila Sofia Arias Toro',
-        edad: 27,
-        identificacion: '27147852',
-        municipio: 'Pasto',
-        telefono: '3104478896',
-        eps: 'Sanitas',
-        procedencia: '255',
-        consejeria: 1 // Individual Sí
-      },
-      {
-        id_extraccion: 2,
-        fecha_registro: '13/10/2025',
-        apellidos_nombre: 'María José González López',
-        edad: 24,
-        identificacion: '31245689',
-        municipio: 'Ipiales',
-        telefono: '3205647891',
-        eps: 'Compensar',
-        procedencia: '123',
-        consejeria: 4 // Grupal No
-      },
-      {
-        id_extraccion: 3,
-        fecha_registro: '12/10/2025',
-        apellidos_nombre: 'Ana Lucía Rodríguez Martín',
-        edad: 29,
-        identificacion: '45789632',
-        municipio: 'Tumaco',
-        telefono: '3156789234',
-        eps: 'Nueva EPS',
-        procedencia: '456',
-        consejeria: 3 // Grupal Sí
-      },
-      {
-        id_extraccion: 4,
-        fecha_registro: '11/10/2025',
-        apellidos_nombre: 'Sofía Alejandra Pérez Castro',
-        edad: 26,
-        identificacion: '28956741',
-        municipio: 'Pasto',
-        telefono: '3117894523',
-        eps: 'Sura',
-        procedencia: '789',
-        consejeria: null // Sin selección
-      },
-      {
-        id_extraccion: 5,
-        fecha_registro: '10/10/2025',
-        apellidos_nombre: 'Carolina Isabel Moreno Díaz',
-        edad: 31,
-        identificacion: '39874562',
-        municipio: 'Ipiales',
-        telefono: '3208765432',
-        eps: 'Medimás',
-        procedencia: '321',
-        consejeria: 2 // Individual No
-      },
-      {
-        id_extraccion: 6,
-        fecha_registro: '25/09/2025',
-        apellidos_nombre: 'Valentina Herrera Castillo',
-        edad: 28,
-        identificacion: '33456789',
-        municipio: 'Pasto',
-        telefono: '3145678901',
-        eps: 'Famisanar',
-        procedencia: '888',
-        consejeria: 1 // Individual Sí
-      },
-      {
-        id_extraccion: 7,
-        fecha_registro: '20/09/2025',
-        apellidos_nombre: 'Paola Andrea López García',
-        edad: 30,
-        identificacion: '41234567',
-        municipio: 'Ipiales',
-        telefono: '3176543210',
-        eps: 'Coomeva',
-        procedencia: '999',
-        consejeria: 3 // Grupal Sí
-      },
-      {
-        id_extraccion: 8,
-        fecha_registro: '05/11/2025',
-        apellidos_nombre: 'Diana Carolina Ruiz Morales',
-        edad: 25,
-        identificacion: '50123456',
-        municipio: 'Tumaco',
-        telefono: '3198765432',
-        eps: 'Salud Total',
-        procedencia: '777',
-        consejeria: 2 // Individual No
-      }
-    ];
+  constructor(private http: HttpClient) { }
+
+  // Método para obtener todos los registros de leche extraída
+  getAllLecheSalaExtraccion(): Observable<LecheExtraidaTable[]> {
+    return this.http.get<ApiResponse<LecheSalaExtraccion[]>>(`${environment.ApiBLH}/getAllLecheSalaExtraccion`)
+      .pipe(
+        map(response => this.transformToTableData(response.data))
+      );
+  }
+
+  // Método para crear un nuevo registro
+  createLecheSalaExtraccion(data: LecheExtraidaCreate): Observable<LecheSalaExtraccion> {
+    return this.http.post<ApiResponse<LecheSalaExtraccion>>(`${environment.ApiBLH}/postLecheSalaExtraccion`, data)
+      .pipe(
+        map(response => {
+          this.notifyDataUpdate();
+          return response.data;
+        })
+      );
+  }
+
+  // Método para transformar los datos de la API al formato de la tabla
+  private transformToTableData(apiData: LecheSalaExtraccion[]): LecheExtraidaTable[] {
+    return apiData.map(item => ({
+      id_extraccion: item.id,
+      fecha_registro: this.formatDateForDisplay(item.fechaRegistro),
+      apellidos_nombre: `${item.madrePotencial.infoMadre.nombre} ${item.madrePotencial.infoMadre.apellido}`,
+      edad: this.calculateAge(item.madrePotencial.infoMadre.fechaNacimiento),
+      identificacion: item.madrePotencial.infoMadre.documento,
+      municipio: item.madrePotencial.infoMadre.ciudad,
+      telefono: item.madrePotencial.infoMadre.telefono || '',
+      eps: item.madrePotencial.infoMadre.eps,
+      procedencia: item.procedencia,
+      consejeria: item.consejeria
+    }));
+  }
+
+  // Método para calcular la edad basada en la fecha de nacimiento
+  private calculateAge(birthDateString: string): number {
+    const birthDate = new Date(birthDateString);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  // Método para formatear fecha para mostrar en la tabla
+  private formatDateForDisplay(dateString: string): string {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  // Método para formatear fecha para enviar a la API
+  formatDateForApi(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Método para notificar actualizaciones de datos
+  private notifyDataUpdate(): void {
+    this.dataUpdated.next(true);
+  }
+
+  // Método para resetear el estado de actualización
+  resetUpdateStatus(): void {
+    this.dataUpdated.next(false);
   }
 }

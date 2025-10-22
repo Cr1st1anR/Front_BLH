@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, Output, EventEmitter, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, OnInit, Input, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -9,7 +9,10 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { Table, TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { Subscription } from 'rxjs';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
+import type { LecheExtraidaTable } from '../interfaces/leche-extraida-table.interface';
+import type { LecheExtraidaCreate } from '../interfaces/leche-extraida-create.interface';
 
 @Component({
   selector: 'table-leche-extraida',
@@ -28,7 +31,7 @@ import { TableLecheExtraidaService } from './services/table-leche-extraida.servi
   styleUrl: './table-leche-extraida.component.scss',
   providers: [MessageService]
 })
-export class TableLecheExtraidaComponent implements OnInit {
+export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
   @ViewChild('tableLecheExtraida') table!: Table;
   @Output() rowClick = new EventEmitter<any>();
   @Input() filtroFecha: { year: number; month: number } | null = null;
@@ -36,11 +39,12 @@ export class TableLecheExtraidaComponent implements OnInit {
   loading = false;
   hasNewRowInEditing = false;
   editingRow: any = null;
-  dataLecheExtraida: any[] = [];
-  dataLecheExtraidaFiltered: any[] = [];
+  dataLecheExtraida: LecheExtraidaTable[] = [];
+  dataLecheExtraidaFiltered: LecheExtraidaTable[] = [];
 
   private clonedLecheExtraida: { [s: string]: any } = {};
   private tempIdCounter = -1;
+  private subscriptions: Subscription = new Subscription();
 
   readonly headersLecheExtraida: any[] = [
     {
@@ -89,7 +93,7 @@ export class TableLecheExtraidaComponent implements OnInit {
       header: 'PROCEDENCIA',
       field: 'procedencia',
       width: '150px',
-      tipo: 'number',
+      tipo: 'text',
     },
     {
       header: 'CONSEJERIA',
@@ -112,6 +116,22 @@ export class TableLecheExtraidaComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDataLecheExtraida();
+    this.setupDataUpdateSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  // Configurar suscripción para actualizaciones de datos
+  private setupDataUpdateSubscription(): void {
+    const updateSub = this.tableLecheExtraidaService.dataUpdated$.subscribe(updated => {
+      if (updated) {
+        this.loadDataLecheExtraida();
+        this.tableLecheExtraidaService.resetUpdateStatus();
+      }
+    });
+    this.subscriptions.add(updateSub);
   }
 
   filtrarPorFecha(filtro: { year: number; month: number } | null): void {
@@ -129,17 +149,21 @@ export class TableLecheExtraidaComponent implements OnInit {
   loadDataLecheExtraida(): void {
     this.loading = true;
 
-    setTimeout(() => {
-      try {
-        this.dataLecheExtraida = this.tableLecheExtraidaService.getTableLecheExtraidaData();
+    const loadSub = this.tableLecheExtraidaService.getAllLecheSalaExtraccion().subscribe({
+      next: (data) => {
+        this.dataLecheExtraida = data;
         this.dataLecheExtraidaFiltered = [...this.dataLecheExtraida];
-      } catch (error) {
+        this.aplicarFiltros();
+        this.loading = false;
+      },
+      error: (error) => {
         this.showErrorMessage('Error al cargar los datos');
         console.error('Error al cargar datos:', error);
-      } finally {
         this.loading = false;
       }
-    }, 800);
+    });
+
+    this.subscriptions.add(loadSub);
   }
 
   crearNuevoRegistroLecheExtraida(): void {
@@ -245,7 +269,7 @@ export class TableLecheExtraidaComponent implements OnInit {
     this.dataLecheExtraidaFiltered = datosFiltrados;
   }
 
-  private filtrarPorMesYAno(datos: any[], filtro: { year: number; month: number }): any[] {
+  private filtrarPorMesYAno(datos: LecheExtraidaTable[], filtro: { year: number; month: number }): LecheExtraidaTable[] {
     return datos.filter(item => {
       if (!item.fecha_registro) return false;
 
@@ -268,7 +292,7 @@ export class TableLecheExtraidaComponent implements OnInit {
     this.showMessage(tipo, mensaje);
   }
 
-  private createNewRecord(): any {
+  private createNewRecord(): LecheExtraidaTable {
     const fechaActual = new Date();
 
     return {
@@ -405,19 +429,49 @@ export class TableLecheExtraidaComponent implements OnInit {
   }
 
   private guardarNuevoRegistro(dataRow: any, rowElement: HTMLTableRowElement): void {
-    setTimeout(() => {
-      dataRow.id_extraccion = Date.now();
-      dataRow.isNew = false;
-      delete dataRow._uid;
+    // Separar nombre y apellido del campo combinado
+    const nombreCompleto = dataRow.apellidos_nombre.trim();
+    const partesNombre = nombreCompleto.split(' ');
 
-      this.aplicarFiltros();
-      this.resetEditingState();
-      this.table.saveRowEdit(dataRow, rowElement);
-      this.showMessage('success', 'Registro guardado correctamente');
-    }, 500);
+    // Asumir que la primera palabra es el nombre y el resto apellido
+    const nombre = partesNombre[0] || '';
+    const apellido = partesNombre.slice(1).join(' ') || '';
+
+    const createData: LecheExtraidaCreate = {
+      nombre: nombre,
+      apellido: apellido,
+      procedencia: dataRow.procedencia,
+      consejeria: dataRow.consejeria,
+      municipio: dataRow.municipio,
+      fechaRegistro: this.tableLecheExtraidaService.formatDateForApi(dataRow.fecha_registro_aux),
+      fechaNacimiento: this.tableLecheExtraidaService.formatDateForApi(dataRow.fecha_nacimiento_aux),
+      documento: dataRow.identificacion,
+      telefono: dataRow.telefono,
+      eps: dataRow.eps
+    };
+
+    this.loading = true;
+
+    const createSub = this.tableLecheExtraidaService.createLecheSalaExtraccion(createData).subscribe({
+      next: (response) => {
+        // El componente se actualizará automáticamente gracias al observable dataUpdated$
+        this.resetEditingState();
+        this.table.saveRowEdit(dataRow, rowElement);
+        this.showMessage('success', 'Registro guardado correctamente');
+        this.loading = false;
+      },
+      error: (error) => {
+        this.showErrorMessage('Error al guardar el registro');
+        console.error('Error al guardar:', error);
+        this.loading = false;
+      }
+    });
+
+    this.subscriptions.add(createSub);
   }
 
   private actualizarRegistroExistente(dataRow: any, rowElement: HTMLTableRowElement): void {
+    // Por ahora solo resetear el estado de edición ya que no tienes API de actualización
     setTimeout(() => {
       const rowId = this.getRowId(dataRow);
       delete this.clonedLecheExtraida[rowId];
@@ -426,7 +480,7 @@ export class TableLecheExtraidaComponent implements OnInit {
 
       this.aplicarFiltros();
       this.table.saveRowEdit(dataRow, rowElement);
-      this.showMessage('success', 'Registro actualizado correctamente');
+      this.showMessage('info', 'Funcionalidad de actualización pendiente de implementar');
     }, 500);
   }
 

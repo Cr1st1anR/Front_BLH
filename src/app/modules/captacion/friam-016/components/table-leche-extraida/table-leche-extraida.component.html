@@ -9,8 +9,9 @@
 
 <div class="container-table pr-3">
   <p-table #tableLecheExtraida [value]="dataLecheExtraidaFiltered" [scrollable]="true" scrollHeight="600px"
-    [columns]="headersLecheExtraida" [tableStyle]="{ 'min-width': '100rem', 'width': '100%' }" dataKey="id_extraccion"
-    editMode="row" [style]="{ width: '100%' }" [globalFilterFields]="['identificacion']">
+    [columns]="headersLecheExtraida" [tableStyle]="{ 'min-width': '50rem', 'width': '100%', 'max-width': '100%' }"
+    dataKey="id_extraccion" editMode="row" [style]="{ width: '100%', 'max-width': '100%' }"
+    [globalFilterFields]="['identificacion']">
 
     <ng-template #header let-columns>
       <tr>

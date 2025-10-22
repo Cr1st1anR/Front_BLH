@@ -95,16 +95,14 @@
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton [name]="'individual_' + rowIndex" [value]="1"
-                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
-                        (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
                         [inputId]="'individual_si_' + rowIndex" />
                       <label [for]="'individual_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton [name]="'individual_' + rowIndex" [value]="0"
-                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
-                        (ngModelChange)="onConsejeriaIndividualChange(rowIndex, $event)"
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="2"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
                         [inputId]="'individual_no_' + rowIndex" />
                       <label [for]="'individual_no_' + rowIndex" class="radio-label">No</label>
                     </div>
@@ -114,16 +112,14 @@
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton [name]="'grupal_' + rowIndex" [value]="1"
-                        [ngModel]="getConsejeriaValue(rowData, 'grupal')"
-                        (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="3"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
                         [inputId]="'grupal_si_' + rowIndex" />
                       <label [for]="'grupal_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton [name]="'grupal_' + rowIndex" [value]="0"
-                        [ngModel]="getConsejeriaValue(rowData, 'grupal')"
-                        (ngModelChange)="onConsejeriaGrupalChange(rowIndex, $event)"
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="4"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
                         [inputId]="'grupal_no_' + rowIndex" />
                       <label [for]="'grupal_no_' + rowIndex" class="radio-label">No</label>
                     </div>
@@ -137,15 +133,15 @@
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton [name]="'individual_readonly_' + rowIndex" [value]="1"
-                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
-                        [inputId]="'individual_readonly_si_' + rowIndex" [disabled]="true" />
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'individual_readonly_si_' + rowIndex"
+                        [disabled]="true" />
                       <label [for]="'individual_readonly_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton [name]="'individual_readonly_' + rowIndex" [value]="0"
-                        [ngModel]="getConsejeriaValue(rowData, 'individual')"
-                        [inputId]="'individual_readonly_no_' + rowIndex" [disabled]="true" />
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="2"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'individual_readonly_no_' + rowIndex"
+                        [disabled]="true" />
                       <label [for]="'individual_readonly_no_' + rowIndex" class="radio-label">No</label>
                     </div>
                   </div>
@@ -154,14 +150,14 @@
                 <div class="consejeria-section">
                   <div class="radio-group">
                     <div class="radio-item">
-                      <p-radioButton [name]="'grupal_readonly_' + rowIndex" [value]="1"
-                        [ngModel]="getConsejeriaValue(rowData, 'grupal')" [inputId]="'grupal_readonly_si_' + rowIndex"
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="3"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'grupal_readonly_si_' + rowIndex"
                         [disabled]="true" />
                       <label [for]="'grupal_readonly_si_' + rowIndex" class="radio-label">Sí</label>
                     </div>
                     <div class="radio-item">
-                      <p-radioButton [name]="'grupal_readonly_' + rowIndex" [value]="0"
-                        [ngModel]="getConsejeriaValue(rowData, 'grupal')" [inputId]="'grupal_readonly_no_' + rowIndex"
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="4"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'grupal_readonly_no_' + rowIndex"
                         [disabled]="true" />
                       <label [for]="'grupal_readonly_no_' + rowIndex" class="radio-label">No</label>
                     </div>

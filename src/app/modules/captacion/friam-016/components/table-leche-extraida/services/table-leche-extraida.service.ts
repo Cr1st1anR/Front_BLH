@@ -19,10 +19,7 @@ export class TableLecheExtraidaService {
         telefono: '3104478896',
         eps: 'Sanitas',
         procedencia: '255',
-        consejeria: {
-          individual: 1,
-          grupal: null
-        }
+        consejeria: 1 // Individual Sí
       },
       {
         id_extraccion: 2,
@@ -34,10 +31,7 @@ export class TableLecheExtraidaService {
         telefono: '3205647891',
         eps: 'Compensar',
         procedencia: '123',
-        consejeria: {
-          individual: null,
-          grupal: 1
-        }
+        consejeria: 4 // Grupal No
       },
       {
         id_extraccion: 3,
@@ -49,10 +43,7 @@ export class TableLecheExtraidaService {
         telefono: '3156789234',
         eps: 'Nueva EPS',
         procedencia: '456',
-        consejeria: {
-          individual: 1,
-          grupal: 1
-        }
+        consejeria: 3 // Grupal Sí
       },
       {
         id_extraccion: 4,
@@ -64,10 +55,7 @@ export class TableLecheExtraidaService {
         telefono: '3117894523',
         eps: 'Sura',
         procedencia: '789',
-        consejeria: {
-          individual: null,
-          grupal: null
-        }
+        consejeria: null // Sin selección
       },
       {
         id_extraccion: 5,
@@ -79,10 +67,7 @@ export class TableLecheExtraidaService {
         telefono: '3208765432',
         eps: 'Medimás',
         procedencia: '321',
-        consejeria: {
-          individual: 1,
-          grupal: null
-        }
+        consejeria: 2 // Individual No
       },
       {
         id_extraccion: 6,
@@ -94,10 +79,7 @@ export class TableLecheExtraidaService {
         telefono: '3145678901',
         eps: 'Famisanar',
         procedencia: '888',
-        consejeria: {
-          individual: 1,
-          grupal: null
-        }
+        consejeria: 1 // Individual Sí
       },
       {
         id_extraccion: 7,
@@ -109,10 +91,7 @@ export class TableLecheExtraidaService {
         telefono: '3176543210',
         eps: 'Coomeva',
         procedencia: '999',
-        consejeria: {
-          individual: null,
-          grupal: 1
-        }
+        consejeria: 3 // Grupal Sí
       },
       {
         id_extraccion: 8,
@@ -124,10 +103,7 @@ export class TableLecheExtraidaService {
         telefono: '3198765432',
         eps: 'Salud Total',
         procedencia: '777',
-        consejeria: {
-          individual: 1,
-          grupal: 1
-        }
+        consejeria: 2 // Individual No
       }
     ];
   }

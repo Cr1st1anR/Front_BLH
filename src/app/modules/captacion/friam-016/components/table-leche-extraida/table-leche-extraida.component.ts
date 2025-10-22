@@ -108,7 +108,7 @@ export class TableLecheExtraidaComponent implements OnInit {
   constructor(
     private tableLecheExtraidaService: TableLecheExtraidaService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDataLecheExtraida();
@@ -151,7 +151,7 @@ export class TableLecheExtraidaComponent implements OnInit {
     const nuevoRegistro = this.createNewRecord();
     this.dataLecheExtraida.push(nuevoRegistro);
     this.aplicarFiltros();
-    
+
     this.hasNewRowInEditing = true;
     this.editingRow = nuevoRegistro;
 
@@ -227,16 +227,12 @@ export class TableLecheExtraidaComponent implements OnInit {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  getConsejeriaValue(rowData: any, type: 'individual' | 'grupal'): number | null {
-    return rowData?.consejeria?.[type] ?? null;
+  getConsejeriaValue(rowData: any): number | null {
+    return rowData?.consejeria ?? null;
   }
 
-  onConsejeriaIndividualChange(rowIndex: number, value: number): void {
-    this.updateConsejeriaValue(rowIndex, 'individual', value);
-  }
-
-  onConsejeriaGrupalChange(rowIndex: number, value: number): void {
-    this.updateConsejeriaValue(rowIndex, 'grupal', value);
+  onConsejeriaChange(rowIndex: number, value: number): void {
+    this.updateConsejeriaValue(rowIndex, value);
   }
 
   private aplicarFiltros(): void {
@@ -267,7 +263,7 @@ export class TableLecheExtraidaComponent implements OnInit {
     const mensaje = this.dataLecheExtraidaFiltered.length > 0
       ? 'Datos cargados para la fecha seleccionada'
       : 'No hay datos para la fecha seleccionada';
-    
+
     const tipo = this.dataLecheExtraidaFiltered.length > 0 ? 'success' : 'info';
     this.showMessage(tipo, mensaje);
   }
@@ -287,7 +283,7 @@ export class TableLecheExtraidaComponent implements OnInit {
       telefono: '',
       eps: '',
       procedencia: '',
-      consejeria: { individual: null, grupal: null },
+      consejeria: null,
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
@@ -297,10 +293,7 @@ export class TableLecheExtraidaComponent implements OnInit {
     const rowId = this.getRowId(dataRow);
     this.clonedLecheExtraida[rowId] = {
       ...dataRow,
-      consejeria: {
-        individual: dataRow.consejeria?.individual ?? null,
-        grupal: dataRow.consejeria?.grupal ?? null
-      },
+      consejeria: dataRow.consejeria ?? null,
       fecha_registro_aux: this.parsearFechaParaCalendario(dataRow.fecha_registro),
       fecha_nacimiento_aux: dataRow.fecha_nacimiento_aux || null
     };
@@ -312,25 +305,16 @@ export class TableLecheExtraidaComponent implements OnInit {
     }
   }
 
-  private updateConsejeriaValue(rowIndex: number, type: 'individual' | 'grupal', value: number): void {
+  private updateConsejeriaValue(rowIndex: number, value: number): void {
     const filteredRow = this.dataLecheExtraidaFiltered[rowIndex];
-    const originalIndex = this.dataLecheExtraida.findIndex(item => 
+    const originalIndex = this.dataLecheExtraida.findIndex(item =>
       this.getRowId(item) === this.getRowId(filteredRow)
     );
 
     if (originalIndex === -1) return;
 
-    const ensureConsejeria = (row: any) => {
-      if (!row.consejeria) {
-        row.consejeria = { individual: null, grupal: null };
-      }
-    };
-
-    ensureConsejeria(this.dataLecheExtraida[originalIndex]);
-    ensureConsejeria(filteredRow);
-
-    this.dataLecheExtraida[originalIndex].consejeria[type] = value;
-    filteredRow.consejeria[type] = value;
+    this.dataLecheExtraida[originalIndex].consejeria = value;
+    filteredRow.consejeria = value;
   }
 
   private ageCalculate(birthDate: Date): number {
@@ -412,9 +396,8 @@ export class TableLecheExtraidaComponent implements OnInit {
       }
     }
 
-    const hasConsejeria = dataRow.consejeria?.individual !== null || dataRow.consejeria?.grupal !== null;
-    if (!hasConsejeria) {
-      this.showMessage('error', 'Debe seleccionar al menos una opción de consejería (Individual o Grupal)');
+    if (dataRow.consejeria === null || dataRow.consejeria === undefined) {
+      this.showMessage('error', 'Debe seleccionar una opción de consejería');
       return false;
     }
 
@@ -457,13 +440,10 @@ export class TableLecheExtraidaComponent implements OnInit {
     if (originalIndex !== -1) {
       this.dataLecheExtraida[originalIndex] = {
         ...originalData,
-        consejeria: {
-          individual: originalData.consejeria?.individual ?? null,
-          grupal: originalData.consejeria?.grupal ?? null
-        }
+        consejeria: originalData.consejeria ?? null
       };
     }
-    
+
     this.aplicarFiltros();
     delete this.clonedLecheExtraida[rowId];
   }

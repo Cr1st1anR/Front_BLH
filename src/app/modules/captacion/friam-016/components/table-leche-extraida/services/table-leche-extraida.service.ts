@@ -38,6 +38,17 @@ export class TableLecheExtraidaService {
       );
   }
 
+  // Método para actualizar un registro existente
+  updateLecheSalaExtraccion(id: number, data: LecheExtraidaCreate): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${environment.ApiBLH}/putLecheSalaExtraccion/${id}`, data)
+      .pipe(
+        map(response => {
+          this.notifyDataUpdate();
+          return response.data;
+        })
+      );
+  }
+
   // Método para transformar los datos de la API al formato de la tabla
   private transformToTableData(apiData: LecheSalaExtraccion[]): LecheExtraidaTable[] {
     return apiData.map(item => ({

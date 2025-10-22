@@ -327,6 +327,14 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
     if (!dataRow.fecha_registro_aux) {
       dataRow.fecha_registro_aux = this.parsearFechaParaCalendario(dataRow.fecha_registro);
     }
+
+    // Inicializar fecha_nacimiento_aux si no existe
+    if (!dataRow.fecha_nacimiento_aux && dataRow.edad) {
+      // Calcular fecha de nacimiento aproximada basada en la edad
+      const fechaActual = new Date();
+      const añoNacimiento = fechaActual.getFullYear() - parseInt(dataRow.edad.toString());
+      dataRow.fecha_nacimiento_aux = new Date(añoNacimiento, 0, 1); // 1 de enero del año calculado
+    }
   }
 
   private updateConsejeriaValue(rowIndex: number, value: number): void {
@@ -425,6 +433,19 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Validación adicional para registros existentes
+    if (!dataRow.isNew) {
+      if (!dataRow.fecha_registro_aux) {
+        this.showMessage('error', 'La fecha de registro es obligatoria');
+        return false;
+      }
+
+      if (!dataRow.fecha_nacimiento_aux) {
+        this.showMessage('error', 'La fecha de nacimiento es obligatoria para calcular la edad');
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -471,17 +492,49 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
   }
 
   private actualizarRegistroExistente(dataRow: any, rowElement: HTMLTableRowElement): void {
-    // Por ahora solo resetear el estado de edición ya que no tienes API de actualización
-    setTimeout(() => {
-      const rowId = this.getRowId(dataRow);
-      delete this.clonedLecheExtraida[rowId];
-      this.editingRow = null;
-      this.hasNewRowInEditing = false;
+    // Separar nombre y apellido del campo combinado
+    const nombreCompleto = dataRow.apellidos_nombre.trim();
+    const partesNombre = nombreCompleto.split(' ');
 
-      this.aplicarFiltros();
-      this.table.saveRowEdit(dataRow, rowElement);
-      this.showMessage('info', 'Funcionalidad de actualización pendiente de implementar');
-    }, 500);
+    // Asumir que la primera palabra es el nombre y el resto apellido
+    const nombre = partesNombre[0] || '';
+    const apellido = partesNombre.slice(1).join(' ') || '';
+
+    const updateData: LecheExtraidaCreate = {
+      nombre: nombre,
+      apellido: apellido,
+      procedencia: dataRow.procedencia,
+      consejeria: dataRow.consejeria,
+      municipio: dataRow.municipio,
+      fechaRegistro: this.tableLecheExtraidaService.formatDateForApi(dataRow.fecha_registro_aux),
+      fechaNacimiento: this.tableLecheExtraidaService.formatDateForApi(dataRow.fecha_nacimiento_aux),
+      documento: dataRow.identificacion,
+      telefono: dataRow.telefono,
+      eps: dataRow.eps
+    };
+
+    this.loading = true;
+
+    const updateSub = this.tableLecheExtraidaService.updateLecheSalaExtraccion(dataRow.id_extraccion, updateData).subscribe({
+      next: (response) => {
+        // El componente se actualizará automáticamente gracias al observable dataUpdated$
+        const rowId = this.getRowId(dataRow);
+        delete this.clonedLecheExtraida[rowId];
+        this.editingRow = null;
+        this.hasNewRowInEditing = false;
+
+        this.table.saveRowEdit(dataRow, rowElement);
+        this.showMessage('success', 'Registro actualizado correctamente');
+        this.loading = false;
+      },
+      error: (error) => {
+        this.showErrorMessage('Error al actualizar el registro');
+        console.error('Error al actualizar:', error);
+        this.loading = false;
+      }
+    });
+
+    this.subscriptions.add(updateSub);
   }
 
   private restoreOriginalData(dataRow: any, index: number): void {

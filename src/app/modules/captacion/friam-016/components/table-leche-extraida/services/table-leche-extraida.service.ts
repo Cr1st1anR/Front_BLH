@@ -71,10 +71,15 @@ export class TableLecheExtraidaService {
 
   // Método para formatear fecha para mostrar en la tabla
   private formatDateForDisplay(dateString: string): string {
-    const date = new Date(dateString);
+    if (!dateString) return 'Sin fecha';
+
+    // Crear la fecha interpretándola como fecha local (sin conversión de timezone)
+    const date = new Date(dateString + 'T00:00:00');
+
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
+
     return `${day}/${month}/${year}`;
   }
 

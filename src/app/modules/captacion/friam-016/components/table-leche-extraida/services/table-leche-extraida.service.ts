@@ -56,6 +56,34 @@ export class TableLecheExtraidaService {
 
   // Método para calcular la edad basada en la fecha de nacimiento
   private calculateAge(birthDateString: string): number {
+    if (!birthDateString) return 0;
+
+    // Parsear la fecha de nacimiento evitando problemas de timezone
+    let dateOnly = birthDateString;
+    if (birthDateString.includes('T')) {
+      dateOnly = birthDateString.split('T')[0];
+    }
+
+    const dateParts = dateOnly.split('-');
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]) - 1; // Los meses en JS son 0-indexados
+      const day = parseInt(dateParts[2]);
+
+      const birthDate = new Date(year, month, day);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      return age;
+    }
+
+    // Fallback
     const birthDate = new Date(birthDateString);
     const today = new Date();
 

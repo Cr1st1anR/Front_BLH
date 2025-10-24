@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -8,7 +8,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Table, TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { Subscription } from 'rxjs';
 import { DialogExtraccionesService } from '../services/dialog-extracciones.service';
+import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
 
 @Component({
   selector: 'table-extraccion',
@@ -26,17 +28,18 @@ import { DialogExtraccionesService } from '../services/dialog-extracciones.servi
   styleUrl: './table-extraccion.component.scss',
   providers: [MessageService]
 })
-export class TableExtraccionComponent implements OnInit, OnChanges {
+export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
   @Input() idExtraccion: number | null = null;
   @ViewChild('tableExtracciones') table!: Table;
 
   loading = false;
-  editingRow: any = null;
+  editingRow: ExtraccionTable | null = null;
   hasNewRowInEditing = false;
-  dataExtracciones: any[] = [];
+  dataExtracciones: ExtraccionTable[] = [];
 
   private clonedExtracciones: { [s: string]: any } = {};
   private isInitialLoad = true;
+  private subscriptions: Subscription = new Subscription();
 
   readonly headersExtracciones: any[] = [
     { header: 'FECHA', field: 'fecha', width: '160px', tipo: 'date' },
@@ -50,9 +53,11 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
   constructor(
     private dialogExtraccionesService: DialogExtraccionesService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.setupDataUpdateSubscription();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['idExtraccion']?.currentValue) {
@@ -61,14 +66,29 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  // Configurar suscripción para actualizaciones de datos
+  private setupDataUpdateSubscription(): void {
+    const updateSub = this.dialogExtraccionesService.dataUpdated$.subscribe(updated => {
+      if (updated) {
+        this.loadExtracciones();
+        this.dialogExtraccionesService.resetUpdateStatus();
+      }
+    });
+    this.subscriptions.add(updateSub);
+  }
+
   loadExtracciones(): void {
     if (!this.idExtraccion) return;
 
     this.loading = true;
 
     this.dialogExtraccionesService.getExtracciones(this.idExtraccion)
-      .then((extracciones: any) => {
-        this.dataExtracciones = extracciones.map((item: any) => ({
+      .then((extracciones: ExtraccionTable[]) => {
+        this.dataExtracciones = extracciones.map((item: ExtraccionTable) => ({
           ...item,
           fecha_aux: item.fecha ? this.parsearFechaSegura(item.fecha) : null,
           extraccion_1: {
@@ -80,7 +100,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
             pm_aux: item.extraccion_2?.pm ? this.convertHoursToDate(item.extraccion_2.pm) : null
           }
         }));
-        
+
         this.mostrarMensajeCarga(extracciones);
       })
       .catch((error) => {
@@ -97,7 +117,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     this.loading = true;
 
     this.dialogExtraccionesService.crearExtraccion(this.idExtraccion!, null)
-      .then((nuevaExtraccion: any) => {
+      .then((nuevaExtraccion: ExtraccionTable) => {
         this.prepararNuevaExtraccion(nuevaExtraccion);
         this.dataExtracciones.push(nuevaExtraccion);
         this.dataExtracciones = [...this.dataExtracciones];
@@ -115,7 +135,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
       });
   }
 
-  onRowEditInit(rowData: any): void {
+  onRowEditInit(rowData: ExtraccionTable): void {
     if (this.isAnyRowEditing()) {
       this.mostrarAdvertencia('Debe guardar o cancelar la edición actual antes de editar otra fila.');
       return;
@@ -126,7 +146,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     this.inicializarCamposAuxiliares(rowData);
   }
 
-  onRowEditSave(rowData: any, index: number, event: MouseEvent): void {
+  onRowEditSave(rowData: ExtraccionTable, index: number, event: MouseEvent): void {
     if (!rowData.fecha_aux) {
       this.mostrarError('Debe seleccionar una fecha para la extracción');
       return;
@@ -146,10 +166,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Cancelar edición de fila
-   */
-  onRowEditCancel(rowData: any, index: number): void {
+  onRowEditCancel(rowData: ExtraccionTable, index: number): void {
     if (rowData.isNew) {
       this.dataExtracciones.splice(index, 1);
       this.dataExtracciones = [...this.dataExtracciones];
@@ -177,30 +194,82 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     this.editingRow = null;
   }
 
+  isEditing(rowData: ExtraccionTable): boolean {
+    if (!this.editingRow) {
+      return false;
+    }
 
-  isEditing(rowData: any): boolean {
-    return this.editingRow &&
-      ((this.editingRow.id_registro_extraccion === rowData.id_registro_extraccion) ||
-        (this.editingRow.isNew && rowData.isNew));
+    return (this.editingRow.id_registro_extraccion === rowData.id_registro_extraccion) ||
+      (this.editingRow.isNew === true && rowData.isNew === true);
   }
 
   isAnyRowEditing(): boolean {
-    return this.editingRow !== null || this.hasNewRowInEditing;
+    return this.editingRow !== null || this.hasNewRowInEditing === true;
   }
 
-  isEditButtonDisabled(rowData: any): boolean {
+  isEditButtonDisabled(rowData: ExtraccionTable): boolean {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
+  private guardarNuevaExtraccion(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
+    if (!this.idExtraccion) {
+      this.mostrarError('Error: ID de extracción no válido');
+      return;
+    }
 
-  private prepararNuevaExtraccion(nuevaExtraccion: any): void {
+    this.loading = true;
+
+    const guardarSub = this.dialogExtraccionesService.guardarExtracciones(rowData, this.idExtraccion).subscribe({
+      next: (response) => {
+        // Determinar número de extracciones guardadas
+        const numExtracciones = Array.isArray(response) ? response.length : 1;
+        const mensaje = numExtracciones === 1
+          ? 'Extracción guardada correctamente'
+          : `${numExtracciones} extracciones guardadas correctamente`;
+
+        // Remover la fila temporal y recargar datos
+        const tempIndex = this.dataExtracciones.findIndex(item => item.isNew);
+        if (tempIndex !== -1) {
+          this.dataExtracciones.splice(tempIndex, 1);
+        }
+
+        this.resetearEstadoEdicion();
+        this.table.saveRowEdit(rowData, rowElement);
+        this.mostrarExito(mensaje);
+        this.loading = false;
+
+        // Los datos se recargarán automáticamente gracias al observable dataUpdated$
+      },
+      error: (error) => {
+        console.error('Error al guardar extracción:', error);
+        this.mostrarError('Error al guardar la extracción');
+        this.loading = false;
+      }
+    });
+
+    this.subscriptions.add(guardarSub);
+  }
+
+  private actualizarExtraccionExistente(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
+    // Funcionalidad de actualización pendiente (no hay API PUT todavía)
+    setTimeout(() => {
+      delete this.clonedExtracciones[rowData.id_registro_extraccion];
+      this.editingRow = null;
+      this.table.saveRowEdit(rowData, rowElement);
+      this.mostrarInfo('Funcionalidad de actualización pendiente de implementar');
+    }, 500);
+  }
+
+  // ... resto de métodos privados sin cambios ...
+
+  private prepararNuevaExtraccion(nuevaExtraccion: ExtraccionTable): void {
     nuevaExtraccion.fecha_aux = null;
     nuevaExtraccion.fecha_display = 'Sin fecha';
     nuevaExtraccion.extraccion_1 = { am: null, ml: null, am_aux: null };
     nuevaExtraccion.extraccion_2 = { pm: null, ml: null, pm_aux: null };
   }
 
-  private clonarExtraccionParaEdicion(rowData: any): void {
+  private clonarExtraccionParaEdicion(rowData: ExtraccionTable): void {
     this.clonedExtracciones[rowData.id_registro_extraccion] = {
       ...rowData,
       fecha_aux: rowData.fecha_aux ? new Date(rowData.fecha_aux) : null,
@@ -217,7 +286,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     };
   }
 
-  private inicializarCamposAuxiliares(rowData: any): void {
+  private inicializarCamposAuxiliares(rowData: ExtraccionTable): void {
     if (!rowData.fecha_aux && rowData.fecha) {
       rowData.fecha_aux = this.parsearFechaSegura(rowData.fecha);
     }
@@ -230,14 +299,14 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     }
   }
 
-  private procesarFechas(rowData: any): void {
+  private procesarFechas(rowData: ExtraccionTable): void {
     if (rowData.fecha_aux) {
       rowData.fecha = this.formatearFechaParaAPI(rowData.fecha_aux);
       rowData.fecha_display = this.formatearFechaParaMostrar(rowData.fecha_aux);
     }
   }
 
-  private procesarHoras(rowData: any): void {
+  private procesarHoras(rowData: ExtraccionTable): void {
     if (rowData.extraccion_1?.am_aux) {
       rowData.extraccion_1.am = this.convertDateToHours(rowData.extraccion_1.am_aux);
     }
@@ -306,7 +375,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     return regex24h.test(hora);
   }
 
-  private validateRequiredFields(rowData: any): boolean {
+  private validateRequiredFields(rowData: ExtraccionTable): boolean {
     if (!rowData.fecha_aux) {
       this.mostrarError('Debe seleccionar una fecha para la extracción');
       return false;
@@ -321,14 +390,22 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     }
 
     const validaciones = [
-      { condition: rowData.extraccion_1?.am && !this.isValidTimeFormat(rowData.extraccion_1.am), 
-        message: 'La hora AM debe estar en formato 24h (HH:MM). Ejemplo: 08:30' },
-      { condition: rowData.extraccion_2?.pm && !this.isValidTimeFormat(rowData.extraccion_2.pm), 
-        message: 'La hora PM debe estar en formato 24h (HH:MM). Ejemplo: 14:45' },
-      { condition: rowData.extraccion_1?.ml && (isNaN(rowData.extraccion_1.ml) || rowData.extraccion_1.ml <= 0), 
-        message: 'Los mililitros de la extracción 1 deben ser un número positivo' },
-      { condition: rowData.extraccion_2?.ml && (isNaN(rowData.extraccion_2.ml) || rowData.extraccion_2.ml <= 0), 
-        message: 'Los mililitros de la extracción 2 deben ser un número positivo' }
+      {
+        condition: rowData.extraccion_1?.am && !this.isValidTimeFormat(rowData.extraccion_1.am),
+        message: 'La hora AM debe estar en formato 24h (HH:MM). Ejemplo: 08:30'
+      },
+      {
+        condition: rowData.extraccion_2?.pm && !this.isValidTimeFormat(rowData.extraccion_2.pm),
+        message: 'La hora PM debe estar en formato 24h (HH:MM). Ejemplo: 14:45'
+      },
+      {
+        condition: rowData.extraccion_1?.ml && (isNaN(rowData.extraccion_1.ml) || rowData.extraccion_1.ml <= 0),
+        message: 'Los mililitros de la extracción 1 deben ser un número positivo'
+      },
+      {
+        condition: rowData.extraccion_2?.ml && (isNaN(rowData.extraccion_2.ml) || rowData.extraccion_2.ml <= 0),
+        message: 'Los mililitros de la extracción 2 deben ser un número positivo'
+      }
     ];
 
     for (const validacion of validaciones) {
@@ -355,43 +432,16 @@ export class TableExtraccionComponent implements OnInit, OnChanges {
     return true;
   }
 
-  private guardarNuevaExtraccion(rowData: any, rowElement: HTMLTableRowElement): void {
-    this.dialogExtraccionesService.actualizarExtraccion(rowData.id_registro_extraccion, rowData)
-      .then(() => {
-        this.resetearEstadoEdicion();
-        this.table.saveRowEdit(rowData, rowElement);
-        this.mostrarExito('Extracción guardada correctamente');
-      })
-      .catch((error) => {
-        console.error('Error al guardar extracción:', error);
-        this.mostrarError('Error al guardar la extracción');
-      });
-  }
-
-  private actualizarExtraccionExistente(rowData: any, rowElement: HTMLTableRowElement): void {
-    this.dialogExtraccionesService.actualizarExtraccion(rowData.id_registro_extraccion, rowData)
-      .then(() => {
-        delete this.clonedExtracciones[rowData.id_registro_extraccion];
-        this.editingRow = null;
-        this.table.saveRowEdit(rowData, rowElement);
-        this.mostrarExito('Extracción actualizada correctamente');
-      })
-      .catch((error) => {
-        console.error('Error al actualizar extracción:', error);
-        this.mostrarError('Error al actualizar la extracción');
-      });
-  }
-
   private resetearEstadoEdicion(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
   }
 
-  private mostrarMensajeCarga(extracciones: any[]): void {
-    const mensaje = extracciones.length > 0 
+  private mostrarMensajeCarga(extracciones: ExtraccionTable[]): void {
+    const mensaje = extracciones.length > 0
       ? `${extracciones.length} extracción${extracciones.length > 1 ? 'es' : ''} cargada${extracciones.length > 1 ? 's' : ''}`
       : 'No hay extracciones registradas';
-    
+
     const tipo = extracciones.length > 0 ? 'success' : 'info';
     this.mostrarMensaje(tipo, mensaje);
   }

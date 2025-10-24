@@ -1,22 +1,140 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ApiResponse } from '../../interfaces/api-response.interface';
+import { ExtraccionRequest } from '../../interfaces/extraccion-request.interface';
+import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DialogExtraccionesService {
 
-  constructor() { }
+  // Subject para manejar actualizaciones de datos
+  private dataUpdated = new BehaviorSubject<boolean>(false);
+  public dataUpdated$ = this.dataUpdated.asObservable();
 
-  getExtracciones(idExtraccion: number) {
+  constructor(private http: HttpClient) { }
+
+  // Método para crear una nueva extracción
+  createExtraccion(extraccionData: ExtraccionRequest): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${environment.ApiBLH}/postFrascosExtraccion`, extraccionData)
+      .pipe(
+        map(response => {
+          this.notifyDataUpdate();
+          return response.data;
+        })
+      );
+  }
+
+  // Método para crear múltiples extracciones (AM y PM)
+  createMultipleExtracciones(extracciones: ExtraccionRequest[]): Observable<any[]> {
+    const requests = extracciones.map(extraccion => this.createExtraccion(extraccion));
+    return new Observable(observer => {
+      Promise.all(requests.map(req => req.toPromise()))
+        .then(results => {
+          observer.next(results);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
+  }
+
+  // Método temporal para obtener extracciones (con datos mock hasta que esté la API)
+  getExtracciones(idExtraccion: number): Promise<ExtraccionTable[]> {
     const mockExtracciones = this.getMockExtracciones();
     const extraccionesDeEstaMadre = mockExtracciones[idExtraccion] || [];
-    
+
     return new Promise(resolve => {
       setTimeout(() => resolve(extraccionesDeEstaMadre), 800);
     });
   }
 
-  private getMockExtracciones(): { [idExtraccion: number]: any[] } {
+  // Método temporal para crear extracción (estructura inicial)
+  crearExtraccion(idExtraccion: number, fecha: string | null): Promise<ExtraccionTable> {
+    const nuevaExtraccion: ExtraccionTable = {
+      id_registro_extraccion: Date.now(),
+      fecha: fecha || '',
+      fecha_display: 'Sin fecha',
+      extraccion_1: { am: null, ml: null },
+      extraccion_2: { pm: null, ml: null },
+      motivo_consulta: '',
+      observaciones: '',
+      isNew: true
+    };
+
+    return new Promise(resolve => {
+      setTimeout(() => resolve(nuevaExtraccion), 500);
+    });
+  }
+
+  // Método para preparar datos de extracción para la API
+  prepareExtraccionData(
+    rowData: ExtraccionTable,
+    idLecheSalaExtraccion: number,
+    tipoExtraccion: 'AM' | 'PM'
+  ): ExtraccionRequest {
+    const isAM = tipoExtraccion === 'AM';
+
+    // Acceder a las propiedades correctas según el tipo de extracción
+    const cantidad = isAM ? rowData.extraccion_1.ml! : rowData.extraccion_2.ml!;
+    const hora = isAM ? rowData.extraccion_1.am! : rowData.extraccion_2.pm!;
+
+    return {
+      cantidad: cantidad,
+      hora: hora,
+      gaveta: 1, // Valor fijo
+      fechaExtraccion: rowData.fecha,
+      congelador: { id: 1 }, // Valor fijo
+      lecheSalaExtraccion: { id: idLecheSalaExtraccion },
+      motivoConsulta: rowData.motivo_consulta || '',
+      observaciones: rowData.observaciones || ''
+    };
+  }
+
+  // Método para guardar extracciones (maneja 1 o 2 extracciones)
+  guardarExtracciones(rowData: ExtraccionTable, idLecheSalaExtraccion: number): Observable<any> {
+    const extracciones: ExtraccionRequest[] = [];
+
+    // Verificar si hay datos para extracción AM (extraccion_1)
+    if (rowData.extraccion_1.am && rowData.extraccion_1.ml) {
+      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'AM'));
+    }
+
+    // Verificar si hay datos para extracción PM (extraccion_2)
+    if (rowData.extraccion_2.pm && rowData.extraccion_2.ml) {
+      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'PM'));
+    }
+
+    if (extracciones.length === 0) {
+      throw new Error('No hay extracciones válidas para guardar');
+    }
+
+    // Si solo hay una extracción, usar el método simple
+    if (extracciones.length === 1) {
+      return this.createExtraccion(extracciones[0]);
+    }
+
+    // Si hay dos extracciones, usar el método múltiple
+    return this.createMultipleExtracciones(extracciones);
+  }
+
+  // Método para notificar actualizaciones de datos
+  private notifyDataUpdate(): void {
+    this.dataUpdated.next(true);
+  }
+
+  // Método para resetear el estado de actualización
+  resetUpdateStatus(): void {
+    this.dataUpdated.next(false);
+  }
+
+  // Datos mock temporales (mantener hasta que esté la API de GET)
+  private getMockExtracciones(): { [idExtraccion: number]: ExtraccionTable[] } {
     return {
       1: [
         {
@@ -48,24 +166,8 @@ export class DialogExtraccionesService {
           },
           motivo_consulta: 'Seguimiento semanal',
           observaciones: 'Incremento en volumen de leche'
-        },
-        {
-          id_registro_extraccion: 103,
-          fecha: '2025-10-10',
-          fecha_display: '10/10/2025',
-          extraccion_1: {
-            am: '08:45',
-            ml: 110
-          },
-          extraccion_2: {
-            pm: '14:30',
-            ml: 90
-          },
-          motivo_consulta: 'Control inicial',
-          observaciones: 'Primera extracción exitosa'
         }
       ],
-
       2: [
         {
           id_registro_extraccion: 201,
@@ -81,149 +183,14 @@ export class DialogExtraccionesService {
           },
           motivo_consulta: 'Dificultad en la lactancia',
           observaciones: 'Se brindó orientación sobre técnicas de extracción'
-        },
-        {
-          id_registro_extraccion: 202,
-          fecha: '2025-10-11',
-          fecha_display: '11/10/2025',
-          extraccion_1: {
-            am: '10:00',
-            ml: 75
-          },
-          extraccion_2: {
-            pm: '16:00',
-            ml: 65
-          },
-          motivo_consulta: 'Consulta inicial',
-          observaciones: 'Madre requiere más práctica'
         }
       ],
-
-      3: [
-        {
-          id_registro_extraccion: 301,
-          fecha: '2025-10-13',
-          fecha_display: '13/10/2025',
-          extraccion_1: {
-            am: '07:30',
-            ml: 150
-          },
-          extraccion_2: {
-            pm: '13:45',
-            ml: 140
-          },
-          motivo_consulta: 'Donación regular',
-          observaciones: 'Excelente productora, volumen muy bueno'
-        },
-        {
-          id_registro_extraccion: 302,
-          fecha: '2025-10-09',
-          fecha_display: '09/10/2025',
-          extraccion_1: {
-            am: '07:45',
-            ml: 145
-          },
-          extraccion_2: {
-            pm: '14:00',
-            ml: 135
-          },
-          motivo_consulta: 'Seguimiento donación',
-          observaciones: 'Mantiene buen volumen de producción'
-        },
-        {
-          id_registro_extraccion: 303,
-          fecha: '2025-10-05',
-          fecha_display: '05/10/2025',
-          extraccion_1: {
-            am: '08:00',
-            ml: 140
-          },
-          extraccion_2: {
-            pm: '14:15',
-            ml: 130
-          },
-          motivo_consulta: 'Control semanal',
-          observaciones: 'Técnica de extracción perfecta'
-        }
-      ],
-
-      4: [
-        {
-          id_registro_extraccion: 401,
-          fecha: '2025-10-11',
-          fecha_display: '11/10/2025',
-          extraccion_1: {
-            am: '09:30',
-            ml: 95
-          },
-          extraccion_2: {
-            pm: '15:45',
-            ml: 80
-          },
-          motivo_consulta: 'Primera visita',
-          observaciones: 'Madre nerviosa, necesita más confianza'
-        }
-      ],
-
-      5: [
-        {
-          id_registro_extraccion: 501,
-          fecha: '2025-10-10',
-          fecha_display: '10/10/2025',
-          extraccion_1: {
-            am: '08:15',
-            ml: 105
-          },
-          extraccion_2: {
-            pm: '14:45',
-            ml: 88
-          },
-          motivo_consulta: 'Control prenatal',
-          observaciones: 'Buena técnica, madre experimentada'
-        },
-        {
-          id_registro_extraccion: 502,
-          fecha: '2025-10-07',
-          fecha_display: '07/10/2025',
-          extraccion_1: {
-            am: '08:30',
-            ml: 100
-          },
-          extraccion_2: {
-            pm: '15:00',
-            ml: 85
-          },
-          motivo_consulta: 'Seguimiento',
-          observaciones: 'Mantiene buen ritmo de extracción'
-        }
-      ],
-      6: [], 
-      7: [], 
-      8: []  
+      3: [],
+      4: [],
+      5: [],
+      6: [],
+      7: [],
+      8: []
     };
-  }
-
-  crearExtraccion(idExtraccion: number, fecha: string | null) {
-    const nuevaExtraccion = {
-      id_registro_extraccion: Date.now(),
-      id_extraccion: idExtraccion,
-      fecha: fecha,
-      fecha_display: 'Sin fecha',
-      extraccion_1: { am: null, ml: null },
-      extraccion_2: { pm: null, ml: null },
-      motivo_consulta: '',
-      observaciones: '',
-      isNew: true
-    };
-
-    return new Promise(resolve => {
-      setTimeout(() => resolve(nuevaExtraccion), 500);
-    });
-  }
-
-  actualizarExtraccion(idRegistro: number, data: any) {
-    return new Promise(resolve => {
-      setTimeout(() => resolve({ success: true }), 500);
-    });
   }
 }

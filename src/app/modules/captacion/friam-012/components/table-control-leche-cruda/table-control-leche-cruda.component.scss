@@ -25,7 +25,6 @@
   text-transform: uppercase;
 }
 
-// Estilos para la tabla
 :host ::ng-deep .p-datatable {
   .p-datatable-tbody > tr:hover td {
     background-color: inherit !important;
@@ -42,7 +41,6 @@
   }
 }
 
-// Estilos para celdas editables
 :host ::ng-deep .p-cell-editing {
   input[type="text"] {
     width: 100%;
@@ -63,7 +61,6 @@
   }
 }
 
-// Estilos para validación
 :host ::ng-deep .ng-invalid.ng-dirty {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;

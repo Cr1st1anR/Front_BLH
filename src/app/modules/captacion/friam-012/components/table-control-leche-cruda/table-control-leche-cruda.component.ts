@@ -56,13 +56,11 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   @ViewChild('tableControl') table!: Table;
 
-  // Estado del componente
   loading = false;
   editingRow: ControlLecheCrudaData | null = null;
   mesActual = new Date().getMonth() + 1;
   anioActual = new Date().getFullYear();
 
-  // Datos y opciones
   dataControlLecheCruda: ControlLecheCrudaData[] = [];
   empleados: EmpleadoResponse[] = [];
   opcionesResponsables: SelectOption[] = [];
@@ -436,7 +434,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
     try {
       this.table.cancelRowEdit(this.editingRow);
     } catch (error) {
-      // Ignorar errores del cancelRowEdit
     }
 
     const index = this.dataControlLecheCruda.findIndex(row => row === this.editingRow);

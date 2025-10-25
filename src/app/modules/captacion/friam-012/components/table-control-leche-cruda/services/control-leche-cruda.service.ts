@@ -17,11 +17,8 @@ export class ControlLecheCrudaService {
   private readonly DIAS_POR_MES = 30;
   private empleadosCache: EmpleadoResponse[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  /**
-   * Obtiene las entradas y salidas de leche cruda por mes y año
-   */
   getEntradasSalidasLecheCruda(mes: number, anio: number): Observable<ControlLecheCrudaData[]> {
     const url = `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`;
 
@@ -40,18 +37,12 @@ export class ControlLecheCrudaService {
       );
   }
 
-  /**
-   * Obtiene la lista de empleados disponibles
-   */
   getEmpleados(): Observable<EmpleadoResponse[]> {
     const url = `${environment.ApiBLH}/getEmpleados`;
     return this.http.get<ApiResponse<EmpleadoResponse[]>>(url)
       .pipe(map(response => response.data));
   }
 
-  /**
-   * Actualiza la información de entrada/salida de leche cruda
-   */
   putEntradaSalidaLecheCruda(id: number, data: Partial<ControlLecheCrudaData>): Observable<any> {
     const url = `${environment.ApiBLH}/putEntradaSalidaLecheCruda/${id}`;
     return this.http.put<ApiResponse<any>>(url, data)
@@ -89,7 +80,7 @@ export class ControlLecheCrudaService {
     if (!fecha) return '';
 
     if (typeof fecha === 'string' && fecha.includes('-')) {
-      return fecha; // Ya está en formato YYYY-MM-DD
+      return fecha;
     }
 
     const fechaObj = this.parsearFecha(fecha);
@@ -267,7 +258,7 @@ export class ControlLecheCrudaService {
    */
   private formatearFecha(fecha: string): string {
     if (!fecha) return '';
-    if (fecha.includes('/')) return fecha; // Ya está en formato DD/MM/YYYY
+    if (fecha.includes('/')) return fecha;
 
     const partes = fecha.split('T')[0].split('-');
     return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;

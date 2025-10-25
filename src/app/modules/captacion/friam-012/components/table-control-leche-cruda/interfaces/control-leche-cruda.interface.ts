@@ -20,7 +20,6 @@ export interface ControlLecheCrudaData {
   idFrascoLecheCruda?: number;
 }
 
-// Nueva interfaz para mapear la respuesta del backend
 export interface EntradasSalidasApiResponse {
   id: number;
   fechaVencimiento: string;
@@ -135,7 +134,6 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-// Tipos de utilidad
 export type SelectOption = {
   label: string;
   value: string;

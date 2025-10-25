@@ -16,7 +16,13 @@ import { RippleModule } from 'primeng/ripple';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 
-import type { ControlLecheCrudaData, EmpleadoResponse } from './interfaces/control-leche-cruda.interface';
+import type {
+  ControlLecheCrudaData,
+  EmpleadoResponse,
+  SelectOption,
+  TableHeader,
+  RequiredField
+} from './interfaces/control-leche-cruda.interface';
 
 @Component({
   selector: 'table-control-leche-cruda',
@@ -40,26 +46,37 @@ import type { ControlLecheCrudaData, EmpleadoResponse } from './interfaces/contr
   providers: [ControlLecheCrudaService, MessageService]
 })
 export class TableControlLecheCrudaComponent implements OnInit {
+  private readonly DIAS_VENCIMIENTO = 15;
+  private readonly FIELD_DISPLAY_NAMES = {
+    gaveta: 'Gaveta',
+    fechaEntrada: 'Fecha de Entrada',
+    responsableEntrada: 'Responsable de Entrada',
+    procedencia: 'Procedencia'
+  };
 
   @ViewChild('tableControl') table!: Table;
 
+  // Estado del componente
   loading = false;
-
   editingRow: ControlLecheCrudaData | null = null;
-  clonedDataControlLecheCruda: { [s: number]: ControlLecheCrudaData } = {};
+  mesActual = new Date().getMonth() + 1;
+  anioActual = new Date().getFullYear();
 
-  // Datos desde el backend
+  // Datos y opciones
+  dataControlLecheCruda: ControlLecheCrudaData[] = [];
   empleados: EmpleadoResponse[] = [];
-  donantes: { label: string; value: string }[] = [];
+  opcionesResponsables: SelectOption[] = [];
+  opcionesDonantes: SelectOption[] = [];
 
-  opcionesUbicacion = [
+  private clonedDataControlLecheCruda: { [id: number]: ControlLecheCrudaData } = {};
+
+  readonly opcionesUbicacion: SelectOption[] = [
     { label: 'BLH- area de almacenamiento', value: 'BLH - área de almacenamiento' }
   ];
 
-  opcionesResponsables: { label: string; value: string }[] = [];
-  opcionesDonantes: { label: string; value: string }[] = [];
+  readonly requiredFields: ReadonlyArray<RequiredField> = ['gaveta', 'fechaEntrada', 'responsableEntrada'];
 
-  headersControlLecheCruda: { header: string; field: string; width: string; tipo?: string }[] = [
+  readonly headersControlLecheCruda: TableHeader[] = [
     { header: 'CONGELADOR N°', field: 'nCongelador', width: '150px', tipo: 'text' },
     { header: 'UBICACIÓN', field: 'ubicacion', width: '200px', tipo: 'select' },
     { header: 'N° GAVETA', field: 'gaveta', width: '120px', tipo: 'text' },
@@ -79,14 +96,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
     { header: 'ACCIONES', field: 'acciones', width: '150px' }
   ];
 
-  dataControlLecheCruda: ControlLecheCrudaData[] = [];
-
-  requiredFields: string[] = ['gaveta', 'fechaEntrada', 'responsableEntrada'];
-
-  // Mes y año actuales para la carga inicial
-  mesActual: number = new Date().getMonth() + 1;
-  anioActual: number = new Date().getFullYear();
-
   constructor(
     private messageService: MessageService,
     private controlLecheCrudaService: ControlLecheCrudaService
@@ -97,118 +106,100 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   /**
-   * Cargar datos iniciales (empleados y datos de control)
+   * Carga los datos iniciales del componente
    */
   loadInitialData(): void {
     this.loading = true;
 
-    forkJoin({
+    const dataStreams = {
       empleados: this.controlLecheCrudaService.getEmpleados(),
       controlData: this.controlLecheCrudaService.getEntradasSalidasLecheCruda(this.mesActual, this.anioActual)
-    }).subscribe({
+    };
+
+    forkJoin(dataStreams).subscribe({
       next: (response) => {
-        // Procesar empleados
-        this.empleados = response.empleados;
-        this.opcionesResponsables = this.empleados.map(emp => ({
-          label: emp.nombre,
-          value: emp.nombre
-        }));
-
-        // ✅ NUEVO: Actualizar cache de empleados en el servicio
-        this.controlLecheCrudaService.actualizarCacheEmpleados(this.empleados);
-
-        // Procesar datos de control
-        this.dataControlLecheCruda = response.controlData;
-
-        // Extraer donantes únicos de los datos
-        this.extractDonantesList(this.dataControlLecheCruda);
-
+        this.procesarEmpleados(response.empleados);
+        this.procesarDatosControl(response.controlData);
         this.loading = false;
-
-        if (this.dataControlLecheCruda.length > 0) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos cargados para la fecha seleccionada',
-            key: 'tr',
-            life: 2000,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos para la fecha seleccionada',
-            key: 'tr',
-            life: 2000,
-          });
-        }
+        this.mostrarMensajeCarga(response.controlData.length > 0);
       },
       error: (error) => {
-        this.loading = false;
-        this.dataControlLecheCruda = [];
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Hubo un error al cargar los datos',
-          key: 'tr',
-          life: 3000,
-        });
-        console.error('Error al cargar datos:', error);
+        this.manejarErrorCarga(error);
       }
     });
   }
 
   /**
-   * Cargar datos de control de leche cruda por mes y año
+   * Procesa la lista de empleados y configura las opciones
+   */
+  private procesarEmpleados(empleados: EmpleadoResponse[]): void {
+    this.empleados = empleados;
+    this.opcionesResponsables = empleados.map(emp => ({
+      label: emp.nombre,
+      value: emp.nombre
+    }));
+    this.controlLecheCrudaService.actualizarCacheEmpleados(empleados);
+  }
+
+  /**
+   * Procesa los datos de control y extrae las opciones de donantes
+   */
+  private procesarDatosControl(datos: ControlLecheCrudaData[]): void {
+    this.dataControlLecheCruda = datos;
+    this.extractDonantesList(datos);
+  }
+
+  /**
+   * Muestra el mensaje apropiado después de cargar datos
+   */
+  private mostrarMensajeCarga(hayDatos: boolean): void {
+    const mensaje = hayDatos
+      ? { severity: 'success', summary: 'Éxito', detail: 'Datos cargados para la fecha seleccionada' }
+      : { severity: 'info', summary: 'Información', detail: 'No hay datos para la fecha seleccionada' };
+
+    this.messageService.add({ ...mensaje, key: 'tr', life: 2000 });
+  }
+
+  /**
+   * Maneja los errores durante la carga de datos
+   */
+  private manejarErrorCarga(error: any): void {
+    this.loading = false;
+    this.dataControlLecheCruda = [];
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Hubo un error al cargar los datos',
+      key: 'tr',
+      life: 3000,
+    });
+    console.error('Error al cargar datos:', error);
+  }
+
+  /**
+   * Carga datos de control de leche cruda por mes y año
    */
   loadDataControlLecheCruda(mes?: number, anio?: number): void {
     this.loading = true;
 
-    const mesConsulta = mes || this.mesActual;
-    const anioConsulta = anio || this.anioActual;
+    const mesConsulta = mes ?? this.mesActual;
+    const anioConsulta = anio ?? this.anioActual;
 
     this.controlLecheCrudaService.getEntradasSalidasLecheCruda(mesConsulta, anioConsulta)
       .subscribe({
         next: (data) => {
-          this.dataControlLecheCruda = data;
-          this.extractDonantesList(data);
+          this.procesarDatosControl(data);
           this.loading = false;
-
-          if (data.length > 0) {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: 'Datos cargados para la fecha seleccionada',
-              key: 'tr',
-              life: 3000,
-            });
-          } else {
-            this.messageService.add({
-              severity: 'info',
-              summary: 'Información',
-              detail: 'No hay datos para la fecha seleccionada',
-              key: 'tr',
-              life: 3000,
-            });
-          }
+          this.mostrarMensajeCarga(data.length > 0);
         },
         error: (error) => {
-          this.loading = false;
-          this.dataControlLecheCruda = []; // Limpiar la tabla cuando hay error
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Hubo un error al cargar los datos',
-            key: 'tr',
-            life: 3000,
-          });
-          console.error('Error al cargar datos:', error);
+          this.manejarErrorCarga(error);
         }
       });
   }
 
   /**
-   * Extraer lista única de donantes de los datos
+   * Extrae la lista única de donantes de los datos
    */
   private extractDonantesList(data: ControlLecheCrudaData[]): void {
     const donantesUnicos = [...new Set(data.map(item => item.donante))];
@@ -219,8 +210,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   /**
-   * Método para manejar cambios en el month-picker
-   * Adaptamos { year, month } a { mes, anio } que espera nuestro servicio
+   * Maneja los cambios en el selector de mes y año
    */
   onMonthYearChange(event: { year: number; month: number }): void {
     this.mesActual = event.month;
@@ -228,6 +218,9 @@ export class TableControlLecheCrudaComponent implements OnInit {
     this.loadDataControlLecheCruda(event.month, event.year);
   }
 
+  /**
+   * Inicia la edición de una fila
+   */
   onRowEditInit(dataRow: ControlLecheCrudaData): void {
     if (this.editingRow && this.table) {
       this.cancelCurrentEditing();
@@ -238,16 +231,23 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   /**
-   * Guardar cambios en el registro editado
+   * Guarda los cambios en el registro editado
    */
   onRowEditSave(dataRow: ControlLecheCrudaData, index: number, event: MouseEvent): void {
+    if (!this.validarCamposRequeridos(dataRow)) return;
+
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
 
-    // ✅ NUEVO: Manejar fechas que vienen como objetos Date del DatePicker
-    this.procesarFechasAntesDeguardar(dataRow);
+    this.prepararDatosParaGuardar(dataRow);
+    this.guardarCambios(dataRow, index, rowElement);
+  }
 
-    // Validar campos requeridos
+  /**
+   * Valida que todos los campos requeridos estén completos
+   */
+  private validarCamposRequeridos(dataRow: ControlLecheCrudaData): boolean {
     const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
+
     if (invalidField) {
       this.messageService.add({
         severity: 'warn',
@@ -256,82 +256,100 @@ export class TableControlLecheCrudaComponent implements OnInit {
         key: 'tr',
         life: 3000,
       });
-      return;
+      return false;
     }
 
-    // Recalcular fecha de vencimiento si cambió la gaveta (aunque no debería ser editable)
+    return true;
+  }
+
+  /**
+   * Prepara los datos para el guardado
+   */
+  private prepararDatosParaGuardar(dataRow: ControlLecheCrudaData): void {
+    this.procesarFechasAntesDeguardar(dataRow);
+
     if (dataRow.fechaExtraccion) {
       dataRow.fechaVencimiento = this.calcularFechaVencimiento(dataRow.fechaExtraccion);
     }
+  }
 
-    // Preparar datos para enviar al backend
+  /**
+   * Ejecuta el guardado de los cambios
+   */
+  private guardarCambios(dataRow: ControlLecheCrudaData, index: number, rowElement: HTMLTableRowElement): void {
     const datosParaActualizar = this.controlLecheCrudaService.mapearDatosParaActualizar(dataRow);
 
-    console.log('Datos a enviar al backend:', datosParaActualizar); // Para debugging
-
-    // Mostrar loading
     this.loading = true;
 
-    // Llamar al servicio para actualizar
     this.controlLecheCrudaService.putEntradaSalidaLecheCruda(dataRow.id!, datosParaActualizar)
       .subscribe({
-        next: (response) => {
-          this.loading = false;
-          this.editingRow = null;
-          delete this.clonedDataControlLecheCruda[dataRow.id as number];
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos actualizados correctamente',
-            key: 'tr',
-            life: 3000,
-          });
-
-          this.table.saveRowEdit(dataRow, rowElement);
-        },
-        error: (error) => {
-          this.loading = false;
-
-          // Restaurar datos originales en caso de error
-          if (this.clonedDataControlLecheCruda[dataRow.id as number]) {
-            this.dataControlLecheCruda[index] = { ...this.clonedDataControlLecheCruda[dataRow.id as number] };
-          }
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Hubo un error al actualizar los datos',
-            key: 'tr',
-            life: 3000,
-          });
-
-          console.error('Error al actualizar:', error);
-        }
+        next: () => this.manejarExitoGuardado(dataRow, rowElement),
+        error: (error) => this.manejarErrorGuardado(dataRow, index, error)
       });
   }
 
   /**
-   * ✅ NUEVO: Manejar selección de fechas desde el DatePicker
+   * Maneja el éxito en el guardado
+   */
+  private manejarExitoGuardado(dataRow: ControlLecheCrudaData, rowElement: HTMLTableRowElement): void {
+    this.loading = false;
+    this.editingRow = null;
+    delete this.clonedDataControlLecheCruda[dataRow.id as number];
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Éxito',
+      detail: 'Datos actualizados correctamente',
+      key: 'tr',
+      life: 3000,
+    });
+
+    this.table.saveRowEdit(dataRow, rowElement);
+  }
+
+  /**
+   * Maneja los errores en el guardado
+   */
+  private manejarErrorGuardado(dataRow: ControlLecheCrudaData, index: number, error: any): void {
+    this.loading = false;
+
+    if (this.clonedDataControlLecheCruda[dataRow.id as number]) {
+      this.dataControlLecheCruda[index] = { ...this.clonedDataControlLecheCruda[dataRow.id as number] };
+    }
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Hubo un error al actualizar los datos',
+      key: 'tr',
+      life: 3000,
+    });
+
+    console.error('Error al actualizar:', error);
+  }
+
+  /**
+   * Maneja la selección de fechas desde el DatePicker
    */
   onDateSelect(selectedDate: Date, rowData: ControlLecheCrudaData, field: string): void {
-    if (selectedDate) {
-      // Convertir inmediatamente a string para evitar problemas de tipo
-      const fechaFormateada = this.convertirDateAString(selectedDate);
+    if (!selectedDate) return;
 
-      if (field === 'fechaEntrada') {
+    const fechaFormateada = this.convertirDateAString(selectedDate);
+
+    switch (field) {
+      case 'fechaEntrada':
         rowData.fechaEntrada = fechaFormateada;
-      } else if (field === 'fechaSalida') {
+        break;
+      case 'fechaSalida':
         rowData.fechaSalida = fechaFormateada;
-      }
+        break;
     }
   }
 
   /**
-   * ✅ CORREGIDO: Procesar fechas antes de guardar (simplificado)
+   * Procesa las fechas antes de guardar convirtiéndolas a string si son objetos Date
    */
   private procesarFechasAntesDeguardar(dataRow: ControlLecheCrudaData): void {
-    // Si por alguna razón las fechas siguen siendo objetos Date, convertirlas
     if (dataRow.fechaEntrada instanceof Date) {
       dataRow.fechaEntrada = this.convertirDateAString(dataRow.fechaEntrada);
     }
@@ -342,7 +360,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   /**
-   * ✅ NUEVO: Convertir objeto Date a string DD/MM/YYYY sin problemas de zona horaria
+   * Convierte un objeto Date a string DD/MM/YYYY evitando problemas de zona horaria
    */
   private convertirDateAString(fecha: Date): string {
     if (!fecha) return '';
@@ -355,84 +373,85 @@ export class TableControlLecheCrudaComponent implements OnInit {
   }
 
   /**
-   * Calcular fecha de vencimiento (15 días después de la fecha de extracción)
+   * Calcula la fecha de vencimiento (15 días después de la extracción)
    */
   private calcularFechaVencimiento(fechaExtraccion: string): string {
     if (!fechaExtraccion) return '';
 
-    // Convertir la fecha de extracción a Date
-    let fecha: Date;
+    const fecha = this.parsearFecha(fechaExtraccion);
+    if (!fecha) return '';
 
-    if (fechaExtraccion.includes('/')) {
-      // Formato DD/MM/YYYY
-      const partes = fechaExtraccion.split('/');
-      fecha = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
-    } else {
-      // Formato YYYY-MM-DD
-      fecha = new Date(fechaExtraccion);
-    }
-
-    // Agregar 15 días
-    fecha.setDate(fecha.getDate() + 15);
-
-    // Formatear de vuelta a DD/MM/YYYY
-    const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const anio = fecha.getFullYear();
-
-    return `${dia}/${mes}/${anio}`;
+    fecha.setDate(fecha.getDate() + this.DIAS_VENCIMIENTO);
+    return this.convertirDateAString(fecha);
   }
 
   /**
-   * Obtener nombre amigable para mostrar en validaciones
+   * Parsea una fecha desde formato DD/MM/YYYY o YYYY-MM-DD
    */
-  private getFieldDisplayName(field: string): string {
-    const fieldNames: { [key: string]: string } = {
-      'gaveta': 'Gaveta',
-      'fechaEntrada': 'Fecha de Entrada',
-      'responsableEntrada': 'Responsable de Entrada',
-      'procedencia': 'Procedencia'
-    };
+  private parsearFecha(fechaStr: string): Date | null {
+    if (fechaStr.includes('/')) {
+      const [dia, mes, año] = fechaStr.split('/').map(Number);
+      return new Date(año, mes - 1, dia);
+    }
 
-    return fieldNames[field] || field;
+    if (fechaStr.includes('-')) {
+      return new Date(fechaStr);
+    }
+
+    return null;
   }
 
+  /**
+   * Obtiene el nombre amigable de un campo para mostrar en validaciones
+   */
+  private getFieldDisplayName(field: string): string {
+    return this.FIELD_DISPLAY_NAMES[field as keyof typeof this.FIELD_DISPLAY_NAMES] || field;
+  }
+
+  /**
+   * Cancela la edición de una fila restaurando los datos originales
+   */
   onRowEditCancel(dataRow: ControlLecheCrudaData, index: number): void {
-    // Restaurar datos originales
     this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[dataRow.id as number];
     delete this.clonedDataControlLecheCruda[dataRow.id as number];
     this.editingRow = null;
   }
 
+  /**
+   * Verifica si un campo es inválido (requerido pero vacío)
+   */
   isFieldInvalid(field: string, dataRow: ControlLecheCrudaData): boolean {
-    return this.requiredFields.includes(field) &&
-      (dataRow[field as keyof ControlLecheCrudaData] === null ||
-        dataRow[field as keyof ControlLecheCrudaData] === undefined ||
-        dataRow[field as keyof ControlLecheCrudaData] === '');
+    if (!this.requiredFields.includes(field as any)) return false;
+
+    const value = dataRow[field as keyof ControlLecheCrudaData];
+    return value === null || value === undefined || value === '';
   }
 
+  /**
+   * Cancela la edición actual si existe una fila en edición
+   */
   private cancelCurrentEditing(): void {
-    if (this.editingRow && this.table) {
-      try {
-        this.table.cancelRowEdit(this.editingRow);
-      } catch (error) {
-        // Ignorar errores del cancelRowEdit
-      }
+    if (!this.editingRow || !this.table) return;
 
-      const index = this.dataControlLecheCruda.findIndex(
-        (row) => row === this.editingRow
-      );
-      if (index !== -1) {
-        // Restaurar datos originales si existen
-        if (this.clonedDataControlLecheCruda[this.editingRow.id as number]) {
-          this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[this.editingRow.id as number];
-          delete this.clonedDataControlLecheCruda[this.editingRow.id as number];
-        }
-      }
-      this.editingRow = null;
+    try {
+      this.table.cancelRowEdit(this.editingRow);
+    } catch (error) {
+      // Ignorar errores del cancelRowEdit
     }
+
+    const index = this.dataControlLecheCruda.findIndex(row => row === this.editingRow);
+
+    if (index !== -1 && this.clonedDataControlLecheCruda[this.editingRow.id as number]) {
+      this.dataControlLecheCruda[index] = this.clonedDataControlLecheCruda[this.editingRow.id as number];
+      delete this.clonedDataControlLecheCruda[this.editingRow.id as number];
+    }
+
+    this.editingRow = null;
   }
 
+  /**
+   * Determina si el botón de editar debe estar deshabilitado
+   */
   isEditButtonDisabled(rowData: ControlLecheCrudaData): boolean {
     return this.editingRow !== null && this.editingRow !== rowData;
   }

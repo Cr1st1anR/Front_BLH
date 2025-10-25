@@ -13,123 +13,111 @@ import {
   providedIn: 'root'
 })
 export class ControlLecheCrudaService {
+  private readonly DIAS_VENCIMIENTO = 15;
+  private readonly DIAS_POR_MES = 30;
+  private empleadosCache: EmpleadoResponse[] = [];
 
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Obtener entradas y salidas de leche cruda por mes y año
+   * Obtiene las entradas y salidas de leche cruda por mes y año
    */
   getEntradasSalidasLecheCruda(mes: number, anio: number): Observable<ControlLecheCrudaData[]> {
-    return this.http.get<ApiResponse<EntradasSalidasApiResponse[]>>(
-      `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`,
-      { observe: 'response' } // ✅ Observar la respuesta completa
-    ).pipe(
-      map(response => {
-        // ✅ Verificar el status de la respuesta
-        if (response.status === 204 || !response.body || !response.body.data) {
-          return []; // No hay datos, devolver array vacío
-        }
+    const url = `${environment.ApiBLH}/getEntradasSalidaLecheCruda/${mes}/${anio}`;
 
-        if (response.body.data.length === 0) {
-          return [];
-        }
-
-        return this.mapApiResponseToTableData(response.body.data);
-      }),
-      catchError((error: HttpErrorResponse) => {
-        // ✅ Manejar errores HTTP
-        if (error.status === 204) {
-          return of([]); // Devolver array vacío para 204
-        }
-        // Para otros errores, reenviar el error
-        throw error;
-      })
-    );
+    return this.http.get<ApiResponse<EntradasSalidasApiResponse[]>>(url, { observe: 'response' })
+      .pipe(
+        map(response => {
+          const hasData = response.status !== 204 && response.body?.data?.length;
+          return hasData ? this.mapApiResponseToTableData(response.body.data) : [];
+        }),
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 204) {
+            return of([]);
+          }
+          throw error;
+        })
+      );
   }
 
   /**
-   * Obtener lista de empleados
+   * Obtiene la lista de empleados disponibles
    */
   getEmpleados(): Observable<EmpleadoResponse[]> {
-    return this.http.get<ApiResponse<EmpleadoResponse[]>>(`${environment.ApiBLH}/getEmpleados`)
+    const url = `${environment.ApiBLH}/getEmpleados`;
+    return this.http.get<ApiResponse<EmpleadoResponse[]>>(url)
       .pipe(map(response => response.data));
   }
 
   /**
-   * Actualizar entrada/salida de leche cruda
+   * Actualiza la información de entrada/salida de leche cruda
    */
-  putEntradaSalidaLecheCruda(id: number, data: any): Observable<any> {
-    return this.http.put<ApiResponse<any>>(
-      `${environment.ApiBLH}/putEntradaSalidaLecheCruda/${id}`,
-      data
-    ).pipe(
-      map(response => response.data)
-    );
+  putEntradaSalidaLecheCruda(id: number, data: Partial<ControlLecheCrudaData>): Observable<any> {
+    const url = `${environment.ApiBLH}/putEntradaSalidaLecheCruda/${id}`;
+    return this.http.put<ApiResponse<any>>(url, data)
+      .pipe(map(response => response.data));
   }
 
   /**
-   * Mapear datos del frontend al formato que espera el backend
+   * Mapea los datos del frontend al formato requerido por el backend
    */
   mapearDatosParaActualizar(rowData: ControlLecheCrudaData): any {
-    // Convertir fechas de DD/MM/YYYY a YYYY-MM-DD o manejar objetos Date
-    const fechaVencimiento = this.convertirFechaParaBackend(rowData.fechaVencimiento);
-    const fechaEntrada = rowData.fechaEntrada ? this.convertirFechaParaBackend(rowData.fechaEntrada) : null;
-    const fechaSalida = rowData.fechaSalida ? this.convertirFechaParaBackend(rowData.fechaSalida) : null;
-
-    // Buscar IDs de empleados por nombre
-    const empleadoEntradaId = rowData.responsableEntrada ?
-      this.obtenerIdEmpleadoPorNombre(rowData.responsableEntrada) : null;
-    const empleadoSalidaId = rowData.responsableSalida ?
-      this.obtenerIdEmpleadoPorNombre(rowData.responsableSalida) : null;
-
     return {
-      fechaVencimiento: fechaVencimiento,
+      fechaVencimiento: this.convertirFechaParaBackend(rowData.fechaVencimiento),
       procedencia: rowData.procedencia || '',
-      fechaEntrada: fechaEntrada,
-      fechaSalida: fechaSalida,
+      fechaEntrada: rowData.fechaEntrada ? this.convertirFechaParaBackend(rowData.fechaEntrada) : null,
+      fechaSalida: rowData.fechaSalida ? this.convertirFechaParaBackend(rowData.fechaSalida) : null,
       madreDonante: { id: parseInt(rowData.donante) },
-      empleadoEntrada: empleadoEntradaId ? { id: empleadoEntradaId } : null,
-      empleadoSalida: empleadoSalidaId ? { id: empleadoSalidaId } : null
+      empleadoEntrada: this.crearObjetoEmpleado(rowData.responsableEntrada),
+      empleadoSalida: this.crearObjetoEmpleado(rowData.responsableSalida)
     };
   }
 
   /**
-   * Convertir fecha de diferentes formatos a YYYY-MM-DD (SIN problema de zona horaria)
+   * Crea el objeto empleado para el backend si el nombre existe
+   */
+  private crearObjetoEmpleado(nombreEmpleado?: string): { id: number } | null {
+    if (!nombreEmpleado) return null;
+    const empleadoId = this.obtenerIdEmpleadoPorNombre(nombreEmpleado);
+    return empleadoId ? { id: empleadoId } : null;
+  }
+
+  /**
+   * Convierte fechas de diferentes formatos a YYYY-MM-DD evitando problemas de zona horaria
    */
   private convertirFechaParaBackend(fecha: string | Date | null): string {
     if (!fecha) return '';
 
-    let fechaObj: Date;
-
-    // Si es un objeto Date (viene del DatePicker)
-    if (fecha instanceof Date) {
-      fechaObj = fecha;
-    }
-    // Si es string en formato DD/MM/YYYY
-    else if (typeof fecha === 'string' && fecha.includes('/')) {
-      const partes = fecha.split('/');
-      if (partes.length === 3) {
-        // Crear fecha sin problemas de zona horaria
-        fechaObj = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
-      } else {
-        return fecha;
-      }
-    }
-    // Si ya está en formato YYYY-MM-DD
-    else if (typeof fecha === 'string' && fecha.includes('-')) {
-      return fecha;
-    }
-    else {
-      return fecha ? fecha.toString() : '';
+    if (typeof fecha === 'string' && fecha.includes('-')) {
+      return fecha; // Ya está en formato YYYY-MM-DD
     }
 
-    // ✅ SOLUCIÓN: Usar métodos locales para evitar zona horaria
+    const fechaObj = this.parsearFecha(fecha);
+    if (!fechaObj) return fecha?.toString() || '';
+
     const año = fechaObj.getFullYear();
     const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
     const dia = fechaObj.getDate().toString().padStart(2, '0');
 
     return `${año}-${mes}-${dia}`;
+  }
+
+  /**
+   * Parsea una fecha desde diferentes formatos
+   */
+  private parsearFecha(fecha: string | Date): Date | null {
+    if (fecha instanceof Date) {
+      return fecha;
+    }
+
+    if (typeof fecha === 'string' && fecha.includes('/')) {
+      const partes = fecha.split('/');
+      if (partes.length === 3) {
+        return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -140,91 +128,93 @@ export class ControlLecheCrudaService {
     return empleado ? empleado.id : null;
   }
 
-  // Cache de empleados para evitar múltiples consultas
-  private empleadosCache: EmpleadoResponse[] = [];
-
   /**
-   * Método para actualizar el cache de empleados
+   * Actualiza el cache de empleados para evitar múltiples consultas
    */
   actualizarCacheEmpleados(empleados: EmpleadoResponse[]): void {
     this.empleadosCache = empleados;
   }
 
   /**
-   * Mapear la respuesta de la API a los datos de la tabla
+   * Mapea la respuesta de la API a los datos de la tabla
    */
   private mapApiResponseToTableData(apiData: EntradasSalidasApiResponse[]): ControlLecheCrudaData[] {
-    return apiData.map(item => {
-      // Determinar la fuente de datos (frascoRecolectado o extraccion)
-      const esFrasco = item.frascoRecolectado !== null;
-      const esExtraccion = item.extraccion !== null;
-
-      // Obtener datos según la fuente
-      const volumen = esFrasco ? item.frascoRecolectado!.volumen.toString() :
-        esExtraccion ? item.extraccion!.cantidad.toString() : '';
-
-      const fechaExtraccion = esFrasco ? item.frascoRecolectado!.fechaDeExtraccion :
-        esExtraccion ? item.extraccion!.fechaExtraccion : '';
-
-      const gaveta = esFrasco ? item.frascoRecolectado!.gaveta.toString() :
-        esExtraccion ? item.extraccion!.gaveta.toString() : '';
-
-      const congeladorId = esFrasco ? item.frascoRecolectado!.congelador.id :
-        esExtraccion ? item.extraccion!.congelador.id : '';
-
-      // Calcular fecha de vencimiento (15 días después de la fecha de extracción)
-      const fechaVencimiento = this.calcularFechaVencimiento(fechaExtraccion);
-
-      // Calcular días posparto
-      const diasPosparto = this.calcularDiasPosparto(
-        item.madreDonante.madrePotencial.infoMadre.fechaParto,
-        fechaExtraccion
-      );
-
-      // Obtener edad gestacional desde la base de datos
-      const edadGestacional = this.obtenerEdadGestacional(item.madreDonante.gestacion);
-
-      // Generar número de frasco con la lógica LHC + año + id
-      const numFrasco = this.generateFrascoNumber(item.id);
-
-      return {
-        id: item.id,
-        nCongelador: congeladorId.toString().padStart(3, '0'),
-        ubicacion: 'BLH - área de almacenamiento',
-        gaveta: gaveta,
-        diasPosparto: diasPosparto,
-        donante: item.madreDonante.id.toString(),
-        numFrasco: numFrasco,
-        edadGestacional: edadGestacional,
-        volumen: volumen,
-        fechaExtraccion: this.formatearFecha(fechaExtraccion),
-        fechaVencimiento: this.formatearFecha(fechaVencimiento),
-        fechaParto: this.formatearFecha(item.madreDonante.madrePotencial.infoMadre.fechaParto),
-        procedencia: item.procedencia || '',
-        fechaEntrada: item.fechaEntrada ? this.formatearFecha(item.fechaEntrada) : '',
-        responsableEntrada: item.empleadoEntrada ? item.empleadoEntrada.nombre : '',
-        fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
-        responsableSalida: item.empleadoSalida ? item.empleadoSalida.nombre : '',
-        fechaRegistro: this.formatearFecha(fechaExtraccion),
-        idFrascoLecheCruda: item.id
-      };
-    });
+    return apiData.map(item => this.crearRegistroTabla(item));
   }
 
   /**
-   * Obtener edad gestacional desde los datos de la base de datos
+   * Crea un registro de tabla a partir de los datos de la API
    */
-  private obtenerEdadGestacional(gestacion: any): string {
-    if (!gestacion || !gestacion.semanas) {
-      return ''; // Sin datos de gestación
+  private crearRegistroTabla(item: EntradasSalidasApiResponse): ControlLecheCrudaData {
+    const datosExtraccion = this.extraerDatosExtraccion(item);
+    const fechaVencimiento = this.calcularFechaVencimiento(datosExtraccion.fechaExtraccion);
+    const diasPosparto = this.calcularDiasPosparto(
+      item.madreDonante.madrePotencial.infoMadre.fechaParto,
+      datosExtraccion.fechaExtraccion
+    );
+
+    return {
+      id: item.id,
+      nCongelador: datosExtraccion.congeladorId.toString().padStart(3, '0'),
+      ubicacion: 'BLH - área de almacenamiento',
+      gaveta: datosExtraccion.gaveta,
+      diasPosparto,
+      donante: item.madreDonante.id.toString(),
+      numFrasco: this.generateFrascoNumber(item.id),
+      edadGestacional: this.obtenerEdadGestacional(item.madreDonante.gestacion),
+      volumen: datosExtraccion.volumen,
+      fechaExtraccion: this.formatearFecha(datosExtraccion.fechaExtraccion),
+      fechaVencimiento: this.formatearFecha(fechaVencimiento),
+      fechaParto: this.formatearFecha(item.madreDonante.madrePotencial.infoMadre.fechaParto),
+      procedencia: item.procedencia || '',
+      fechaEntrada: item.fechaEntrada ? this.formatearFecha(item.fechaEntrada) : '',
+      responsableEntrada: item.empleadoEntrada?.nombre || '',
+      fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
+      responsableSalida: item.empleadoSalida?.nombre || '',
+      fechaRegistro: this.formatearFecha(datosExtraccion.fechaExtraccion),
+      idFrascoLecheCruda: item.id
+    };
+  }
+
+  /**
+   * Extrae los datos de extracción desde frascoRecolectado o extraccion
+   */
+  private extraerDatosExtraccion(item: EntradasSalidasApiResponse) {
+    if (item.frascoRecolectado) {
+      return {
+        volumen: item.frascoRecolectado.volumen.toString(),
+        fechaExtraccion: item.frascoRecolectado.fechaDeExtraccion,
+        gaveta: item.frascoRecolectado.gaveta.toString(),
+        congeladorId: item.frascoRecolectado.congelador.id
+      };
     }
 
-    // Formatear las semanas como decimal (ej: 38.1, 40.0)
-    return gestacion.semanas.toString() + '.0';
+    if (item.extraccion) {
+      return {
+        volumen: item.extraccion.cantidad.toString(),
+        fechaExtraccion: item.extraccion.fechaExtraccion,
+        gaveta: item.extraccion.gaveta.toString(),
+        congeladorId: item.extraccion.congelador.id
+      };
+    }
+
+    return {
+      volumen: '',
+      fechaExtraccion: '',
+      gaveta: '',
+      congeladorId: 0
+    };
   }
 
   /**
-   * Generar número de frasco con formato LHC + año + id
+   * Obtiene la edad gestacional formateada
+   */
+  private obtenerEdadGestacional(gestacion: any): string {
+    return gestacion?.semanas ? `${gestacion.semanas}.0` : '';
+  }
+
+  /**
+   * Genera el número de frasco con formato LHC + año + id
    */
   private generateFrascoNumber(id: number): string {
     const currentYear = new Date().getFullYear().toString().slice(-2);
@@ -232,18 +222,18 @@ export class ControlLecheCrudaService {
   }
 
   /**
-   * Calcular fecha de vencimiento (15 días después de la fecha de extracción)
+   * Calcula la fecha de vencimiento (15 días después de la extracción)
    */
   private calcularFechaVencimiento(fechaExtraccion: string): string {
     if (!fechaExtraccion) return '';
 
     const fecha = new Date(fechaExtraccion);
-    fecha.setDate(fecha.getDate() + 15);
+    fecha.setDate(fecha.getDate() + this.DIAS_VENCIMIENTO);
     return fecha.toISOString().split('T')[0];
   }
 
   /**
-   * Calcular días posparto
+   * Calcula los días posparto en formato legible
    */
   private calcularDiasPosparto(fechaParto: string, fechaExtraccion: string): string {
     if (!fechaParto || !fechaExtraccion) return '';
@@ -253,52 +243,33 @@ export class ControlLecheCrudaService {
     const diffTime = Math.abs(extraccion.getTime() - parto.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 30) {
-      return `${diffDays} días`;
-    } else {
-      const meses = Math.floor(diffDays / 30);
-      const diasRestantes = diffDays % 30;
-      return diasRestantes > 0 ? `${meses} meses ${diasRestantes} días` : `${meses} meses`;
-    }
+    return this.formatearDiasPosparto(diffDays);
   }
 
   /**
-   * Formatear fecha de YYYY-MM-DD a DD/MM/YYYY (SIN problema de zona horaria)
+   * Formatea los días posparto en meses y días
+   */
+  private formatearDiasPosparto(dias: number): string {
+    if (dias < this.DIAS_POR_MES) {
+      return `${dias} días`;
+    }
+
+    const meses = Math.floor(dias / this.DIAS_POR_MES);
+    const diasRestantes = dias % this.DIAS_POR_MES;
+
+    return diasRestantes > 0
+      ? `${meses} meses ${diasRestantes} días`
+      : `${meses} meses`;
+  }
+
+  /**
+   * Formatea fecha de YYYY-MM-DD a DD/MM/YYYY evitando problemas de zona horaria
    */
   private formatearFecha(fecha: string): string {
     if (!fecha) return '';
+    if (fecha.includes('/')) return fecha; // Ya está en formato DD/MM/YYYY
 
-    // Si la fecha ya está en formato DD/MM/YYYY, devolverla tal como está
-    if (fecha.includes('/')) return fecha;
-
-    // ✅ SOLUCIÓN: Parsear manualmente para evitar zona horaria
-    const partes = fecha.split('T')[0].split('-'); // Tomar solo la parte de fecha
-    if (partes.length === 3) {
-      const año = partes[0];
-      const mes = partes[1];
-      const dia = partes[2];
-
-      return `${dia}/${mes}/${año}`;
-    }
-
-    return fecha;
-  }
-
-  // Métodos heredados del código original para mantener compatibilidad
-  getTableControlLecheCrudaData(): ControlLecheCrudaData[] {
-    // Método mantenido para compatibilidad, pero ya no se usará
-    return [];
-  }
-
-  generateNextFrascoNumber(): string {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear().toString().slice(-2);
-    const lastId = this.getLastFrascoId();
-    const nextId = lastId + 1;
-    return `LHC${currentYear} ${nextId}`;
-  }
-
-  private getLastFrascoId(): number {
-    return 1129; // Valor por defecto
+    const partes = fecha.split('T')[0].split('-');
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
   }
 }

@@ -134,3 +134,18 @@ export interface ApiResponse<T> {
   statusmsg: string;
   data: T;
 }
+
+// Tipos de utilidad
+export type SelectOption = {
+  label: string;
+  value: string;
+};
+
+export type TableHeader = {
+  header: string;
+  field: string;
+  width: string;
+  tipo?: 'text' | 'select' | 'date';
+};
+
+export type RequiredField = 'gaveta' | 'fechaEntrada' | 'responsableEntrada';

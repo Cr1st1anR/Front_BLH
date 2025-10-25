@@ -96,7 +96,8 @@
                 } @else if (col.field === 'fechaEntrada' || col.field === 'fechaSalida') {
                 <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
                   dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
-                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full">
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full"
+                  (onSelect)="onDateSelect($event, rowData, col.field)">
                 </p-datepicker>
                 } @else if (col.tipo === 'date') {
                 <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"

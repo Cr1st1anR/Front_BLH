@@ -12,9 +12,9 @@ export interface ControlLecheCrudaData {
   fechaVencimiento: string;
   fechaParto: string;
   procedencia: string;
-  fechaEntrada: string;
+  fechaEntrada: string | Date | null;
   responsableEntrada: string;
-  fechaSalida: string;
+  fechaSalida: string | Date | null;
   responsableSalida: string;
   fechaRegistro?: string;
   idFrascoLecheCruda?: number;

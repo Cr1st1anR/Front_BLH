@@ -114,6 +114,9 @@ export class TableControlLecheCrudaComponent implements OnInit {
           value: emp.nombre
         }));
 
+        // ✅ NUEVO: Actualizar cache de empleados en el servicio
+        this.controlLecheCrudaService.actualizarCacheEmpleados(this.empleados);
+
         // Procesar datos de control
         this.dataControlLecheCruda = response.controlData;
 
@@ -128,7 +131,7 @@ export class TableControlLecheCrudaComponent implements OnInit {
             summary: 'Éxito',
             detail: 'Datos cargados para la fecha seleccionada',
             key: 'tr',
-            life: 3000,
+            life: 2000,
           });
         } else {
           this.messageService.add({
@@ -136,13 +139,13 @@ export class TableControlLecheCrudaComponent implements OnInit {
             summary: 'Información',
             detail: 'No hay datos para la fecha seleccionada',
             key: 'tr',
-            life: 3000,
+            life: 2000,
           });
         }
       },
       error: (error) => {
         this.loading = false;
-        this.dataControlLecheCruda = []; // Limpiar datos en caso de error
+        this.dataControlLecheCruda = [];
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -234,41 +237,164 @@ export class TableControlLecheCrudaComponent implements OnInit {
     this.editingRow = dataRow;
   }
 
+  /**
+   * Guardar cambios en el registro editado
+   */
   onRowEditSave(dataRow: ControlLecheCrudaData, index: number, event: MouseEvent): void {
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
 
+    // ✅ NUEVO: Manejar fechas que vienen como objetos Date del DatePicker
+    this.procesarFechasAntesDeguardar(dataRow);
+
+    // Validar campos requeridos
     const invalidField = this.requiredFields.find(field => this.isFieldInvalid(field, dataRow));
     if (invalidField) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Advertencia',
-        detail: `El campo "${invalidField}" es obligatorio.`,
+        detail: `El campo "${this.getFieldDisplayName(invalidField)}" es obligatorio.`,
         key: 'tr',
         life: 3000,
       });
       return;
     }
 
-    this.editingRow = null;
-    delete this.clonedDataControlLecheCruda[dataRow.id as number];
+    // Recalcular fecha de vencimiento si cambió la gaveta (aunque no debería ser editable)
+    if (dataRow.fechaExtraccion) {
+      dataRow.fechaVencimiento = this.calcularFechaVencimiento(dataRow.fechaExtraccion);
+    }
 
-    // TODO: Aquí implementarías la llamada al backend para actualizar
-    // Cuando implementes el PUT, enviarás:
-    // {
-    //   responsableEntrada: dataRow.responsableEntrada, // nombre del empleado
-    //   responsableSalida: dataRow.responsableSalida,   // nombre del empleado
-    //   // ... otros campos
-    // }
+    // Preparar datos para enviar al backend
+    const datosParaActualizar = this.controlLecheCrudaService.mapearDatosParaActualizar(dataRow);
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: 'Datos actualizados',
-      key: 'tr',
-      life: 3000,
-    });
+    console.log('Datos a enviar al backend:', datosParaActualizar); // Para debugging
 
-    this.table.saveRowEdit(dataRow, rowElement);
+    // Mostrar loading
+    this.loading = true;
+
+    // Llamar al servicio para actualizar
+    this.controlLecheCrudaService.putEntradaSalidaLecheCruda(dataRow.id!, datosParaActualizar)
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.editingRow = null;
+          delete this.clonedDataControlLecheCruda[dataRow.id as number];
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Datos actualizados correctamente',
+            key: 'tr',
+            life: 3000,
+          });
+
+          this.table.saveRowEdit(dataRow, rowElement);
+        },
+        error: (error) => {
+          this.loading = false;
+
+          // Restaurar datos originales en caso de error
+          if (this.clonedDataControlLecheCruda[dataRow.id as number]) {
+            this.dataControlLecheCruda[index] = { ...this.clonedDataControlLecheCruda[dataRow.id as number] };
+          }
+
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Hubo un error al actualizar los datos',
+            key: 'tr',
+            life: 3000,
+          });
+
+          console.error('Error al actualizar:', error);
+        }
+      });
+  }
+
+  /**
+   * ✅ NUEVO: Manejar selección de fechas desde el DatePicker
+   */
+  onDateSelect(selectedDate: Date, rowData: ControlLecheCrudaData, field: string): void {
+    if (selectedDate) {
+      // Convertir inmediatamente a string para evitar problemas de tipo
+      const fechaFormateada = this.convertirDateAString(selectedDate);
+
+      if (field === 'fechaEntrada') {
+        rowData.fechaEntrada = fechaFormateada;
+      } else if (field === 'fechaSalida') {
+        rowData.fechaSalida = fechaFormateada;
+      }
+    }
+  }
+
+  /**
+   * ✅ CORREGIDO: Procesar fechas antes de guardar (simplificado)
+   */
+  private procesarFechasAntesDeguardar(dataRow: ControlLecheCrudaData): void {
+    // Si por alguna razón las fechas siguen siendo objetos Date, convertirlas
+    if (dataRow.fechaEntrada instanceof Date) {
+      dataRow.fechaEntrada = this.convertirDateAString(dataRow.fechaEntrada);
+    }
+
+    if (dataRow.fechaSalida instanceof Date) {
+      dataRow.fechaSalida = this.convertirDateAString(dataRow.fechaSalida);
+    }
+  }
+
+  /**
+   * ✅ NUEVO: Convertir objeto Date a string DD/MM/YYYY sin problemas de zona horaria
+   */
+  private convertirDateAString(fecha: Date): string {
+    if (!fecha) return '';
+
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const año = fecha.getFullYear();
+
+    return `${dia}/${mes}/${año}`;
+  }
+
+  /**
+   * Calcular fecha de vencimiento (15 días después de la fecha de extracción)
+   */
+  private calcularFechaVencimiento(fechaExtraccion: string): string {
+    if (!fechaExtraccion) return '';
+
+    // Convertir la fecha de extracción a Date
+    let fecha: Date;
+
+    if (fechaExtraccion.includes('/')) {
+      // Formato DD/MM/YYYY
+      const partes = fechaExtraccion.split('/');
+      fecha = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+    } else {
+      // Formato YYYY-MM-DD
+      fecha = new Date(fechaExtraccion);
+    }
+
+    // Agregar 15 días
+    fecha.setDate(fecha.getDate() + 15);
+
+    // Formatear de vuelta a DD/MM/YYYY
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const anio = fecha.getFullYear();
+
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  /**
+   * Obtener nombre amigable para mostrar en validaciones
+   */
+  private getFieldDisplayName(field: string): string {
+    const fieldNames: { [key: string]: string } = {
+      'gaveta': 'Gaveta',
+      'fechaEntrada': 'Fecha de Entrada',
+      'responsableEntrada': 'Responsable de Entrada',
+      'procedencia': 'Procedencia'
+    };
+
+    return fieldNames[field] || field;
   }
 
   onRowEditCancel(dataRow: ControlLecheCrudaData, index: number): void {
@@ -310,4 +436,5 @@ export class TableControlLecheCrudaComponent implements OnInit {
   isEditButtonDisabled(rowData: ControlLecheCrudaData): boolean {
     return this.editingRow !== null && this.editingRow !== rowData;
   }
+
 }

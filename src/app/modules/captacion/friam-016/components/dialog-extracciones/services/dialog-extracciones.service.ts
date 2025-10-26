@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ApiResponse } from '../../interfaces/api-response.interface';
 import { ExtraccionRequest } from '../../interfaces/extraccion-request.interface';
 import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
@@ -11,32 +11,43 @@ import { environment } from 'src/environments/environments';
   providedIn: 'root'
 })
 export class DialogExtraccionesService {
-
   // Subject para manejar actualizaciones de datos
   private dataUpdated = new BehaviorSubject<boolean>(false);
   public dataUpdated$ = this.dataUpdated.asObservable();
 
   constructor(private http: HttpClient) { }
 
-  // ✅ ACTUALIZADO: Manejar respuesta 204 correctamente
+  // ✅ CORREGIDO: URL completa correcta
   getExtracciones(idExtraccion: number): Observable<ExtraccionTable[]> {
-    return this.http.get<ApiResponse<any[]>>(`${environment.ApiBLH}/getFrascosRecolectadosBySalaExtraccion/${idExtraccion}`)
-      .pipe(
-        map(response => {
-          const extracciones = response.data || [];
-          return this.transformApiDataToTableFormat(extracciones);
-        }),
-        catchError(error => {
-          // ✅ CORREGIDO: Si es 204, devolver array vacío en lugar de error
-          if (error.status === 204) {
-            return of([]); // Devolver array vacío como observable
-          }
-          return throwError(() => error); // Propagar otros errores
-        })
-      );
+    return this.http.get<ApiResponse<any[]>>(
+      `${environment.ApiBLH}/getFrascosRecolectadosBySalaExtraccion/${idExtraccion}`,
+      { observe: 'response' } // ✅ Observar la respuesta completa
+    ).pipe(
+      map(response => {
+        // ✅ Verificar el status de la respuesta
+        if (response.status === 204 || !response.body || !response.body.data) {
+          return []; // No hay datos, devolver array vacío
+        }
+
+        if (response.body.data.length === 0) {
+          return [];
+        }
+
+        const extracciones = response.body.data;
+        return this.transformApiDataToTableFormat(extracciones);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // ✅ Manejar errores HTTP
+        if (error.status === 204) {
+          return of([]); // Devolver array vacío para 204
+        }
+        // Para otros errores, reenviar el error
+        throw error;
+      })
+    );
   }
 
-  // ✅ NUEVO: Transformar datos de la API al formato de la tabla
+  // ✅ CORREGIDO: Transformar datos de la API al formato de la tabla
   private transformApiDataToTableFormat(apiData: any[]): ExtraccionTable[] {
     // Agrupar extracciones por fecha
     const extraccionesPorFecha = new Map<string, ExtraccionTable>();

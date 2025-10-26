@@ -81,7 +81,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     this.subscriptions.add(updateSub);
   }
 
-  // ✅ ACTUALIZADO: Manejar correctamente respuestas vacías
+  // ✅ SIMPLIFICADO: El servicio ya maneja todo correctamente
   loadExtracciones(): void {
     if (!this.idExtraccion) return;
 
@@ -106,13 +106,8 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
         this.loading = false;
       },
       error: (error) => {
-        // ✅ CORREGIDO: Manejar código 204 como información, no como error
-        if (error.status === 204) {
-          this.dataExtracciones = [];
-          this.mostrarInfo('No hay extracciones registradas para esta madre');
-        } else {
-          this.manejarErrorCarga(error);
-        }
+        // ✅ Solo errores reales llegan aquí, 204 se maneja en el servicio
+        this.manejarErrorCarga(error);
         this.loading = false;
       }
     });
@@ -448,13 +443,14 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     this.editingRow = null;
   }
 
+  // ✅ CORREGIDO: Mensaje para cuando no hay datos
   private mostrarMensajeCarga(extracciones: ExtraccionTable[]): void {
-    const mensaje = extracciones.length > 0
-      ? `${extracciones.length} extracción${extracciones.length > 1 ? 'es' : ''} cargada${extracciones.length > 1 ? 's' : ''}`
-      : 'No hay extracciones registradas para esta madre';
-
-    const tipo = extracciones.length > 0 ? 'success' : 'info';
-    this.mostrarMensaje(tipo, mensaje);
+    if (extracciones.length === 0) {
+      this.mostrarInfo('No hay extracciones registradas para esta madre');
+    } else {
+      const mensaje = `${extracciones.length} extracción${extracciones.length > 1 ? 'es' : ''} cargada${extracciones.length > 1 ? 's' : ''}`;
+      this.mostrarExito(mensaje);
+    }
   }
 
   private manejarErrorCarga(error: any): void {

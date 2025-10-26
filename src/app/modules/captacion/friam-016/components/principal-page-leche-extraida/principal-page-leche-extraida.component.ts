@@ -44,7 +44,7 @@ export class PrincipalPageLecheExtraidaComponent implements OnInit, AfterViewIni
   }
 
   onRowClick(rowData: any): void {
-    this.selectedRowData = rowData;
+    this.selectedRowData = { ...rowData };
     this.showDialog = true;
   }
 
@@ -85,9 +85,9 @@ export class PrincipalPageLecheExtraidaComponent implements OnInit, AfterViewIni
   }
 
   private shouldApplyFilter(): boolean {
-    return this.tableComponent && 
-           this.tableComponent.dataLecheExtraida.length > 0 && 
-           !this.isInitialized;
+    return this.tableComponent &&
+      this.tableComponent.dataLecheExtraida.length > 0 &&
+      !this.isInitialized;
   }
 
   private aplicarFiltroMesActual(): void {

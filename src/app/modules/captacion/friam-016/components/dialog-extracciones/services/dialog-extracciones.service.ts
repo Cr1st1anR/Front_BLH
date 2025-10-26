@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { ApiResponse } from '../../interfaces/api-response.interface';
 import { ExtraccionRequest } from '../../interfaces/extraccion-request.interface';
 import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
@@ -17,6 +17,91 @@ export class DialogExtraccionesService {
   public dataUpdated$ = this.dataUpdated.asObservable();
 
   constructor(private http: HttpClient) { }
+
+  // ✅ ACTUALIZADO: Manejar respuesta 204 correctamente
+  getExtracciones(idExtraccion: number): Observable<ExtraccionTable[]> {
+    return this.http.get<ApiResponse<any[]>>(`${environment.ApiBLH}/getFrascosRecolectadosBySalaExtraccion/${idExtraccion}`)
+      .pipe(
+        map(response => {
+          const extracciones = response.data || [];
+          return this.transformApiDataToTableFormat(extracciones);
+        }),
+        catchError(error => {
+          // ✅ CORREGIDO: Si es 204, devolver array vacío en lugar de error
+          if (error.status === 204) {
+            return of([]); // Devolver array vacío como observable
+          }
+          return throwError(() => error); // Propagar otros errores
+        })
+      );
+  }
+
+  // ✅ NUEVO: Transformar datos de la API al formato de la tabla
+  private transformApiDataToTableFormat(apiData: any[]): ExtraccionTable[] {
+    // Agrupar extracciones por fecha
+    const extraccionesPorFecha = new Map<string, ExtraccionTable>();
+
+    apiData.forEach(extraccion => {
+      const fecha = extraccion.fechaExtraccion;
+      const hora = extraccion.hora;
+
+      // Determinar si es AM o PM basado en la hora (antes de 12:00 es AM)
+      const [horas] = hora.split(':').map(Number);
+      const esAM = horas < 12;
+
+      let extraccionTabla = extraccionesPorFecha.get(fecha);
+
+      if (!extraccionTabla) {
+        // Crear nueva fila de extracción
+        extraccionTabla = {
+          id_registro_extraccion: extraccion.id,
+          fecha: fecha,
+          fecha_display: this.formatDateForDisplay(fecha),
+          extraccion_1: { am: null, ml: null },
+          extraccion_2: { pm: null, ml: null },
+          motivo_consulta: extraccion.motivoConsulta || '',
+          observaciones: extraccion.observaciones || ''
+        };
+        extraccionesPorFecha.set(fecha, extraccionTabla);
+      }
+
+      // Asignar a AM o PM según la hora
+      if (esAM) {
+        extraccionTabla.extraccion_1.am = hora;
+        extraccionTabla.extraccion_1.ml = extraccion.cantidad;
+      } else {
+        extraccionTabla.extraccion_2.pm = hora;
+        extraccionTabla.extraccion_2.ml = extraccion.cantidad;
+      }
+
+      // Actualizar motivo y observaciones si están disponibles
+      if (extraccion.motivoConsulta) {
+        extraccionTabla.motivo_consulta = extraccion.motivoConsulta;
+      }
+      if (extraccion.observaciones) {
+        extraccionTabla.observaciones = extraccion.observaciones;
+      }
+    });
+
+    // ✅ CORREGIDO: Ordenar por fecha (más antigua primero)
+    return Array.from(extraccionesPorFecha.values())
+      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+  }
+
+  // ✅ CORREGIDO: Método para formatear fecha sin problemas de zona horaria
+  private formatDateForDisplay(fechaString: string): string {
+    if (!fechaString) return 'Sin fecha';
+
+    // ✅ Parsear la fecha como local, no como UTC
+    const [year, month, day] = fechaString.split('-').map(Number);
+    const fecha = new Date(year, month - 1, day); // mes - 1 porque Date usa 0-based months
+
+    const dayFormatted = fecha.getDate().toString().padStart(2, '0');
+    const monthFormatted = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const yearFormatted = fecha.getFullYear();
+
+    return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
+  }
 
   // Método para crear una nueva extracción
   createExtraccion(extraccionData: ExtraccionRequest): Observable<any> {
@@ -41,16 +126,6 @@ export class DialogExtraccionesService {
         .catch(error => {
           observer.error(error);
         });
-    });
-  }
-
-  // Método temporal para obtener extracciones (con datos mock hasta que esté la API)
-  getExtracciones(idExtraccion: number): Promise<ExtraccionTable[]> {
-    const mockExtracciones = this.getMockExtracciones();
-    const extraccionesDeEstaMadre = mockExtracciones[idExtraccion] || [];
-
-    return new Promise(resolve => {
-      setTimeout(() => resolve(extraccionesDeEstaMadre), 800);
     });
   }
 
@@ -80,16 +155,15 @@ export class DialogExtraccionesService {
   ): ExtraccionRequest {
     const isAM = tipoExtraccion === 'AM';
 
-    // Acceder a las propiedades correctas según el tipo de extracción
     const cantidad = isAM ? rowData.extraccion_1.ml! : rowData.extraccion_2.ml!;
     const hora = isAM ? rowData.extraccion_1.am! : rowData.extraccion_2.pm!;
 
     return {
       cantidad: cantidad,
       hora: hora,
-      gaveta: 1, // Valor fijo
+      gaveta: 1,
       fechaExtraccion: rowData.fecha,
-      congelador: { id: 1 }, // Valor fijo
+      congelador: { id: 1 },
       lecheSalaExtraccion: { id: idLecheSalaExtraccion },
       motivoConsulta: rowData.motivo_consulta || '',
       observaciones: rowData.observaciones || ''
@@ -131,66 +205,5 @@ export class DialogExtraccionesService {
   // Método para resetear el estado de actualización
   resetUpdateStatus(): void {
     this.dataUpdated.next(false);
-  }
-
-  // Datos mock temporales (mantener hasta que esté la API de GET)
-  private getMockExtracciones(): { [idExtraccion: number]: ExtraccionTable[] } {
-    return {
-      1: [
-        {
-          id_registro_extraccion: 101,
-          fecha: '2025-10-15',
-          fecha_display: '15/10/2025',
-          extraccion_1: {
-            am: '08:30',
-            ml: 120
-          },
-          extraccion_2: {
-            pm: '14:45',
-            ml: 95
-          },
-          motivo_consulta: 'Control rutinario postparto',
-          observaciones: 'Madre presenta buena técnica de extracción'
-        },
-        {
-          id_registro_extraccion: 102,
-          fecha: '2025-10-12',
-          fecha_display: '12/10/2025',
-          extraccion_1: {
-            am: '09:00',
-            ml: 130
-          },
-          extraccion_2: {
-            pm: '15:00',
-            ml: 100
-          },
-          motivo_consulta: 'Seguimiento semanal',
-          observaciones: 'Incremento en volumen de leche'
-        }
-      ],
-      2: [
-        {
-          id_registro_extraccion: 201,
-          fecha: '2025-10-14',
-          fecha_display: '14/10/2025',
-          extraccion_1: {
-            am: '09:15',
-            ml: 85
-          },
-          extraccion_2: {
-            pm: '15:30',
-            ml: 70
-          },
-          motivo_consulta: 'Dificultad en la lactancia',
-          observaciones: 'Se brindó orientación sobre técnicas de extracción'
-        }
-      ],
-      3: [],
-      4: [],
-      5: [],
-      6: [],
-      7: [],
-      8: []
-    };
   }
 }

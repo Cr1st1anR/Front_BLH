@@ -81,13 +81,14 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     this.subscriptions.add(updateSub);
   }
 
+  // ✅ ACTUALIZADO: Manejar correctamente respuestas vacías
   loadExtracciones(): void {
     if (!this.idExtraccion) return;
 
     this.loading = true;
 
-    this.dialogExtraccionesService.getExtracciones(this.idExtraccion)
-      .then((extracciones: ExtraccionTable[]) => {
+    const loadSub = this.dialogExtraccionesService.getExtracciones(this.idExtraccion).subscribe({
+      next: (extracciones: ExtraccionTable[]) => {
         this.dataExtracciones = extracciones.map((item: ExtraccionTable) => ({
           ...item,
           fecha_aux: item.fecha ? this.parsearFechaSegura(item.fecha) : null,
@@ -102,13 +103,21 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
         }));
 
         this.mostrarMensajeCarga(extracciones);
-      })
-      .catch((error) => {
-        this.manejarErrorCarga(error);
-      })
-      .finally(() => {
         this.loading = false;
-      });
+      },
+      error: (error) => {
+        // ✅ CORREGIDO: Manejar código 204 como información, no como error
+        if (error.status === 204) {
+          this.dataExtracciones = [];
+          this.mostrarInfo('No hay extracciones registradas para esta madre');
+        } else {
+          this.manejarErrorCarga(error);
+        }
+        this.loading = false;
+      }
+    });
+
+    this.subscriptions.add(loadSub);
   }
 
   crearNuevaExtraccion(): void {
@@ -315,17 +324,19 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // ✅ VERIFICADO: Método parsearFechaSegura para fechas sin problemas de zona horaria
   private parsearFechaSegura(fechaString: string): Date | null {
     if (!fechaString) return null;
 
     if (fechaString.includes('-')) {
+      // ✅ CORREGIDO: Parsear como fecha local, no UTC
       const [year, month, day] = fechaString.split('-').map(Number);
-      return new Date(year, month - 1, day, 12, 0, 0, 0);
+      return new Date(year, month - 1, day, 12, 0, 0, 0); // mediodía para evitar problemas de zona horaria
     }
 
     if (fechaString.includes('/')) {
       const [day, month, year] = fechaString.split('/').map(Number);
-      return new Date(year, month - 1, day, 12, 0, 0, 0);
+      return new Date(year, month - 1, day, 12, 0, 0, 0); // mediodía para evitar problemas de zona horaria
     }
 
     return null;
@@ -440,7 +451,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
   private mostrarMensajeCarga(extracciones: ExtraccionTable[]): void {
     const mensaje = extracciones.length > 0
       ? `${extracciones.length} extracción${extracciones.length > 1 ? 'es' : ''} cargada${extracciones.length > 1 ? 's' : ''}`
-      : 'No hay extracciones registradas';
+      : 'No hay extracciones registradas para esta madre';
 
     const tipo = extracciones.length > 0 ? 'success' : 'info';
     this.mostrarMensaje(tipo, mensaje);

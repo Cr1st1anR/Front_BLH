@@ -29,7 +29,7 @@ export class DialogExtraccionesComponent implements OnChanges {
 
   loading = false;
 
-  constructor(private messageService: MessageService) {}
+  constructor(private messageService: MessageService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue && this.rowData) {
@@ -65,7 +65,8 @@ export class DialogExtraccionesComponent implements OnChanges {
 
   private onDialogOpen(): void {
     if (this.rowData) {
-      this.showInfoMessage(`Cargando extracciones para: ${this.rowData.apellidos_nombre}`);
+      const nombre = this.rowData.apellidos_nombre || 'Madre sin nombre';
+      this.showInfoMessage(`Cargando extracciones para: ${nombre}`);
     }
   }
 

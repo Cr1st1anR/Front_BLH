@@ -323,17 +323,24 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
     };
   }
 
+  // ✅ CORREGIDO: Método para inicializar campos auxiliares
   private initializeAuxiliaryFields(dataRow: any): void {
     if (!dataRow.fecha_registro_aux) {
       dataRow.fecha_registro_aux = this.parsearFechaParaCalendario(dataRow.fecha_registro);
     }
 
-    // Inicializar fecha_nacimiento_aux si no existe
-    if (!dataRow.fecha_nacimiento_aux && dataRow.edad) {
-      // Calcular fecha de nacimiento aproximada basada en la edad
-      const fechaActual = new Date();
-      const añoNacimiento = fechaActual.getFullYear() - parseInt(dataRow.edad.toString());
-      dataRow.fecha_nacimiento_aux = new Date(añoNacimiento, 0, 1); // 1 de enero del año calculado
+    // ✅ CORREGIDO: Inicializar fecha_nacimiento_aux correctamente
+    if (!dataRow.fecha_nacimiento_aux) {
+      if (dataRow.fecha_nacimiento_original) {
+        // Usar la fecha original de la API si está disponible
+        dataRow.fecha_nacimiento_aux = this.tableLecheExtraidaService.parseDateFromApi(dataRow.fecha_nacimiento_original);
+      } else if (dataRow.edad) {
+        // Fallback: calcular fecha aproximada basada en la edad (solo para nuevos registros)
+        const fechaActual = new Date();
+        const añoNacimiento = fechaActual.getFullYear() - parseInt(dataRow.edad.toString());
+        // Usar 1 de julio como fecha por defecto (mediados del año)
+        dataRow.fecha_nacimiento_aux = new Date(añoNacimiento, 6, 1, 12, 0, 0, 0);
+      }
     }
   }
 
@@ -349,18 +356,21 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
     filteredRow.consejeria = value;
   }
 
+  // ✅ MEJORADO: Cálculo de edad más preciso
   private ageCalculate(birthDate: Date): number {
+    if (!birthDate) return 0;
+
     const fechaNacimiento = new Date(birthDate);
     const fechaActual = new Date();
-    const offsetColombia = -5 * 60;
-    const offsetLocal = fechaActual.getTimezoneOffset();
-    const diffMinutos = offsetLocal - offsetColombia;
-    const fechaActualColombia = new Date(fechaActual.getTime() + (diffMinutos * 60000));
 
-    let edad = fechaActualColombia.getFullYear() - fechaNacimiento.getFullYear();
-    const mes = fechaActualColombia.getMonth() - fechaNacimiento.getMonth();
+    // Normalizar las fechas a mediodía para evitar problemas de zona horaria
+    fechaNacimiento.setHours(12, 0, 0, 0);
+    fechaActual.setHours(12, 0, 0, 0);
 
-    if (mes < 0 || (mes === 0 && fechaActualColombia.getDate() < fechaNacimiento.getDate())) {
+    let edad = fechaActual.getFullYear() - fechaNacimiento.getFullYear();
+    const mes = fechaActual.getMonth() - fechaNacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && fechaActual.getDate() < fechaNacimiento.getDate())) {
       edad--;
     }
 
@@ -387,19 +397,20 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
     return `${day}/${month}/${year}`;
   }
 
+  // ✅ MEJORADO: Método para parsear fecha para calendario
   private parsearFechaParaCalendario(fechaString: string | Date): Date | null {
     if (!fechaString || fechaString === 'Sin fecha') return null;
     if (fechaString instanceof Date) return fechaString;
     if (typeof fechaString !== 'string') return null;
 
     if (fechaString.includes('/')) {
-      const [day, month, year] = fechaString.split('/');
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0, 0);
+      const [day, month, year] = fechaString.split('/').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0, 0); // mediodía para evitar problemas de zona horaria
     }
 
     if (fechaString.includes('-')) {
-      const [year, month, day] = fechaString.split('-');
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0, 0);
+      const [year, month, day] = fechaString.split('-').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0, 0); // mediodía para evitar problemas de zona horaria
     }
 
     return null;

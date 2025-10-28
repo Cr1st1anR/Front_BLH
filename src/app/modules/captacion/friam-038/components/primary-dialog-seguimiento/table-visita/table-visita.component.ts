@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
-import { PrimaryDialogSeguimientoService } from '../services/primary-dialog-seguimiento.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { Table } from 'primeng/table';
+import { PrimaryDialogSeguimientoService } from '../services/primary-dialog-seguimiento.service';
+import { VisitaTabla } from '../../interfaces/visita-seguimiento.interface';
 
 @Component({
   selector: 'table-visita-seguimiento',
@@ -26,10 +27,10 @@ import { Table } from 'primeng/table';
   ],
   templateUrl: './table-visita.component.html',
   styleUrl: './table-visita.component.scss',
-  providers: [PrimaryDialogSeguimientoService, MessageService],
+  providers: [MessageService],
 })
-export class TableVisitaComponent implements OnInit {
-  @Input() idSeguimiento: number | null = null;
+export class TableVisitaComponent implements OnInit, OnChanges {
+  @Input() codigoDonante: string | null = null;
   @Output() eyeClicked = new EventEmitter<any>();
 
   @ViewChild('tableVisitas') table!: Table;
@@ -38,185 +39,106 @@ export class TableVisitaComponent implements OnInit {
   editingRow: any = null;
   hasNewRowInEditing: boolean = false;
   clonedVisitas: { [s: string]: any } = {};
+  dataTableVisita: VisitaTabla[] = [];
 
-  headersTableVisita: any[] = [
-    {
-      header: 'No. visita',
-      field: 'no_visita',
-      width: '100px',
-      tipo: 'number',
-    },
-    {
-      header: 'FECHA DE VISITA',
-      field: 'fecha_visita',
-      width: '200px',
-      tipo: 'date',
-    },
-    {
-      header: 'VISTA RAPIDA',
-      field: 'vista_rapida',
-      width: '50px',
-    },
-    {
-      header: 'ACCIONES',
-      field: 'acciones',
-      width: '120px',
-    },
+  private isInitialLoad: boolean = true;
+
+  readonly headersTableVisita = [
+    { header: 'No. visita', field: 'no_visita', width: '100px', tipo: 'number' },
+    { header: 'FECHA DE VISITA', field: 'fecha_visita', width: '200px', tipo: 'date' },
+    { header: 'VISTA RAPIDA', field: 'vista_rapida', width: '50px' },
+    { header: 'ACCIONES', field: 'acciones', width: '120px' },
   ];
 
-  dataTableVisita: any[] = [];
-
   constructor(
-    private _primaryDialogSeguimientoService: PrimaryDialogSeguimientoService,
-    private messageService: MessageService,
-    private router: Router
-  ) {}
+    private readonly primaryDialogSeguimientoService: PrimaryDialogSeguimientoService,
+    private readonly messageService: MessageService,
+    private readonly router: Router
+  ) { }
 
   ngOnInit(): void {
-    this.loadDataTableVisita();
+    if (this.codigoDonante) {
+      this.loadDataTableVisita();
+      this.isInitialLoad = false;
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['codigoDonante']?.currentValue && !this.isInitialLoad) {
+      this.loadDataTableVisita();
+    } else if (changes['codigoDonante']?.currentValue && this.isInitialLoad) {
+      this.loadDataTableVisita();
+      this.isInitialLoad = false;
+    }
   }
 
   loadDataTableVisita(): void {
+    if (!this.codigoDonante) return;
+
+    if (this.loading) return;
+
     this.loading = true;
 
-    setTimeout(() => {
-      try {
-        this.dataTableVisita =
-          this._primaryDialogSeguimientoService.getTableVistaData(
-            this.idSeguimiento || undefined
-          );
-
-        if (this.dataTableVisita && this.dataTableVisita.length > 0) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos cargados correctamente',
-            key: 'tr',
-            life: 2000,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos para mostrar',
-            key: 'tr',
-            life: 2000,
-          });
+    this.primaryDialogSeguimientoService.getTableVistaData(this.codigoDonante)
+      .subscribe({
+        next: (visitas: VisitaTabla[]) => {
+          this.dataTableVisita = visitas;
+          this.mostrarMensajeCarga(visitas);
+          this.loading = false;
+        },
+        error: (error) => {
+          this.manejarErrorCarga(error);
+          this.loading = false;
         }
-      } catch (error) {
-        this.messageService.add({
-          severity: 'danger',
-          summary: 'Error',
-          detail: 'Hubo un error al cargar los datos',
-          key: 'tr',
-          life: 3000,
-        });
-        console.error('Error al cargar datos:', error);
-      } finally {
-        this.loading = false;
-      }
-    }, 1200);
+      });
   }
 
-  crearNuevaVisita() {
-    if (this.hasNewRowInEditing || this.editingRow) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la edición actual antes de crear una nueva visita',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
+  crearNuevaVisita(): void {
+    if (!this.validarCreacionVisita()) return;
 
-    // Calcular el siguiente número de visita
-    const maxNoVisita = this.dataTableVisita.length > 0
-      ? Math.max(...this.dataTableVisita.map(v => v.no_visita || 0))
-      : 0;
-
-    const nuevaVisita = {
-      id_visita: null,
-      no_visita: maxNoVisita + 1,
-      fecha_visita: null,
-      id_seguimiento: this.idSeguimiento,
-      isNew: true // Marcador para identificar registros nuevos
+    const nuevaVisita: VisitaTabla = {
+      id_visita: 0,
+      no_visita: this.dataTableVisita.length + 1,
+      fecha_visita: '',
+      isNew: true
     };
 
-    // Añadir al final de la tabla (push en lugar de unshift)
     this.dataTableVisita.push(nuevaVisita);
     this.dataTableVisita = [...this.dataTableVisita];
     this.hasNewRowInEditing = true;
     this.editingRow = nuevaVisita;
 
-    setTimeout(() => {
-      this.table.initRowEdit(nuevaVisita);
-    }, 100);
+    setTimeout(() => this.table.initRowEdit(nuevaVisita), 100);
   }
 
+
+  onRowEditSave(rowData: any, index: number, event: MouseEvent): void {
+    if (!rowData.fecha_visita) {
+      this.mostrarError('La fecha de visita es obligatoria');
+      return;
+    }
+
+    const { fechaParaAPI, fechaParaMostrar } = this.procesarFecha(rowData.fecha_visita);
+    rowData.fecha_visita = fechaParaMostrar;
+
+    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+
+    if (rowData.isNew) {
+      this.guardarNuevaVisita(fechaParaAPI);
+    } else {
+      this.actualizarVisitaExistente(rowData, fechaParaAPI, rowElement);
+    }
+  }
+
+
   onRowEditInit(rowData: any): void {
-    if (this.hasNewRowInEditing || this.editingRow) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la edición actual antes de editar otra fila.',
-        key: 'tr',
-        life: 3000,
-      });
+    if (this.isAnyRowEditing()) {
+      this.mostrarAdvertencia('Debe guardar o cancelar la edición actual antes de editar otra fila.');
       return;
     }
 
     this.editingRow = { ...rowData };
     this.clonedVisitas[rowData.id_visita as string] = { ...rowData };
-  }
-
-  onRowEditSave(rowData: any, index: number, event: MouseEvent) {
-    if (!rowData.fecha_visita) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'La fecha de visita es obligatoria',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
-
-    // Formatear la fecha
-    if (rowData.fecha_visita instanceof Date) {
-      const day = rowData.fecha_visita.getDate().toString().padStart(2, '0');
-      const month = (rowData.fecha_visita.getMonth() + 1).toString().padStart(2, '0');
-      const year = rowData.fecha_visita.getFullYear();
-      rowData.fecha_visita = `${day}/${month}/${year}`;
-    }
-
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
-
-    if (rowData.isNew) {
-      // Lógica para guardar nueva visita
-      console.log('Guardando nueva visita:', rowData);
-      delete rowData.isNew;
-      rowData.id_visita = Date.now(); // Simulamos un ID generado
-      this.hasNewRowInEditing = false;
-    } else {
-      // Lógica para actualizar visita existente
-      console.log('Actualizando visita:', rowData);
-      delete this.clonedVisitas[rowData.id_visita as string];
-    }
-
-    // Cerrar el modo de edición y limpiar variables
-    this.editingRow = null;
-
-    // Importante: cerrar el modo de edición en la tabla
-    this.table.saveRowEdit(rowData, rowElement);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: 'Visita guardada correctamente',
-      key: 'tr',
-      life: 2000,
-    });
   }
 
   onRowEditCancel(rowData: any, index: number): void {
@@ -231,39 +153,144 @@ export class TableVisitaComponent implements OnInit {
     this.editingRow = null;
   }
 
-  onRowClick(row: any) {
-    if (this.editingRow || this.hasNewRowInEditing) return; // No permitir navegación si hay una fila en edición
 
-    console.log('Fila seleccionada:', row);
+  onRowClick(row: any): void {
+    if (this.isAnyRowEditing()) return;
     this.router.navigate(['/blh/captacion/visitas-domiciliarias-seguimiento'], {
       queryParams: { noVisita: row.no_visita },
     });
   }
 
-  onEyeClick(row: any, event: Event) {
+  onEyeClick(row: any, event: Event): void {
     event.stopPropagation();
-    console.log('Icono ojo clickeado para:', row);
     this.eyeClicked.emit(row);
   }
 
+
   isEditing(rowData: any): boolean {
     return this.editingRow &&
-           ((this.editingRow.id_visita === rowData.id_visita) ||
-            (this.editingRow.isNew && rowData.isNew));
+      ((this.editingRow.id_visita === rowData.id_visita) ||
+        (this.editingRow.isNew && rowData.isNew));
   }
 
-  // Método para verificar si hay alguna fila en edición
   isAnyRowEditing(): boolean {
     return this.editingRow !== null || this.hasNewRowInEditing;
   }
 
-  // Método para verificar si un botón específico debe estar deshabilitado
   isEditButtonDisabled(rowData: any): boolean {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // Método para verificar si el botón de ojo debe estar deshabilitado
   isEyeButtonDisabled(rowData: any): boolean {
     return this.isAnyRowEditing();
+  }
+
+
+  private validarCreacionVisita(): boolean {
+    if (this.isAnyRowEditing()) {
+      this.mostrarAdvertencia('Debe guardar o cancelar la edición actual antes de crear una nueva visita');
+      return false;
+    }
+
+    if (!this.codigoDonante) {
+      this.mostrarError('No se puede crear visita sin código de donante');
+      return false;
+    }
+
+    return true;
+  }
+
+  private procesarFecha(fecha: any): { fechaParaAPI: string; fechaParaMostrar: string } {
+    if (fecha instanceof Date) {
+      const year = fecha.getFullYear();
+      const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const day = fecha.getDate().toString().padStart(2, '0');
+
+      return {
+        fechaParaAPI: `${year}-${month}-${day}`,
+        fechaParaMostrar: `${day}/${month}/${year}`
+      };
+    }
+
+    return {
+      fechaParaAPI: fecha,
+      fechaParaMostrar: this.formatearFechaParaMostrar(fecha)
+    };
+  }
+
+  private formatearFechaParaMostrar(fecha: string): string {
+    if (!fecha) return 'Sin fecha';
+
+    if (fecha.includes('-')) {
+      const [year, month, day] = fecha.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
+    return fecha;
+  }
+
+  private guardarNuevaVisita(fechaParaAPI: string): void {
+    this.primaryDialogSeguimientoService.crearNuevaVisita(this.codigoDonante!, fechaParaAPI)
+      .subscribe({
+        next: (response) => {
+          this.resetearEstadoEdicion();
+          this.loadDataTableVisita();
+          this.mostrarExito('Nueva visita creada correctamente');
+        },
+        error: (error) => {
+          console.error('Error al crear visita:', error);
+          this.mostrarError('Error al crear la visita');
+        }
+      });
+  }
+
+  private actualizarVisitaExistente(rowData: any, fechaParaAPI: string, rowElement: HTMLTableRowElement): void {
+    this.primaryDialogSeguimientoService.actualizarFechaVisita(rowData.id_visita, fechaParaAPI)
+      .subscribe({
+        next: (response) => {
+          delete this.clonedVisitas[rowData.id_visita as string];
+          this.editingRow = null;
+          this.table.saveRowEdit(rowData, rowElement);
+          this.mostrarExito('Fecha de visita actualizada correctamente');
+        },
+        error: (error) => {
+          console.error('Error al actualizar visita:', error);
+          this.mostrarError('Error al actualizar la fecha de visita');
+        }
+      });
+  }
+
+  private resetearEstadoEdicion(): void {
+    this.hasNewRowInEditing = false;
+    this.editingRow = null;
+  }
+
+  private mostrarMensajeCarga(visitas: VisitaTabla[]): void {
+    if (visitas.length > 0) {
+      this.mostrarExito(`${visitas.length} visita${visitas.length > 1 ? 's' : ''} cargada${visitas.length > 1 ? 's' : ''}`);
+    } else {
+      this.mostrarInfo('No hay visitas registradas para esta madre');
+    }
+  }
+
+  private manejarErrorCarga(error: any): void {
+    console.error('Error al cargar visitas:', error);
+    this.mostrarError('Error al cargar las visitas');
+  }
+
+  private mostrarExito(mensaje: string): void {
+    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: mensaje, key: 'tr', life: 2000 });
+  }
+
+  private mostrarError(mensaje: string): void {
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: mensaje, key: 'tr', life: 3000 });
+  }
+
+  private mostrarAdvertencia(mensaje: string): void {
+    this.messageService.add({ severity: 'warn', summary: 'Advertencia', detail: mensaje, key: 'tr', life: 3000 });
+  }
+
+  private mostrarInfo(mensaje: string): void {
+    this.messageService.add({ severity: 'info', summary: 'Información', detail: mensaje, key: 'tr', life: 2000 });
   }
 }

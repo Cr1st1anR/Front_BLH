@@ -5,16 +5,13 @@
 
     <p-toast position="top-right" key="tr" />
 
-    <new-register-visita
-      (nuevaVisita)="onNuevaVisita()"
-      [disabled]="isNewVisitaButtonDisabled()">
+    <new-register-visita (nuevaVisita)="onNuevaVisita()" [disabled]="isNewVisitaButtonDisabled()">
     </new-register-visita>
 
-    <table-visita-seguimiento [idSeguimiento]="idSeguimiento" (eyeClicked)="onEyeClicked($event)" />
+    <table-visita-seguimiento [codigoDonante]="codigoDonante" (eyeClicked)="onEyeClicked($event)" />
 
   </p-dialog>
 </div>
 
-<!-- Secondary Dialog -->
 <secondary-dialog-condiciones [visible]="secondaryDialogVisible" [visitaData]="selectedVisitaData"
   (dialogClosed)="onSecondaryDialogClosed()" />

@@ -1,49 +1,61 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { DatosCompletos } from '../../interfaces/datos-completos.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SecondaryDialogCondicionesService {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
-  getCondicionesSituacion(): any[] {
-    return [
-      {
-        id: 1,
-        descripcion: 'Cuenta con condiciones adecuadas físicas e higiénicas',
-        respuesta: null
-      },
-      {
-        id: 2,
-        descripcion: 'Cumple con normas de bioseguridad',
-        respuesta: null
-      },
-      {
-        id: 3,
-        descripcion: 'Realiza la técnica adecuada de extracción manual de leche',
-        respuesta: null
-      },
-      {
-        id: 4,
-        descripcion: 'Presenta adecuado almacenamiento y rotulación de frascos',
-        respuesta: null
-      },
-      {
-        id: 5,
-        descripcion: 'Presenta dificultad con el almacenamiento',
-        respuesta: null
-      }
-    ];
+  /**
+   * Obtener preguntas del formulario FRIAM-038
+   */
+  getPreguntas(): Observable<any> {
+    return this.http.get(`${environment.ApiBLH}/getPreguntasFriam038`);
   }
 
-  saveCondicionesRespuestas(condiciones: any[]): void {
-    // Aquí implementarías la lógica para guardar las respuestas
-    console.log('Guardando condiciones:', condiciones);
+  /**
+   * Guardar formulario completo (respuestas + datos de visita)
+   */
+  guardarFormularioCompleto(datos: DatosCompletos): Observable<any> {
+    return this.http.post(`${environment.ApiBLH}/guardarRespuestasYDatos`, datos).pipe(
+      map((response: any) => response),
+      catchError(error => {
+        console.error('Error en guardarFormularioCompleto:', error);
+        throw error;
+      })
+    );
   }
 
-  getCondicionesById(visitaId: number): any[] {
-    // Aquí implementarías la lógica para obtener condiciones guardadas por ID de visita
-    return this.getCondicionesSituacion();
+  /**
+   * Obtener detalles completos de una visita específica
+   */
+  getDetallesVisita(idVisita: number): Observable<any> {
+    return this.http.get(`${environment.ApiBLH}/getDetallesVisita/${idVisita}`).pipe(
+      map((response: any) => {
+        if (response?.data) {
+          const visita = response.data;
+          return {
+            datosVisitaSeguimiento: visita.datosVisitaSeguimiento,
+            respuestas: visita.respuestas || [],
+            visitaInfo: {
+              id: visita.id,
+              fecha: visita.fecha,
+              madreDonante: visita.madreDonante
+            }
+          };
+        }
+        return null;
+      }),
+      catchError(error => {
+        console.error('Error en getDetallesVisita:', error);
+        throw error;
+      })
+    );
   }
 }

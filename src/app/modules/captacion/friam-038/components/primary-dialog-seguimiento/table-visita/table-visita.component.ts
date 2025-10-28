@@ -156,8 +156,6 @@ export class TableVisitaComponent implements OnInit, OnChanges {
 
   onRowClick(row: any): void {
     if (this.isAnyRowEditing()) return;
-
-    console.log('Fila seleccionada:', row);
     this.router.navigate(['/blh/captacion/visitas-domiciliarias-seguimiento'], {
       queryParams: { noVisita: row.no_visita },
     });
@@ -165,7 +163,6 @@ export class TableVisitaComponent implements OnInit, OnChanges {
 
   onEyeClick(row: any, event: Event): void {
     event.stopPropagation();
-    console.log('Icono ojo clickeado para:', row);
     this.eyeClicked.emit(row);
   }
 
@@ -236,7 +233,6 @@ export class TableVisitaComponent implements OnInit, OnChanges {
     this.primaryDialogSeguimientoService.crearNuevaVisita(this.codigoDonante!, fechaParaAPI)
       .subscribe({
         next: (response) => {
-          console.log('Visita creada:', response);
           this.resetearEstadoEdicion();
           this.loadDataTableVisita();
           this.mostrarExito('Nueva visita creada correctamente');
@@ -252,7 +248,6 @@ export class TableVisitaComponent implements OnInit, OnChanges {
     this.primaryDialogSeguimientoService.actualizarFechaVisita(rowData.id_visita, fechaParaAPI)
       .subscribe({
         next: (response) => {
-          console.log('Visita actualizada:', response);
           delete this.clonedVisitas[rowData.id_visita as string];
           this.editingRow = null;
           this.table.saveRowEdit(rowData, rowElement);

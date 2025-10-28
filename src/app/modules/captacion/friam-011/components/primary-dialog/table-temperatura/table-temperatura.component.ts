@@ -176,6 +176,9 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         this.globalCajaCounter++;
       });
     }
+    this.globalCajaCounter = data[data.length - 1]?.caja  || 1;
+    this.globalCajaCounter++;
+    
     const unique = this.cajaTables.filter(
       (obj, index, self) =>
         index === self.findIndex(o => o.cajaNumber === obj.cajaNumber)
@@ -259,7 +262,6 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         )
         : null;
     }
-
     const tempHeaders: any[] = [];
     if (temperaturaData.length > 0 && flat) {
       temperaturaData.forEach((temp, index) => {
@@ -321,12 +323,11 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       });
       return;
     }
-
     const newTable = this.createTableForCaja(this.globalCajaCounter, []);
     this.cajaTables.push(newTable);
     this.globalCajaCounter++;
 
-    this.hasNewEmptyCaja = true;
+    this.hasNewEmptyCaja = false;
 
     this.messageService.add({
       severity: 'success',
@@ -339,6 +340,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   isNewCajaButtonDisabled(): boolean {
     return this.isAnyTableEditing || this.hasNewEmptyCaja;
   }
+
   onRowEditInit(dataRow: any, rowIndex: number, tableIndex: number): void {
     const table = this.cajaTables[tableIndex];
     if (table.editingRow === dataRow) {
@@ -352,8 +354,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     table.isAddingTemperature = false;
     this.isAnyTableEditing = true;
   }
-  onRowEditSave(dataRow: any, rowIndex: number, tableIndex: number, event: any): void {
 
+  onRowEditSave(dataRow: any, rowIndex: number, tableIndex: number, event: any): void {
     const table = this.cajaTables[tableIndex];
     const hasBasicData = dataRow.horaSalida || dataRow.temperaturaSalida || dataRow.horaLlegada || dataRow.temperaturaLlegada;
     const hasTemperatureData = table.numeroTemperaturas > 0;
@@ -424,16 +426,6 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       }
     });
 
-    if (keys.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe ingresar un valor para la nueva temperatura o cancelar la operación.',
-        key: 'tr',
-        life: 3000,
-      });
-      return;
-    }
     for (const key in tablaOrigi) {
       const keyAux = key.toString().split("_");
       if (keyAux.length === 3) {
@@ -490,8 +482,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         {
           opt: 0,
           id: null,
-          numeroCasa: keys[keys.length - 1],
-          temperatura: tablaOrigi["temperature_" + keys[keys.length - 1].toString()] || null,
+          numeroCasa: keys[keys.length - 1] != undefined ? keys[keys.length - 1] : 1,
+          temperatura: tablaOrigi["temperature_" + keys[keys.length - 1]?.toString()] || null,
           horaSalida: tablaOrigi["horaSalida"] != null ? typeof tablaOrigi["horaSalida"] != "string" ? tablaOrigi["horaSalida"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaSalida"] : tablaOrigi["horaSalida"],
           horaLlegada: tablaOrigi["horaLlegada"] != null ? typeof tablaOrigi["horaLlegada"] != "string" ? tablaOrigi["horaLlegada"].toTimeString().split(" ")[0].slice(0, 5) : tablaOrigi["horaLlegada"] : tablaOrigi["horaLlegada"],
           caja: tablaOrigi["caja"],

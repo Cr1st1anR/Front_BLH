@@ -17,7 +17,9 @@
   border-left: 3px solid #224186;
 }
 
-/* ================= ESTILOS PARA HEADERS DE EXTRACCIÓN ================= */
+/**
+ * Estilos para headers de extracción (AM/PM)
+ */
 .extraccion-header-main {
   background-color: #224186;
   color: white;
@@ -61,7 +63,9 @@
   }
 }
 
-/* ================= ESTILOS PARA CELDAS DE EXTRACCIÓN ================= */
+/**
+ * Estilos para celdas de extracción
+ */
 .extraccion-cell {
   padding: 12px 8px;
   border: 1px solid #ddd;
@@ -102,7 +106,6 @@
   &.ml-input {
     max-width: 70px;
     min-width: 60px;
-    /* ✅ CORREGIDO: Aumentar solo el tamaño de fuente para inputs de ML */
     font-size: 15px !important;
   }
 
@@ -119,35 +122,33 @@
 }
 
 .extraccion-display {
-  font-size: 15px !important; /* ✅ AUMENTADO: Tamaño base para todas las horas (AM/PM) */
+  font-size: 15px !important;
   color: #333;
   text-align: center;
   display: block;
   width: 100%;
   word-break: break-word;
 
-  /* ✅ CORREGIDO: Solo aumentar tamaño, sin color ni font-weight */
   &.numero-ml {
-    font-size: 16px !important; /* ✅ AUMENTADO: Números ML ligeramente más grandes */
-    color: #333; /* ✅ MANTENER: Color normal, sin azul */
+    font-size: 16px !important;
+    color: #333;
   }
 }
 
-/* ================= ESTILOS PRINCIPALES DE LA TABLA ================= */
+/**
+ * Estilos principales de la tabla de extracciones
+ */
 :host ::ng-deep {
   .p-table {
     width: 100%;
     min-width: 120rem;
 
-    /* Contenedor de scroll */
     .p-table-scrollable-wrapper {
       border: 1px solid #e5e7eb;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       height: 500px;
     }
-
-    /* Scrollbars personalizados */
     .p-table-scrollable-body {
       max-height: calc(500px - 60px);
       overflow-y: auto;
@@ -177,7 +178,6 @@
       }
     }
 
-    /* ================= HEADERS DE LA TABLA ================= */
     .p-table-thead > tr > th {
       background-color: #224186;
       color: white;
@@ -191,8 +191,6 @@
       top: 0;
       z-index: 10;
     }
-
-    /* ================= CELDAS DE LA TABLA ================= */
     .p-table-tbody > tr > td {
       padding: 12px 10px;
       border: 1px solid #e5e7eb;
@@ -210,7 +208,9 @@
     }
   }
 
-  /* ================= ESTILOS PARA BOTONES ================= */
+  /**
+   * Estilos para botones de acción
+   */
   .p-button.p-button-text.p-button-secondary {
     color: #6c757d;
 
@@ -243,8 +243,6 @@
       color: #bd2130;
     }
   }
-
-  /* ================= ESTILOS PARA INPUTS ================= */
   .p-inputtext {
     &:focus {
       border-color: #224186 !important;
@@ -252,7 +250,9 @@
     }
   }
 
-  /* ================= ESTILOS PARA CALENDARIO ================= */
+  /**
+   * Estilos para calendario y selector de tiempo
+   */
   .p-datepicker {
     width: 100% !important;
 
@@ -265,7 +265,7 @@
       .p-datepicker-input {
         text-align: center;
         font-family: "Courier New", monospace;
-        font-size: 14px !important; /* ✅ AUMENTADO: Input del selector de hora */
+        font-size: 14px !important;
         max-width: 110px;
         min-width: 90px;
       }
@@ -281,7 +281,9 @@
   }
 }
 
-/* ================= RESPONSIVE DESIGN ================= */
+/**
+ * Responsive design para diferentes tamaños de pantalla
+ */
 @media (max-width: 1400px) {
   .container-table {
     margin: 15px 0;
@@ -309,7 +311,6 @@
     }
   }
 
-  /* ✅ RESPONSIVE: Ajustar tamaños para pantallas más pequeñas */
   .extraccion-display {
     font-size: 14px !important;
 

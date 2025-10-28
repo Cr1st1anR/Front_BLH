@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+
 import { ApiResponse } from '../../interfaces/api-response.interface';
 import { ExtraccionRequest } from '../../interfaces/extraccion-request.interface';
 import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
@@ -11,110 +12,146 @@ import { environment } from 'src/environments/environments';
   providedIn: 'root'
 })
 export class DialogExtraccionesService {
-  // Subject para manejar actualizaciones de datos
-  private dataUpdated = new BehaviorSubject<boolean>(false);
-  public dataUpdated$ = this.dataUpdated.asObservable();
 
-  constructor(private http: HttpClient) { }
+  private readonly dataUpdated = new BehaviorSubject<boolean>(false);
+  public readonly dataUpdated$ = this.dataUpdated.asObservable();
 
-  // ✅ CORREGIDO: URL completa correcta
+  constructor(private readonly http: HttpClient) { }
+
   getExtracciones(idExtraccion: number): Observable<ExtraccionTable[]> {
     return this.http.get<ApiResponse<any[]>>(
       `${environment.ApiBLH}/getFrascosRecolectadosBySalaExtraccion/${idExtraccion}`,
-      { observe: 'response' } // ✅ Observar la respuesta completa
+      { observe: 'response' }
     ).pipe(
-      map(response => {
-        // ✅ Verificar el status de la respuesta
-        if (response.status === 204 || !response.body || !response.body.data) {
-          return []; // No hay datos, devolver array vacío
-        }
-
-        if (response.body.data.length === 0) {
-          return [];
-        }
-
-        const extracciones = response.body.data;
-        return this.transformApiDataToTableFormat(extracciones);
-      }),
-      catchError((error: HttpErrorResponse) => {
-        // ✅ Manejar errores HTTP
-        if (error.status === 204) {
-          return of([]); // Devolver array vacío para 204
-        }
-        // Para otros errores, reenviar el error
-        throw error;
-      })
+      map(response => this.processExtraccionesResponse(response)),
+      catchError((error: HttpErrorResponse) => this.handleExtraccionesError(error))
     );
   }
 
-  // ✅ CORREGIDO: Transformar datos de la API al formato de la tabla
+  /**
+   * Procesa la respuesta de extracciones del servidor
+   */
+  private processExtraccionesResponse(response: any): ExtraccionTable[] {
+    if (response.status === 204 || !response.body?.data || response.body.data.length === 0) {
+      return [];
+    }
+    return this.transformApiDataToTableFormat(response.body.data);
+  }
+
+  /**
+   * Maneja errores específicos al obtener extracciones
+   */
+  private handleExtraccionesError(error: HttpErrorResponse): Observable<ExtraccionTable[]> {
+    if (error.status === 204) {
+      return of([]);
+    }
+    throw error;
+  }
+
+  /**
+   * Transforma los datos de la API al formato requerido por la tabla
+   */
   private transformApiDataToTableFormat(apiData: any[]): ExtraccionTable[] {
-    // Agrupar extracciones por fecha
     const extraccionesPorFecha = new Map<string, ExtraccionTable>();
 
     apiData.forEach(extraccion => {
-      const fecha = extraccion.fechaExtraccion;
-      const hora = extraccion.hora;
-
-      // Determinar si es AM o PM basado en la hora (antes de 12:00 es AM)
-      const [horas] = hora.split(':').map(Number);
-      const esAM = horas < 12;
-
-      let extraccionTabla = extraccionesPorFecha.get(fecha);
-
-      if (!extraccionTabla) {
-        // Crear nueva fila de extracción
-        extraccionTabla = {
-          id_registro_extraccion: extraccion.id,
-          fecha: fecha,
-          fecha_display: this.formatDateForDisplay(fecha),
-          extraccion_1: { am: null, ml: null },
-          extraccion_2: { pm: null, ml: null },
-          motivo_consulta: extraccion.motivoConsulta || '',
-          observaciones: extraccion.observaciones || ''
-        };
-        extraccionesPorFecha.set(fecha, extraccionTabla);
-      }
-
-      // Asignar a AM o PM según la hora
-      if (esAM) {
-        extraccionTabla.extraccion_1.am = hora;
-        extraccionTabla.extraccion_1.ml = extraccion.cantidad;
-      } else {
-        extraccionTabla.extraccion_2.pm = hora;
-        extraccionTabla.extraccion_2.ml = extraccion.cantidad;
-      }
-
-      // Actualizar motivo y observaciones si están disponibles
-      if (extraccion.motivoConsulta) {
-        extraccionTabla.motivo_consulta = extraccion.motivoConsulta;
-      }
-      if (extraccion.observaciones) {
-        extraccionTabla.observaciones = extraccion.observaciones;
-      }
+      this.processExtraccionItem(extraccion, extraccionesPorFecha);
     });
 
-    // ✅ CORREGIDO: Ordenar por fecha (más antigua primero)
+    return this.sortExtraccionesByDate(extraccionesPorFecha);
+  }
+
+  /**
+   * Procesa un item individual de extracción de la API
+   */
+  private processExtraccionItem(extraccion: any, extraccionesPorFecha: Map<string, ExtraccionTable>): void {
+    const fecha = extraccion.fechaExtraccion;
+    const hora = extraccion.hora;
+    const esAM = this.isAMTime(hora);
+
+    let extraccionTabla = extraccionesPorFecha.get(fecha);
+
+    if (!extraccionTabla) {
+      extraccionTabla = this.createNewExtraccionRow(extraccion, fecha);
+      extraccionesPorFecha.set(fecha, extraccionTabla);
+    }
+
+    this.assignExtraccionData(extraccionTabla, extraccion, esAM);
+    this.updateExtraccionMetadata(extraccionTabla, extraccion);
+  }
+
+  /**
+   * Determina si una hora corresponde al período AM
+   */
+  private isAMTime(hora: string): boolean {
+    const [horas] = hora.split(':').map(Number);
+    return horas < 12;
+  }
+
+  /**
+   * Crea una nueva fila de extracción
+   */
+  private createNewExtraccionRow(extraccion: any, fecha: string): ExtraccionTable {
+    return {
+      id_registro_extraccion: extraccion.id,
+      fecha,
+      fecha_display: this.formatDateForDisplay(fecha),
+      extraccion_1: { am: null, ml: null },
+      extraccion_2: { pm: null, ml: null },
+      motivo_consulta: extraccion.motivoConsulta || '',
+      observaciones: extraccion.observaciones || ''
+    };
+  }
+
+  /**
+   * Asigna los datos de extracción a AM o PM según corresponda
+   */
+  private assignExtraccionData(extraccionTabla: ExtraccionTable, extraccion: any, esAM: boolean): void {
+    if (esAM) {
+      extraccionTabla.extraccion_1.am = extraccion.hora;
+      extraccionTabla.extraccion_1.ml = extraccion.cantidad;
+    } else {
+      extraccionTabla.extraccion_2.pm = extraccion.hora;
+      extraccionTabla.extraccion_2.ml = extraccion.cantidad;
+    }
+  }
+
+  /**
+   * Actualiza metadatos de la extracción si están disponibles
+   */
+  private updateExtraccionMetadata(extraccionTabla: ExtraccionTable, extraccion: any): void {
+    if (extraccion.motivoConsulta) {
+      extraccionTabla.motivo_consulta = extraccion.motivoConsulta;
+    }
+    if (extraccion.observaciones) {
+      extraccionTabla.observaciones = extraccion.observaciones;
+    }
+  }
+
+  /**
+   * Ordena las extracciones por fecha (más antigua primero)
+   */
+  private sortExtraccionesByDate(extraccionesPorFecha: Map<string, ExtraccionTable>): ExtraccionTable[] {
     return Array.from(extraccionesPorFecha.values())
       .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
   }
 
-  // ✅ CORREGIDO: Método para formatear fecha sin problemas de zona horaria
+  /**
+   * Formatea una fecha para mostrar en la tabla evitando problemas de zona horaria
+   */
   private formatDateForDisplay(fechaString: string): string {
     if (!fechaString) return 'Sin fecha';
 
-    // ✅ Parsear la fecha como local, no como UTC
     const [year, month, day] = fechaString.split('-').map(Number);
-    const fecha = new Date(year, month - 1, day); // mes - 1 porque Date usa 0-based months
+    const fecha = new Date(year, month - 1, day);
 
-    const dayFormatted = fecha.getDate().toString().padStart(2, '0');
-    const monthFormatted = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const yearFormatted = fecha.getFullYear();
-
-    return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
+    return [
+      fecha.getDate().toString().padStart(2, '0'),
+      (fecha.getMonth() + 1).toString().padStart(2, '0'),
+      fecha.getFullYear()
+    ].join('/');
   }
 
-  // Método para crear una nueva extracción
   createExtraccion(extraccionData: ExtraccionRequest): Observable<any> {
     return this.http.post<ApiResponse<any>>(`${environment.ApiBLH}/postFrascosExtraccion`, extraccionData)
       .pipe(
@@ -125,9 +162,12 @@ export class DialogExtraccionesService {
       );
   }
 
-  // Método para crear múltiples extracciones (AM y PM)
+  /**
+   * Crea múltiples extracciones (AM y PM) en el servidor
+   */
   createMultipleExtracciones(extracciones: ExtraccionRequest[]): Observable<any[]> {
     const requests = extracciones.map(extraccion => this.createExtraccion(extraccion));
+
     return new Observable(observer => {
       Promise.all(requests.map(req => req.toPromise()))
         .then(results => {
@@ -140,7 +180,9 @@ export class DialogExtraccionesService {
     });
   }
 
-  // Método temporal para crear extracción (estructura inicial)
+  /**
+   * Crea una estructura temporal de extracción para edición
+   */
   crearExtraccion(idExtraccion: number, fecha: string | null): Promise<ExtraccionTable> {
     const nuevaExtraccion: ExtraccionTable = {
       id_registro_extraccion: Date.now(),
@@ -158,7 +200,9 @@ export class DialogExtraccionesService {
     });
   }
 
-  // Método para preparar datos de extracción para la API
+  /**
+   * Prepara los datos de extracción para enviar a la API
+   */
   prepareExtraccionData(
     rowData: ExtraccionTable,
     idLecheSalaExtraccion: number,
@@ -170,8 +214,8 @@ export class DialogExtraccionesService {
     const hora = isAM ? rowData.extraccion_1.am! : rowData.extraccion_2.pm!;
 
     return {
-      cantidad: cantidad,
-      hora: hora,
+      cantidad,
+      hora,
       gaveta: 1,
       fechaExtraccion: rowData.fecha,
       congelador: { id: 1 },
@@ -181,69 +225,56 @@ export class DialogExtraccionesService {
     };
   }
 
-  // ✅ NUEVO: Método para detectar si es una "extracción faltante" vs "actualización real"
+  /**
+   * Detecta si es una extracción faltante o actualización real
+   */
   public isExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable): boolean {
-    const originalTieneAM = datosOriginales.extraccion_1?.am && datosOriginales.extraccion_1?.ml;
-    const originalTienePM = datosOriginales.extraccion_2?.pm && datosOriginales.extraccion_2?.ml;
+    const originalState = this.getExtraccionState(datosOriginales);
+    const currentState = this.getExtraccionState(rowData);
 
-    const actualTieneAM = rowData.extraccion_1?.am && rowData.extraccion_1?.ml;
-    const actualTienePM = rowData.extraccion_2?.pm && rowData.extraccion_2?.ml;
-
-    // Caso 1: Originalmente solo tenía AM, ahora tiene AM + PM (se agregó PM)
-    if (originalTieneAM && !originalTienePM && actualTieneAM && actualTienePM) {
-      return true;
-    }
-
-    // Caso 2: Originalmente solo tenía PM, ahora tiene AM + PM (se agregó AM)
-    if (!originalTieneAM && originalTienePM && actualTieneAM && actualTienePM) {
-      return true;
-    }
-
-    // Caso 3: Originalmente no tenía AM, ahora solo tiene AM (se agregó AM)
-    if (!originalTieneAM && actualTieneAM && !actualTienePM) {
-      return true;
-    }
-
-    // Caso 4: Originalmente no tenía PM, ahora solo tiene PM (se agregó PM)
-    if (!originalTienePM && actualTienePM && !actualTieneAM) {
-      return true;
-    }
-
-    return false;
+    return this.isNewExtraccionAdded(originalState, currentState);
   }
 
-  // ✅ NUEVO: Método para determinar qué extracción es la nueva (faltante)
+  /**
+   * Obtiene el estado de las extracciones (qué tiene AM/PM)
+   */
+  private getExtraccionState(data: ExtraccionTable): { hasAM: boolean; hasPM: boolean } {
+    return {
+      hasAM: !!(data.extraccion_1?.am && data.extraccion_1?.ml),
+      hasPM: !!(data.extraccion_2?.pm && data.extraccion_2?.ml)
+    };
+  }
+
+  /**
+   * Determina si se agregó una nueva extracción comparando estados
+   */
+  private isNewExtraccionAdded(original: { hasAM: boolean; hasPM: boolean }, current: { hasAM: boolean; hasPM: boolean }): boolean {
+    return (!original.hasAM && current.hasAM) || (!original.hasPM && current.hasPM);
+  }
+
+  /**
+   * Determina qué tipo de extracción es la nueva (faltante)
+   */
   private determinarExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable): 'AM' | 'PM' | null {
-    const originalTieneAM = datosOriginales.extraccion_1?.am && datosOriginales.extraccion_1?.ml;
-    const originalTienePM = datosOriginales.extraccion_2?.pm && datosOriginales.extraccion_2?.ml;
+    const originalState = this.getExtraccionState(datosOriginales);
+    const currentState = this.getExtraccionState(rowData);
 
-    const actualTieneAM = rowData.extraccion_1?.am && rowData.extraccion_1?.ml;
-    const actualTienePM = rowData.extraccion_2?.pm && rowData.extraccion_2?.ml;
-
-    // Si originalmente solo tenía AM y ahora tiene ambas, la faltante es PM
-    if (originalTieneAM && !originalTienePM && actualTieneAM && actualTienePM) {
-      return 'PM';
-    }
-
-    // Si originalmente solo tenía PM y ahora tiene ambas, la faltante es AM
-    if (!originalTieneAM && originalTienePM && actualTieneAM && actualTienePM) {
+    // Si no tenía AM y ahora lo tiene
+    if (!originalState.hasAM && currentState.hasAM) {
       return 'AM';
     }
 
-    // Si originalmente no tenía AM y ahora lo tiene
-    if (!originalTieneAM && actualTieneAM) {
-      return 'AM';
-    }
-
-    // Si originalmente no tenía PM y ahora lo tiene
-    if (!originalTienePM && actualTienePM) {
+    // Si no tenía PM y ahora lo tiene
+    if (!originalState.hasPM && currentState.hasPM) {
       return 'PM';
     }
 
     return null;
   }
 
-  // ✅ CORREGIDO: Método para manejar extracción faltante específicamente
+  /**
+   * Guarda una extracción faltante específica
+   */
   guardarExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable, idLecheSalaExtraccion: number): Observable<any> {
     const tipoFaltante = this.determinarExtraccionFaltante(rowData, datosOriginales);
 
@@ -251,51 +282,63 @@ export class DialogExtraccionesService {
       throw new Error('No se pudo determinar el tipo de extracción faltante');
     }
 
-    // ✅ AHORA tipoFaltante solo puede ser 'AM' | 'PM', nunca 'AMBAS'
     const extraccionFaltante = this.prepareExtraccionData(rowData, idLecheSalaExtraccion, tipoFaltante);
-
     return this.createExtraccion(extraccionFaltante);
   }
 
-  // ✅ MODIFICADO: Método principal para manejar el guardado inteligente
+  /**
+   * Método principal para manejar el guardado inteligente de extracciones
+   */
   guardarExtracciones(rowData: ExtraccionTable, idLecheSalaExtraccion: number, datosOriginales?: ExtraccionTable): Observable<any> {
-    // Si hay datos originales y es una extracción faltante
     if (datosOriginales && this.isExtraccionFaltante(rowData, datosOriginales)) {
       return this.guardarExtraccionFaltante(rowData, datosOriginales, idLecheSalaExtraccion);
     }
 
-    // Caso normal: nueva fila completa con 1 o 2 extracciones
-    const extracciones: ExtraccionRequest[] = [];
+    return this.guardarExtraccionesNormales(rowData, idLecheSalaExtraccion);
+  }
 
-    // Verificar si hay datos para extracción AM (extraccion_1)
-    if (rowData.extraccion_1.am && rowData.extraccion_1.ml) {
-      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'AM'));
-    }
-
-    // Verificar si hay datos para extracción PM (extraccion_2)
-    if (rowData.extraccion_2.pm && rowData.extraccion_2.ml) {
-      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'PM'));
-    }
+  /**
+   * Guarda extracciones normales (nueva fila completa)
+   */
+  private guardarExtraccionesNormales(rowData: ExtraccionTable, idLecheSalaExtraccion: number): Observable<any> {
+    const extracciones = this.prepararExtraccionesParaGuardar(rowData, idLecheSalaExtraccion);
 
     if (extracciones.length === 0) {
       throw new Error('No hay extracciones válidas para guardar');
     }
 
-    // Si solo hay una extracción, usar el método simple
-    if (extracciones.length === 1) {
-      return this.createExtraccion(extracciones[0]);
-    }
-
-    // Si hay dos extracciones, usar el método múltiple
-    return this.createMultipleExtracciones(extracciones);
+    return extracciones.length === 1
+      ? this.createExtraccion(extracciones[0])
+      : this.createMultipleExtracciones(extracciones);
   }
 
-  // Método para notificar actualizaciones de datos
+  /**
+   * Prepara las extracciones válidas para guardar
+   */
+  private prepararExtraccionesParaGuardar(rowData: ExtraccionTable, idLecheSalaExtraccion: number): ExtraccionRequest[] {
+    const extracciones: ExtraccionRequest[] = [];
+
+    if (rowData.extraccion_1.am && rowData.extraccion_1.ml) {
+      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'AM'));
+    }
+
+    if (rowData.extraccion_2.pm && rowData.extraccion_2.ml) {
+      extracciones.push(this.prepareExtraccionData(rowData, idLecheSalaExtraccion, 'PM'));
+    }
+
+    return extracciones;
+  }
+
+  /**
+   * Notifica que los datos han sido actualizados
+   */
   private notifyDataUpdate(): void {
     this.dataUpdated.next(true);
   }
 
-  // Método para resetear el estado de actualización
+  /**
+   * Reinicia el estado de actualización de datos
+   */
   resetUpdateStatus(): void {
     this.dataUpdated.next(false);
   }

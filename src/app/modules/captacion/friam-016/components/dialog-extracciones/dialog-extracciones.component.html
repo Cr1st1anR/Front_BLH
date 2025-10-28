@@ -15,7 +15,7 @@
 
       <new-register-extraccion (nuevaExtraccion)="onNuevaExtraccion()" [disabled]="isNewExtraccionButtonDisabled()" />
 
-      <table-extraccion [idExtraccion]="rowData?.id_extraccion" />
+      <table-extraccion [idExtraccion]="rowData?.id_extraccion ?? null" />
 
     </div>
 

@@ -181,8 +181,90 @@ export class DialogExtraccionesService {
     };
   }
 
-  // Método para guardar extracciones (maneja 1 o 2 extracciones)
-  guardarExtracciones(rowData: ExtraccionTable, idLecheSalaExtraccion: number): Observable<any> {
+  // ✅ NUEVO: Método para detectar si es una "extracción faltante" vs "actualización real"
+  public isExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable): boolean {
+    const originalTieneAM = datosOriginales.extraccion_1?.am && datosOriginales.extraccion_1?.ml;
+    const originalTienePM = datosOriginales.extraccion_2?.pm && datosOriginales.extraccion_2?.ml;
+
+    const actualTieneAM = rowData.extraccion_1?.am && rowData.extraccion_1?.ml;
+    const actualTienePM = rowData.extraccion_2?.pm && rowData.extraccion_2?.ml;
+
+    // Caso 1: Originalmente solo tenía AM, ahora tiene AM + PM (se agregó PM)
+    if (originalTieneAM && !originalTienePM && actualTieneAM && actualTienePM) {
+      return true;
+    }
+
+    // Caso 2: Originalmente solo tenía PM, ahora tiene AM + PM (se agregó AM)
+    if (!originalTieneAM && originalTienePM && actualTieneAM && actualTienePM) {
+      return true;
+    }
+
+    // Caso 3: Originalmente no tenía AM, ahora solo tiene AM (se agregó AM)
+    if (!originalTieneAM && actualTieneAM && !actualTienePM) {
+      return true;
+    }
+
+    // Caso 4: Originalmente no tenía PM, ahora solo tiene PM (se agregó PM)
+    if (!originalTienePM && actualTienePM && !actualTieneAM) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // ✅ NUEVO: Método para determinar qué extracción es la nueva (faltante)
+  private determinarExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable): 'AM' | 'PM' | null {
+    const originalTieneAM = datosOriginales.extraccion_1?.am && datosOriginales.extraccion_1?.ml;
+    const originalTienePM = datosOriginales.extraccion_2?.pm && datosOriginales.extraccion_2?.ml;
+
+    const actualTieneAM = rowData.extraccion_1?.am && rowData.extraccion_1?.ml;
+    const actualTienePM = rowData.extraccion_2?.pm && rowData.extraccion_2?.ml;
+
+    // Si originalmente solo tenía AM y ahora tiene ambas, la faltante es PM
+    if (originalTieneAM && !originalTienePM && actualTieneAM && actualTienePM) {
+      return 'PM';
+    }
+
+    // Si originalmente solo tenía PM y ahora tiene ambas, la faltante es AM
+    if (!originalTieneAM && originalTienePM && actualTieneAM && actualTienePM) {
+      return 'AM';
+    }
+
+    // Si originalmente no tenía AM y ahora lo tiene
+    if (!originalTieneAM && actualTieneAM) {
+      return 'AM';
+    }
+
+    // Si originalmente no tenía PM y ahora lo tiene
+    if (!originalTienePM && actualTienePM) {
+      return 'PM';
+    }
+
+    return null;
+  }
+
+  // ✅ CORREGIDO: Método para manejar extracción faltante específicamente
+  guardarExtraccionFaltante(rowData: ExtraccionTable, datosOriginales: ExtraccionTable, idLecheSalaExtraccion: number): Observable<any> {
+    const tipoFaltante = this.determinarExtraccionFaltante(rowData, datosOriginales);
+
+    if (!tipoFaltante) {
+      throw new Error('No se pudo determinar el tipo de extracción faltante');
+    }
+
+    // ✅ AHORA tipoFaltante solo puede ser 'AM' | 'PM', nunca 'AMBAS'
+    const extraccionFaltante = this.prepareExtraccionData(rowData, idLecheSalaExtraccion, tipoFaltante);
+
+    return this.createExtraccion(extraccionFaltante);
+  }
+
+  // ✅ MODIFICADO: Método principal para manejar el guardado inteligente
+  guardarExtracciones(rowData: ExtraccionTable, idLecheSalaExtraccion: number, datosOriginales?: ExtraccionTable): Observable<any> {
+    // Si hay datos originales y es una extracción faltante
+    if (datosOriginales && this.isExtraccionFaltante(rowData, datosOriginales)) {
+      return this.guardarExtraccionFaltante(rowData, datosOriginales, idLecheSalaExtraccion);
+    }
+
+    // Caso normal: nueva fila completa con 1 o 2 extracciones
     const extracciones: ExtraccionRequest[] = [];
 
     // Verificar si hay datos para extracción AM (extraccion_1)

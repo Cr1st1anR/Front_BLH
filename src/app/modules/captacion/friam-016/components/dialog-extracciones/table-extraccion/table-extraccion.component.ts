@@ -215,6 +215,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
+  // ✅ MODIFICADO: Método para guardar nueva extracción o extracción faltante
   private guardarNuevaExtraccion(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
     if (!this.idExtraccion) {
       this.mostrarError('Error: ID de extracción no válido');
@@ -223,18 +224,37 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
 
     this.loading = true;
 
-    const guardarSub = this.dialogExtraccionesService.guardarExtracciones(rowData, this.idExtraccion).subscribe({
-      next: (response) => {
-        // Determinar número de extracciones guardadas
-        const numExtracciones = Array.isArray(response) ? response.length : 1;
-        const mensaje = numExtracciones === 1
-          ? 'Extracción guardada correctamente'
-          : `${numExtracciones} extracciones guardadas correctamente`;
+    // ✅ NUEVO: Determinar si es nueva fila o extracción faltante
+    const datosOriginales = this.clonedExtracciones[rowData.id_registro_extraccion];
+    const esExtraccionFaltante = !rowData.isNew && datosOriginales;
 
-        // Remover la fila temporal y recargar datos
-        const tempIndex = this.dataExtracciones.findIndex(item => item.isNew);
-        if (tempIndex !== -1) {
-          this.dataExtracciones.splice(tempIndex, 1);
+    const guardarSub = this.dialogExtraccionesService.guardarExtracciones(
+      rowData,
+      this.idExtraccion,
+      esExtraccionFaltante ? datosOriginales : undefined
+    ).subscribe({
+      next: (response) => {
+        // Determinar el tipo de operación y mensaje
+        let mensaje: string;
+
+        if (esExtraccionFaltante) {
+          mensaje = 'Extracción faltante agregada correctamente';
+        } else {
+          const numExtracciones = Array.isArray(response) ? response.length : 1;
+          mensaje = numExtracciones === 1
+            ? 'Extracción guardada correctamente'
+            : `${numExtracciones} extracciones guardadas correctamente`;
+        }
+
+        // Limpiar datos temporales si es fila nueva
+        if (rowData.isNew) {
+          const tempIndex = this.dataExtracciones.findIndex(item => item.isNew);
+          if (tempIndex !== -1) {
+            this.dataExtracciones.splice(tempIndex, 1);
+          }
+        } else {
+          // Limpiar datos clonados para extracción faltante
+          delete this.clonedExtracciones[rowData.id_registro_extraccion];
         }
 
         this.resetearEstadoEdicion();
@@ -246,7 +266,10 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
       },
       error: (error) => {
         console.error('Error al guardar extracción:', error);
-        this.mostrarError('Error al guardar la extracción');
+        const mensajeError = esExtraccionFaltante
+          ? 'Error al agregar la extracción faltante'
+          : 'Error al guardar la extracción';
+        this.mostrarError(mensajeError);
         this.loading = false;
       }
     });
@@ -255,12 +278,20 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private actualizarExtraccionExistente(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
-    // Funcionalidad de actualización pendiente (no hay API PUT todavía)
+    const datosOriginales = this.clonedExtracciones[rowData.id_registro_extraccion];
+
+    // ✅ CORREGIDO: Usar método público
+    if (datosOriginales && this.dialogExtraccionesService.isExtraccionFaltante(rowData, datosOriginales)) {
+      this.guardarNuevaExtraccion(rowData, rowElement);
+      return;
+    }
+
+    // Caso real de actualización (pendiente)
     setTimeout(() => {
       delete this.clonedExtracciones[rowData.id_registro_extraccion];
       this.editingRow = null;
       this.table.saveRowEdit(rowData, rowElement);
-      this.mostrarInfo('Funcionalidad de actualización pendiente de implementar');
+      this.mostrarInfo('Funcionalidad de actualización real pendiente de implementar');
     }, 500);
   }
 

@@ -60,4 +60,11 @@ export const CAPTACION_ROUTES: Routes = [
         './friam-038/components/principal-page/principal-page.component'
       ).then((c) => c.PrincipalPageComponent),
   },
+  {
+    path: 'control-leche-cruda',
+    loadComponent: () =>
+      import('./friam-012/components/table-control-leche-cruda/table-control-leche-cruda.component').then(
+        (c) => c.TableControlLecheCrudaComponent
+      ),
+  },
 ];

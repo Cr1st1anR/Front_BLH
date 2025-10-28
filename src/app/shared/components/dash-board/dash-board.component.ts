@@ -65,10 +65,14 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-037)',
           route: '/blh/captacion/visita-domiciliaria',
         },
-         {
+        {
           label: 'Visitas domiciliarias de seguimiento para madres donantes del programa blh',
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
+        },
+        { label: 'Control de entradas y salidas de leche humana extraida cruda',
+          subLabel: '(FRIAM-012)',
+          route: '/blh/captacion/control-leche-cruda'
         },
       ],
     },

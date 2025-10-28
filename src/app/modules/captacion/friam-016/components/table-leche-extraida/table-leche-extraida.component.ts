@@ -54,7 +54,7 @@ export class TableLecheExtraidaComponent implements OnInit, OnDestroy {
       tipo: 'date',
     },
     {
-      header: 'APELLIDOS Y NOMBRE',
+      header: 'NOMBRE Y APELLIDO',
       field: 'apellidos_nombre',
       width: '250px',
       tipo: 'text',

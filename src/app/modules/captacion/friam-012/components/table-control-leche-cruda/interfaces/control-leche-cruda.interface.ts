@@ -18,6 +18,7 @@ export interface ControlLecheCrudaData {
   responsableSalida: string;
   fechaRegistro?: string;
   idFrascoLecheCruda?: number;
+  tipoDonante?: string;
 }
 
 export interface EntradasSalidasApiResponse {
@@ -147,3 +148,10 @@ export type TableHeader = {
 };
 
 export type RequiredField = 'gaveta' | 'fechaEntrada' | 'responsableEntrada';
+
+export interface CongeladoresResponse {
+  id: number;
+  descripcion: string;
+}
+
+

@@ -13,7 +13,6 @@ import { MonthPickerComponent } from "src/app/shared/components/month-picker/mon
 import { ControlLecheCrudaService } from './services/control-leche-cruda.service';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
-import { HttpClientModule } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 
 import type {
@@ -21,7 +20,8 @@ import type {
   EmpleadoResponse,
   SelectOption,
   TableHeader,
-  RequiredField
+  RequiredField,
+  CongeladoresResponse
 } from './interfaces/control-leche-cruda.interface';
 
 @Component({
@@ -38,8 +38,7 @@ import type {
     DatePickerModule,
     MonthPickerComponent,
     ButtonModule,
-    RippleModule,
-    HttpClientModule
+    RippleModule
   ],
   templateUrl: './table-control-leche-cruda.component.html',
   styleUrl: './table-control-leche-cruda.component.scss',
@@ -63,8 +62,10 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
   dataControlLecheCruda: ControlLecheCrudaData[] = [];
   empleados: EmpleadoResponse[] = [];
+  congeladores: CongeladoresResponse[] = [];
   opcionesResponsables: SelectOption[] = [];
   opcionesDonantes: SelectOption[] = [];
+  opcionesCongeladores: SelectOption[] = [];
 
   private clonedDataControlLecheCruda: { [id: number]: ControlLecheCrudaData } = {};
 
@@ -111,11 +112,13 @@ export class TableControlLecheCrudaComponent implements OnInit {
 
     const dataStreams = {
       empleados: this.controlLecheCrudaService.getEmpleados(),
-      controlData: this.controlLecheCrudaService.getEntradasSalidasLecheCruda(this.mesActual, this.anioActual)
+      controlData: this.controlLecheCrudaService.getEntradasSalidasLecheCruda(this.mesActual, this.anioActual),
+      congeladores: this.controlLecheCrudaService.getCongeladores()
     };
 
     forkJoin(dataStreams).subscribe({
       next: (response) => {
+        this.procesarCongeladores(response.congeladores);
         this.procesarEmpleados(response.empleados);
         this.procesarDatosControl(response.controlData);
         this.loading = false;
@@ -125,6 +128,14 @@ export class TableControlLecheCrudaComponent implements OnInit {
         this.manejarErrorCarga(error);
       }
     });
+  }
+
+  private procesarCongeladores(congeladores: CongeladoresResponse[]): void {
+    this.congeladores = congeladores;
+    this.opcionesCongeladores = congeladores.map(cong => ({
+      label: cong.id.toString(),
+      value: cong.id.toString()
+    }));
   }
 
   /**
@@ -143,6 +154,9 @@ export class TableControlLecheCrudaComponent implements OnInit {
    * Procesa los datos de control y extrae las opciones de donantes
    */
   private procesarDatosControl(datos: ControlLecheCrudaData[]): void {
+    datos.forEach(item => {
+      item.nCongelador = this.opcionesCongeladores.find(cong => cong.value === item.nCongelador)!.label;
+    });
     this.dataControlLecheCruda = datos;
     this.extractDonantesList(datos);
   }

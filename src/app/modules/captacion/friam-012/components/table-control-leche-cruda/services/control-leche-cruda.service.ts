@@ -6,7 +6,8 @@ import {
   ControlLecheCrudaData,
   EntradasSalidasApiResponse,
   EmpleadoResponse,
-  ApiResponse
+  ApiResponse,
+  CongeladoresResponse
 } from '../interfaces/control-leche-cruda.interface';
 
 @Injectable({
@@ -43,6 +44,13 @@ export class ControlLecheCrudaService {
       .pipe(map(response => response.data));
   }
 
+  getCongeladores(): Observable<CongeladoresResponse[]> {
+    const url = `${environment.ApiBLH}/getCongeladores`;
+    return this.http.get<ApiResponse<CongeladoresResponse[]>>(url)
+      .pipe(map(response => response.data));
+  }
+
+
   putEntradaSalidaLecheCruda(id: number, data: Partial<ControlLecheCrudaData>): Observable<any> {
     const url = `${environment.ApiBLH}/putEntradaSalidaLecheCruda/${id}`;
     return this.http.put<ApiResponse<any>>(url, data)
@@ -60,7 +68,11 @@ export class ControlLecheCrudaService {
       fechaSalida: rowData.fechaSalida ? this.convertirFechaParaBackend(rowData.fechaSalida) : null,
       madreDonante: { id: parseInt(rowData.donante) },
       empleadoEntrada: this.crearObjetoEmpleado(rowData.responsableEntrada),
-      empleadoSalida: this.crearObjetoEmpleado(rowData.responsableSalida)
+      empleadoSalida: this.crearObjetoEmpleado(rowData.responsableSalida),
+      congelador: {id: parseInt(rowData.nCongelador)},
+      gaveta: rowData.gaveta,
+      tipoDonante: rowData.tipoDonante,
+      idFrascoLecheCruda: rowData.idFrascoLecheCruda
     };
   }
 
@@ -137,6 +149,7 @@ export class ControlLecheCrudaService {
    * Crea un registro de tabla a partir de los datos de la API
    */
   private crearRegistroTabla(item: EntradasSalidasApiResponse): ControlLecheCrudaData {
+    
     const datosExtraccion = this.extraerDatosExtraccion(item);
     const fechaVencimiento = this.calcularFechaVencimiento(datosExtraccion.fechaExtraccion);
     const diasPosparto = this.calcularDiasPosparto(
@@ -146,7 +159,7 @@ export class ControlLecheCrudaService {
 
     return {
       id: item.id,
-      nCongelador: datosExtraccion.congeladorId.toString().padStart(3, '0'),
+      nCongelador: datosExtraccion.congeladorId.toString(),
       ubicacion: 'BLH - área de almacenamiento',
       gaveta: datosExtraccion.gaveta,
       diasPosparto,
@@ -163,7 +176,8 @@ export class ControlLecheCrudaService {
       fechaSalida: item.fechaSalida ? this.formatearFecha(item.fechaSalida) : '',
       responsableSalida: item.empleadoSalida?.nombre || '',
       fechaRegistro: this.formatearFecha(datosExtraccion.fechaExtraccion),
-      idFrascoLecheCruda: item.id
+      idFrascoLecheCruda: item.id,
+      tipoDonante: item.madreDonante.tipoDonante
     };
   }
 
@@ -263,4 +277,5 @@ export class ControlLecheCrudaService {
     const partes = fecha.split('T')[0].split('-');
     return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
   }
+
 }

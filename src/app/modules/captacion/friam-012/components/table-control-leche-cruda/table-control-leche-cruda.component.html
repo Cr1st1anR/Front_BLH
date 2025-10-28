@@ -69,7 +69,12 @@
           <td class="grid-lines">
             <p-cellEditor>
               <ng-template pTemplate="input">
-                @if (col.field === 'ubicacion') {
+                @if (col.field === 'nCongelador') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesCongeladores" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar congelador" [disabled]="false" appendTo="body">
+                </p-select>
+                } @else if (col.field === 'ubicacion') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesUbicacion" optionLabel="label"
                   optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
                   styleClass="w-full" [disabled]="true">
@@ -82,7 +87,7 @@
                 } @else if (col.field === 'responsableEntrada' || col.field === 'responsableSalida') {
                 <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesResponsables" optionLabel="label"
                   optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
-                  styleClass="w-full" placeholder="Seleccionar responsable">
+                  styleClass="w-full" placeholder="Seleccionar responsable" appendTo="body">
                 </p-select>
                 } @else if (col.field === 'numFrasco') {
                 <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"

@@ -307,12 +307,15 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     this.subscriptions.add(guardarSub);
+    this.table.cancelRowEdit(rowData);
+
   }
 
   /**
    * Crea una extracción faltante
    */
   private actualizarExtraccionExistente(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
+
     const datosOriginales = this.clonedExtracciones[rowData.id_registro_extraccion];
 
     if (datosOriginales && this.dialogExtraccionesService.isExtraccionFaltante(rowData, datosOriginales)) {
@@ -321,6 +324,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.handlePendingUpdate(rowData, rowElement);
+
   }
 
   /**
@@ -368,12 +372,18 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
 
   // TODO: Maneja actualizaciones (pendientes de implementar)
   private handlePendingUpdate(rowData: ExtraccionTable, rowElement: HTMLTableRowElement): void {
-    setTimeout(() => {
-      delete this.clonedExtracciones[rowData.id_registro_extraccion];
-      this.editingRow = null;
-      this.table.saveRowEdit(rowData, rowElement);
-      this.mostrarInfo('Funcionalidad de actualización real pendiente de implementar');
-    }, 500);
+    this.dialogExtraccionesService.putExtracciones(rowData.id_registro_extraccion!, rowData).subscribe({
+      next: () => {
+        delete this.clonedExtracciones[rowData.id_registro_extraccion];
+        this.resetearEstadoEdicion();
+        this.table.cancelRowEdit(rowData);
+        this.mostrarExito('Extracción actualizada correctamente');
+        this.loading = false;
+      },
+      error: (error) => {
+        this.mostrarError('Error al actualizar la extracción');
+      }
+    });
   }
 
   /**
@@ -392,8 +402,8 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
   private prepararNuevaExtraccion(nuevaExtraccion: ExtraccionTable): void {
     nuevaExtraccion.fecha_aux = null;
     nuevaExtraccion.fecha_display = 'Sin fecha';
-    nuevaExtraccion.extraccion_1 = { am: null, ml: null, am_aux: null };
-    nuevaExtraccion.extraccion_2 = { pm: null, ml: null, pm_aux: null };
+    nuevaExtraccion.extraccion_1 = { id: null, am: null, ml: null, am_aux: null };
+    nuevaExtraccion.extraccion_2 = { id: null, pm: null, ml: null, pm_aux: null };
   }
 
   /**

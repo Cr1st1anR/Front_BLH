@@ -28,6 +28,22 @@ export class DialogExtraccionesService {
     );
   }
 
+  putExtracciones(idExtraccion: number, body: ExtraccionTable): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${environment.ApiBLH}/putFrascosExtraccion/${idExtraccion}`,
+      body
+    )
+  }
+
+  createExtraccion(extraccionData: ExtraccionRequest): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${environment.ApiBLH}/postFrascosExtraccion`, extraccionData)
+      .pipe(
+        map(response => {
+          this.notifyDataUpdate();
+          return response.data;
+        })
+      );
+  }
+
   /**
    * Procesa la respuesta de extracciones del servidor
    */
@@ -96,8 +112,8 @@ export class DialogExtraccionesService {
       id_registro_extraccion: extraccion.id,
       fecha,
       fecha_display: this.formatDateForDisplay(fecha),
-      extraccion_1: { am: null, ml: null },
-      extraccion_2: { pm: null, ml: null },
+      extraccion_1: {am: null, ml: null },
+      extraccion_2: {pm: null, ml: null },
       motivo_consulta: extraccion.motivoConsulta || '',
       observaciones: extraccion.observaciones || ''
     };
@@ -108,9 +124,11 @@ export class DialogExtraccionesService {
    */
   private assignExtraccionData(extraccionTabla: ExtraccionTable, extraccion: any, esAM: boolean): void {
     if (esAM) {
+      extraccionTabla.extraccion_1.id = extraccion.id;
       extraccionTabla.extraccion_1.am = extraccion.hora;
       extraccionTabla.extraccion_1.ml = extraccion.cantidad;
     } else {
+      extraccionTabla.extraccion_2.id = extraccion.id;
       extraccionTabla.extraccion_2.pm = extraccion.hora;
       extraccionTabla.extraccion_2.ml = extraccion.cantidad;
     }
@@ -150,16 +168,6 @@ export class DialogExtraccionesService {
       (fecha.getMonth() + 1).toString().padStart(2, '0'),
       fecha.getFullYear()
     ].join('/');
-  }
-
-  createExtraccion(extraccionData: ExtraccionRequest): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${environment.ApiBLH}/postFrascosExtraccion`, extraccionData)
-      .pipe(
-        map(response => {
-          this.notifyDataUpdate();
-          return response.data;
-        })
-      );
   }
 
   /**
@@ -342,4 +350,6 @@ export class DialogExtraccionesService {
   resetUpdateStatus(): void {
     this.dataUpdated.next(false);
   }
+
+
 }

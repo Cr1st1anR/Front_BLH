@@ -12,6 +12,7 @@ export class EntregaLecheCrudaService {
   getEntregaLecheCrudaData(): EntregaLecheCrudaData[] {
     return [
       {
+        id: 1,
         fecha: '2024-06-01',
         nombre_madre: 'María Pérez González',
         volumen_leche_materna_am: '500',
@@ -20,6 +21,7 @@ export class EntregaLecheCrudaService {
         responsable: 'Juan López'
       },
       {
+        id: 2,
         fecha: '2024-06-02',
         nombre_madre: 'Ana García Rodríguez',
         volumen_leche_materna_am: '450',
@@ -28,6 +30,7 @@ export class EntregaLecheCrudaService {
         responsable: 'María Fernández'
       },
       {
+        id: 3,
         fecha: '2024-06-03',
         nombre_madre: 'Carmen Martínez López',
         volumen_leche_materna_am: '600',
@@ -36,6 +39,7 @@ export class EntregaLecheCrudaService {
         responsable: 'Juan López'
       },
       {
+        id: 4,
         fecha: '2024-06-04',
         nombre_madre: 'Lucía Hernández Silva',
         volumen_leche_materna_am: '400',
@@ -44,6 +48,7 @@ export class EntregaLecheCrudaService {
         responsable: 'Pedro Sánchez'
       },
       {
+        id: 5,
         fecha: '2024-06-05',
         nombre_madre: 'Isabel Ruiz Castro',
         volumen_leche_materna_am: '550',

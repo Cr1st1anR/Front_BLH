@@ -74,6 +74,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-012)',
           route: '/blh/captacion/control-leche-cruda'
         },
+        {
+          label: 'Registro de leche materna extraida en sala de extracción de blh',
+          subLabel: '(FRIAM-016)',
+          route: '/blh/captacion/registro-leche-extraida',
+        },
       ],
     },
     {
@@ -90,9 +95,9 @@ export class DashBoardComponent {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
-  closeCallback(e:any): void {
+  closeCallback(e: any): void {
     console.log(e);
 
     this.drawerRef.close(e);

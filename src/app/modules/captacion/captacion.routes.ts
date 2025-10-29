@@ -67,4 +67,11 @@ export const CAPTACION_ROUTES: Routes = [
         (c) => c.TableControlLecheCrudaComponent
       ),
   },
+  {
+    path: 'registro-leche-extraida',
+    loadComponent: () =>
+      import(
+        './friam-016/components/principal-page-leche-extraida/principal-page-leche-extraida.component'
+      ).then((c) => c.PrincipalPageLecheExtraidaComponent),
+  },
 ];

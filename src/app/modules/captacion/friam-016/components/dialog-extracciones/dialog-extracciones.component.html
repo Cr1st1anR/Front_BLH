@@ -1,0 +1,23 @@
+<div class="card flex justify-center">
+  <p-dialog [header]="getDialogTitle()" [modal]="true" [(visible)]="visible" [style]="{ width: '90rem' }"
+    [breakpoints]="{ '1199px': '85vw', '575px': '95vw' }" [maximizable]="true" (onHide)="onHide()" [draggable]="false">
+
+    <p-toast position="top-right" key="tr-dialog" />
+
+    @if (loading) {
+    <div class="loading-overlay">
+      <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+        [style]="{ width: '70px', height: '70px' }" />
+    </div>
+    }
+
+    <div class="dialog-content">
+
+      <new-register-extraccion (nuevaExtraccion)="onNuevaExtraccion()" [disabled]="isNewExtraccionButtonDisabled()" />
+
+      <table-extraccion [idExtraccion]="rowData?.id_extraccion ?? null" />
+
+    </div>
+
+  </p-dialog>
+</div>

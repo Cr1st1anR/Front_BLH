@@ -37,6 +37,10 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   clonedData: { [s: string]: EntregaLecheCrudaData } = {};
   tempIdCounter: number = -1;
 
+  dataEntregaLecheCrudaOriginal: EntregaLecheCrudaData[] = [];
+  dataEntregaLecheCrudaFiltered: EntregaLecheCrudaData[] = [];
+  filtroFecha: { year: number; month: number } | null = null;
+
   readonly headersEntregaLecheCruda = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
     { header: 'NOMBRE DE LA MADRE', field: 'nombre_madre', width: '200px', tipo: 'text' },
@@ -47,7 +51,13 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
   ];
 
-  dataEntregaLecheCruda: EntregaLecheCrudaData[] = [];
+  get dataEntregaLecheCruda(): EntregaLecheCrudaData[] {
+    return this.dataEntregaLecheCrudaFiltered;
+  }
+
+  set dataEntregaLecheCruda(value: EntregaLecheCrudaData[]) {
+    this.dataEntregaLecheCrudaFiltered = value;
+  }
 
   constructor(
     private readonly entregaLecheCrudaService: EntregaLecheCrudaService,
@@ -65,10 +75,10 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     this.loading = true;
 
     try {
-      this.dataEntregaLecheCruda = this.entregaLecheCrudaService.getEntregaLecheCrudaData();
+      const rawData = this.entregaLecheCrudaService.getEntregaLecheCrudaData();
+      this.dataEntregaLecheCrudaOriginal = this.formatData(rawData);
 
-
-      this.dataEntregaLecheCruda = this.formatData(this.dataEntregaLecheCruda);
+      this.dataEntregaLecheCrudaFiltered = [...this.dataEntregaLecheCrudaOriginal];
 
       this.showSuccessMessageInitial();
       this.loading = false;
@@ -78,18 +88,171 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   }
 
   /**
-   * Formatea los datos para mostrar
+   * Filtra los datos por mes y año específicos
    */
-  private formatData(data: EntregaLecheCrudaData[]): EntregaLecheCrudaData[] {
-    return data.map((item, index) => ({
-      ...item,
-      id: item.id || index + 1,
-      fecha: item.fecha ? new Date(item.fecha) : null
-    }));
+  filtrarPorFecha(filtro: { year: number; month: number } | null): void {
+    this.aplicarFiltroConNotificacion(filtro);
   }
 
   /**
-   * Crea un nuevo registro en la tabla
+   * Aplica filtro inicial con notificación
+   */
+  aplicarFiltroInicialConNotificacion(filtro: { year: number; month: number } | null): void {
+    this.aplicarFiltroConNotificacion(filtro);
+  }
+
+  /**
+   * Aplica filtro por fecha y muestra la notificación correspondiente
+   */
+  private aplicarFiltroConNotificacion(filtro: { year: number; month: number } | null): void {
+    this.filtroFecha = filtro;
+    this.aplicarFiltros();
+    this.mostrarNotificacionFiltro();
+  }
+
+  /**
+   * Aplica todos los filtros activos a los datos
+   */
+  private aplicarFiltros(): void {
+    let datosFiltrados = [...this.dataEntregaLecheCrudaOriginal];
+
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
+
+    this.dataEntregaLecheCrudaFiltered = datosFiltrados;
+  }
+
+  /**
+   * Filtra los datos por mes y año específicos
+   */
+  private filtrarPorMesYAno(datos: EntregaLecheCrudaData[], filtro: { year: number; month: number }): EntregaLecheCrudaData[] {
+  return datos.filter(item => {
+    if (!item.fecha) return false;
+
+    const fechaParseada = this.parsearFechaSegura(item.fecha);
+    if (!fechaParseada) return false;
+
+    if (isNaN(fechaParseada.getTime())) return false;
+
+    const mesItem = fechaParseada.getMonth() + 1;
+    const añoItem = fechaParseada.getFullYear();
+
+    return mesItem === filtro.month && añoItem === filtro.year;
+  });
+}
+
+/**
+ * Formatea una fecha para enviar a la API (YYYY-MM-DD)
+ * Basado en el patrón de #friam-016
+ */
+private formatearFechaParaAPI(fecha: Date): string {
+  if (!fecha) return '';
+
+  return [
+    fecha.getFullYear(),
+    (fecha.getMonth() + 1).toString().padStart(2, '0'),
+    fecha.getDate().toString().padStart(2, '0')
+  ].join('-');
+}
+
+/**
+ * Formatea una fecha para mostrar al usuario (DD/MM/YYYY)
+ * Basado en el patrón de #friam-016
+ */
+private formatearFechaParaMostrar(fecha: Date): string {
+  if (!fecha) return 'Sin fecha';
+
+  return [
+    fecha.getDate().toString().padStart(2, '0'),
+    (fecha.getMonth() + 1).toString().padStart(2, '0'),
+    fecha.getFullYear()
+  ].join('/');
+}
+
+  /**
+   * Muestra una notificación basada en los resultados del filtro
+   */
+  private mostrarNotificacionFiltro(): void {
+    const cantidad = this.dataEntregaLecheCrudaFiltered.length;
+    const totalOriginal = this.dataEntregaLecheCrudaOriginal.length;
+
+    if (this.filtroFecha) {
+      const nombreMes = this.obtenerNombreMes(this.filtroFecha.month);
+      const año = this.filtroFecha.year;
+
+      if (cantidad > 0) {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Filtro aplicado',
+          detail: `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${año}`,
+          key: 'tr',
+          life: 3000,
+        });
+      } else {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Sin resultados',
+          detail: `No se encontraron registros para ${nombreMes} ${año}`,
+          key: 'tr',
+          life: 3000,
+        });
+      }
+    } else {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Filtro removido',
+        detail: `Mostrando todos los registros (${totalOriginal})`,
+        key: 'tr',
+        life: 2000,
+      });
+    }
+  }
+
+  /**
+   * Convierte número de mes a nombre
+   */
+  private obtenerNombreMes(mes: number): string {
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[mes - 1] || 'Mes inválido';
+  }
+
+  /**
+   * Formatea los datos para mostrar
+   */
+  private formatData(data: EntregaLecheCrudaData[]): EntregaLecheCrudaData[] {
+  return data.map((item, index) => ({
+    ...item,
+    id: item.id || index + 1,
+    fecha: item.fecha ? this.parsearFechaSegura(item.fecha) : null
+  }));
+}
+
+private parsearFechaSegura(fechaString: string | Date): Date | null {
+  if (!fechaString) return null;
+
+  if (fechaString instanceof Date) return fechaString;
+
+  if (typeof fechaString === 'string') {
+    if (fechaString.includes('-')) {
+      const [year, month, day] = fechaString.split('-').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0, 0);
+    }
+
+    if (fechaString.includes('/')) {
+      const [day, month, year] = fechaString.split('/').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0, 0);
+    }
+  }
+
+  return null;
+}
+
+  /**
+   * Crear nuevo registro con datos originales actualizados
    */
   crearNuevoRegistro(): void {
     if (this.hasNewRowInEditing) {
@@ -103,8 +266,11 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     }
 
     const nuevoRegistro = this.createNewRecord();
-    this.dataEntregaLecheCruda.push(nuevoRegistro);
-    this.dataEntregaLecheCruda = [...this.dataEntregaLecheCruda];
+
+    this.dataEntregaLecheCrudaOriginal.push(nuevoRegistro);
+    this.dataEntregaLecheCrudaFiltered.push(nuevoRegistro);
+
+    this.dataEntregaLecheCrudaFiltered = [...this.dataEntregaLecheCrudaFiltered];
 
     this.hasNewRowInEditing = true;
     this.editingRow = nuevoRegistro;
@@ -114,8 +280,55 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   }
 
   /**
-   * Crea una nueva instancia de registro
+   * Remover de ambos arrays
    */
+  private removeNewRowFromData(dataRow: EntregaLecheCrudaData): void {
+    const originalIndex = this.dataEntregaLecheCrudaOriginal.findIndex(item =>
+      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
+    );
+
+    if (originalIndex !== -1) {
+      this.dataEntregaLecheCrudaOriginal.splice(originalIndex, 1);
+    }
+
+    const filteredIndex = this.dataEntregaLecheCrudaFiltered.findIndex(item =>
+      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
+    );
+
+    if (filteredIndex !== -1) {
+      this.dataEntregaLecheCrudaFiltered.splice(filteredIndex, 1);
+      this.dataEntregaLecheCrudaFiltered = [...this.dataEntregaLecheCrudaFiltered];
+    }
+  }
+
+  /**
+   * Guardar nuevo registro en datos originales también
+   */
+  private guardarNuevoRegistro(dataRow: EntregaLecheCrudaData, rowElement: HTMLTableRowElement): void {
+  console.log('Guardando nuevo registro:', dataRow);
+
+  if (dataRow.fecha instanceof Date) {
+    const fechaParaAPI = this.formatearFechaParaAPI(dataRow.fecha);
+    console.log('Fecha formateada para API:', fechaParaAPI);
+  }
+
+  dataRow.isNew = false;
+  dataRow.id = Math.max(...this.dataEntregaLecheCrudaOriginal.map(item => item.id || 0)) + 1;
+  delete dataRow._uid;
+
+  const originalIndex = this.dataEntregaLecheCrudaOriginal.findIndex(item =>
+    item === dataRow || (item._uid && item._uid === dataRow._uid)
+  );
+
+  if (originalIndex !== -1) {
+    this.dataEntregaLecheCrudaOriginal[originalIndex] = { ...dataRow };
+  }
+
+  this.resetEditingState();
+  this.table.saveRowEdit(dataRow, rowElement);
+  this.showSuccessMessage('Registro creado exitosamente');
+}
+
   private createNewRecord(): EntregaLecheCrudaData {
     return {
       id: null,
@@ -130,9 +343,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     };
   }
 
-  /**
-   * Inicia la edición de una fila
-   */
   onRowEditInit(dataRow: EntregaLecheCrudaData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.showWarningMessage('Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -148,9 +358,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     }
   }
 
-  /**
-   * Guarda los cambios en el registro
-   */
   onRowEditSave(dataRow: EntregaLecheCrudaData, index: number, event: MouseEvent): void {
     if (!this.validateRequiredFields(dataRow)) {
       this.showErrorMessage('Por favor complete todos los campos requeridos');
@@ -166,56 +373,19 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     }
   }
 
-  /**
-   * Cancela la edición de una fila
-   */
   onRowEditCancel(dataRow: EntregaLecheCrudaData, index: number): void {
     if (dataRow.isNew) {
       this.removeNewRowFromData(dataRow);
       this.hasNewRowInEditing = false;
     } else {
       const rowId = this.getRowId(dataRow);
-      this.dataEntregaLecheCruda[index] = this.clonedData[rowId];
+      this.dataEntregaLecheCrudaFiltered[index] = this.clonedData[rowId];
       delete this.clonedData[rowId];
     }
     this.editingRow = null;
   }
 
-  /**
-   * Remueve una nueva fila de los datos cuando se cancela
-   */
-  private removeNewRowFromData(dataRow: EntregaLecheCrudaData): void {
-    const originalIndex = this.dataEntregaLecheCruda.findIndex(item =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
-    );
-
-    if (originalIndex !== -1) {
-      this.dataEntregaLecheCruda.splice(originalIndex, 1);
-      this.dataEntregaLecheCruda = [...this.dataEntregaLecheCruda];
-    }
-  }
-
-  /**
-   * Guarda un nuevo registro
-   */
-  private guardarNuevoRegistro(dataRow: EntregaLecheCrudaData, rowElement: HTMLTableRowElement): void {
-
-    console.log('Guardando nuevo registro:', dataRow);
-
-    dataRow.isNew = false;
-    dataRow.id = Math.max(...this.dataEntregaLecheCruda.map(item => item.id || 0)) + 1;
-    delete dataRow._uid;
-
-    this.resetEditingState();
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.showSuccessMessage('Registro creado exitosamente');
-  }
-
-  /**
-   * Actualiza un registro existente
-   */
   private actualizarRegistroExistente(dataRow: EntregaLecheCrudaData, rowElement: HTMLTableRowElement): void {
-
     console.log('Actualizando registro:', dataRow);
 
     const rowId = this.getRowId(dataRow);
@@ -226,16 +396,10 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     this.showSuccessMessage('Registro actualizado exitosamente');
   }
 
-  /**
-   * Obtiene el ID único de una fila
-   */
   private getRowId(dataRow: EntregaLecheCrudaData): string {
     return dataRow._uid || dataRow.id?.toString() || 'unknown';
   }
 
-  /**
-   * Valida que todos los campos requeridos estén completos
-   */
   private validateRequiredFields(dataRow: EntregaLecheCrudaData): boolean {
     return !!(
       dataRow.fecha &&
@@ -246,17 +410,11 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     );
   }
 
-  /**
-   * Resetea el estado de edición
-   */
   private resetEditingState(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
   }
 
-  /**
-   * Verifica si una fila está siendo editada
-   */
   isEditing(rowData: EntregaLecheCrudaData): boolean {
     return this.editingRow !== null && (
       (this.editingRow._uid && this.editingRow._uid === rowData._uid) ||
@@ -264,26 +422,16 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     );
   }
 
-  /**
-   * Verifica si hay alguna fila en edición
-   */
   isAnyRowEditing(): boolean {
     return this.editingRow !== null || this.hasNewRowInEditing;
   }
 
-  /**
-   * Determina si el botón de editar debe estar deshabilitado
-   */
   isEditButtonDisabled(rowData: EntregaLecheCrudaData): boolean {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-
-  /**
-   * Muestra mensaje de éxito para carga inicial de datos
-   */
   private showSuccessMessageInitial(): void {
-    const cantidad = this.dataEntregaLecheCruda.length;
+    const cantidad = this.dataEntregaLecheCrudaOriginal.length;
 
     if (cantidad > 0) {
       this.messageService.add({
@@ -304,9 +452,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     }
   }
 
-  /**
-   * Muestra mensaje de éxito personalizado
-   */
   private showSuccessMessage(message: string): void {
     this.messageService.add({
       severity: 'success',
@@ -317,9 +462,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     });
   }
 
-  /**
-   * Muestra mensaje de error
-   */
   private showErrorMessage(message: string): void {
     this.messageService.add({
       severity: 'error',
@@ -330,9 +472,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     });
   }
 
-  /**
-   * Muestra mensaje de advertencia
-   */
   private showWarningMessage(message: string): void {
     this.messageService.add({
       severity: 'warn',
@@ -343,9 +482,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     });
   }
 
-  /**
-   * Muestra mensaje informativo
-   */
   private showInfoMessage(message: string): void {
     this.messageService.add({
       severity: 'info',
@@ -356,9 +492,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     });
   }
 
-  /**
-   * Maneja errores de carga de datos
-   */
   private handleError(error: any): void {
     console.error('Error al cargar datos:', error);
     this.messageService.add({

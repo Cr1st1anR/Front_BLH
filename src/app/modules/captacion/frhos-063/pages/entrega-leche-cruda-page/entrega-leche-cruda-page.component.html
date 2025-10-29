@@ -2,7 +2,7 @@
 
 <div class="flex justify-between items-center mx-4 mt-8">
   <new-register-button-distribucion (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
-  <shared-month-picker />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 
 <entrega-leche-cruda-table />

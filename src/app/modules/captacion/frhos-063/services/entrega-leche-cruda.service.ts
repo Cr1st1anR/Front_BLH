@@ -13,7 +13,7 @@ export class EntregaLecheCrudaService {
     return [
       {
         id: 1,
-        fecha: '2024-06-01',
+        fecha: '2025-10-01',
         nombre_madre: 'María Pérez González',
         volumen_leche_materna_am: '500',
         volumen_leche_materna_pm: '600',
@@ -22,7 +22,7 @@ export class EntregaLecheCrudaService {
       },
       {
         id: 2,
-        fecha: '2024-06-02',
+        fecha: '2025-10-02',
         nombre_madre: 'Ana García Rodríguez',
         volumen_leche_materna_am: '450',
         volumen_leche_materna_pm: '550',
@@ -31,7 +31,7 @@ export class EntregaLecheCrudaService {
       },
       {
         id: 3,
-        fecha: '2024-06-03',
+        fecha: '2025-10-03',
         nombre_madre: 'Carmen Martínez López',
         volumen_leche_materna_am: '600',
         volumen_leche_materna_pm: '700',
@@ -40,7 +40,7 @@ export class EntregaLecheCrudaService {
       },
       {
         id: 4,
-        fecha: '2024-06-04',
+        fecha: '2025-10-04',
         nombre_madre: 'Lucía Hernández Silva',
         volumen_leche_materna_am: '400',
         volumen_leche_materna_pm: '500',
@@ -49,7 +49,7 @@ export class EntregaLecheCrudaService {
       },
       {
         id: 5,
-        fecha: '2024-06-05',
+        fecha: '2025-10-06',
         nombre_madre: 'Isabel Ruiz Castro',
         volumen_leche_materna_am: '550',
         volumen_leche_materna_pm: '650',

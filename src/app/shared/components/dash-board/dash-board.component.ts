@@ -70,6 +70,10 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
         },
+        { label: 'Control de entradas y salidas de leche humana extraida cruda',
+          subLabel: '(FRIAM-012)',
+          route: '/blh/captacion/control-leche-cruda'
+        },
         {
           label: 'Registro de leche materna extraida en sala de extracción de blh',
           subLabel: '(FRIAM-016)',

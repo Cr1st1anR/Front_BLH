@@ -1,0 +1,67 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 4px 25px 45px 25px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+.group-header th {
+  padding: 4px 6px;
+  height: 26px;
+  text-align: center;
+  vertical-align: middle;
+  background: #224186;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.group-title {
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+:host ::ng-deep .p-datatable {
+  .p-datatable-tbody > tr:hover td {
+    background-color: inherit !important;
+  }
+
+  .p-datatable-thead > tr:first-child > th {
+    border-bottom: 0 !important;
+    padding-top: 0.1rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .p-datatable-thead > tr:nth-child(2) > th {
+    border-top: 0 !important;
+  }
+}
+
+:host ::ng-deep .p-cell-editing {
+  input[type="text"] {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+
+    &:focus {
+      border-color: #224186;
+      box-shadow: 0 0 0 2px rgba(34, 65, 134, 0.2);
+      outline: none;
+    }
+  }
+
+  .p-select {
+    width: 100%;
+  }
+}
+
+:host ::ng-deep .ng-invalid.ng-dirty {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}

@@ -1,1 +1,55 @@
-<p>entrega-leche-cruda-table works!</p>
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table [value]="dataEntregaLecheCruda" [scrollable]="true" scrollHeight="500px" [columns]="headersEntregaLecheCruda"
+    [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="fecha"
+    [globalFilterFields]="['nombre_madre']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field === 'nombre_madre') {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="nombre_madre" [placeholder]="'Buscar por madre'" [showMenu]="false"
+            ariaLabel="Filter Nombre Madre">
+          </p-columnFilter>
+        </th>
+        } @else if (col.field === 'responsable') {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+        </th>
+        } @else {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width">{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns">
+      <tr>
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          @if (col.tipo === 'date' && rowData[col.field]) {
+          {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+          } @else if (col.tipo === 'number') {
+          {{ rowData[col.field] | number }}
+          } @else {
+          {{ rowData[col.field] }}
+          }
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,1 +1,9 @@
-<p>new-register-button works!</p>
+<div class="flex justify-between items-center my-4">
+  <div class="flex items-center">
+    <span class="text-lg font-bold">NUEVO REGISTRO</span>
+    <div class="flex flex-wrap gap-4 justify-center ml-2">
+      <p-button icon="pi pi-plus" aria-label="Nuevo" (onClick)="crearNuevoRegistro()" [disabled]="disabled">
+      </p-button>
+    </div>
+  </div>
+</div>

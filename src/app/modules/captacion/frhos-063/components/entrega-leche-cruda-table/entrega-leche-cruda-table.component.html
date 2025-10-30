@@ -55,14 +55,38 @@
           </p-cellEditor>
           }
 
-          @else if (col.field === 'nombre_madre' || col.field === 'responsable') {
+          @else if (col.field === 'nombre_madre') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full"
-                [placeholder]="'Ingrese ' + col.header.toLowerCase()">
+              <p-autoComplete [(ngModel)]="rowData.nombre_madre" [suggestions]="madresSugeridas"
+                (completeMethod)="buscarMadres($event)" (onSelect)="onMadreSeleccionada($event, rowData)" field="label"
+                [minLength]="2" placeholder="Escriba el nombre de la madre" [dropdown]="false" [multiple]="false"
+                [showClear]="true" appendTo="body" class="w-full">
+
+                <ng-template #item let-madre>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ madre.label }}</span>
+                    <small class="text-gray-500">Doc: {{ madre.documento }}</small>
+                  </div>
+                </ng-template>
+              </p-autoComplete>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData[col.field] || 'Sin datos' }}
+              {{ rowData.nombre_madre || 'Sin datos' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'responsable') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.responsable" [options]="opcionesResponsables" optionLabel="label"
+                optionValue="value" placeholder="Seleccione responsable"
+                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.responsable || 'Sin responsable' }}
             </ng-template>
           </p-cellEditor>
           }

@@ -9,3 +9,14 @@ export interface EntregaLecheCrudaData {
   isNew?: boolean;
   _uid?: string;
 }
+
+export interface ResponsableOption {
+  label: string;
+  value: string;
+}
+
+export interface MadreOption {
+  label: string;
+  value: string;
+  documento?: string;
+}

@@ -119,20 +119,20 @@ export class MedicamentosComponent
   }
 
   formatForm() {
-    if (this.datosPrecargados.MadreDonante) {
-      const empleadoEncontrado = this.empleadosOpt.find(emp => emp.id === this.datosPrecargados.MadreDonante.empleado.id);
+    if (this.datosPrecargados.madreDonante) {
+      const empleadoEncontrado = this.empleadosOpt.find(emp => emp.id === this.datosPrecargados.madreDonante.empleado.id);
       if (empleadoEncontrado) {
         this.selectedEmpleado = empleadoEncontrado;
       }
     }
 
-    this.medicamentos = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.medicamento : '';
-    this.psicoactivos = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.psicoactivos : '';
-    this.recibioEducacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.recibioEducacion! : '';
-    this.donanteApta = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.donanteApta : null;
-    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaAcompañante!, 'Acompanante');
-    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaDonante!, 'Donante');
-    this.mostrarFirma(this.datosPrecargados.MadreDonante?.firmaProfesional!, 'Profesional');
+    this.medicamentos = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.medicamento.medicamento : '';
+    this.psicoactivos = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.medicamento.psicoactivos : '';
+    this.recibioEducacion = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.recibioEducacion! : '';
+    this.donanteApta = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.donanteApta : null;
+    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaAcompañante!, 'Acompanante');
+    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaDonante!, 'Donante');
+    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaProfesional!, 'Profesional');
   }
 
   loadDataEmpleados(): Observable<ApiResponse | null> {
@@ -254,7 +254,7 @@ export class MedicamentosComponent
     }
 
     return {
-      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.medicamento.id : null,
+      id: this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.medicamento.id : null,
       medicamentos: this.medicamentos,
       ningunMedicamento: this.ningunMedicamento,
       psicoactivos: this.psicoactivos,

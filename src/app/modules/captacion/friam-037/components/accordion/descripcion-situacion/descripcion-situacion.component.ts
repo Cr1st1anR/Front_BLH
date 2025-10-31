@@ -44,7 +44,6 @@ export class DescripcionSituacionComponent implements OnChanges {
 
   formAnswers() {
     this.respuestas = this.respuestasDescripcion!
-    console.log(this.respuestas);
   }
 
   getFormData() {

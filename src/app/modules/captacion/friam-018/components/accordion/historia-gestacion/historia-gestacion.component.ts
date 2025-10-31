@@ -46,15 +46,15 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChan
   }
 
   formatForm() {
-    this.lugarControlPrenatal = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.lugarControlPrenatal : '';
-    this.tipoIPS = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.tipoIps : 0;
-    this.asistioControl =  this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.asistioControlPrenatal : null;
-    this.pesoInicial = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.pesoGestacionInicial : '';
-    this.pesoFinal = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.pesoGestacionFinal : '';
-    this.talla = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.talla : '';
-    this.tipoParto = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.preTermino === 1 ? 'pretermino' : 'termino' : '';
-    this.semanasGestacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.semanas : null;
-    this.fechaParto = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.gestacion.fechaParto!) : undefined;
+    this.lugarControlPrenatal = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.lugarControlPrenatal : '';
+    this.tipoIPS = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.tipoIps : 0;
+    this.asistioControl =  this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.asistioControlPrenatal : null;
+    this.pesoInicial = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.pesoGestacionInicial : '';
+    this.pesoFinal = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.pesoGestacionFinal : '';
+    this.talla = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.talla : '';
+    this.tipoParto = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.preTermino === 1 ? 'pretermino' : 'termino' : '';
+    this.semanasGestacion = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.semanas : null;
+    this.fechaParto = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.madreDonante.gestacion.fechaParto!) : undefined;
   }
   validateNumericField(value: string): boolean {
     const numValue = parseFloat(value);
@@ -178,7 +178,7 @@ export class HistoriaGestacionComponent implements HistoriaGestacionData, OnChan
     }
 
     return {
-      id: this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.gestacion.id : null,
+      id: this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.gestacion.id : null,
       lugarControlPrenatal: this.lugarControlPrenatal,
       tipoIPS: this.tipoIPS,
       asistioControl: this.asistioControl,

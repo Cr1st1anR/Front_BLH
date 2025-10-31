@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: opacity 0.3s ease;
+}
+
+.dialog-content {
+  padding: 10px 0;
+}
+
+// Responsividad
+@media (max-width: 768px) {
+  .dialog-content {
+    padding: 5px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog-content {
+    padding: 0;
+  }
+}

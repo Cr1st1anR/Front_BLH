@@ -58,24 +58,24 @@ export class DatosInscripcionComponent implements DatosInscripcionData, OnChange
   }
 
   formatForm() {
-    this.fechaDiligenciamiento = this.datosPrecargados.MadreDonante ? new Date(this.datosPrecargados.MadreDonante.fecha_diligenciamiento!) : new Date();
+    this.fechaDiligenciamiento = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.madreDonante.fecha_diligenciamiento!) : new Date();
     this.nombre = this.datosPrecargados.infoMadre.nombre || '';
     this.celular = this.datosPrecargados.infoMadre.celular;
     this.profesion = this.datosPrecargados.infoMadre.profesion || '';
     this.barrio = this.datosPrecargados.infoMadre.barrio;
     this.telefono = this.datosPrecargados.infoMadre.telefono;
-    this.donanteExclusiva = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.donanteExclusivo : null;
+    this.donanteExclusiva = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.donanteExclusivo : null;
     this.departamento = this.datosPrecargados.infoMadre.departamento || '';
     this.direccion = this.datosPrecargados.infoMadre.direccion;
-    this.nombreHijo = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.hijosMadre[0]?.nombre || '' : '';
+    this.nombreHijo = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.hijosMadre[0]?.nombre || '' : '';
     this.eps = this.datosPrecargados.infoMadre.eps || '';
     this.ciudad = this.datosPrecargados.infoMadre.ciudad || '';
-    this.recoleccionDomicilio = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.recoleccionDomicilio : null;
-    this.pesoBebe = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.hijosMadre[0]?.peso ? parseFloat(this.datosPrecargados.MadreDonante.hijosMadre[0]?.peso!) : null : null;
+    this.recoleccionDomicilio = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.recoleccionDomicilio : null;
+    this.pesoBebe = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.hijosMadre[0]?.peso ? parseFloat(this.datosPrecargados.madreDonante.hijosMadre[0]?.peso!) : null : null;
     this.documento = this.datosPrecargados.infoMadre.documento;
-    this.codDonante = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.id : null;
-    this.donante_EoI = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.tipoDonante! : '';
-    this.capacitacion = this.datosPrecargados.MadreDonante ? this.datosPrecargados.MadreDonante.capacitado! : '';
+    this.codDonante = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.id : null;
+    this.donante_EoI = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.tipoDonante! : '';
+    this.capacitacion = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.capacitado! : '';
     this.fechaNacimiento = this.datosPrecargados.infoMadre.fechaNacimiento ? new Date(this.datosPrecargados.infoMadre.fechaNacimiento) : undefined;
     this.edad = this.ageCalculate(this.datosPrecargados.infoMadre.fechaNacimiento) || null;
     this.visible = true;

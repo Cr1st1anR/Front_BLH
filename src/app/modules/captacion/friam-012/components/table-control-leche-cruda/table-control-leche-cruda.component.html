@@ -1,0 +1,146 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<app-header [title]="' CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-012)'" />
+
+<div class="flex justify-between items-center mx-4 mt-6">
+  <div></div>
+  <shared-month-picker (dateChange)="onMonthYearChange($event)" />
+</div>
+
+<div class="container-table-scroll">
+  <div class="container-table">
+    <p-table #tableControl [value]="dataControlLecheCruda" [scrollable]="true" scrollHeight="600px"
+      [columns]="headersControlLecheCruda" [tableStyle]="{ 'min-width': '70rem' }" dataKey="id"
+      [globalFilterFields]="['donante','numFrasco','nCongelador']" editMode="row">
+      <ng-template #header let-columns>
+        <tr>
+          @for (col of columns; track $index) {
+          @if (col.field == 'nCongelador') {
+          <th [ngStyle]="{'background': '#F5F6FA'}">
+            <p-columnFilter type="text" field="nCongelador" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+              ariaLabel="Filter CONGELADOR N°"></p-columnFilter>
+          </th>
+          }
+          @else if (col.field == 'donante') {
+          <th [ngStyle]="{'background': '#F5F6FA'}">
+            <p-columnFilter type="text" field="donante" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+              ariaLabel="Filter DONANTE"></p-columnFilter>
+          </th>
+          }
+          @else if (col.field == 'numFrasco') {
+          <th [ngStyle]="{'background': '#F5F6FA'}">
+            <p-columnFilter type="text" field="numFrasco" [placeholder]="'Buscar '+col.header" [showMenu]="false"
+              ariaLabel="Filter N° FRASCO"></p-columnFilter>
+          </th>
+          }
+          @else {
+          <th [ngStyle]="{'background': '#F5F6FA'}"></th>
+          }
+          }
+        </tr>
+
+        <tr class="group-header">
+          <th class="grid-lines group-title" [attr.colspan]="2">INFORMACIÓN DEL CONGELADOR</th>
+          <th class="grid-lines group-title" [attr.colspan]="12">ENTRADA</th>
+          <th class="grid-lines group-title" [attr.colspan]="2">SALIDA</th>
+          <th class="grid-lines" [ngStyle]="{ 'min-width': '150px' }">EDICION</th>
+        </tr>
+
+        <tr>
+          @for (col of columns; track $index) {
+          <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
+            {{ col.header }}
+          </th>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-ri="rowIndex">
+        <tr [pEditableRow]="rowData">
+          @for (col of columns; track $index) {
+          @if (col.field != "acciones") {
+          <td class="grid-lines">
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                @if (col.field === 'nCongelador') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesCongeladores" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar congelador" [disabled]="false" appendTo="body">
+                </p-select>
+                } @else if (col.field === 'ubicacion') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesUbicacion" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" [disabled]="true">
+                </p-select>
+                } @else if (col.field === 'donante') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesDonantes" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar donante" [disabled]="true">
+                </p-select>
+                } @else if (col.field === 'responsableEntrada' || col.field === 'responsableSalida') {
+                <p-select [(ngModel)]="rowData[col.field]" [options]="opcionesResponsables" optionLabel="label"
+                  optionValue="value" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+                  styleClass="w-full" placeholder="Seleccionar responsable" appendTo="body">
+                </p-select>
+                } @else if (col.field === 'numFrasco') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
+                  class="bg-gray-100 text-gray-600 cursor-not-allowed" />
+                } @else if (col.field === 'gaveta') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                } @else if (col.field === 'procedencia') {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+                } @else if (col.field === 'fechaEntrada' || col.field === 'fechaSalida') {
+                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full"
+                  (onSelect)="onDateSelect($event, rowData, col.field)">
+                </p-datepicker>
+                } @else if (col.tipo === 'date') {
+                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body"
+                  [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" class="w-full"
+                  [disabled]="true">
+                </p-datepicker>
+                } @else {
+                <input type="text" pInputText [(ngModel)]="rowData[col.field]" [disabled]="true"
+                  class="bg-gray-100 text-gray-600 cursor-not-allowed" />
+                }
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ rowData[col.field] }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          }
+          @else if (col.field === "acciones") {
+          <td class="grid-lines">
+            <div class="flex items-center justify-center gap-2">
+              <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+                severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)">
+              </button>
+
+              <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+                (click)="onRowEditSave(rowData, ri, $event)">
+              </button>
+
+              <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+                severity="danger" (click)="onRowEditCancel(rowData, ri)">
+              </button>
+            </div>
+          </td>
+          }
+          }
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

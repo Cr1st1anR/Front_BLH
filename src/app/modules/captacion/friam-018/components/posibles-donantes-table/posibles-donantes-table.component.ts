@@ -164,7 +164,7 @@ export class PosiblesDonantesTableComponent implements OnInit {
       let fechaVencimientoProxima = null;
       let fechasVencimiento: string[] = [];
 
-      if (flat.MadreDonante && flat.laboratorio && flat.laboratorio.length > 0) {
+      if (flat.madreDonante && flat.laboratorio && flat.laboratorio.length > 0) {
         fechasVencimiento = flat.laboratorio
           .map((lab) => lab.fechaVencimiento)
           .filter(fecha => fecha != null)
@@ -179,7 +179,7 @@ export class PosiblesDonantesTableComponent implements OnInit {
         : 'Sin Fecha';
 
       let backgroundColorRow = '';
-      if (flat.MadreDonante && flat.MadreDonante.donanteApta === 1) {
+      if (flat.madreDonante && flat.madreDonante.donanteApta === 1) {
         backgroundColorRow = 'donante-efectiva';
       }
 
@@ -187,8 +187,8 @@ export class PosiblesDonantesTableComponent implements OnInit {
 
       this.dataRegistroDonante[index] = {
         ...item,
-        MadreDonante: flat.MadreDonante || null,
-        codDonante: flat.MadreDonante ? flat.MadreDonante.id : null,
+        MadreDonante: flat.madreDonante || null,
+        codDonante: flat.madreDonante ? flat.madreDonante.id : null,
         fechaRegistro: flat.fecha_registro ? (flat.fecha_registro as string).toString().split('T')[0] : '',
         nombre: flat.infoMadre.nombre,
         apellido: flat.infoMadre.apellido,
@@ -301,7 +301,7 @@ export class PosiblesDonantesTableComponent implements OnInit {
   }
 
   private mapResponseToPdfPayload(data: ResponseMadresDonantes) {
-    const madreDonante = data.MadreDonante;
+    const madreDonante = data.madreDonante;
     const info = data.infoMadre;
     const gest = madreDonante?.gestacion;
     const examen = madreDonante?.examenesPrenatal;

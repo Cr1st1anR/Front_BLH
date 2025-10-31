@@ -1,0 +1,154 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableEntregaLeche [value]="dataEntregaLecheCruda" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersEntregaLecheCruda" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
+    editMode="row" [globalFilterFields]="['nombre_madre', 'responsable']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field === 'nombre_madre') {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="nombre_madre" [placeholder]="'Buscar por madre'" [showMenu]="false"
+            ariaLabel="Filter Nombre Madre">
+          </p-columnFilter>
+        </th>
+        } @else {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width">{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+
+          @if (col.field === 'fecha') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData.fecha) {
+              {{ rowData.fecha | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'nombre_madre') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-autoComplete [(ngModel)]="rowData.nombre_madre" [suggestions]="madresSugeridas"
+                (completeMethod)="buscarMadres($event)" (onSelect)="onMadreSeleccionada($event, rowData)" field="label"
+                [minLength]="2" placeholder="Escriba el nombre de la madre" [dropdown]="false" [multiple]="false"
+                [showClear]="true" [disabled]="isMadreFieldDisabled(rowData)" appendTo="body" class="w-full">
+
+                <ng-template #item let-madre>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ madre.label }}</span>
+                    <small class="text-gray-500">Doc: {{ madre.documento }}</small>
+                  </div>
+                </ng-template>
+              </p-autoComplete>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.nombre_madre || 'Sin datos' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'responsable') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.responsable" [options]="opcionesResponsables" optionLabel="label"
+                optionValue="value" placeholder="Seleccione responsable"
+                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.responsable || 'Sin responsable' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'volumen_leche_materna_am' || col.field === 'volumen_leche_materna_pm') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" placeholder="ml">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || '0' }} ml
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'perdidas') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData.perdidas" class="w-full" placeholder="0" min="0">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.perdidas | number }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            @if (!editing) {
+            <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+              (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Editar"
+              tooltipPosition="top">
+            </button>
+            }
+
+            @if (editing) {
+            <button pButton pRipple type="button" pSaveEditableRow icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" [disabled]="savingInProgress" pTooltip="Guardar"
+              tooltipPosition="top">
+            </button>
+
+            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
+              (click)="onRowEditCancel(rowData, rowIndex)" [disabled]="savingInProgress" pTooltip="Cancelar"
+              tooltipPosition="top">
+            </button>
+            }
+          </div>
+          }
+
+          @else {
+          @if (col.tipo === 'date' && rowData[col.field]) {
+          {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+          } @else if (col.tipo === 'number') {
+          {{ rowData[col.field] | number }}
+          } @else {
+          {{ rowData[col.field] }}
+          }
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -18,4 +18,6 @@ export interface ExtraccionTable {
   motivo_consulta: string;
   observaciones: string;
   isNew?: boolean;
+  procedencia?: string;
+  madrePotencial?: number;
 }

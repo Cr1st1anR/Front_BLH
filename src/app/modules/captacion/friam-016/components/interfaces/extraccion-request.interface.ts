@@ -7,4 +7,6 @@ export interface ExtraccionRequest {
   lecheSalaExtraccion: { id: number };
   motivoConsulta?: string;
   observaciones?: string;
+  procedencia?: string;
+  madrePotencial?: number;
 }

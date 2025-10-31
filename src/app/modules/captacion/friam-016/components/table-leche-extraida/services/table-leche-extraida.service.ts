@@ -61,7 +61,8 @@ export class TableLecheExtraidaService {
       eps: item.madrePotencial.infoMadre.eps,
       procedencia: item.procedencia,
       consejeria: item.consejeria,
-      fecha_nacimiento_original: item.madrePotencial.infoMadre.fechaNacimiento
+      fecha_nacimiento_original: item.madrePotencial.infoMadre.fechaNacimiento,
+      madrePotencial: item.madrePotencial.id
     }));
   }
 

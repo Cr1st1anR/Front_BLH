@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 import { TableLecheExtraidaService } from './services/table-leche-extraida.service';
 import type { LecheExtraidaTable } from '../interfaces/leche-extraida-table.interface';
 import type { LecheExtraidaCreate } from '../interfaces/leche-extraida-create.interface';
+import { LecheSalaExtraccion } from '../interfaces/leche-sala-extraccion.interface';
 
 @Component({
   selector: 'table-leche-extraida',

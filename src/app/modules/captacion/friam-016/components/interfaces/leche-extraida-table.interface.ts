@@ -1,4 +1,5 @@
 export interface LecheExtraidaTable {
+  madrePotencial?:number | null;
   id_extraccion: number | null;
   fecha_registro: string;
   fecha_registro_aux?: Date | null;

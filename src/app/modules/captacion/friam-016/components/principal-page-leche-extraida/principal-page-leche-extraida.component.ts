@@ -5,6 +5,7 @@ import { DialogExtraccionesComponent } from "../dialog-extracciones/dialog-extra
 import { NewRegisterButtonComponent } from "../table-leche-extraida/new-register-button/new-register-button.component";
 import { TableLecheExtraidaComponent } from "../table-leche-extraida/table-leche-extraida.component";
 import type { LecheExtraidaTable } from '../interfaces/leche-extraida-table.interface';
+import { LecheSalaExtraccion } from '../interfaces/leche-sala-extraccion.interface';
 
 @Component({
   selector: 'principal-page-leche-extraida',
@@ -27,6 +28,7 @@ export class PrincipalPageLecheExtraidaComponent implements OnInit, AfterViewIni
 
   showDialog = false;
   selectedRowData: LecheExtraidaTable | null = null;
+  dataMadre: LecheSalaExtraccion | null = null;
 
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;

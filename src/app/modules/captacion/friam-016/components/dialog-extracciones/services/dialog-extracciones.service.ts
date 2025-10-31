@@ -7,6 +7,7 @@ import { ApiResponse } from '../../interfaces/api-response.interface';
 import { ExtraccionRequest } from '../../interfaces/extraccion-request.interface';
 import { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
 import { environment } from 'src/environments/environments';
+import { LecheExtraidaTable } from '../../interfaces/leche-extraida-table.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -191,7 +192,7 @@ export class DialogExtraccionesService {
   /**
    * Crea una estructura temporal de extracción para edición
    */
-  crearExtraccion(idExtraccion: number, fecha: string | null): Promise<ExtraccionTable> {
+  crearExtraccion(idExtraccion:LecheExtraidaTable , fecha: string | null): Promise<ExtraccionTable> {
     const nuevaExtraccion: ExtraccionTable = {
       id_registro_extraccion: Date.now(),
       fecha: fecha || '',
@@ -200,7 +201,9 @@ export class DialogExtraccionesService {
       extraccion_2: { pm: null, ml: null },
       motivo_consulta: '',
       observaciones: '',
-      isNew: true
+      isNew: true,
+      procedencia: idExtraccion.procedencia,
+      madrePotencial: idExtraccion.madrePotencial ?? undefined
     };
 
     return new Promise(resolve => {
@@ -220,7 +223,6 @@ export class DialogExtraccionesService {
 
     const cantidad = isAM ? rowData.extraccion_1.ml! : rowData.extraccion_2.ml!;
     const hora = isAM ? rowData.extraccion_1.am! : rowData.extraccion_2.pm!;
-
     return {
       cantidad,
       hora,
@@ -229,7 +231,9 @@ export class DialogExtraccionesService {
       congelador: { id: 1 },
       lecheSalaExtraccion: { id: idLecheSalaExtraccion },
       motivoConsulta: rowData.motivo_consulta || '',
-      observaciones: rowData.observaciones || ''
+      observaciones: rowData.observaciones || '',
+      procedencia: rowData.procedencia,
+      madrePotencial: rowData.madrePotencial
     };
   }
 

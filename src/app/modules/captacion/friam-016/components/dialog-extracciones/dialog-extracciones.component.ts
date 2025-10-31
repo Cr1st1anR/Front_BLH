@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { NewRegisterExtraccionComponent } from './new-register-extraccion/new-register-extraccion.component';
 import { TableExtraccionComponent } from './table-extraccion/table-extraccion.component';
 import type { LecheExtraidaTable } from '../interfaces/leche-extraida-table.interface';
+import { LecheSalaExtraccion } from '../interfaces/leche-sala-extraccion.interface';
 
 @Component({
   selector: 'dialog-extracciones',

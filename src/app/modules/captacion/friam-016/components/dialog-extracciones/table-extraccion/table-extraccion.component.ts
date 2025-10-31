@@ -12,6 +12,8 @@ import { Subscription } from 'rxjs';
 
 import { DialogExtraccionesService } from '../services/dialog-extracciones.service';
 import type { ExtraccionTable } from '../../interfaces/extraccion-table.interface';
+import { LecheSalaExtraccion } from '../../interfaces/leche-sala-extraccion.interface';
+import { LecheExtraidaTable } from '../../interfaces/leche-extraida-table.interface';
 
 @Component({
   selector: 'table-extraccion',
@@ -30,7 +32,8 @@ import type { ExtraccionTable } from '../../interfaces/extraccion-table.interfac
   providers: [MessageService]
 })
 export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() idExtraccion: number | null = null;
+  @Input() idExtraccion: LecheExtraidaTable | null = null;
+
   @ViewChild('tableExtracciones') table!: Table;
 
   loading = false;
@@ -99,7 +102,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
 
     this.loading = true;
 
-    const loadSub = this.dialogExtraccionesService.getExtracciones(this.idExtraccion).subscribe({
+    const loadSub = this.dialogExtraccionesService.getExtracciones(Number(this.idExtraccion.id_extraccion)).subscribe({
       next: (extracciones: ExtraccionTable[]) => {
         this.dataExtracciones = this.prepareExtraccionesForEditing(extracciones);
         this.mostrarMensajeCarga(extracciones);
@@ -128,7 +131,9 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
       extraccion_2: {
         ...item.extraccion_2,
         pm_aux: item.extraccion_2?.pm ? this.convertHoursToDate(item.extraccion_2.pm) : null
-      }
+      },
+      procedencia: this.idExtraccion?.procedencia,
+      madrePotencial: this.idExtraccion?.madrePotencial ?? undefined
     }));
   }
 
@@ -294,7 +299,7 @@ export class TableExtraccionComponent implements OnInit, OnChanges, OnDestroy {
 
     const guardarSub = this.dialogExtraccionesService.guardarExtracciones(
       rowData,
-      this.idExtraccion,
+      Number(this.idExtraccion!.id_extraccion),
       datosOriginales
     ).subscribe({
       next: (response) => {

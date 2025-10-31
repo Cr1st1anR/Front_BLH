@@ -1,62 +1,41 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
-import type { EntregaLecheCrudaData } from '../interfaces/entrega-leche-cruda.interface';
+import type {
+  LecheDistribucionRequest,
+  LecheDistribucionResponse,
+  MadrePotencial,
+  Empleado,
+  ApiResponse,
+  ApiResponseOrDirect
+} from '../interfaces/entrega-leche-cruda.interface';
+import { environment } from 'src/environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EntregaLecheCrudaService {
 
-  constructor() { }
+  constructor(private readonly http: HttpClient) { }
 
-  getEntregaLecheCrudaData(): EntregaLecheCrudaData[] {
-    return [
-      {
-        id: 1,
-        fecha: '2025-10-01',
-        nombre_madre: 'María Pérez González',
-        volumen_leche_materna_am: '500',
-        volumen_leche_materna_pm: '600',
-        perdidas: 50,
-        responsable: 'Juan López'
-      },
-      {
-        id: 2,
-        fecha: '2025-10-02',
-        nombre_madre: 'Ana García Rodríguez',
-        volumen_leche_materna_am: '450',
-        volumen_leche_materna_pm: '550',
-        perdidas: 25,
-        responsable: 'María Fernández'
-      },
-      {
-        id: 3,
-        fecha: '2025-10-03',
-        nombre_madre: 'Carmen Martínez López',
-        volumen_leche_materna_am: '600',
-        volumen_leche_materna_pm: '700',
-        perdidas: 75,
-        responsable: 'Juan López'
-      },
-      {
-        id: 4,
-        fecha: '2025-10-04',
-        nombre_madre: 'Lucía Hernández Silva',
-        volumen_leche_materna_am: '400',
-        volumen_leche_materna_pm: '500',
-        perdidas: 30,
-        responsable: 'Pedro Sánchez'
-      },
-      {
-        id: 5,
-        fecha: '2025-10-06',
-        nombre_madre: 'Isabel Ruiz Castro',
-        volumen_leche_materna_am: '550',
-        volumen_leche_materna_pm: '650',
-        perdidas: 40,
-        responsable: 'María Fernández'
-      }
-    ];
+  getLecheDistribucion(): Observable<ApiResponse<LecheDistribucionResponse[]>> {
+    return this.http.get<ApiResponse<LecheDistribucionResponse[]>>(`${environment.ApiBLH}/getLecheDistribucion`);
   }
 
+  postLecheDistribucion(request: LecheDistribucionRequest): Observable<ApiResponseOrDirect<LecheDistribucionResponse>> {
+    return this.http.post<ApiResponseOrDirect<LecheDistribucionResponse>>(`${environment.ApiBLH}/postLecheDistribucion`, request);
+  }
+
+  putLecheDistribucion(id: number, request: LecheDistribucionRequest): Observable<any> {
+    return this.http.put(`${environment.ApiBLH}/putLecheDistribucion/${id}`, request);
+  }
+
+  getMadresInternasNoDonantes(): Observable<ApiResponse<MadrePotencial[]>> {
+    return this.http.get<ApiResponse<MadrePotencial[]>>(`${environment.ApiBLH}/getMadresInternasNoDonantes`);
+  }
+
+  getEmpleados(): Observable<ApiResponse<Empleado[]>> {
+    return this.http.get<ApiResponse<Empleado[]>>(`${environment.ApiBLH}/GetEmpleados`);
+  }
 }

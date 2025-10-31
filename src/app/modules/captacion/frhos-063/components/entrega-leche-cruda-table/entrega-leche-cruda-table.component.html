@@ -61,7 +61,7 @@
               <p-autoComplete [(ngModel)]="rowData.nombre_madre" [suggestions]="madresSugeridas"
                 (completeMethod)="buscarMadres($event)" (onSelect)="onMadreSeleccionada($event, rowData)" field="label"
                 [minLength]="2" placeholder="Escriba el nombre de la madre" [dropdown]="false" [multiple]="false"
-                [showClear]="true" appendTo="body" class="w-full">
+                [showClear]="true" [disabled]="isMadreFieldDisabled(rowData)" appendTo="body" class="w-full">
 
                 <ng-template #item let-madre>
                   <div class="flex flex-col">
@@ -115,18 +115,24 @@
 
           @else if (col.field === 'acciones') {
           <div class="flex items-center justify-center gap-2">
-            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
-              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
-              pTooltip="Editar" tooltipPosition="top">
+            @if (!editing) {
+            <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+              (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Editar"
+              tooltipPosition="top">
+            </button>
+            }
+
+            @if (editing) {
+            <button pButton pRipple type="button" pSaveEditableRow icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" [disabled]="savingInProgress" pTooltip="Guardar"
+              tooltipPosition="top">
             </button>
 
-            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
-              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
+              (click)="onRowEditCancel(rowData, rowIndex)" [disabled]="savingInProgress" pTooltip="Cancelar"
+              tooltipPosition="top">
             </button>
-
-            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
-              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
-            </button>
+            }
           </div>
           }
 

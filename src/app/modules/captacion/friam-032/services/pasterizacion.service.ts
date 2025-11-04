@@ -13,31 +13,31 @@ export class PasterizacionService {
     const datosPasterizacion: PasterizacionData[] = [
       {
         id: 1,
-        no_frasco_pasterizacion: 'FP-001',
-        volumen_frasco_pasterizacion: '480',
+        no_frasco_pasterizacion: 'SALE POR IMPUREZA',
+        volumen_frasco_pasterizacion: '0',
         id_control_reenvase: 2
       },
       {
         id: 2,
-        no_frasco_pasterizacion: 'FP-002',
+        no_frasco_pasterizacion: 'LHP 25 11',
         volumen_frasco_pasterizacion: '750',
         id_control_reenvase: 2
       },
       {
         id: 3,
-        no_frasco_pasterizacion: 'FP-003',
+        no_frasco_pasterizacion: 'LHP 25 12',
         volumen_frasco_pasterizacion: '1100',
         id_control_reenvase: 3
       },
       {
         id: 4,
-        no_frasco_pasterizacion: 'FP-004',
+        no_frasco_pasterizacion: 'LHP 25 13',
         volumen_frasco_pasterizacion: '850',
         id_control_reenvase: 4
       },
       {
         id: 5,
-        no_frasco_pasterizacion: 'FP-005',
+        no_frasco_pasterizacion: 'LHP 25 14',
         volumen_frasco_pasterizacion: '1020',
         id_control_reenvase: 5
       }

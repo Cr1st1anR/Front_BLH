@@ -1,7 +1,7 @@
 <app-header [title]="'CONTROL DE REENVASE DE LECHE HUMANA (FRIAM-032)'" />
 
 <div class="flex justify-between items-center mx-4 mt-8">
-  <new-register-button-reenvase (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+  <new-register-control-reenvase (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 

@@ -2,10 +2,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'new-register-button-reenvase',
+  selector: 'new-register-control-reenvase',
   imports: [ButtonModule],
-  templateUrl: './new-register-button.component.html',
-  styleUrl: './new-register-button.component.scss',
+  templateUrl: './new-register-control-reenvase.component.html',
+  styleUrl: './new-register-control-reenvase.component.scss',
 })
 export class NewRegisterButtonComponent {
   @Input() disabled = false;

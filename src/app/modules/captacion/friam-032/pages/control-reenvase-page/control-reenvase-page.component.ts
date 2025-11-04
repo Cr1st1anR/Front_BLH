@@ -2,7 +2,7 @@ import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { ControlReenvaseTableComponent } from "../../components/control-reenvase-table/control-reenvase-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-import { NewRegisterButtonComponent } from "../../components/new-register-button/new-register-button.component";
+import { NewRegisterButtonComponent } from "../../components/new-register-control-reenvase/new-register-control-reenvase.component";
 
 @Component({
   selector: 'control-reenvase-page',

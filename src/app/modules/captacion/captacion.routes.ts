@@ -62,9 +62,22 @@ export const CAPTACION_ROUTES: Routes = [
   },
   {
     path: 'control-reenvase',
-    loadComponent: () =>
-      import(
-        './friam-032/pages/control-reenvase-page/control-reenvase-page.component'
-      ).then((c) => c.ControlReenvasePageComponent),
+    children: [
+      {
+        path: '',
+      loadComponent: () =>
+        import(
+          './friam-032/pages/control-reenvase-page/control-reenvase-page.component'
+        ).then((c) => c.ControlReenvasePageComponent),
+      },
+      {
+        path: 'pasterizacion',
+      loadComponent: () =>
+        import(
+          './friam-032/pages/pasterizacion-page/pasterizacion-page.component'
+        ).then((c) => c.PasterizacionPageComponent),
+      },
+
+    ]
   },
 ];

@@ -10,15 +10,15 @@
 <div class="container-table">
   <p-table #tableControlReenvase [value]="dataControlReenvase" [scrollable]="true" scrollHeight="500px"
     [columns]="headersControlReenvase" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
-    editMode="row" [globalFilterFields]="['nombre_madre', 'responsable']">
+    editMode="row" [globalFilterFields]="['no_donante', 'responsable']">
 
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
-        @if (col.field === 'nombre_madre') {
+        @if (col.field === 'no_donante') {
         <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
-          <p-columnFilter type="text" field="nombre_madre" [placeholder]="'Buscar por madre'" [showMenu]="false"
-            ariaLabel="Filter Nombre Madre">
+          <p-columnFilter type="text" field="no_donante" [placeholder]="'Buscar por donante'" [showMenu]="false"
+            ariaLabel="Filter No Donante">
           </p-columnFilter>
         </th>
         } @else {
@@ -34,9 +34,10 @@
     </ng-template>
 
     <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
-      <tr [pEditableRow]="rowData">
+      <tr [pEditableRow]="rowData" (click)="!editing ? onRowClick(rowData) : null"
+        [style.cursor]="!editing ? 'pointer' : 'default'" [class]="!editing ? 'hover:bg-gray-100' : ''">
         @for (col of columns; track $index) {
-        <td [style.width]="col.width" [style.min-width]="col.width">
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
           @if (col.field === 'fecha') {
           <p-cellEditor>
@@ -55,28 +56,6 @@
           </p-cellEditor>
           }
 
-          @else if (col.field === 'nombre_madre') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <p-autoComplete [(ngModel)]="rowData.nombre_madre" [suggestions]="madresSugeridas"
-                (completeMethod)="buscarMadres($event)" (onSelect)="onMadreSeleccionada($event, rowData)" field="label"
-                [minLength]="2" placeholder="Escriba el nombre de la madre" [dropdown]="false" [multiple]="false"
-                [showClear]="true" appendTo="body" class="w-full">
-
-                <ng-template #item let-madre>
-                  <div class="flex flex-col">
-                    <span class="font-medium">{{ madre.label }}</span>
-                    <small class="text-gray-500">Doc: {{ madre.documento }}</small>
-                  </div>
-                </ng-template>
-              </p-autoComplete>
-            </ng-template>
-            <ng-template pTemplate="output">
-              {{ rowData.nombre_madre || 'Sin datos' }}
-            </ng-template>
-          </p-cellEditor>
-          }
-
           @else if (col.field === 'responsable') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -91,36 +70,48 @@
           </p-cellEditor>
           }
 
-          @else if (col.field === 'volumen_inicial' || col.field === 'volumen_final') {
+          @else if (col.field === 'no_donante') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" placeholder="ml">
+              <p-autoComplete [(ngModel)]="rowData.no_donante" [suggestions]="donantesSugeridos"
+                (completeMethod)="buscarDonantes($event)" (onSelect)="onDonanteSeleccionado($event, rowData)"
+                field="label" [minLength]="1" placeholder="Escriba el número del donante" [dropdown]="false"
+                [multiple]="false" [showClear]="true" appendTo="body" class="w-full">
+
+                <ng-template #item let-donante>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ donante.label }}</span>
+                    <small class="text-gray-500">Doc: {{ donante.documento }}</small>
+                  </div>
+                </ng-template>
+              </p-autoComplete>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData[col.field] || '0' }} ml
+              {{ rowData.no_donante || 'Sin donante' }}
             </ng-template>
           </p-cellEditor>
           }
 
-          @else if (col.field === 'perdidas') {
+          @else if (col.field === 'no_frasco_anterior') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.perdidas" class="w-full" placeholder="0" min="0">
+              <input pInputText type="text" [(ngModel)]="rowData.no_frasco_anterior" class="w-full"
+                placeholder="Número de frasco">
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.perdidas | number }}
+              {{ rowData.no_frasco_anterior || 'Sin número' }}
             </ng-template>
           </p-cellEditor>
           }
 
-          @else if (col.field === 'observaciones') {
+          @else if (col.field === 'volumen_frasco_anterior') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.observaciones" class="w-full"
-                placeholder="Observaciones">
+              <input pInputText type="text" [(ngModel)]="rowData.volumen_frasco_anterior" class="w-full"
+                placeholder="ml">
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.observaciones || 'Sin observaciones' }}
+              {{ rowData.volumen_frasco_anterior || '0' }} ml
             </ng-template>
           </p-cellEditor>
           }

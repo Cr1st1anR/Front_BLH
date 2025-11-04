@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { TableModule, Table } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -11,7 +12,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ControlReenvaseService } from '../../services/control-reenvase.service';
-import type { ControlReenvaseData, ResponsableOption, MadreOption } from '../../interfaces/control-reenvase.interface';
+import type { ControlReenvaseData, ResponsableOption, DonanteOption } from '../../interfaces/control-reenvase.interface';
 
 @Component({
   selector: 'control-reenvase-table',
@@ -46,17 +47,15 @@ export class ControlReenvaseTableComponent implements OnInit {
   filtroFecha: { year: number; month: number } | null = null;
 
   opcionesResponsables: ResponsableOption[] = [];
-  opcionesMadres: MadreOption[] = [];
-  madresSugeridas: MadreOption[] = [];
+  opcionesDonantes: DonanteOption[] = [];
+  donantesSugeridos: DonanteOption[] = [];
 
   readonly headersControlReenvase = [
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
     { header: 'No. Donante', field: 'no_donante', width: '200px', tipo: 'autocomplete' },
-    { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '100px', tipo: 'number' },
+    { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '100px', tipo: 'text' },
     { header: 'VOLUMEN', field: 'volumen_frasco_anterior', width: '150px', tipo: 'text' },
-    { header: 'N° DE FRASCO DE PASTERIZACIÓN', field: 'no_frasco_pasterizacion', width: '150px', tipo: 'text' },
-    { header: 'VOLUMEN', field: 'volumen_frasco_pasterizacion', width: '180px', tipo: 'text' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
   ];
 
@@ -70,7 +69,8 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   constructor(
     private readonly controlReenvaseService: ControlReenvaseService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly router: Router
   ) { }
 
   ngOnInit(): void {
@@ -86,38 +86,39 @@ export class ControlReenvaseTableComponent implements OnInit {
       { label: 'Ana García', value: 'Ana García' }
     ];
 
-    this.opcionesMadres = [
-      { label: 'María Pérez González', value: 'María Pérez González', documento: '12345678' },
-      { label: 'Ana García Rodríguez', value: 'Ana García Rodríguez', documento: '87654321' },
-      { label: 'Carmen Martínez López', value: 'Carmen Martínez López', documento: '11223344' },
-      { label: 'Lucía Hernández Silva', value: 'Lucía Hernández Silva', documento: '44556677' },
-      { label: 'Isabel Ruiz Castro', value: 'Isabel Ruiz Castro', documento: '99887766' },
-      { label: 'Patricia Moreno Jiménez', value: 'Patricia Moreno Jiménez', documento: '55443322' },
-      { label: 'Sandra López Vargas', value: 'Sandra López Vargas', documento: '22334455' },
-      { label: 'Carolina Díaz Méndez', value: 'Carolina Díaz Méndez', documento: '66778899' },
-      { label: 'Alejandra Torres Vega', value: 'Alejandra Torres Vega', documento: '33445566' },
-      { label: 'Mónica Ramírez Cruz', value: 'Mónica Ramírez Cruz', documento: '77889900' }
+    this.opcionesDonantes = [
+      { label: '123456 - María Pérez González', value: '123456', documento: '12345678' },
+      { label: '789012 - Ana García Rodríguez', value: '789012', documento: '87654321' },
+      { label: '345678 - Carmen Martínez López', value: '345678', documento: '11223344' },
+      { label: '901234 - Lucía Hernández Silva', value: '901234', documento: '44556677' },
+      { label: '567890 - Isabel Ruiz Castro', value: '567890', documento: '99887766' },
+      { label: '234567 - Patricia Moreno Jiménez', value: '234567', documento: '55443322' },
+      { label: '678901 - Sandra López Vargas', value: '678901', documento: '22334455' },
+      { label: '012345 - Carolina Díaz Méndez', value: '012345', documento: '66778899' },
+      { label: '456789 - Alejandra Torres Vega', value: '456789', documento: '33445566' },
+      { label: '890123 - Mónica Ramírez Cruz', value: '890123', documento: '77889900' }
     ];
   }
 
-  buscarMadres(event: any): void {
+  buscarDonantes(event: any): void {
     const query = event.query?.toLowerCase() || '';
 
-    if (query.length >= 2) {
-      this.madresSugeridas = this.opcionesMadres.filter(madre =>
-        madre.label.toLowerCase().includes(query) ||
-        madre.documento?.includes(query)
+    if (query.length >= 1) {
+      this.donantesSugeridos = this.opcionesDonantes.filter(donante =>
+        donante.label.toLowerCase().includes(query) ||
+        donante.value.includes(query) ||
+        donante.documento?.includes(query)
       );
     } else {
-      this.madresSugeridas = [];
+      this.donantesSugeridos = [];
     }
   }
 
-  onMadreSeleccionada(event: any, rowData: ControlReenvaseData): void {
+  onDonanteSeleccionado(event: any, rowData: ControlReenvaseData): void {
     if (typeof event === 'object' && event.value) {
-      rowData.nombre_madre = event.value;
+      rowData.no_donante = event.value;
     } else if (typeof event === 'string') {
-      rowData.nombre_madre = event;
+      rowData.no_donante = event;
     }
   }
 
@@ -126,6 +127,19 @@ export class ControlReenvaseTableComponent implements OnInit {
       rowData.responsable = event.value;
     }
   }
+
+  onRowClick(rowData: ControlReenvaseData): void {
+  if (this.isAnyRowEditing()) {
+    this.showWarningMessage('Debe guardar o cancelar la edición actual antes de ver las pasteurizaciones');
+    return;
+  }
+
+  this.router.navigate(['/blh/captacion/control-reenvase/pasterizacion'], {
+    queryParams: {
+      noDonante: rowData.no_donante
+    }
+  });
+}
 
   private loadDataControlReenvase(): void {
     this.loading = true;
@@ -336,12 +350,10 @@ export class ControlReenvaseTableComponent implements OnInit {
     return {
       id: null,
       fecha: null,
-      nombre_madre: '',
-      volumen_inicial: '',
-      volumen_final: '',
-      perdidas: 0,
       responsable: '',
-      observaciones: '',
+      no_donante: '',
+      no_frasco_anterior: '',
+      volumen_frasco_anterior: '',
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
@@ -407,10 +419,10 @@ export class ControlReenvaseTableComponent implements OnInit {
   private validateRequiredFields(dataRow: ControlReenvaseData): boolean {
     return !!(
       dataRow.fecha &&
-      dataRow.nombre_madre?.trim() &&
-      dataRow.volumen_inicial?.trim() &&
-      dataRow.volumen_final?.trim() &&
-      dataRow.responsable?.trim()
+      dataRow.responsable?.trim() &&
+      dataRow.no_donante?.trim() &&
+      dataRow.no_frasco_anterior?.trim() &&
+      dataRow.volumen_frasco_anterior?.trim()
     );
   }
 

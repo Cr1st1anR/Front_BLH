@@ -1,14 +1,10 @@
-export interface ControlReenvase {
-}
 export interface ControlReenvaseData {
   id?: number | null;
   fecha: string | Date | null;
-  nombre_madre: string;
-  volumen_inicial: string;
-  volumen_final: string;
-  perdidas: number;
   responsable: string;
-  observaciones?: string;
+  no_donante?: string;
+  no_frasco_anterior?: string;
+  volumen_frasco_anterior?: string;
   isNew?: boolean;
   _uid?: string;
 }
@@ -18,7 +14,7 @@ export interface ResponsableOption {
   value: string;
 }
 
-export interface MadreOption {
+export interface DonanteOption {
   label: string;
   value: string;
   documento?: string;

@@ -13,55 +13,54 @@ export class PasterizacionService {
     const datosPasterizacion: PasterizacionData[] = [
       {
         id: 1,
-        no_frasco_pasterizacion: 'SALE POR IMPUREZA',
-        volumen_frasco_pasterizacion: '0',
+        no_frasco_pasterizacion: 'LHP 25 5',
+        volumen_frasco_pasterizacion: '480',
         id_control_reenvase: 2
       },
       {
         id: 2,
-        no_frasco_pasterizacion: 'LHP 25 11',
+        no_frasco_pasterizacion: 'LHP 25 6',
         volumen_frasco_pasterizacion: '750',
         id_control_reenvase: 2
       },
       {
         id: 3,
-        no_frasco_pasterizacion: 'LHP 25 12',
+        no_frasco_pasterizacion: 'LHP 25 7',
         volumen_frasco_pasterizacion: '1100',
         id_control_reenvase: 3
       },
       {
         id: 4,
-        no_frasco_pasterizacion: 'LHP 25 13',
+        no_frasco_pasterizacion: 'LHP 25 8',
         volumen_frasco_pasterizacion: '850',
         id_control_reenvase: 4
       },
       {
         id: 5,
-        no_frasco_pasterizacion: 'LHP 25 14',
+        no_frasco_pasterizacion: 'LHP 25 9',
         volumen_frasco_pasterizacion: '1020',
         id_control_reenvase: 5
       }
     ];
 
-    const datosFiltrados = datosPasterizacion.filter(item =>
-      item.id_control_reenvase === idControlReenvase
-    );
-
-    return of(datosFiltrados);
+    return of(datosPasterizacion);
   }
 
-  crearPasterizacion(pasterizacion: PasterizacionData): Observable<any> {
-    console.log('Creando pasteurización:', pasterizacion);
-    return of({ success: true, id: Date.now() });
+  postPasterizacion(pasterizacion: PasterizacionData): Observable<any> {
+    // Simulación temporal
+    return of({
+      success: true,
+      id: Date.now(),
+      message: 'Pasteurización creada correctamente'
+    });
   }
 
-  actualizarPasterizacion(pasterizacion: PasterizacionData): Observable<any> {
-    console.log('Actualizando pasteurización:', pasterizacion);
-    return of({ success: true });
+  putPasterizacion(id: number, pasterizacion: PasterizacionData): Observable<any> {
+    // Simulación temporal
+    return of({
+      success: true,
+      message: 'Pasteurización actualizada correctamente'
+    });
   }
 
-  eliminarPasterizacion(id: number): Observable<any> {
-    console.log('Eliminando pasteurización:', id);
-    return of({ success: true });
-  }
 }

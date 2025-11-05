@@ -79,9 +79,12 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
 
     this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
       .subscribe({
-        next: (pasterizaciones: PasterizacionData[]) => {
-          this.dataPasterizacion = pasterizaciones;
-          this.mostrarMensajeCarga(pasterizaciones);
+        next: (todasLasPasterizaciones: PasterizacionData[]) => {
+          this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
+            todasLasPasterizaciones, 
+            this.idControlReenvase!
+          );
+          this.mostrarMensajeCarga(this.dataPasterizacion);
           this.loading = false;
         },
         error: (error) => {
@@ -91,24 +94,22 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
       });
   }
 
+  private filtrarPasterizacionesPorControlReenvase(
+    pasterizaciones: PasterizacionData[], 
+    idControlReenvase: number
+  ): PasterizacionData[] {
+    return pasterizaciones.filter(item => 
+      item.id_control_reenvase === idControlReenvase
+    );
+  }
+
   crearNuevaPasterizacion(): void {
     if (!this.validarCreacionPasterizacion()) return;
 
-    const nuevaPasterizacion: PasterizacionData = {
-      id: null,
-      no_frasco_pasterizacion: '',
-      volumen_frasco_pasterizacion: '',
-      id_control_reenvase: this.idControlReenvase!,
-      _uid: `tmp_${this.tempIdCounter--}`,
-      isNew: true
-    };
+    const nuevaPasterizacion: PasterizacionData = this.construirNuevaPasterizacion();
 
-    this.dataPasterizacion.push(nuevaPasterizacion);
-    this.dataPasterizacion = [...this.dataPasterizacion];
-    this.hasNewRowInEditing = true;
-    this.editingRow = nuevaPasterizacion;
-
-    setTimeout(() => this.table.initRowEdit(nuevaPasterizacion), 100);
+    this.agregarPasterizacionATabla(nuevaPasterizacion);
+    this.inicializarModoEdicion(nuevaPasterizacion);
     this.mostrarInfo('Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
@@ -118,9 +119,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
       return;
     }
 
-    const rowId = this.getRowId(dataRow);
-    this.clonedPasterizaciones[rowId] = { ...dataRow };
-    this.editingRow = dataRow;
+    this.iniciarEdicionFila(dataRow);
   }
 
   onRowEditSave(dataRow: PasterizacionData, index: number, event: MouseEvent): void {
@@ -129,60 +128,141 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
       return;
     }
 
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+    const rowElement = this.obtenerElementoFila(event);
 
     if (dataRow.isNew) {
-      this.guardarNuevaPasterizacion(dataRow, rowElement);
+      this.procesarCreacionPasterizacion(dataRow, rowElement);
     } else {
-      this.actualizarPasterizacionExistente(dataRow, rowElement);
+      this.procesarActualizacionPasterizacion(dataRow, rowElement);
     }
   }
 
   onRowEditCancel(dataRow: PasterizacionData, index: number): void {
     if (dataRow.isNew) {
-      this.eliminarFilaTemporal(index);
-      this.hasNewRowInEditing = false;
+      this.cancelarCreacionNueva(index);
     } else {
-      const rowId = this.getRowId(dataRow);
-      this.dataPasterizacion[index] = this.clonedPasterizaciones[rowId];
-      delete this.clonedPasterizaciones[rowId];
+      this.cancelarEdicionExistente(dataRow, index);
     }
     this.editingRow = null;
   }
 
-  private guardarNuevaPasterizacion(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
-    this.pasterizacionService.crearPasterizacion(dataRow).subscribe({
+  private construirNuevaPasterizacion(): PasterizacionData {
+    return {
+      id: null,
+      no_frasco_pasterizacion: '',
+      volumen_frasco_pasterizacion: '',
+      id_control_reenvase: this.idControlReenvase!,
+      _uid: `tmp_${this.tempIdCounter--}`,
+      isNew: true
+    };
+  }
+
+  private agregarPasterizacionATabla(pasteurizacion: PasterizacionData): void {
+    this.dataPasterizacion.push(pasteurizacion);
+    this.dataPasterizacion = [...this.dataPasterizacion];
+  }
+
+  private inicializarModoEdicion(pasteurizacion: PasterizacionData): void {
+    this.hasNewRowInEditing = true;
+    this.editingRow = pasteurizacion;
+    setTimeout(() => this.table.initRowEdit(pasteurizacion), 100);
+  }
+
+  private iniciarEdicionFila(dataRow: PasterizacionData): void {
+    const rowId = this.getRowId(dataRow);
+    this.clonedPasterizaciones[rowId] = { ...dataRow };
+    this.editingRow = dataRow;
+  }
+
+  private procesarCreacionPasterizacion(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
+    const datosParaEnviar = this.prepararDatosParaCreacion(dataRow);
+
+    this.pasterizacionService.postPasterizacion(datosParaEnviar).subscribe({
       next: (response) => {
-        console.log('Pasteurización creada:', response);
-        dataRow.isNew = false;
-        dataRow.id = response.id || Date.now();
-        delete dataRow._uid;
-        this.resetearEstadoEdicion();
-        this.table.saveRowEdit(dataRow, rowElement);
-        this.mostrarExito('Pasteurización creada correctamente');
+        this.manejarExitoCreacion(dataRow, response, rowElement);
       },
       error: (error) => {
-        console.error('Error al crear pasteurización:', error);
-        this.mostrarError('Error al crear la pasteurización');
+        this.manejarErrorCreacion(error);
       }
     });
   }
 
-  private actualizarPasterizacionExistente(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
-    this.pasterizacionService.actualizarPasterizacion(dataRow).subscribe({
+  private procesarActualizacionPasterizacion(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
+    const datosParaEnviar = this.prepararDatosParaActualizacion(dataRow);
+
+    this.pasterizacionService.putPasterizacion(dataRow.id!, datosParaEnviar).subscribe({
       next: (response) => {
-        console.log('Pasteurización actualizada:', response);
-        const rowId = this.getRowId(dataRow);
-        delete this.clonedPasterizaciones[rowId];
-        this.editingRow = null;
-        this.table.saveRowEdit(dataRow, rowElement);
-        this.mostrarExito('Pasteurización actualizada correctamente');
+        this.manejarExitoActualizacion(dataRow, response, rowElement);
       },
       error: (error) => {
-        console.error('Error al actualizar pasteurización:', error);
-        this.mostrarError('Error al actualizar la pasteurización');
+        this.manejarErrorActualizacion(error);
       }
     });
+  }
+
+  private prepararDatosParaCreacion(dataRow: PasterizacionData): PasterizacionData {
+    return {
+      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion.trim(),
+      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion.trim(),
+      id_control_reenvase: this.idControlReenvase!
+    };
+  }
+
+  private prepararDatosParaActualizacion(dataRow: PasterizacionData): PasterizacionData {
+    return {
+      id: dataRow.id,
+      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion.trim(),
+      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion.trim(),
+      id_control_reenvase: dataRow.id_control_reenvase
+    };
+  }
+
+  private manejarExitoCreacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
+    console.log('Pasteurización creada:', response);
+
+    dataRow.isNew = false;
+    dataRow.id = response.id || Date.now();
+    delete dataRow._uid;
+
+    this.resetearEstadoEdicion();
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarExito(response.message || 'Pasteurización creada correctamente');
+  }
+
+  private manejarExitoActualizacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
+    console.log('Pasteurización actualizada:', response);
+
+    const rowId = this.getRowId(dataRow);
+    delete this.clonedPasterizaciones[rowId];
+    this.editingRow = null;
+
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarExito(response.message || 'Pasteurización actualizada correctamente');
+  }
+
+  private manejarErrorCreacion(error: any): void {
+    console.error('Error al crear pasteurización:', error);
+    this.mostrarError('Error al crear la pasteurización');
+  }
+
+  private manejarErrorActualizacion(error: any): void {
+    console.error('Error al actualizar pasteurización:', error);
+    this.mostrarError('Error al actualizar la pasteurización');
+  }
+
+  private cancelarCreacionNueva(index: number): void {
+    this.eliminarFilaTemporal(index);
+    this.hasNewRowInEditing = false;
+  }
+
+  private cancelarEdicionExistente(dataRow: PasterizacionData, index: number): void {
+    const rowId = this.getRowId(dataRow);
+    this.dataPasterizacion[index] = this.clonedPasterizaciones[rowId];
+    delete this.clonedPasterizaciones[rowId];
+  }
+
+  private obtenerElementoFila(event: MouseEvent): HTMLTableRowElement {
+    return (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
   }
 
   private eliminarFilaTemporal(index: number): void {

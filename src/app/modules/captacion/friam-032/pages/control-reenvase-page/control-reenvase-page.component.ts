@@ -3,6 +3,8 @@ import { HeaderComponent } from "src/app/shared/components/header/header.compone
 import { ControlReenvaseTableComponent } from "../../components/control-reenvase-table/control-reenvase-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterButtonComponent } from "../../components/new-register-control-reenvase/new-register-control-reenvase.component";
+import { PasterizacionDialogComponent } from "../../components/pasterizacion-dialog/pasterizacion-dialog.component";
+import type { ControlReenvaseData } from '../../interfaces/control-reenvase.interface';
 
 @Component({
   selector: 'control-reenvase-page',
@@ -10,7 +12,8 @@ import { NewRegisterButtonComponent } from "../../components/new-register-contro
     HeaderComponent,
     ControlReenvaseTableComponent,
     MonthPickerComponent,
-    NewRegisterButtonComponent
+    NewRegisterButtonComponent,
+    PasterizacionDialogComponent
   ],
   templateUrl: './control-reenvase-page.component.html',
   styleUrl: './control-reenvase-page.component.scss'
@@ -25,6 +28,9 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
 
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  showPasterizacionDialog: boolean = false;
+  selectedControlReenvaseData: ControlReenvaseData | null = null;
 
   ngOnInit(): void {
     this.prepararFiltroMesActual();
@@ -44,6 +50,16 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);
+  }
+
+  onRowClick(controlReenvaseData: ControlReenvaseData): void {
+    this.selectedControlReenvaseData = controlReenvaseData;
+    this.showPasterizacionDialog = true;
+  }
+
+  onPasterizacionDialogClosed(): void {
+    this.showPasterizacionDialog = false;
+    this.selectedControlReenvaseData = null;
   }
 
   private prepararFiltroMesActual(): void {

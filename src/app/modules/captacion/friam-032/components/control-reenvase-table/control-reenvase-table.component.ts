@@ -1,5 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { TableModule, Table } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -35,6 +34,7 @@ import type { ControlReenvaseData, ResponsableOption, DonanteOption } from '../.
 export class ControlReenvaseTableComponent implements OnInit {
 
   @ViewChild('tableControlReenvase') table!: Table;
+  @Output() rowClick = new EventEmitter<ControlReenvaseData>();
 
   loading: boolean = false;
   editingRow: ControlReenvaseData | null = null;
@@ -69,8 +69,7 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   constructor(
     private readonly controlReenvaseService: ControlReenvaseService,
-    private readonly messageService: MessageService,
-    private readonly router: Router
+    private readonly messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -129,17 +128,13 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   onRowClick(rowData: ControlReenvaseData): void {
-  if (this.isAnyRowEditing()) {
-    this.showWarningMessage('Debe guardar o cancelar la edición actual antes de ver las pasteurizaciones');
-    return;
-  }
-
-  this.router.navigate(['/blh/captacion/control-reenvase/pasterizacion'], {
-    queryParams: {
-      noDonante: rowData.no_donante
+    if (this.isAnyRowEditing()) {
+      this.showWarningMessage('Debe guardar o cancelar la edición actual antes de ver las pasteurizaciones');
+      return;
     }
-  });
-}
+
+    this.rowClick.emit(rowData);
+  }
 
   private loadDataControlReenvase(): void {
     this.loading = true;

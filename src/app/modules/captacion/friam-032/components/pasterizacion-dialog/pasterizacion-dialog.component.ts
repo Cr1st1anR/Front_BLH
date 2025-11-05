@@ -32,6 +32,13 @@ export class PasterizacionDialogComponent implements OnChanges {
 
   loading: boolean = false;
 
+  get dialogHeader(): string {
+    if (this.controlReenvaseData?.no_donante) {
+      return `Código: ${this.controlReenvaseData.no_donante}`;
+    }
+    return 'Pasteurizaciones';
+  }
+
   get idControlReenvase(): number | null {
     return this.controlReenvaseData?.id || null;
   }

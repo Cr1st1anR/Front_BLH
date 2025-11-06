@@ -44,8 +44,9 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   private isInitialLoad: boolean = true;
 
   readonly headersPasterizacion = [
-    { header: 'N° DE FRASCO DE PASTEURIZACIÓN', field: 'no_frasco_pasterizacion', width: '200px', tipo: 'text' },
+    { header: 'N° DE FRASCO DE PASTEURIZACIÓN', field: 'no_frasco_pasterizacion', width: '250px', tipo: 'text' },
     { header: 'VOLUMEN', field: 'volumen_frasco_pasterizacion', width: '150px', tipo: 'text' },
+    { header: 'OBSERVACIONES', field: 'observaciones_pasterizacion', width: '200px', tipo: 'text' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
 
@@ -81,7 +82,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
       .subscribe({
         next: (todasLasPasterizaciones: PasterizacionData[]) => {
           this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
-            todasLasPasterizaciones, 
+            todasLasPasterizaciones,
             this.idControlReenvase!
           );
           this.mostrarMensajeCarga(this.dataPasterizacion);
@@ -95,10 +96,10 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private filtrarPasterizacionesPorControlReenvase(
-    pasterizaciones: PasterizacionData[], 
+    pasterizaciones: PasterizacionData[],
     idControlReenvase: number
   ): PasterizacionData[] {
-    return pasterizaciones.filter(item => 
+    return pasterizaciones.filter(item =>
       item.id_control_reenvase === idControlReenvase
     );
   }
@@ -113,6 +114,37 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     this.mostrarInfo('Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
+  onObservacionesChange(rowData: PasterizacionData): void {
+    if (rowData.observaciones_pasterizacion?.trim()) {
+      rowData.no_frasco_pasterizacion = '';
+      rowData.volumen_frasco_pasterizacion = '0';
+    } else {
+      const siguienteNumero = this.obtenerSiguienteNumeroConsecutivo();
+      rowData.no_frasco_pasterizacion = `LHP 25 ${siguienteNumero}`;
+      rowData.volumen_frasco_pasterizacion = '';
+    }
+  }
+
+  private obtenerSiguienteNumeroConsecutivo(): number {
+    const frascosSinObservaciones = this.dataPasterizacion.filter(item =>
+      !item.observaciones_pasterizacion?.trim() &&
+      item.no_frasco_pasterizacion?.includes('LHP 25')
+    );
+
+    const numerosUsados = frascosSinObservaciones
+      .map(item => {
+        const match = item.no_frasco_pasterizacion?.match(/LHP 25 (\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(num => num > 0);
+
+    if (numerosUsados.length === 0) {
+      return 1;
+    }
+
+    return Math.max(...numerosUsados) + 1;
+  }
+
   onRowEditInit(dataRow: PasterizacionData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.mostrarAdvertencia('Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -124,7 +156,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
 
   onRowEditSave(dataRow: PasterizacionData, index: number, event: MouseEvent): void {
     if (!this.validarCamposRequeridos(dataRow)) {
-      this.mostrarError('Por favor complete todos los campos requeridos');
+      this.mostrarError('Por favor complete los campos requeridos');
       return;
     }
 
@@ -147,10 +179,13 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private construirNuevaPasterizacion(): PasterizacionData {
+    const siguienteNumero = this.obtenerSiguienteNumeroConsecutivo();
+
     return {
       id: null,
-      no_frasco_pasterizacion: '',
+      no_frasco_pasterizacion: `LHP 25 ${siguienteNumero}`,
       volumen_frasco_pasterizacion: '',
+      observaciones_pasterizacion: '',
       id_control_reenvase: this.idControlReenvase!,
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
@@ -202,8 +237,9 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
 
   private prepararDatosParaCreacion(dataRow: PasterizacionData): PasterizacionData {
     return {
-      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion.trim(),
-      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion.trim(),
+      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion?.trim() || '',
+      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion?.trim() || '0',
+      observaciones_pasterizacion: dataRow.observaciones_pasterizacion?.trim() || '',
       id_control_reenvase: this.idControlReenvase!
     };
   }
@@ -211,15 +247,14 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   private prepararDatosParaActualizacion(dataRow: PasterizacionData): PasterizacionData {
     return {
       id: dataRow.id,
-      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion.trim(),
-      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion.trim(),
+      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion?.trim() || '',
+      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion?.trim() || '0',
+      observaciones_pasterizacion: dataRow.observaciones_pasterizacion?.trim() || '',
       id_control_reenvase: dataRow.id_control_reenvase
     };
   }
 
   private manejarExitoCreacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
-    console.log('Pasteurización creada:', response);
-
     dataRow.isNew = false;
     dataRow.id = response.id || Date.now();
     delete dataRow._uid;
@@ -230,8 +265,6 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private manejarExitoActualizacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
-    console.log('Pasteurización actualizada:', response);
-
     const rowId = this.getRowId(dataRow);
     delete this.clonedPasterizaciones[rowId];
     this.editingRow = null;
@@ -241,12 +274,10 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private manejarErrorCreacion(error: any): void {
-    console.error('Error al crear pasteurización:', error);
     this.mostrarError('Error al crear la pasteurización');
   }
 
   private manejarErrorActualizacion(error: any): void {
-    console.error('Error al actualizar pasteurización:', error);
     this.mostrarError('Error al actualizar la pasteurización');
   }
 
@@ -285,6 +316,12 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private validarCamposRequeridos(dataRow: PasterizacionData): boolean {
+    const tieneObservaciones = !!(dataRow.observaciones_pasterizacion?.trim());
+
+    if (tieneObservaciones) {
+      return true;
+    }
+
     return !!(
       dataRow.no_frasco_pasterizacion?.trim() &&
       dataRow.volumen_frasco_pasterizacion?.trim()
@@ -324,7 +361,6 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private manejarErrorCarga(error: any): void {
-    console.error('Error al cargar pasteurizaciones:', error);
     this.mostrarError('Error al cargar las pasteurizaciones');
   }
 

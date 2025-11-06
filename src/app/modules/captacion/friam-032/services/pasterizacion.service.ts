@@ -15,31 +15,43 @@ export class PasterizacionService {
         id: 1,
         no_frasco_pasterizacion: 'LHP 25 5',
         volumen_frasco_pasterizacion: '480',
+        observaciones_pasterizacion: '',
         id_control_reenvase: 2
       },
       {
         id: 2,
         no_frasco_pasterizacion: 'LHP 25 6',
         volumen_frasco_pasterizacion: '750',
+        observaciones_pasterizacion: '',
         id_control_reenvase: 2
       },
       {
         id: 3,
-        no_frasco_pasterizacion: 'LHP 25 7',
-        volumen_frasco_pasterizacion: '1100',
-        id_control_reenvase: 3
+        no_frasco_pasterizacion: '',
+        volumen_frasco_pasterizacion: '0',
+        observaciones_pasterizacion: 'Sale por impureza',
+        id_control_reenvase: 2
       },
       {
         id: 4,
-        no_frasco_pasterizacion: 'LHP 25 8',
-        volumen_frasco_pasterizacion: '850',
-        id_control_reenvase: 4
+        no_frasco_pasterizacion: 'LHP 25 7',
+        volumen_frasco_pasterizacion: '1100',
+        observaciones_pasterizacion: '',
+        id_control_reenvase: 3
       },
       {
         id: 5,
+        no_frasco_pasterizacion: 'LHP 25 8',
+        volumen_frasco_pasterizacion: '850',
+        observaciones_pasterizacion: '',
+        id_control_reenvase: 4
+      },
+      {
+        id: 6,
         no_frasco_pasterizacion: 'LHP 25 9',
         volumen_frasco_pasterizacion: '1020',
-        id_control_reenvase: 5
+        observaciones_pasterizacion: '',
+        id_control_reenvase: 5,
       }
     ];
 
@@ -47,7 +59,6 @@ export class PasterizacionService {
   }
 
   postPasterizacion(pasterizacion: PasterizacionData): Observable<any> {
-    // Simulación temporal
     return of({
       success: true,
       id: Date.now(),
@@ -56,11 +67,9 @@ export class PasterizacionService {
   }
 
   putPasterizacion(id: number, pasterizacion: PasterizacionData): Observable<any> {
-    // Simulación temporal
     return of({
       success: true,
       message: 'Pasteurización actualizada correctamente'
     });
   }
-
 }

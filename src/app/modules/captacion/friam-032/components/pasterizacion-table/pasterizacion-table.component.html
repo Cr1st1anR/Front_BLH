@@ -7,9 +7,9 @@
 </div>
 }
 
-<div class="flex flex-col items-center justify-center mx-auto my-6 max-w-4xl">
+<div class="flex flex-col items-center justify-center mx-auto my-6 max-w-6xl">
   <p-table #tablePasterizacion [value]="dataPasterizacion" [scrollable]="true" scrollHeight="400px"
-    [columns]="headersPasterizacion" [tableStyle]="{ 'min-width': '30rem', 'max-width': '60rem' }" dataKey="id"
+    [columns]="headersPasterizacion" [tableStyle]="{ 'min-width': '50rem', 'max-width': '80rem' }" dataKey="id"
     editMode="row">
 
     <ng-template #header let-columns>
@@ -28,7 +28,7 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="text" [(ngModel)]="rowData.no_frasco_pasterizacion" class="w-full"
-                placeholder="Número de frasco">
+                placeholder="Número de frasco" [readonly]="!!rowData.observaciones_pasterizacion?.trim()">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.no_frasco_pasterizacion || 'Sin número' }}
@@ -38,10 +38,20 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="text" [(ngModel)]="rowData.volumen_frasco_pasterizacion" class="w-full"
-                placeholder="ml">
+                placeholder="ml" [readonly]="!!rowData.observaciones_pasterizacion?.trim()">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.volumen_frasco_pasterizacion || '0' }} ml
+            </ng-template>
+          </p-cellEditor>
+          } @else if (col.field === 'observaciones_pasterizacion') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.observaciones_pasterizacion" class="w-full"
+                placeholder="Ej: Salió por impureza" (ngModelChange)="onObservacionesChange(rowData)">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.observaciones_pasterizacion || 'Sin observaciones' }}
             </ng-template>
           </p-cellEditor>
           } @else if (col.field === 'acciones') {

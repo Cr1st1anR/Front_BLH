@@ -51,11 +51,11 @@ export class ControlReenvaseTableComponent implements OnInit {
   donantesSugeridos: DonanteOption[] = [];
 
   readonly headersControlReenvase = [
-    { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
     { header: 'No. Donante', field: 'no_donante', width: '200px', tipo: 'autocomplete' },
     { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '100px', tipo: 'text' },
     { header: 'VOLUMEN', field: 'volumen_frasco_anterior', width: '150px', tipo: 'text' },
+    { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
   ];
 

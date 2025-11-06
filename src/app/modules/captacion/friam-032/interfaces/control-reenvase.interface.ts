@@ -19,3 +19,10 @@ export interface DonanteOption {
   value: string;
   documento?: string;
 }
+
+export interface FrascoOption {
+  label: string;
+  value: string;
+  donante: string; 
+  volumen?: string;
+}

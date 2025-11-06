@@ -10,8 +10,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { TooltipModule } from 'primeng/tooltip';
 import { ControlReenvaseService } from '../../services/control-reenvase.service';
-import type { ControlReenvaseData, ResponsableOption, DonanteOption } from '../../interfaces/control-reenvase.interface';
+import type { ControlReenvaseData, ResponsableOption, DonanteOption, FrascoOption } from '../../interfaces/control-reenvase.interface';
 
 @Component({
   selector: 'control-reenvase-table',
@@ -25,7 +26,8 @@ import type { ControlReenvaseData, ResponsableOption, DonanteOption } from '../.
     InputTextModule,
     DatePickerModule,
     SelectModule,
-    AutoCompleteModule
+    AutoCompleteModule,
+    TooltipModule
   ],
   templateUrl: './control-reenvase-table.component.html',
   styleUrl: './control-reenvase-table.component.scss',
@@ -50,10 +52,13 @@ export class ControlReenvaseTableComponent implements OnInit {
   opcionesDonantes: DonanteOption[] = [];
   donantesSugeridos: DonanteOption[] = [];
 
+  opcionesFrascos: FrascoOption[] = [];
+  frascosFiltrados: FrascoOption[] = [];
+
   readonly headersControlReenvase = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
     { header: 'No. Donante', field: 'no_donante', width: '200px', tipo: 'autocomplete' },
-    { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '100px', tipo: 'text' },
+    { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '200px', tipo: 'select' },
     { header: 'VOLUMEN', field: 'volumen_frasco_anterior', width: '150px', tipo: 'text' },
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
@@ -97,35 +102,105 @@ export class ControlReenvaseTableComponent implements OnInit {
       { label: '456789 - Alejandra Torres Vega', value: '456789', documento: '33445566' },
       { label: '890123 - Mónica Ramírez Cruz', value: '890123', documento: '77889900' }
     ];
+
+    this.opcionesFrascos = [
+      { label: 'LHC 25 1', value: 'LHC 25 1', donante: '123456', volumen: '250' },
+      { label: 'LHC 25 2', value: 'LHC 25 2', donante: '123456', volumen: '300' },
+      { label: 'LHC 25 5', value: 'LHC 25 5', donante: '123456', volumen: '500' },
+
+      { label: 'LHC 25 3', value: 'LHC 25 3', donante: '789012', volumen: '450' },
+      { label: 'LHC 25 6', value: 'LHC 25 6', donante: '789012', volumen: '800' },
+      { label: 'LHC 25 10', value: 'LHC 25 10', donante: '789012', volumen: '600' },
+
+      { label: 'LHC 25 4', value: 'LHC 25 4', donante: '345678', volumen: '350' },
+      { label: 'LHC 25 7', value: 'LHC 25 7', donante: '345678', volumen: '1200' },
+      { label: 'LHC 25 11', value: 'LHC 25 11', donante: '345678', volumen: '700' },
+
+      { label: 'LHC 25 8', value: 'LHC 25 8', donante: '901234', volumen: '900' },
+      { label: 'LHC 25 12', value: 'LHC 25 12', donante: '901234', volumen: '550' },
+
+      { label: 'LHC 25 9', value: 'LHC 25 9', donante: '567890', volumen: '1100' },
+      { label: 'LHC 25 13', value: 'LHC 25 13', donante: '567890', volumen: '400' },
+
+      { label: 'LHC 25 14', value: 'LHC 25 14', donante: '234567', volumen: '650' },
+      { label: 'LHC 25 15', value: 'LHC 25 15', donante: '678901', volumen: '750' },
+      { label: 'LHC 25 16', value: 'LHC 25 16', donante: '012345', volumen: '850' },
+      { label: 'LHC 25 17', value: 'LHC 25 17', donante: '456789', volumen: '950' },
+      { label: 'LHC 25 18', value: 'LHC 25 18', donante: '890123', volumen: '1050' }
+    ];
   }
 
-  buscarDonantes(event: any): void {
-    const query = event.query?.toLowerCase() || '';
-
-    if (query.length >= 1) {
-      this.donantesSugeridos = this.opcionesDonantes.filter(donante =>
-        donante.label.toLowerCase().includes(query) ||
-        donante.value.includes(query) ||
-        donante.documento?.includes(query)
-      );
-    } else {
-      this.donantesSugeridos = [];
-    }
+  filtrarFrascosPorDonante(codigoDonante: string): FrascoOption[] {
+    if (!codigoDonante) return [];
+    return this.opcionesFrascos.filter(frasco => frasco.donante === codigoDonante);
   }
 
   onDonanteSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    if (typeof event === 'object' && event.value) {
-      rowData.no_donante = event.value;
-    } else if (typeof event === 'string') {
-      rowData.no_donante = event;
+  console.log('🔍 Evento donante recibido:', event);
+
+  let codigoDonante = '';
+
+  if (event && event.value) {
+    codigoDonante = event.value;
+    console.log('✅ Donante seleccionado desde Select:', codigoDonante);
+  } else if (typeof event === 'string') {
+    codigoDonante = event;
+    console.log('✅ Donante como string:', codigoDonante);
+  } else {
+    console.log('⚠️ Evento no válido, ignorando:', event);
+    return;
+  }
+
+  console.log('🎯 Código donante final:', codigoDonante);
+
+  rowData.no_donante = codigoDonante;
+
+  if (codigoDonante && codigoDonante.trim()) {
+    rowData.no_frasco_anterior = '';
+    rowData.volumen_frasco_anterior = '';
+
+    this.frascosFiltrados = this.filtrarFrascosPorDonante(codigoDonante);
+    console.log('🔧 Frascos filtrados para', codigoDonante, ':', this.frascosFiltrados);
+  } else {
+    rowData.no_frasco_anterior = '';
+    rowData.volumen_frasco_anterior = '';
+    this.frascosFiltrados = [];
+    console.log('🧹 Frascos limpiados');
+  }
+}
+
+  onFrascoSeleccionado(event: any, rowData: ControlReenvaseData): void {
+    if (event && event.value) {
+      rowData.no_frasco_anterior = event.value;
+
+      const frascoSeleccionado = this.opcionesFrascos.find(f => f.value === event.value);
+      if (frascoSeleccionado && frascoSeleccionado.volumen) {
+        rowData.volumen_frasco_anterior = frascoSeleccionado.volumen;
+      }
     }
   }
 
   onResponsableSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    if (event && event.value) {
-      rowData.responsable = event.value;
-    }
+  console.log('🔍 Evento responsable recibido:', event);
+
+  let responsable = '';
+
+  if (event && typeof event === 'object' && event.value) {
+    responsable = event.value;
+    console.log('✅ Responsable seleccionado:', responsable);
   }
+  else if (typeof event === 'string') {
+    responsable = event;
+    console.log('✅ Responsable como string:', responsable);
+  }
+  else {
+    console.log('⚠️ Evento responsable no reconocido:', event);
+    return;
+  }
+
+  rowData.responsable = responsable;
+  console.log('🎯 Responsable asignado:', rowData.responsable);
+}
 
   onRowClick(rowData: ControlReenvaseData): void {
     if (this.isAnyRowEditing()) {
@@ -135,6 +210,40 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     this.rowClick.emit(rowData);
   }
+
+  isCampoEditable(campo: string, rowData: ControlReenvaseData): boolean {
+  if (campo === 'volumen_frasco_anterior' || campo === 'responsable') {
+    return true;
+  }
+
+  if (campo === 'fecha') {
+    return rowData.isNew === true;
+  }
+
+  if (campo === 'no_donante') {
+    return rowData.isNew === true;
+  }
+
+  if (campo === 'no_frasco_anterior') {
+    return !!(rowData.no_donante && rowData.no_donante.trim());
+  }
+
+  return false;
+}
+
+  getFrascosDisponibles(rowData: ControlReenvaseData): FrascoOption[] {
+  console.log('Obteniendo frascos para rowData:', rowData);
+
+  if (!rowData.no_donante) {
+    console.log('No hay donante seleccionado');
+    return [];
+  }
+
+  const frascos = this.filtrarFrascosPorDonante(rowData.no_donante);
+  console.log('Frascos disponibles para', rowData.no_donante, ':', frascos);
+
+  return frascos;
+}
 
   private loadDataControlReenvase(): void {
     this.loading = true;
@@ -344,7 +453,7 @@ export class ControlReenvaseTableComponent implements OnInit {
   private createNewRecord(): ControlReenvaseData {
     return {
       id: null,
-      fecha: null,
+      fecha: new Date(),
       responsable: '',
       no_donante: '',
       no_frasco_anterior: '',
@@ -355,19 +464,28 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   onRowEditInit(dataRow: ControlReenvaseData): void {
-    if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
-      this.showWarningMessage('Debe guardar o cancelar la edición actual antes de editar otra fila.');
-      return;
-    }
-
-    const rowId = this.getRowId(dataRow);
-    this.clonedData[rowId] = { ...dataRow };
-    this.editingRow = dataRow;
-
-    if (!dataRow.isNew) {
-      this.hasNewRowInEditing = false;
-    }
+  if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
+    this.showWarningMessage('Debe guardar o cancelar la edición actual antes de editar otra fila.');
+    return;
   }
+
+  const rowId = this.getRowId(dataRow);
+  this.clonedData[rowId] = { ...dataRow };
+  this.editingRow = dataRow;
+
+  if (dataRow.no_donante) {
+    this.frascosFiltrados = this.filtrarFrascosPorDonante(dataRow.no_donante);
+    console.log('Frascos preparados para edición:', this.frascosFiltrados);
+  } else {
+    this.frascosFiltrados = [];
+  }
+
+  if (!dataRow.isNew) {
+    this.hasNewRowInEditing = false;
+  }
+
+  console.log('Iniciando edición de fila:', dataRow);
+}
 
   onRowEditSave(dataRow: ControlReenvaseData, index: number, event: MouseEvent): void {
     if (!this.validateRequiredFields(dataRow)) {
@@ -412,14 +530,25 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private validateRequiredFields(dataRow: ControlReenvaseData): boolean {
-    return !!(
-      dataRow.fecha &&
-      dataRow.responsable?.trim() &&
-      dataRow.no_donante?.trim() &&
-      dataRow.no_frasco_anterior?.trim() &&
-      dataRow.volumen_frasco_anterior?.trim()
-    );
-  }
+  const isValid = !!(
+    dataRow.fecha &&
+    dataRow.responsable?.trim() &&
+    dataRow.no_donante?.trim() &&
+    dataRow.no_frasco_anterior?.trim() &&
+    dataRow.volumen_frasco_anterior?.trim()
+  );
+
+  console.log('Validación de campos:', {
+    fecha: !!dataRow.fecha,
+    responsable: !!dataRow.responsable?.trim(),
+    donante: !!dataRow.no_donante?.trim(),
+    frasco: !!dataRow.no_frasco_anterior?.trim(),
+    volumen: !!dataRow.volumen_frasco_anterior?.trim(),
+    isValid
+  });
+
+  return isValid;
+}
 
   private resetEditingState(): void {
     this.hasNewRowInEditing = false;

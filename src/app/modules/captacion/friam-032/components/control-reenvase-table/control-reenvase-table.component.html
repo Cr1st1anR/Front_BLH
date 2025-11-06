@@ -42,9 +42,15 @@
           @if (col.field === 'fecha') {
           <p-cellEditor>
             <ng-template pTemplate="input">
+              @if (isCampoEditable('fecha', rowData)) {
               <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
                 placeholder="Seleccione fecha" appendTo="body" class="w-full">
               </p-datepicker>
+              } @else {
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full" [disabled]="true">
+              </p-datepicker>
+              }
             </ng-template>
             <ng-template pTemplate="output">
               @if (rowData.fecha) {
@@ -61,7 +67,8 @@
             <ng-template pTemplate="input">
               <p-select [(ngModel)]="rowData.responsable" [options]="opcionesResponsables" optionLabel="label"
                 optionValue="value" placeholder="Seleccione responsable"
-                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full">
+                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full"
+                [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
@@ -73,10 +80,19 @@
           @else if (col.field === 'no_donante') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-autoComplete [(ngModel)]="rowData.no_donante" [suggestions]="donantesSugeridos"
-                (completeMethod)="buscarDonantes($event)" (onSelect)="onDonanteSeleccionado($event, rowData)"
-                field="label" [minLength]="1" placeholder="Escriba el número del donante" [dropdown]="false"
-                [multiple]="false" [showClear]="true" appendTo="body" class="w-full">
+              @if (isCampoEditable('no_donante', rowData)) {
+              <p-select [(ngModel)]="rowData.no_donante" [options]="opcionesDonantes" optionLabel="label"
+                optionValue="value" placeholder="Seleccione donante" (onChange)="onDonanteSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true" [filter]="true" filterBy="label,value,documento"
+                [filterMatchMode]="'contains'" [filterPlaceholder]="'Buscar donante...'">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @if (selectedOption) {
+                  <span>{{ selectedOption.value }}</span>
+                  } @else {
+                  <span>Seleccione donante</span>
+                  }
+                </ng-template>
 
                 <ng-template #item let-donante>
                   <div class="flex flex-col">
@@ -84,7 +100,11 @@
                     <small class="text-gray-500">Doc: {{ donante.documento }}</small>
                   </div>
                 </ng-template>
-              </p-autoComplete>
+              </p-select>
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData.no_donante" class="w-full" placeholder="No editable"
+                [disabled]="true">
+              }
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.no_donante || 'Sin donante' }}
@@ -95,11 +115,18 @@
           @else if (col.field === 'no_frasco_anterior') {
           <p-cellEditor>
             <ng-template pTemplate="input">
+              @if (isCampoEditable('no_frasco_anterior', rowData)) {
+              <p-select [(ngModel)]="rowData.no_frasco_anterior" [options]="getFrascosDisponibles(rowData)"
+                optionLabel="label" optionValue="value" placeholder="Seleccione frasco"
+                (onChange)="onFrascoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
+              </p-select>
+              } @else {
               <input pInputText type="text" [(ngModel)]="rowData.no_frasco_anterior" class="w-full"
-                placeholder="Número de frasco">
+                placeholder="Seleccione primero un donante" [disabled]="true">
+              }
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.no_frasco_anterior || 'Sin número' }}
+              {{ rowData.no_frasco_anterior || 'Sin frasco' }}
             </ng-template>
           </p-cellEditor>
           }
@@ -148,4 +175,8 @@
       </tr>
     </ng-template>
   </p-table>
+
+  @if (!dataControlReenvase || dataControlReenvase.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
 </div>

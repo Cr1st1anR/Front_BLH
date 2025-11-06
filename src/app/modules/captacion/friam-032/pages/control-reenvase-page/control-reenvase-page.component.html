@@ -8,8 +8,6 @@
 <control-reenvase-table (rowClick)="onRowClick($event)" />
 
 @if (showPasterizacionDialog && selectedControlReenvaseData) {
-<pasterizacion-dialog
-  [visible]="showPasterizacionDialog"
-  [controlReenvaseData]="selectedControlReenvaseData"
+<pasterizacion-dialog [visible]="showPasterizacionDialog" [controlReenvaseData]="selectedControlReenvaseData"
   (dialogClosed)="onPasterizacionDialogClosed()" />
 }

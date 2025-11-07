@@ -27,7 +27,7 @@ export class ControlReenvaseService {
       );
   }
 
-  getFrascosByMadreDonante(idMadreDonante: string): Observable<FrascoOption[]> {
+  getFrascosByMadreDonante(idMadreDonante: string): Observable<any[]> {
     return this.http.get<any>(`${environment.ApiBLH}/getFrascosByMadreDonante/${idMadreDonante}`, {
       observe: 'response'
     })
@@ -37,44 +37,13 @@ export class ControlReenvaseService {
             return [];
           }
 
-          const frascos = response.body?.data || [];
-
-          return frascos.map((frasco: any) => {
-            const esExtraccion = frasco.extraccion !== null;
-            const frascoData = esExtraccion ? frasco.extraccion : frasco.frascoRecolectado;
-
-            if (!frascoData) return null;
-
-            const codigoLHC = this.generarCodigoLHC(frasco.id);
-
-            return {
-              label: codigoLHC,
-              value: codigoLHC,
-              donante: idMadreDonante,
-              volumen: frascoData.volumen ? frascoData.volumen.toString() : '0',
-              id_frasco_principal: frasco.id,
-              id_frasco_data: frascoData.id,
-              tipo: esExtraccion ? 'extraccion' : 'recolectado',
-              fechaExtraccion: frascoData.fechaDeExtraccion || frascoData.fechaExtraccion,
-              termo: frascoData.termo,
-              gaveta: frascoData.gaveta,
-              procedencia: frasco.procedencia,
-              fechaVencimiento: frasco.fechaVencimiento,
-              fechaEntrada: frasco.fechaEntrada,
-              fechaSalida: frasco.fechaSalida
-            };
-          }).filter((frasco: any) => frasco !== null);
+          return response.body?.data || [];
         }),
         catchError((error: HttpErrorResponse) => {
           console.error('Error real en getFrascosByMadreDonante:', error);
           return throwError(() => error);
         })
       );
-  }
-
-  private generarCodigoLHC(id: number): string {
-    const añoActual = new Date().getFullYear().toString().slice(-2);
-    return `LHC ${añoActual} ${id}`;
   }
 
   getControlReenvaseData(): ControlReenvaseData[] {

@@ -103,6 +103,40 @@ export class ControlReenvaseTableComponent implements OnInit {
     return match ? parseInt(match[1]) : null;
   }
 
+  /**
+   * Transformar datos de frascos de la API a FrascoOption
+   */
+  private transformarFrascosAPI(frascos: any[], idMadreDonante: string): FrascoOption[] {
+    return frascos
+      .map((frasco: any) => {
+        const esExtraccion = frasco.extraccion !== null;
+        const frascoData = esExtraccion ? frasco.extraccion : frasco.frascoRecolectado;
+
+        if (!frascoData) return null;
+
+        const codigoLHC = this.generarCodigoLHC(frasco.id);
+
+        return {
+          label: codigoLHC,
+          value: codigoLHC,
+          donante: idMadreDonante,
+          volumen: frascoData.volumen ? frascoData.volumen.toString() : '0',
+          // info adicional para uso interno
+          id_frasco_principal: frasco.id,
+          id_frasco_data: frascoData.id,
+          tipo: esExtraccion ? 'extraccion' : 'recolectado',
+          fechaExtraccion: frascoData.fechaDeExtraccion || frascoData.fechaExtraccion,
+          termo: frascoData.termo,
+          gaveta: frascoData.gaveta,
+          procedencia: frasco.procedencia,
+          fechaVencimiento: frasco.fechaVencimiento,
+          fechaEntrada: frasco.fechaEntrada,
+          fechaSalida: frasco.fechaSalida
+        } as FrascoOption;
+      })
+      .filter((frasco): frasco is FrascoOption => frasco !== null);
+  }
+
   private inicializarOpciones(): void {
     this.opcionesResponsables = [
       { label: 'Juan López', value: 'Juan López' },
@@ -163,16 +197,16 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     this.controlReenvaseService.getFrascosByMadreDonante(idMadreDonante).subscribe({
       next: (frascos) => {
-        this.frascosFiltrados = frascos;
+        this.frascosFiltrados = this.transformarFrascosAPI(frascos, idMadreDonante);
         this.loadingFrascos = false;
 
-        console.log(`Frascos cargados para donante ${idMadreDonante}:`, frascos);
+        console.log(`Frascos cargados para donante ${idMadreDonante}:`, this.frascosFiltrados);
 
-        if (frascos.length > 0) {
+        if (this.frascosFiltrados.length > 0) {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
-            detail: `${frascos.length} frasco${frascos.length > 1 ? 's' : ''} disponible${frascos.length > 1 ? 's' : ''} para la donante`,
+            detail: `${this.frascosFiltrados.length} frasco${this.frascosFiltrados.length > 1 ? 's' : ''} disponible${this.frascosFiltrados.length > 1 ? 's' : ''} para la donante`,
             key: 'tr',
             life: 2000,
           });

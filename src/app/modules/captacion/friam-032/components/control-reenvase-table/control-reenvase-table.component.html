@@ -81,10 +81,17 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               @if (isCampoEditable('no_donante', rowData)) {
+              @if (loadingDonantes) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando donantes...</span>
+              </div>
+              } @else {
               <p-select [(ngModel)]="rowData.no_donante" [options]="opcionesDonantes" optionLabel="label"
                 optionValue="value" placeholder="Seleccione donante" (onChange)="onDonanteSeleccionado($event, rowData)"
                 appendTo="body" class="w-full" [showClear]="true" [filter]="true" filterBy="label,value,documento"
-                [filterMatchMode]="'contains'" [filterPlaceholder]="'Buscar donante...'">
+                [filterMatchMode]="'contains'" [filterPlaceholder]="'Buscar donante...'"
+                [disabled]="opcionesDonantes.length === 0">
 
                 <ng-template #selectedItem let-selectedOption>
                   @if (selectedOption) {
@@ -101,6 +108,7 @@
                   </div>
                 </ng-template>
               </p-select>
+              }
               } @else {
               <input pInputText type="text" [(ngModel)]="rowData.no_donante" class="w-full" placeholder="No editable"
                 [disabled]="true">
@@ -116,10 +124,45 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               @if (isCampoEditable('no_frasco_anterior', rowData)) {
+              <!-- Mostrar loading mientras cargan los frascos -->
+              @if (loadingFrascos && rowData.no_donante) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando frascos...</span>
+              </div>
+              } @else {
               <p-select [(ngModel)]="rowData.no_frasco_anterior" [options]="getFrascosDisponibles(rowData)"
                 optionLabel="label" optionValue="value" placeholder="Seleccione frasco"
-                (onChange)="onFrascoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
+                (onChange)="onFrascoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true"
+                [disabled]="!rowData.no_donante || loadingFrascos">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @if (selectedOption) {
+                  <span>{{ selectedOption.value }}</span>
+                  } @else {
+                  <span>Seleccione frasco</span>
+                  }
+                </ng-template>
+
+                <ng-template #item let-frasco>
+                  <div class="flex flex-col p-2">
+                    <span class="font-medium text-sm">{{ frasco.label }}</span>
+                    <div class="flex gap-2 text-xs text-gray-600 mt-1">
+                      <span class="bg-blue-100 px-1 rounded">Vol: {{ frasco.volumen }}ml</span>
+                      <span class="bg-green-100 px-1 rounded">
+                        {{ frasco.tipo === 'extraccion' ? 'Interna' : 'Externa' }}
+                      </span>
+                    </div>
+                    @if (frasco.procedencia) {
+                    <small class="text-gray-500 mt-1">Proc: {{ frasco.procedencia }}</small>
+                    }
+                    @if (frasco.fechaExtraccion) {
+                    <small class="text-gray-400">{{ frasco.fechaExtraccion | date:'dd/MM/yyyy' }}</small>
+                    }
+                  </div>
+                </ng-template>
               </p-select>
+              }
               } @else {
               <input pInputText type="text" [(ngModel)]="rowData.no_frasco_anterior" class="w-full"
                 placeholder="Seleccione primero un donante" [disabled]="true">

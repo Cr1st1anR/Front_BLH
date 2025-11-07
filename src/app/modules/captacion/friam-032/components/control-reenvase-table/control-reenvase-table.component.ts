@@ -11,6 +11,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TooltipModule } from 'primeng/tooltip';
+import { HttpClientModule } from '@angular/common/http';
 import { ControlReenvaseService } from '../../services/control-reenvase.service';
 import type { ControlReenvaseData, ResponsableOption, DonanteOption, FrascoOption } from '../../interfaces/control-reenvase.interface';
 
@@ -27,7 +28,8 @@ import type { ControlReenvaseData, ResponsableOption, DonanteOption, FrascoOptio
     DatePickerModule,
     SelectModule,
     AutoCompleteModule,
-    TooltipModule
+    TooltipModule,
+    HttpClientModule
   ],
   templateUrl: './control-reenvase-table.component.html',
   styleUrl: './control-reenvase-table.component.scss',
@@ -39,6 +41,8 @@ export class ControlReenvaseTableComponent implements OnInit {
   @Output() rowClick = new EventEmitter<ControlReenvaseData>();
 
   loading: boolean = false;
+  loadingDonantes: boolean = false;
+  loadingFrascos: boolean = false;
   editingRow: ControlReenvaseData | null = null;
   hasNewRowInEditing: boolean = false;
   clonedData: { [s: string]: ControlReenvaseData } = {};
@@ -79,6 +83,7 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.inicializarOpciones();
+    this.cargarMadresDonantes();
     this.loadDataControlReenvase();
   }
 
@@ -94,7 +99,6 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   private extraerIdDeCodigoLHC(codigoCompleto: string): number | null {
     if (!codigoCompleto) return null;
-
     const match = codigoCompleto.match(/LHC\s+\d+\s+(\d+)/);
     return match ? parseInt(match[1]) : null;
   }
@@ -107,6 +111,103 @@ export class ControlReenvaseTableComponent implements OnInit {
       { label: 'Ana García', value: 'Ana García' }
     ];
 
+    this.opcionesFrascos = [];
+  }
+
+  /**
+   * Cargar madres donantes desde la API
+   */
+  private cargarMadresDonantes(): void {
+    this.loadingDonantes = true;
+
+    this.controlReenvaseService.getMadresDonantes().subscribe({
+      next: (donantes) => {
+        this.opcionesDonantes = donantes;
+        this.loadingDonantes = false;
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: `${donantes.length} donante${donantes.length > 1 ? 's' : ''} cargada${donantes.length > 1 ? 's' : ''} correctamente`,
+          key: 'tr',
+          life: 2000,
+        });
+      },
+      error: (error) => {
+        this.loadingDonantes = false;
+        console.error('Error al cargar madres donantes:', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar las madres donantes. Usando datos locales.',
+          key: 'tr',
+          life: 4000,
+        });
+
+        // Fallback a datos estáticos en caso de error
+        this.cargarDonantesFallback();
+      }
+    });
+  }
+
+  /**
+   * Cargar frascos por madre donante desde la API
+   */
+  private cargarFrascosPorDonante(idMadreDonante: string): void {
+    if (!idMadreDonante) {
+      this.frascosFiltrados = [];
+      return;
+    }
+
+    this.loadingFrascos = true;
+
+    this.controlReenvaseService.getFrascosByMadreDonante(idMadreDonante).subscribe({
+      next: (frascos) => {
+        this.frascosFiltrados = frascos;
+        this.loadingFrascos = false;
+
+        console.log(`Frascos cargados para donante ${idMadreDonante}:`, frascos);
+
+        if (frascos.length > 0) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: `${frascos.length} frasco${frascos.length > 1 ? 's' : ''} disponible${frascos.length > 1 ? 's' : ''} para la donante`,
+            key: 'tr',
+            life: 2000,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Sin frascos',
+            detail: 'No se encontraron frascos disponibles para esta donante',
+            key: 'tr',
+            life: 2000,
+          });
+        }
+      },
+      error: (error) => {
+        this.loadingFrascos = false;
+        console.error('Error al cargar frascos:', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los frascos de la donante',
+          key: 'tr',
+          life: 4000,
+        });
+
+        this.frascosFiltrados = [];
+      }
+    });
+  }
+
+  /**
+   * Método de respaldo en caso de fallo de la API
+   */
+  private cargarDonantesFallback(): void {
     this.opcionesDonantes = [
       { label: '123456 - María Pérez González', value: '123456', documento: '12345678' },
       { label: '789012 - Ana García Rodríguez', value: '789012', documento: '87654321' },
@@ -118,27 +219,6 @@ export class ControlReenvaseTableComponent implements OnInit {
       { label: '012345 - Carolina Díaz Méndez', value: '012345', documento: '66778899' },
       { label: '456789 - Alejandra Torres Vega', value: '456789', documento: '33445566' },
       { label: '890123 - Mónica Ramírez Cruz', value: '890123', documento: '77889900' }
-    ];
-
-    this.opcionesFrascos = [
-      { label: this.generarCodigoLHC(1), value: this.generarCodigoLHC(1), donante: '123456', volumen: '250' },
-      { label: this.generarCodigoLHC(2), value: this.generarCodigoLHC(2), donante: '123456', volumen: '300' },
-      { label: this.generarCodigoLHC(5), value: this.generarCodigoLHC(5), donante: '123456', volumen: '500' },
-      { label: this.generarCodigoLHC(3), value: this.generarCodigoLHC(3), donante: '789012', volumen: '450' },
-      { label: this.generarCodigoLHC(6), value: this.generarCodigoLHC(6), donante: '789012', volumen: '800' },
-      { label: this.generarCodigoLHC(10), value: this.generarCodigoLHC(10), donante: '789012', volumen: '600' },
-      { label: this.generarCodigoLHC(4), value: this.generarCodigoLHC(4), donante: '345678', volumen: '350' },
-      { label: this.generarCodigoLHC(7), value: this.generarCodigoLHC(7), donante: '345678', volumen: '1200' },
-      { label: this.generarCodigoLHC(11), value: this.generarCodigoLHC(11), donante: '345678', volumen: '700' },
-      { label: this.generarCodigoLHC(8), value: this.generarCodigoLHC(8), donante: '901234', volumen: '900' },
-      { label: this.generarCodigoLHC(12), value: this.generarCodigoLHC(12), donante: '901234', volumen: '550' },
-      { label: this.generarCodigoLHC(9), value: this.generarCodigoLHC(9), donante: '567890', volumen: '1100' },
-      { label: this.generarCodigoLHC(13), value: this.generarCodigoLHC(13), donante: '567890', volumen: '400' },
-      { label: this.generarCodigoLHC(14), value: this.generarCodigoLHC(14), donante: '234567', volumen: '650' },
-      { label: this.generarCodigoLHC(15), value: this.generarCodigoLHC(15), donante: '678901', volumen: '750' },
-      { label: this.generarCodigoLHC(16), value: this.generarCodigoLHC(16), donante: '012345', volumen: '850' },
-      { label: this.generarCodigoLHC(17), value: this.generarCodigoLHC(17), donante: '456789', volumen: '950' },
-      { label: this.generarCodigoLHC(18), value: this.generarCodigoLHC(18), donante: '890123', volumen: '1050' }
     ];
   }
 
@@ -186,7 +266,8 @@ export class ControlReenvaseTableComponent implements OnInit {
     if (codigoDonante && codigoDonante.trim()) {
       rowData.no_frasco_anterior = '';
       rowData.volumen_frasco_anterior = '';
-      this.frascosFiltrados = this.filtrarFrascosPorDonante(codigoDonante);
+
+      this.cargarFrascosPorDonante(codigoDonante);
     } else {
       rowData.no_frasco_anterior = '';
       rowData.volumen_frasco_anterior = '';
@@ -198,9 +279,18 @@ export class ControlReenvaseTableComponent implements OnInit {
     if (event && event.value) {
       rowData.no_frasco_anterior = event.value;
 
-      const frascoSeleccionado = this.opcionesFrascos.find(f => f.value === event.value);
-      if (frascoSeleccionado && frascoSeleccionado.volumen) {
-        rowData.volumen_frasco_anterior = frascoSeleccionado.volumen;
+      // Buscar el frasco seleccionado para obtener información adicional
+      const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === event.value);
+      if (frascoSeleccionado) {
+        // Asignar volumen
+        if (frascoSeleccionado.volumen) {
+          rowData.volumen_frasco_anterior = frascoSeleccionado.volumen;
+        }
+
+        // Guardar ID del frasco principal para el backend
+        if (frascoSeleccionado.id_frasco_principal) {
+          rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_principal;
+        }
       }
     }
   }
@@ -253,7 +343,7 @@ export class ControlReenvaseTableComponent implements OnInit {
       return [];
     }
 
-    return this.filtrarFrascosPorDonante(rowData.no_donante);
+    return this.frascosFiltrados;
   }
 
   filtrarPorFecha(filtro: { year: number; month: number } | null): void {

@@ -26,4 +26,14 @@ export interface FrascoOption {
   value: string;
   donante: string;
   volumen?: string;
+  id_frasco_principal?: number;
+  id_frasco_data?: number;
+  tipo?: 'extraccion' | 'recolectado';
+  fechaExtraccion?: string;
+  termo?: number;
+  gaveta?: number;
+  procedencia?: string;
+  fechaVencimiento?: string;
+  fechaEntrada?: string;
+  fechaSalida?: string;
 }

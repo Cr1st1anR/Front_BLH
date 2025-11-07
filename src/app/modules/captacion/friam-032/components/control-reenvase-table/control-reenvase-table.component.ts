@@ -43,6 +43,7 @@ export class ControlReenvaseTableComponent implements OnInit {
   loading: boolean = false;
   loadingDonantes: boolean = false;
   loadingFrascos: boolean = false;
+  loadingEmpleados: boolean = false;
   editingRow: ControlReenvaseData | null = null;
   hasNewRowInEditing: boolean = false;
   clonedData: { [s: string]: ControlReenvaseData } = {};
@@ -82,7 +83,7 @@ export class ControlReenvaseTableComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.inicializarOpciones();
+    this.cargarEmpleados();
     this.cargarMadresDonantes();
     this.loadDataControlReenvase();
   }
@@ -138,14 +139,56 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private inicializarOpciones(): void {
+    this.opcionesResponsables = [];
+    this.opcionesFrascos = [];
+  }
+
+  private cargarEmpleados(): void {
+    this.loadingEmpleados = true;
+
+    this.controlReenvaseService.getEmpleados().subscribe({
+      next: (empleados) => {
+        this.opcionesResponsables = empleados;
+        this.loadingEmpleados = false;
+
+        console.log('Empleados cargados:', empleados);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: `${empleados.length} empleado${empleados.length > 1 ? 's' : ''} cargado${empleados.length > 1 ? 's' : ''} como responsables`,
+          key: 'tr',
+          life: 2000,
+        });
+      },
+      error: (error) => {
+        this.loadingEmpleados = false;
+        console.error('Error al cargar empleados:', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los empleados. Usando datos locales.',
+          key: 'tr',
+          life: 4000,
+        });
+
+        // Cargar empleados de respaldo
+        this.cargarEmpleadosFallback();
+      }
+    });
+  }
+
+  /**
+   * Método de respaldo para empleados
+   */
+  private cargarEmpleadosFallback(): void {
     this.opcionesResponsables = [
       { label: 'Juan López', value: 'Juan López' },
       { label: 'María Fernández', value: 'María Fernández' },
       { label: 'Pedro Sánchez', value: 'Pedro Sánchez' },
       { label: 'Ana García', value: 'Ana García' }
     ];
-
-    this.opcionesFrascos = [];
   }
 
   /**
@@ -340,6 +383,15 @@ export class ControlReenvaseTableComponent implements OnInit {
     }
 
     rowData.responsable = responsable;
+
+    // Opcional: Guardar información adicional del empleado
+    const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === responsable);
+    if (empleadoSeleccionado && empleadoSeleccionado.id_empleado) {
+      // Guardar ID del empleado si necesitas enviarlo al backend
+      // rowData.id_empleado = empleadoSeleccionado.id_empleado;
+
+      console.log('Empleado seleccionado:', empleadoSeleccionado);
+    }
   }
 
   onRowClick(rowData: ControlReenvaseData): void {

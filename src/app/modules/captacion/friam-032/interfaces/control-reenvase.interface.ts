@@ -13,6 +13,11 @@ export interface ControlReenvaseData {
 export interface ResponsableOption {
   label: string;
   value: string;
+  
+  id_empleado?: number;
+  cargo?: string;
+  telefono?: number;
+  correo?: string;
 }
 
 export interface DonanteOption {

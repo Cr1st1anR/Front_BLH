@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
-import type { ControlReenvaseData, DonanteOption, FrascoOption } from '../interfaces/control-reenvase.interface';
+import type { ControlReenvaseData, DonanteOption, FrascoOption, ResponsableOption } from '../interfaces/control-reenvase.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +41,35 @@ export class ControlReenvaseService {
         }),
         catchError((error: HttpErrorResponse) => {
           console.error('Error real en getFrascosByMadreDonante:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  getEmpleados(): Observable<ResponsableOption[]> {
+    return this.http.get<any>(`${environment.ApiBLH}/GetEmpleados`, {
+      observe: 'response'
+    })
+      .pipe(
+        map(response => {
+          if (response.status === 204) {
+            return [];
+          }
+
+          const empleados = response.body?.data || [];
+
+          return empleados.map((empleado: any) => ({
+            label: empleado.nombre,
+            value: empleado.nombre,
+            // Información adicional del empleado
+            id_empleado: empleado.id,
+            cargo: empleado.cargo,
+            telefono: empleado.telefono,
+            correo: empleado.correo
+          }));
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en getEmpleados:', error);
           return throwError(() => error);
         })
       );

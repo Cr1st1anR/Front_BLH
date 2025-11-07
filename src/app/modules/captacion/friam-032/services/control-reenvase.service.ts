@@ -75,6 +75,19 @@ export class ControlReenvaseService {
       );
   }
 
+  postControlReenvase(data: any): Observable<any> {
+    return this.http.post<any>(`${environment.ApiBLH}/postControlReenvase`, data)
+      .pipe(
+        map(response => {
+          return response;
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en postControlReenvase:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   getControlReenvaseData(): ControlReenvaseData[] {
     return [
       {

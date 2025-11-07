@@ -8,12 +8,15 @@ export interface ControlReenvaseData {
   volumen_frasco_anterior?: string;
   isNew?: boolean;
   _uid?: string;
+
+  id_empleado?: number;
+  frasco_crudo?: number;
 }
 
 export interface ResponsableOption {
   label: string;
   value: string;
-  
+
   id_empleado?: number;
   cargo?: string;
   telefono?: number;

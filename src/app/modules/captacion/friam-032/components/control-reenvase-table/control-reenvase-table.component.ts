@@ -173,7 +173,6 @@ export class ControlReenvaseTableComponent implements OnInit {
           life: 4000,
         });
 
-        // Cargar empleados de respaldo
         this.cargarEmpleadosFallback();
       }
     });
@@ -355,15 +354,12 @@ export class ControlReenvaseTableComponent implements OnInit {
     if (event && event.value) {
       rowData.no_frasco_anterior = event.value;
 
-      // Buscar el frasco seleccionado para obtener información adicional
       const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === event.value);
       if (frascoSeleccionado) {
-        // Asignar volumen
         if (frascoSeleccionado.volumen) {
           rowData.volumen_frasco_anterior = frascoSeleccionado.volumen;
         }
 
-        // Guardar ID del frasco principal para el backend
         if (frascoSeleccionado.id_frasco_principal) {
           rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_principal;
         }
@@ -384,13 +380,10 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     rowData.responsable = responsable;
 
-    // Opcional: Guardar información adicional del empleado
     const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === responsable);
     if (empleadoSeleccionado && empleadoSeleccionado.id_empleado) {
-      // Guardar ID del empleado si necesitas enviarlo al backend
-      // rowData.id_empleado = empleadoSeleccionado.id_empleado;
-
-      console.log('Empleado seleccionado:', empleadoSeleccionado);
+      (rowData as any).id_empleado = empleadoSeleccionado.id_empleado;
+      console.log('Empleado seleccionado - ID:', empleadoSeleccionado.id_empleado);
     }
   }
 
@@ -597,29 +590,89 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private guardarNuevoRegistro(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
-    if (dataRow.fecha instanceof Date) {
-      const fechaParaAPI = this.formatearFechaParaAPI(dataRow.fecha);
+    const dataParaBackend = this.prepararDatosParaBackend(dataRow);
+
+    if (!dataParaBackend) {
+      this.showErrorMessage('Error al preparar los datos para guardar');
+      return;
     }
 
-    if (dataRow.no_frasco_anterior) {
-      dataRow.id_frasco_anterior = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
+    console.log('Datos que se enviarán al backend:', dataParaBackend);
+
+    this.controlReenvaseService.postControlReenvase(dataParaBackend).subscribe({
+      next: (response) => {
+        console.log('Respuesta del backend:', response);
+
+        if (response.data && response.data.id) {
+          dataRow.id = response.data.id;
+        }
+
+        dataRow.isNew = false;
+        delete dataRow._uid;
+
+        const originalIndex = this.dataControlReenvaseOriginal.findIndex(item =>
+          item === dataRow || (item._uid && item._uid === dataRow._uid)
+        );
+
+        if (originalIndex !== -1) {
+          this.dataControlReenvaseOriginal[originalIndex] = { ...dataRow };
+        }
+
+        this.resetEditingState();
+        this.table.saveRowEdit(dataRow, rowElement);
+        this.showSuccessMessage('Registro guardado exitosamente en la base de datos');
+      },
+      error: (error) => {
+        console.error('Error al guardar en el backend:', error);
+
+        this.showErrorMessage('Error al guardar el registro. Por favor intente de nuevo.');
+      }
+    });
+  }
+
+  /**
+   * Preparar datos para enviar al backend según la estructura requerida
+   */
+  private prepararDatosParaBackend(dataRow: ControlReenvaseData): any | null {
+    try {
+      if (!dataRow.fecha || !dataRow.no_donante || !dataRow.no_frasco_anterior || !dataRow.responsable) {
+        console.error('Faltan campos requeridos:', {
+          fecha: !!dataRow.fecha,
+          no_donante: !!dataRow.no_donante,
+          no_frasco_anterior: !!dataRow.no_frasco_anterior,
+          responsable: !!dataRow.responsable
+        });
+        return null;
+      }
+
+      const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
+      if (!idFrasco) {
+        console.error('No se pudo extraer el ID del frasco:', dataRow.no_frasco_anterior);
+        return null;
+      }
+
+      const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+      if (!empleadoSeleccionado || !empleadoSeleccionado.id_empleado) {
+        console.error('No se encontró el ID del empleado:', dataRow.responsable);
+        return null;
+      }
+
+      const fechaFormateada = this.formatearFechaParaAPI(dataRow.fecha as Date);
+
+      const datos = {
+        fecha: fechaFormateada,
+        frascoCrudo: idFrasco,
+        madreDonante: { id: parseInt(dataRow.no_donante!) },
+        empleado: { id: empleadoSeleccionado.id_empleado }
+      };
+
+      console.log('Datos preparados:', datos);
+      return datos;
+
+    } catch (error) {
+      console.error('Error al preparar datos para backend:', error);
+      return null;
     }
-
-    dataRow.isNew = false;
-    dataRow.id = Math.max(...this.dataControlReenvaseOriginal.map(item => item.id || 0)) + 1;
-    delete dataRow._uid;
-
-    const originalIndex = this.dataControlReenvaseOriginal.findIndex(item =>
-      item === dataRow || (item._uid && item._uid === dataRow._uid)
-    );
-
-    if (originalIndex !== -1) {
-      this.dataControlReenvaseOriginal[originalIndex] = { ...dataRow };
-    }
-
-    this.resetEditingState();
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.showSuccessMessage('Registro creado exitosamente');
   }
 
   private createNewRecord(): ControlReenvaseData {
@@ -701,13 +754,36 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private validateRequiredFields(dataRow: ControlReenvaseData): boolean {
-    return !!(
+    const camposBasicos = !!(
       dataRow.fecha &&
       dataRow.responsable?.trim() &&
       dataRow.no_donante?.trim() &&
       dataRow.no_frasco_anterior?.trim() &&
       dataRow.volumen_frasco_anterior?.trim()
     );
+
+    if (!camposBasicos) {
+      return false;
+    }
+
+    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
+    if (!idFrasco) {
+      console.error('ID del frasco inválido');
+      return false;
+    }
+
+    const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+    if (!empleadoSeleccionado || !empleadoSeleccionado.id_empleado) {
+      console.error('Empleado no válido');
+      return false;
+    }
+
+    if (!dataRow.no_donante || isNaN(parseInt(dataRow.no_donante))) {
+      console.error('ID de madre donante inválido');
+      return false;
+    }
+
+    return true;
   }
 
   private resetEditingState(): void {

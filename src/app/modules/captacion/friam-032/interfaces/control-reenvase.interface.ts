@@ -4,6 +4,7 @@ export interface ControlReenvaseData {
   responsable: string;
   no_donante?: string;
   no_frasco_anterior?: string;
+  id_frasco_anterior?: number | null;
   volumen_frasco_anterior?: string;
   isNew?: boolean;
   _uid?: string;
@@ -23,6 +24,6 @@ export interface DonanteOption {
 export interface FrascoOption {
   label: string;
   value: string;
-  donante: string; 
+  donante: string;
   volumen?: string;
 }

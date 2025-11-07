@@ -56,6 +56,30 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     private readonly messageService: MessageService
   ) { }
 
+  private obtenerAñoActualCorto(): string {
+    const añoCompleto = new Date().getFullYear();
+    return añoCompleto.toString().slice(-2);
+  }
+
+  private generarCodigoLHP(id: number): string {
+    const añoActual = this.obtenerAñoActualCorto();
+    return `LHP ${añoActual} ${id}`;
+  }
+
+  private extraerIdDeCodigoLHP(codigoCompleto: string): number | null {
+    if (!codigoCompleto) return null;
+
+    const match = codigoCompleto.match(/LHP\s+\d+\s+(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }
+
+  private validarFormatoCodigoLHP(codigo: string): boolean {
+    if (!codigo) return false;
+
+    const regex = /^LHP\s+\d{2}\s+\d+$/;
+    return regex.test(codigo);
+  }
+
   ngOnInit(): void {
     if (this.idControlReenvase) {
       this.loadDataPasterizacion();
@@ -74,19 +98,20 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
 
   loadDataPasterizacion(): void {
     if (!this.idControlReenvase) return;
-
     if (this.loading) return;
 
     this.loading = true;
 
     this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
       .subscribe({
-        next: (todasLasPasterizaciones: PasterizacionData[]) => {
-          this.todasLasPasterizaciones = todasLasPasterizaciones;
+        next: (pasteurizacionesBackend: any[]) => {
+          this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
+
           this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
-            todasLasPasterizaciones,
+            this.todasLasPasterizaciones,
             this.idControlReenvase!
           );
+
           this.mostrarMensajeCarga(this.dataPasterizacion);
           this.loading = false;
         },
@@ -95,6 +120,15 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
           this.loading = false;
         }
       });
+  }
+
+  private transformarDatosBackendAFrontend(datosBackend: any[]): PasterizacionData[] {
+    return datosBackend.map(item => ({
+      ...item,
+      no_frasco_pasterizacion: item.id_frasco_pasterizacion
+        ? this.generarCodigoLHP(item.id_frasco_pasterizacion)
+        : item.no_frasco_pasterizacion || ''
+    }));
   }
 
   private filtrarPasterizacionesPorControlReenvase(
@@ -120,31 +154,30 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     if (rowData.observaciones_pasterizacion?.trim()) {
       rowData.no_frasco_pasterizacion = '';
       rowData.volumen_frasco_pasterizacion = '0';
+      rowData.id_frasco_pasterizacion = null;
     } else {
-      const siguienteNumero = this.obtenerSiguienteNumeroConsecutivoGlobal();
-      rowData.no_frasco_pasterizacion = `LHP 25 ${siguienteNumero}`;
+      const siguienteId = this.obtenerSiguienteIdConsecutivoGlobal();
+      rowData.no_frasco_pasterizacion = this.generarCodigoLHP(siguienteId);
+      rowData.id_frasco_pasterizacion = siguienteId;
       rowData.volumen_frasco_pasterizacion = '';
     }
   }
 
-  private obtenerSiguienteNumeroConsecutivoGlobal(): number {
+  private obtenerSiguienteIdConsecutivoGlobal(): number {
     const frascosSinObservacionesGlobales = this.todasLasPasterizaciones.filter(item =>
       !item.observaciones_pasterizacion?.trim() &&
-      item.no_frasco_pasterizacion?.includes('LHP 25')
+      this.validarFormatoCodigoLHP(item.no_frasco_pasterizacion || '')
     );
 
-    const numerosUsadosGlobales = frascosSinObservacionesGlobales
-      .map(item => {
-        const match = item.no_frasco_pasterizacion?.match(/LHP 25 (\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      })
-      .filter(num => num > 0);
+    const idsUsadosGlobales = frascosSinObservacionesGlobales
+      .map(item => this.extraerIdDeCodigoLHP(item.no_frasco_pasterizacion || ''))
+      .filter(id => id !== null && id > 0) as number[];
 
-    if (numerosUsadosGlobales.length === 0) {
+    if (idsUsadosGlobales.length === 0) {
       return 1;
     }
 
-    return Math.max(...numerosUsadosGlobales) + 1;
+    return Math.max(...idsUsadosGlobales) + 1;
   }
 
   onRowEditInit(dataRow: PasterizacionData): void {
@@ -181,11 +214,12 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private construirNuevaPasterizacion(): PasterizacionData {
-    const siguienteNumero = this.obtenerSiguienteNumeroConsecutivoGlobal();
+    const siguienteId = this.obtenerSiguienteIdConsecutivoGlobal();
 
     return {
       id: null,
-      no_frasco_pasterizacion: `LHP 25 ${siguienteNumero}`,
+      no_frasco_pasterizacion: this.generarCodigoLHP(siguienteId),
+      id_frasco_pasterizacion: siguienteId,
       volumen_frasco_pasterizacion: '',
       observaciones_pasterizacion: '',
       id_control_reenvase: this.idControlReenvase!,
@@ -214,9 +248,9 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private procesarCreacionPasterizacion(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
-    const datosParaEnviar = this.prepararDatosParaCreacion(dataRow);
+    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.pasterizacionService.postPasterizacion(datosParaEnviar).subscribe({
+    this.pasterizacionService.postPasterizacion(datosParaBackend).subscribe({
       next: (response) => {
         this.manejarExitoCreacion(dataRow, response, rowElement);
       },
@@ -227,9 +261,9 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private procesarActualizacionPasterizacion(dataRow: PasterizacionData, rowElement: HTMLTableRowElement): void {
-    const datosParaEnviar = this.prepararDatosParaActualizacion(dataRow);
+    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.pasterizacionService.putPasterizacion(dataRow.id!, datosParaEnviar).subscribe({
+    this.pasterizacionService.putPasterizacion(dataRow.id!, datosParaBackend).subscribe({
       next: (response) => {
         this.manejarExitoActualizacion(dataRow, response, rowElement);
       },
@@ -239,19 +273,9 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     });
   }
 
-  private prepararDatosParaCreacion(dataRow: PasterizacionData): PasterizacionData {
+  private prepararDatosParaBackend(dataRow: PasterizacionData): any {
     return {
-      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion?.trim() || '',
-      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion?.trim() || '0',
-      observaciones_pasterizacion: dataRow.observaciones_pasterizacion?.trim() || '',
-      id_control_reenvase: this.idControlReenvase!
-    };
-  }
-
-  private prepararDatosParaActualizacion(dataRow: PasterizacionData): PasterizacionData {
-    return {
-      id: dataRow.id,
-      no_frasco_pasterizacion: dataRow.no_frasco_pasterizacion?.trim() || '',
+      id_frasco_pasterizacion: dataRow.id_frasco_pasterizacion,
       volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion?.trim() || '0',
       observaciones_pasterizacion: dataRow.observaciones_pasterizacion?.trim() || '',
       id_control_reenvase: dataRow.id_control_reenvase

@@ -14,7 +14,7 @@ export class ControlReenvaseService {
         id: 1,
         fecha: '2025-11-01',
         no_donante: '123456',
-        no_frasco_anterior: 'LHC 25 5',
+        id_frasco_anterior: 5,
         volumen_frasco_anterior: '500',
         responsable: 'Juan López'
       },
@@ -22,7 +22,7 @@ export class ControlReenvaseService {
         id: 2,
         fecha: '2025-11-02',
         no_donante: '789012',
-        no_frasco_anterior: 'LHC 25 6',
+        id_frasco_anterior: 6,
         volumen_frasco_anterior: '800',
         responsable: 'María Fernández'
       },
@@ -30,7 +30,7 @@ export class ControlReenvaseService {
         id: 3,
         fecha: '2025-11-03',
         no_donante: '345678',
-        no_frasco_anterior: 'LHC 25 7',
+        id_frasco_anterior: 7,
         volumen_frasco_anterior: '1200',
         responsable: 'Juan López'
       },
@@ -38,7 +38,7 @@ export class ControlReenvaseService {
         id: 4,
         fecha: '2025-11-04',
         no_donante: '901234',
-        no_frasco_anterior: 'LHC 25 8',
+        id_frasco_anterior: 8,
         volumen_frasco_anterior: '900',
         responsable: 'Pedro Sánchez'
       },
@@ -46,7 +46,7 @@ export class ControlReenvaseService {
         id: 5,
         fecha: '2025-11-06',
         no_donante: '567890',
-        no_frasco_anterior: 'LHC 25 9',
+        id_frasco_anterior: 9,
         volumen_frasco_anterior: '1100',
         responsable: 'María Fernández'
       }

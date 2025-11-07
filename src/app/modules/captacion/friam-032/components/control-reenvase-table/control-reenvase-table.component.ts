@@ -82,6 +82,23 @@ export class ControlReenvaseTableComponent implements OnInit {
     this.loadDataControlReenvase();
   }
 
+  private obtenerAñoActualCorto(): string {
+    const añoCompleto = new Date().getFullYear();
+    return añoCompleto.toString().slice(-2);
+  }
+
+  private generarCodigoLHC(id: number): string {
+    const añoActual = this.obtenerAñoActualCorto();
+    return `LHC ${añoActual} ${id}`;
+  }
+
+  private extraerIdDeCodigoLHC(codigoCompleto: string): number | null {
+    if (!codigoCompleto) return null;
+
+    const match = codigoCompleto.match(/LHC\s+\d+\s+(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }
+
   private inicializarOpciones(): void {
     this.opcionesResponsables = [
       { label: 'Juan López', value: 'Juan López' },
@@ -104,25 +121,48 @@ export class ControlReenvaseTableComponent implements OnInit {
     ];
 
     this.opcionesFrascos = [
-      { label: 'LHC 25 1', value: 'LHC 25 1', donante: '123456', volumen: '250' },
-      { label: 'LHC 25 2', value: 'LHC 25 2', donante: '123456', volumen: '300' },
-      { label: 'LHC 25 5', value: 'LHC 25 5', donante: '123456', volumen: '500' },
-      { label: 'LHC 25 3', value: 'LHC 25 3', donante: '789012', volumen: '450' },
-      { label: 'LHC 25 6', value: 'LHC 25 6', donante: '789012', volumen: '800' },
-      { label: 'LHC 25 10', value: 'LHC 25 10', donante: '789012', volumen: '600' },
-      { label: 'LHC 25 4', value: 'LHC 25 4', donante: '345678', volumen: '350' },
-      { label: 'LHC 25 7', value: 'LHC 25 7', donante: '345678', volumen: '1200' },
-      { label: 'LHC 25 11', value: 'LHC 25 11', donante: '345678', volumen: '700' },
-      { label: 'LHC 25 8', value: 'LHC 25 8', donante: '901234', volumen: '900' },
-      { label: 'LHC 25 12', value: 'LHC 25 12', donante: '901234', volumen: '550' },
-      { label: 'LHC 25 9', value: 'LHC 25 9', donante: '567890', volumen: '1100' },
-      { label: 'LHC 25 13', value: 'LHC 25 13', donante: '567890', volumen: '400' },
-      { label: 'LHC 25 14', value: 'LHC 25 14', donante: '234567', volumen: '650' },
-      { label: 'LHC 25 15', value: 'LHC 25 15', donante: '678901', volumen: '750' },
-      { label: 'LHC 25 16', value: 'LHC 25 16', donante: '012345', volumen: '850' },
-      { label: 'LHC 25 17', value: 'LHC 25 17', donante: '456789', volumen: '950' },
-      { label: 'LHC 25 18', value: 'LHC 25 18', donante: '890123', volumen: '1050' }
+      { label: this.generarCodigoLHC(1), value: this.generarCodigoLHC(1), donante: '123456', volumen: '250' },
+      { label: this.generarCodigoLHC(2), value: this.generarCodigoLHC(2), donante: '123456', volumen: '300' },
+      { label: this.generarCodigoLHC(5), value: this.generarCodigoLHC(5), donante: '123456', volumen: '500' },
+      { label: this.generarCodigoLHC(3), value: this.generarCodigoLHC(3), donante: '789012', volumen: '450' },
+      { label: this.generarCodigoLHC(6), value: this.generarCodigoLHC(6), donante: '789012', volumen: '800' },
+      { label: this.generarCodigoLHC(10), value: this.generarCodigoLHC(10), donante: '789012', volumen: '600' },
+      { label: this.generarCodigoLHC(4), value: this.generarCodigoLHC(4), donante: '345678', volumen: '350' },
+      { label: this.generarCodigoLHC(7), value: this.generarCodigoLHC(7), donante: '345678', volumen: '1200' },
+      { label: this.generarCodigoLHC(11), value: this.generarCodigoLHC(11), donante: '345678', volumen: '700' },
+      { label: this.generarCodigoLHC(8), value: this.generarCodigoLHC(8), donante: '901234', volumen: '900' },
+      { label: this.generarCodigoLHC(12), value: this.generarCodigoLHC(12), donante: '901234', volumen: '550' },
+      { label: this.generarCodigoLHC(9), value: this.generarCodigoLHC(9), donante: '567890', volumen: '1100' },
+      { label: this.generarCodigoLHC(13), value: this.generarCodigoLHC(13), donante: '567890', volumen: '400' },
+      { label: this.generarCodigoLHC(14), value: this.generarCodigoLHC(14), donante: '234567', volumen: '650' },
+      { label: this.generarCodigoLHC(15), value: this.generarCodigoLHC(15), donante: '678901', volumen: '750' },
+      { label: this.generarCodigoLHC(16), value: this.generarCodigoLHC(16), donante: '012345', volumen: '850' },
+      { label: this.generarCodigoLHC(17), value: this.generarCodigoLHC(17), donante: '456789', volumen: '950' },
+      { label: this.generarCodigoLHC(18), value: this.generarCodigoLHC(18), donante: '890123', volumen: '1050' }
     ];
+  }
+
+  private loadDataControlReenvase(): void {
+    this.loading = true;
+
+    try {
+      const rawData = this.controlReenvaseService.getControlReenvaseData();
+
+      const datosTransformados = rawData.map(item => ({
+        ...item,
+        no_frasco_anterior: item.id_frasco_anterior
+          ? this.generarCodigoLHC(item.id_frasco_anterior)
+          : item.no_frasco_anterior
+      }));
+
+      this.dataControlReenvaseOriginal = this.formatData(datosTransformados);
+      this.dataControlReenvaseFiltered = [...this.dataControlReenvaseOriginal];
+
+      this.showSuccessMessageInitial();
+      this.loading = false;
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   filtrarFrascosPorDonante(codigoDonante: string): FrascoOption[] {
@@ -214,21 +254,6 @@ export class ControlReenvaseTableComponent implements OnInit {
     }
 
     return this.filtrarFrascosPorDonante(rowData.no_donante);
-  }
-
-  private loadDataControlReenvase(): void {
-    this.loading = true;
-
-    try {
-      const rawData = this.controlReenvaseService.getControlReenvaseData();
-      this.dataControlReenvaseOriginal = this.formatData(rawData);
-      this.dataControlReenvaseFiltered = [...this.dataControlReenvaseOriginal];
-
-      this.showSuccessMessageInitial();
-      this.loading = false;
-    } catch (error) {
-      this.handleError(error);
-    }
   }
 
   filtrarPorFecha(filtro: { year: number; month: number } | null): void {
@@ -401,6 +426,10 @@ export class ControlReenvaseTableComponent implements OnInit {
       const fechaParaAPI = this.formatearFechaParaAPI(dataRow.fecha);
     }
 
+    if (dataRow.no_frasco_anterior) {
+      dataRow.id_frasco_anterior = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
+    }
+
     dataRow.isNew = false;
     dataRow.id = Math.max(...this.dataControlReenvaseOriginal.map(item => item.id || 0)) + 1;
     delete dataRow._uid;
@@ -480,6 +509,10 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private actualizarRegistroExistente(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
+    if (dataRow.no_frasco_anterior) {
+      dataRow.id_frasco_anterior = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
+    }
+
     const rowId = this.getRowId(dataRow);
     delete this.clonedData[rowId];
     this.editingRow = null;

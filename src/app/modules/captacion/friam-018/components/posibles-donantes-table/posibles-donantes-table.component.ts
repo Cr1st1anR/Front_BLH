@@ -133,14 +133,6 @@ export class PosiblesDonantesTableComponent implements OnInit {
         if (response && response.data.length > 0) {
           this.dataRegistroDonanteByMadresDonantes = this.formatData(response.data);
           this.loading = false;
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No hay datos para mostrar',
-            key: 'tr',
-            life: 2000,
-          });
         }
       }),
       catchError((error) => {

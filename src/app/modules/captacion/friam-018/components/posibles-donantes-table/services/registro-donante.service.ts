@@ -37,9 +37,9 @@ export class RegistroDonanteService {
     return this.http.get<ApiResponse>(url);
   }
 
-  uploadPdf(formData: FormData): Observable<ApiResponse> {
+  uploadPdf(formData: FormData): Observable<any> {
     const url = `${environment.ApiBLH}/uploadPDFs`;
-    return this.http.post<ApiResponse>(url, formData);
+    return this.http.post<any>(url, formData);
   }
 
   getPDF(doc: string): Observable<Blob> {

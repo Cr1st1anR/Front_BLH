@@ -25,7 +25,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { NewRegisterCajaComponent } from '../new-register-caja/new-register-caja.component';
-import { catchError, concatMap, forkJoin, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError, concatMap, forkJoin, lastValueFrom, Observable, of, switchMap, tap } from 'rxjs';
 import { ApiResponse } from 'src/app/modules/captacion/friam-041/components/table-list/interfaces/linea-amiga.interface';
 
 @Component({
@@ -75,22 +75,22 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.initComponent(changes);
+  }
+
+  async initComponent(changes?: SimpleChanges, flat: boolean = false): Promise<void>{
     if (
-      changes['dataRutaRecoleccion'] &&
-      changes['dataRutaRecoleccion'].currentValue
+      (changes && changes['dataRutaRecoleccion'] &&
+        changes['dataRutaRecoleccion'].currentValue) || flat
     ) {
-      of(null)
-        .pipe(
-          concatMap(() => this.loadDataRuta(this.dataRutaRecoleccion?.id_ruta!)),
-          concatMap(() => this.loadDataTemperaturaRuta(this.dataRutaRecoleccion?.id_ruta!)),
-          concatMap(() => this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!))
-        ).subscribe({
-          complete: () => {
-          },
-          error: (err) => {
-            console.error('Error en la secuencia de peticiones', err);
-          },
-        });
+      const observable$ = of(null).pipe(
+        concatMap(() => this.loadDataRuta(this.dataRutaRecoleccion?.id_ruta!)),
+        concatMap(() => this.loadDataTemperaturaRuta(this.dataRutaRecoleccion?.id_ruta!)),
+        concatMap(() => this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!))
+      );
+
+      // Espera a que se complete toda la secuencia
+      await lastValueFrom(observable$);
     }
   }
 
@@ -116,7 +116,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
 
   loadDataTemperaturaCasa(idRuta: number): Observable<ApiResponse | null> {
     return this._primaryService.getDataTemperaturaCasa(idRuta).pipe(
-      tap((data) => {        
+      tap((data) => {
         if (data) {
           this.formatData(data.data);
           this.dataLoaded.emit(true);
@@ -176,9 +176,11 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         this.globalCajaCounter++;
       });
     }
-    this.globalCajaCounter = data[data.length - 1]?.caja  || 1;
-    this.globalCajaCounter++;
-    
+    this.globalCajaCounter = data[data.length - 1]?.caja || 1;
+    if (data.length > 0) {
+      this.globalCajaCounter++;
+    }
+
     const unique = this.cajaTables.filter(
       (obj, index, self) =>
         index === self.findIndex(o => o.cajaNumber === obj.cajaNumber)
@@ -356,6 +358,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   onRowEditSave(dataRow: any, rowIndex: number, tableIndex: number, event: any): void {
+
     const table = this.cajaTables[tableIndex];
     const hasBasicData = dataRow.horaSalida || dataRow.temperaturaSalida || dataRow.horaLlegada || dataRow.temperaturaLlegada;
     const hasTemperatureData = table.numeroTemperaturas > 0;
@@ -405,7 +408,6 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     }
 
     // CONSTRUCCION BODY PARA GUARDAR LOS CAMBIOS
-
     const tablaOrigi = this.cajaTables[tableIndex].data[0];
     const tablaCopy = this.tableAuxCaja[tableIndex]?.data[0] || dataRow;
     const diferencias: Record<string, { obj1: any; obj2: any }> = {};
@@ -586,7 +588,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     this.finishEditing(tableIndex);
   }
 
-  procesarBodies(tableIndex: number, dataRow: any, bodiesUniques: any[]) {
+  async procesarBodies(tableIndex: number, dataRow: any, bodiesUniques: any[]) {
 
     if (this.saveTemperaturaUpdates(dataRow, tableIndex)) {
       this.finishEditingWithPrimeNG(tableIndex, dataRow);
@@ -617,8 +619,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
 
         this.hasNewEmptyCaja = false;
         this.finishEditingWithPrimeNG(tableIndex, dataRow);
-        // this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!);
-        // this.loadDataTemperaturaCasa(this.dataRutaRecoleccion?.id_ruta!);
+        this.initComponent(undefined, true);
+
       },
       error: () => {
         this.messageService.add({

@@ -11,12 +11,14 @@ export interface ControlReenvaseData {
 
   id_empleado?: number;
   frasco_crudo?: number;
+
+  madre_donante_info?: any;
+  empleado_info?: any;
 }
 
 export interface ResponsableOption {
   label: string;
   value: string;
-
   id_empleado?: number;
   cargo?: string;
   telefono?: number;

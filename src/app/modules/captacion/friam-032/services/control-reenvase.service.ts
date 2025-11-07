@@ -61,7 +61,7 @@ export class ControlReenvaseService {
           return empleados.map((empleado: any) => ({
             label: empleado.nombre,
             value: empleado.nombre,
-            // Información adicional del empleado
+
             id_empleado: empleado.id,
             cargo: empleado.cargo,
             telefono: empleado.telefono,
@@ -83,6 +83,25 @@ export class ControlReenvaseService {
         }),
         catchError((error: HttpErrorResponse) => {
           console.error('Error en postControlReenvase:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  getAllControlReenvase(): Observable<any[]> {
+    return this.http.get<any>(`${environment.ApiBLH}/getAllControlReenvase`, {
+      observe: 'response'
+    })
+      .pipe(
+        map(response => {
+          if (response.status === 204) {
+            return [];
+          }
+
+          return response.body?.data || [];
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en getAllControlReenvase:', error);
           return throwError(() => error);
         })
       );

@@ -122,7 +122,7 @@ export class ControlReenvaseTableComponent implements OnInit {
           value: codigoLHC,
           donante: idMadreDonante,
           volumen: frascoData.volumen ? frascoData.volumen.toString() : '0',
-          // info adicional para uso interno
+
           id_frasco_principal: frasco.id,
           id_frasco_data: frascoData.id,
           tipo: esExtraccion ? 'extraccion' : 'recolectado',
@@ -300,6 +300,37 @@ export class ControlReenvaseTableComponent implements OnInit {
   private loadDataControlReenvase(): void {
     this.loading = true;
 
+    this.controlReenvaseService.getAllControlReenvase().subscribe({
+      next: (registros) => {
+        console.log('Datos recibidos del backend:', registros);
+
+        this.dataControlReenvaseOriginal = this.transformarDatosBackend(registros);
+        this.dataControlReenvaseFiltered = [...this.dataControlReenvaseOriginal];
+
+        this.showSuccessMessageInitial();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar datos del backend:', error);
+        this.loading = false;
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los datos del backend. Usando datos locales.',
+          key: 'tr',
+          life: 4000,
+        });
+
+        this.loadDataControlReenvaseFallback();
+      }
+    });
+  }
+
+  /**
+   * Método de fallback para cargar datos mock
+   */
+  private loadDataControlReenvaseFallback(): void {
     try {
       const rawData = this.controlReenvaseService.getControlReenvaseData();
 
@@ -675,6 +706,54 @@ export class ControlReenvaseTableComponent implements OnInit {
     }
   }
 
+  /**
+   * Transformar datos del backend a formato del frontend
+   */
+  private transformarDatosBackend(registros: any[]): ControlReenvaseData[] {
+    return registros.map((registro: any) => {
+      let volumenFrasco = '0';
+      let idFrasco = registro.frascoCrudo;
+
+      if (registro.madreDonante?.casaVisita) {
+        for (const casa of registro.madreDonante.casaVisita) {
+          if (casa.frascoRecolectado) {
+            const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
+            if (frasco) {
+              volumenFrasco = frasco.volumen.toString();
+              break;
+            }
+          }
+        }
+      }
+
+      if (registro.madreDonante?.madrePotencial?.lecheSalaExtraccion) {
+        const extracciones = registro.madreDonante.madrePotencial.lecheSalaExtraccion.extracciones;
+        if (extracciones) {
+          const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
+          if (extraccion) {
+            volumenFrasco = extraccion.cantidad?.toString() || '0';
+          }
+        }
+      }
+
+      return {
+        id: registro.id,
+        fecha: new Date(registro.fecha),
+        no_donante: registro.madreDonante.id.toString(),
+        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
+        id_frasco_anterior: registro.frascoCrudo,
+        volumen_frasco_anterior: volumenFrasco,
+        responsable: registro.empleado.nombre,
+
+        madre_donante_info: registro.madreDonante,
+        empleado_info: registro.empleado,
+        id_empleado: registro.empleado.id
+      };
+    });
+  }
+
+
+
   private createNewRecord(): ControlReenvaseData {
     return {
       id: null,
@@ -698,8 +777,10 @@ export class ControlReenvaseTableComponent implements OnInit {
     this.clonedData[rowId] = { ...dataRow };
     this.editingRow = dataRow;
 
-    if (dataRow.no_donante) {
-      this.frascosFiltrados = this.filtrarFrascosPorDonante(dataRow.no_donante);
+    if (dataRow.no_donante && !dataRow.isNew) {
+      this.cargarFrascosPorDonante(dataRow.no_donante);
+    } else if (dataRow.no_donante) {
+      this.cargarFrascosPorDonante(dataRow.no_donante);
     } else {
       this.frascosFiltrados = [];
     }
@@ -744,6 +825,9 @@ export class ControlReenvaseTableComponent implements OnInit {
     const rowId = this.getRowId(dataRow);
     delete this.clonedData[rowId];
     this.editingRow = null;
+
+    // Aquí podrías implementar la llamada a PUT si necesitas actualizar en el backend
+    // this.controlReenvaseService.putControlReenvase(dataRow.id, datosParaBackend)
 
     this.table.saveRowEdit(dataRow, rowElement);
     this.showSuccessMessage('Registro actualizado exitosamente');
@@ -807,26 +891,26 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private showSuccessMessageInitial(): void {
-    const cantidad = this.dataControlReenvaseOriginal.length;
+  const cantidad = this.dataControlReenvaseOriginal.length;
 
-    if (cantidad > 0) {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''}`,
-        key: 'tr',
-        life: 2000,
-      });
-    } else {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Información',
-        detail: 'No se encontraron registros de control de reenvase',
-        key: 'tr',
-        life: 2000,
-      });
-    }
+  if (cantidad > 0) {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Éxito',
+      detail: `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''} desde la base de datos`,
+      key: 'tr',
+      life: 2000,
+    });
+  } else {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Sin registros',
+      detail: 'No se encontraron registros de control de reenvase en la base de datos',
+      key: 'tr',
+      life: 2000,
+    });
   }
+}
 
   private showSuccessMessage(message: string): void {
     this.messageService.add({

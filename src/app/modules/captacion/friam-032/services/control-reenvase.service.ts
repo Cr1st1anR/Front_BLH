@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
 import type { ControlReenvaseData, DonanteOption, FrascoOption } from '../interfaces/control-reenvase.interface';
 
@@ -28,10 +28,16 @@ export class ControlReenvaseService {
   }
 
   getFrascosByMadreDonante(idMadreDonante: string): Observable<FrascoOption[]> {
-    return this.http.get<any>(`${environment.ApiBLH}/getFrascosByMadreDonante/${idMadreDonante}`)
+    return this.http.get<any>(`${environment.ApiBLH}/getFrascosByMadreDonante/${idMadreDonante}`, {
+      observe: 'response'
+    })
       .pipe(
         map(response => {
-          const frascos = response.data || [];
+          if (response.status === 204) {
+            return [];
+          }
+
+          const frascos = response.body?.data || [];
 
           return frascos.map((frasco: any) => {
             const esExtraccion = frasco.extraccion !== null;
@@ -46,7 +52,6 @@ export class ControlReenvaseService {
               value: codigoLHC,
               donante: idMadreDonante,
               volumen: frascoData.volumen ? frascoData.volumen.toString() : '0',
-              // Información adicional para uso interno
               id_frasco_principal: frasco.id,
               id_frasco_data: frascoData.id,
               tipo: esExtraccion ? 'extraccion' : 'recolectado',
@@ -59,6 +64,10 @@ export class ControlReenvaseService {
               fechaSalida: frasco.fechaSalida
             };
           }).filter((frasco: any) => frasco !== null);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error real en getFrascosByMadreDonante:', error);
+          return throwError(() => error);
         })
       );
   }

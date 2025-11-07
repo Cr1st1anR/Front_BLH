@@ -145,7 +145,6 @@ export class ControlReenvaseTableComponent implements OnInit {
           life: 4000,
         });
 
-        // Fallback a datos estáticos en caso de error
         this.cargarDonantesFallback();
       }
     });
@@ -180,21 +179,21 @@ export class ControlReenvaseTableComponent implements OnInit {
         } else {
           this.messageService.add({
             severity: 'info',
-            summary: 'Sin frascos',
+            summary: 'Información',
             detail: 'No se encontraron frascos disponibles para esta donante',
             key: 'tr',
-            life: 2000,
+            life: 3000,
           });
         }
       },
       error: (error) => {
         this.loadingFrascos = false;
-        console.error('Error al cargar frascos:', error);
+        console.error('Error real al cargar frascos:', error);
 
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudieron cargar los frascos de la donante',
+          detail: 'Ocurrió un problema al cargar los frascos de la donante',
           key: 'tr',
           life: 4000,
         });

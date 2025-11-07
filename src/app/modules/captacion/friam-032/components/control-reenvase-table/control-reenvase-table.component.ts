@@ -496,13 +496,13 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private formatearFechaParaAPI(fecha: Date): string {
-    if (!fecha) return '';
+    if (!fecha || !(fecha instanceof Date)) return '';
 
-    return [
-      fecha.getFullYear(),
-      (fecha.getMonth() + 1).toString().padStart(2, '0'),
-      fecha.getDate().toString().padStart(2, '0')
-    ].join('-');
+    const year = fecha.getFullYear();
+    const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const day = fecha.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   private mostrarNotificacionFiltro(): void {
@@ -738,7 +738,7 @@ export class ControlReenvaseTableComponent implements OnInit {
 
       return {
         id: registro.id,
-        fecha: new Date(registro.fecha),
+        fecha: this.parsearFechaDesdeBackend(registro.fecha),
         no_donante: registro.madreDonante.id.toString(),
         no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
         id_frasco_anterior: registro.frascoCrudo,
@@ -752,7 +752,20 @@ export class ControlReenvaseTableComponent implements OnInit {
     });
   }
 
+  /**
+   * Parsear fecha desde el backend evitando problemas de zona horaria
+   */
+  private parsearFechaDesdeBackend(fechaString: string): Date {
+    if (!fechaString) return new Date();
 
+    if (fechaString.includes('T')) {
+      fechaString = fechaString.split('T')[0];
+    }
+
+    const [year, month, day] = fechaString.split('-').map(Number);
+
+    return new Date(year, month - 1, day, 12, 0, 0, 0);
+  }
 
   private createNewRecord(): ControlReenvaseData {
     return {

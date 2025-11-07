@@ -40,6 +40,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   tempIdCounter: number = -1;
 
   dataPasterizacion: PasterizacionData[] = [];
+  todasLasPasterizaciones: PasterizacionData[] = [];
 
   private isInitialLoad: boolean = true;
 
@@ -81,6 +82,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
       .subscribe({
         next: (todasLasPasterizaciones: PasterizacionData[]) => {
+          this.todasLasPasterizaciones = todasLasPasterizaciones;
           this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
             todasLasPasterizaciones,
             this.idControlReenvase!
@@ -119,30 +121,30 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
       rowData.no_frasco_pasterizacion = '';
       rowData.volumen_frasco_pasterizacion = '0';
     } else {
-      const siguienteNumero = this.obtenerSiguienteNumeroConsecutivo();
+      const siguienteNumero = this.obtenerSiguienteNumeroConsecutivoGlobal();
       rowData.no_frasco_pasterizacion = `LHP 25 ${siguienteNumero}`;
       rowData.volumen_frasco_pasterizacion = '';
     }
   }
 
-  private obtenerSiguienteNumeroConsecutivo(): number {
-    const frascosSinObservaciones = this.dataPasterizacion.filter(item =>
+  private obtenerSiguienteNumeroConsecutivoGlobal(): number {
+    const frascosSinObservacionesGlobales = this.todasLasPasterizaciones.filter(item =>
       !item.observaciones_pasterizacion?.trim() &&
       item.no_frasco_pasterizacion?.includes('LHP 25')
     );
 
-    const numerosUsados = frascosSinObservaciones
+    const numerosUsadosGlobales = frascosSinObservacionesGlobales
       .map(item => {
         const match = item.no_frasco_pasterizacion?.match(/LHP 25 (\d+)/);
         return match ? parseInt(match[1]) : 0;
       })
       .filter(num => num > 0);
 
-    if (numerosUsados.length === 0) {
+    if (numerosUsadosGlobales.length === 0) {
       return 1;
     }
 
-    return Math.max(...numerosUsados) + 1;
+    return Math.max(...numerosUsadosGlobales) + 1;
   }
 
   onRowEditInit(dataRow: PasterizacionData): void {
@@ -179,7 +181,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private construirNuevaPasterizacion(): PasterizacionData {
-    const siguienteNumero = this.obtenerSiguienteNumeroConsecutivo();
+    const siguienteNumero = this.obtenerSiguienteNumeroConsecutivoGlobal();
 
     return {
       id: null,
@@ -195,6 +197,8 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   private agregarPasterizacionATabla(pasteurizacion: PasterizacionData): void {
     this.dataPasterizacion.push(pasteurizacion);
     this.dataPasterizacion = [...this.dataPasterizacion];
+
+    this.todasLasPasterizaciones.push(pasteurizacion);
   }
 
   private inicializarModoEdicion(pasteurizacion: PasterizacionData): void {
@@ -282,7 +286,16 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private cancelarCreacionNueva(index: number): void {
+    const registroEliminado = this.dataPasterizacion[index];
     this.eliminarFilaTemporal(index);
+
+    const indexGlobal = this.todasLasPasterizaciones.findIndex(item =>
+      item._uid === registroEliminado._uid
+    );
+    if (indexGlobal !== -1) {
+      this.todasLasPasterizaciones.splice(indexGlobal, 1);
+    }
+
     this.hasNewRowInEditing = false;
   }
 

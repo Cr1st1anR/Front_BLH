@@ -58,18 +58,25 @@
           @else if (col.field === 'nombre_madre') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-autoComplete [(ngModel)]="rowData.nombre_madre" [suggestions]="madresSugeridas"
-                (completeMethod)="buscarMadres($event)" (onSelect)="onMadreSeleccionada($event, rowData)" field="label"
-                [minLength]="2" placeholder="Escriba el nombre de la madre" [dropdown]="false" [multiple]="false"
-                [showClear]="true" [disabled]="isMadreFieldDisabled(rowData)" appendTo="body" class="w-full">
+              <p-select [(ngModel)]="rowData.nombre_madre" [options]="opcionesMadres" optionLabel="label"
+                optionValue="value" placeholder="Seleccione madre" (onChange)="onMadreSeleccionada($event, rowData)"
+                [disabled]="isMadreFieldDisabled(rowData)" [filter]="true" filterBy="label,documento" [showClear]="true"
+                appendTo="body" class="w-full">
 
-                <ng-template #item let-madre>
+                <ng-template #selectedItem let-option>
                   <div class="flex flex-col">
-                    <span class="font-medium">{{ madre.label }}</span>
-                    <small class="text-gray-500">Doc: {{ madre.documento }}</small>
+                    <span class="font-medium">{{ option.label }}</span>
+                    <small class="text-gray-500">Doc: {{ option.documento }}</small>
                   </div>
                 </ng-template>
-              </p-autoComplete>
+
+                <ng-template #item let-option>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ option.label }}</span>
+                    <small class="text-gray-500">Doc: {{ option.documento }}</small>
+                  </div>
+                </ng-template>
+              </p-select>
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.nombre_madre || 'Sin datos' }}

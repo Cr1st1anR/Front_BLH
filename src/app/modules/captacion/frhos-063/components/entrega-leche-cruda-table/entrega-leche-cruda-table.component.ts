@@ -58,7 +58,6 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
 
   opcionesResponsables: ResponsableOption[] = [];
   opcionesMadres: MadreOption[] = [];
-  madresSugeridas: MadreOption[] = [];
 
   private tempIdCounter = -1;
   private madreSeleccionada: MadreOption | null = null;
@@ -66,7 +65,7 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
 
   readonly headersEntregaLecheCruda = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
-    { header: 'NOMBRE DE LA MADRE', field: 'nombre_madre', width: '200px', tipo: 'autocomplete' },
+    { header: 'NOMBRE DE LA MADRE', field: 'nombre_madre', width: '200px', tipo: 'select' },
     { header: 'VOLUMEN LECHE MATERNA A.M', field: 'volumen_leche_materna_am', width: '180px', tipo: 'text' },
     { header: 'VOLUMEN LECHE MATERNA P.M', field: 'volumen_leche_materna_pm', width: '180px', tipo: 'text' },
     { header: 'PERDIDAS', field: 'perdidas', width: '100px', tipo: 'number' },
@@ -117,29 +116,20 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
     });
   }
 
-  buscarMadres(event: any): void {
-    const query = event.query?.toLowerCase() || '';
-
-    this.madresSugeridas = query.length >= 2
-      ? this.opcionesMadres.filter(madre =>
-        madre.label.toLowerCase().includes(query) ||
-        (madre.documento && madre.documento.includes(query))
-      )
-      : [];
-  }
-
   onMadreSeleccionada(event: any, rowData: EntregaLecheCrudaData): void {
     let madreEncontrada: MadreOption | undefined;
 
-    if (typeof event === 'object' && event.value) {
+    if (event?.value) {
       madreEncontrada = this.opcionesMadres.find(m => m.value === event.value);
       if (madreEncontrada) {
         rowData.nombre_madre = event.value;
       }
-    } else if (typeof event === 'string') {
+    }
+    else if (typeof event === 'string') {
       rowData.nombre_madre = event;
       madreEncontrada = this.opcionesMadres.find(m => m.value === event);
-    } else if (event?.label) {
+    }
+    else if (event?.label) {
       madreEncontrada = this.opcionesMadres.find(m => m.label === event.label || m.value === event.label);
       if (madreEncontrada) {
         rowData.nombre_madre = madreEncontrada.value;
@@ -356,7 +346,7 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
         this.madreSeleccionada = madreEncontrada;
       } else {
         this.savingInProgress = false;
-        this.showErrorMessage('Debe seleccionar una madre válida del listado de sugerencias');
+        this.showErrorMessage('Debe seleccionar una madre válida');
         return;
       }
     }

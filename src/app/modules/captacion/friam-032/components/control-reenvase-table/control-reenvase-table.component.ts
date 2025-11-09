@@ -191,14 +191,6 @@ export class ControlReenvaseTableComponent implements OnInit {
       next: (donantes) => {
         this.opcionesDonantes = donantes;
         this.loadingDonantes = false;
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: `${donantes.length} donante${donantes.length > 1 ? 's' : ''} cargada${donantes.length > 1 ? 's' : ''} correctamente`,
-          key: 'tr',
-          life: 2000,
-        });
       },
       error: (error) => {
         this.loadingDonantes = false;

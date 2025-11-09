@@ -1,67 +1,68 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
-import type { ControlReenvaseData, DonanteOption, FrascoOption, ResponsableOption } from '../interfaces/control-reenvase.interface';
+import type {
+  DonanteOption,
+  ResponsableOption,
+  BackendResponse,
+  DatosBackendParaCreacion,
+  DatosBackendParaActualizacion
+} from '../interfaces/control-reenvase.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ControlReenvaseService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getMadresDonantes(): Observable<DonanteOption[]> {
-    return this.http.get<any>(`${environment.ApiBLH}/GetMadreDonante`)
+    return this.http.get<BackendResponse<any[]>>(`${environment.ApiBLH}/GetMadreDonante`)
       .pipe(
         map(response => {
           const donantes = response.data || [];
-
           return donantes.map((madre: any) => ({
             label: `${madre.id_madre_donante} - ${madre.nombre} ${madre.apellido}`,
             value: madre.id_madre_donante.toString(),
             documento: madre.documento
           }));
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en getMadresDonantes:', error);
+          return throwError(() => error);
         })
       );
   }
 
   getFrascosByMadreDonante(idMadreDonante: string): Observable<any[]> {
-    return this.http.get<any>(`${environment.ApiBLH}/getFrascosByMadreDonante/${idMadreDonante}`, {
+    return this.http.get<BackendResponse<any[]>>(`${environment.ApiBLH}/getFrascosByMadreDonante/${idMadreDonante}`, {
       observe: 'response'
     })
       .pipe(
         map(response => {
-          if (response.status === 204) {
-            return [];
-          }
-
+          if (response.status === 204) return [];
           return response.body?.data || [];
         }),
         catchError((error: HttpErrorResponse) => {
-          console.error('Error real en getFrascosByMadreDonante:', error);
+          console.error('Error en getFrascosByMadreDonante:', error);
           return throwError(() => error);
         })
       );
   }
 
   getEmpleados(): Observable<ResponsableOption[]> {
-    return this.http.get<any>(`${environment.ApiBLH}/GetEmpleados`, {
+    return this.http.get<BackendResponse<any[]>>(`${environment.ApiBLH}/GetEmpleados`, {
       observe: 'response'
     })
       .pipe(
         map(response => {
-          if (response.status === 204) {
-            return [];
-          }
-
+          if (response.status === 204) return [];
           const empleados = response.body?.data || [];
-
           return empleados.map((empleado: any) => ({
             label: empleado.nombre,
             value: empleado.nombre,
-
             id_empleado: empleado.id,
             cargo: empleado.cargo,
             telefono: empleado.telefono,
@@ -75,29 +76,13 @@ export class ControlReenvaseService {
       );
   }
 
-  postControlReenvase(data: any): Observable<any> {
-    return this.http.post<any>(`${environment.ApiBLH}/postControlReenvase`, data)
-      .pipe(
-        map(response => {
-          return response;
-        }),
-        catchError((error: HttpErrorResponse) => {
-          console.error('Error en postControlReenvase:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
   getAllControlReenvase(): Observable<any[]> {
-    return this.http.get<any>(`${environment.ApiBLH}/getAllControlReenvase`, {
+    return this.http.get<BackendResponse<any[]>>(`${environment.ApiBLH}/getAllControlReenvase`, {
       observe: 'response'
     })
       .pipe(
         map(response => {
-          if (response.status === 204) {
-            return [];
-          }
-
+          if (response.status === 204) return [];
           return response.body?.data || [];
         }),
         catchError((error: HttpErrorResponse) => {
@@ -107,48 +92,23 @@ export class ControlReenvaseService {
       );
   }
 
-  getControlReenvaseData(): ControlReenvaseData[] {
-    return [
-      {
-        id: 1,
-        fecha: '2025-11-01',
-        no_donante: '1',
-        id_frasco_anterior: 5,
-        volumen_frasco_anterior: '500',
-        responsable: 'Juan López'
-      },
-      {
-        id: 2,
-        fecha: '2025-11-02',
-        no_donante: '2',
-        id_frasco_anterior: 6,
-        volumen_frasco_anterior: '800',
-        responsable: 'María Fernández'
-      },
-      {
-        id: 3,
-        fecha: '2025-11-03',
-        no_donante: '3',
-        id_frasco_anterior: 7,
-        volumen_frasco_anterior: '1200',
-        responsable: 'Juan López'
-      },
-      {
-        id: 4,
-        fecha: '2025-11-04',
-        no_donante: '1',
-        id_frasco_anterior: 8,
-        volumen_frasco_anterior: '900',
-        responsable: 'Pedro Sánchez'
-      },
-      {
-        id: 5,
-        fecha: '2025-11-06',
-        no_donante: '2',
-        id_frasco_anterior: 9,
-        volumen_frasco_anterior: '1100',
-        responsable: 'María Fernández'
-      }
-    ];
+  postControlReenvase(data: DatosBackendParaCreacion): Observable<any> {
+    return this.http.post<BackendResponse<any>>(`${environment.ApiBLH}/postControlReenvase`, data)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en postControlReenvase:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  putControlReenvase(data: DatosBackendParaActualizacion): Observable<any> {
+    return this.http.put<BackendResponse<any>>(`${environment.ApiBLH}/putControlReenvase`, data)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en putControlReenvase:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }

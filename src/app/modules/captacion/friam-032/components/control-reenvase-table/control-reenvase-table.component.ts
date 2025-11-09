@@ -13,23 +13,26 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TooltipModule } from 'primeng/tooltip';
 import { HttpClientModule } from '@angular/common/http';
 import { ControlReenvaseService } from '../../services/control-reenvase.service';
-import type { ControlReenvaseData, ResponsableOption, DonanteOption, FrascoOption } from '../../interfaces/control-reenvase.interface';
+import type {
+  ControlReenvaseData,
+  ResponsableOption,
+  DonanteOption,
+  FrascoOption,
+  FiltroFecha,
+  TipoMensaje,
+  TipoFrasco,
+  DatosBackendParaCreacion,
+  DatosBackendParaActualizacion,
+  LoadingState,
+  TableColumn
+} from '../../interfaces/control-reenvase.interface';
 
 @Component({
   selector: 'control-reenvase-table',
   imports: [
-    TableModule,
-    CommonModule,
-    ProgressSpinnerModule,
-    ToastModule,
-    FormsModule,
-    ButtonModule,
-    InputTextModule,
-    DatePickerModule,
-    SelectModule,
-    AutoCompleteModule,
-    TooltipModule,
-    HttpClientModule
+    TableModule, CommonModule, ProgressSpinnerModule, ToastModule,
+    FormsModule, ButtonModule, InputTextModule, DatePickerModule,
+    SelectModule, AutoCompleteModule, TooltipModule, HttpClientModule
   ],
   templateUrl: './control-reenvase-table.component.html',
   styleUrl: './control-reenvase-table.component.scss',
@@ -40,41 +43,54 @@ export class ControlReenvaseTableComponent implements OnInit {
   @ViewChild('tableControlReenvase') table!: Table;
   @Output() rowClick = new EventEmitter<ControlReenvaseData>();
 
-  loading: boolean = false;
-  loadingDonantes: boolean = false;
-  loadingFrascos: boolean = false;
-  loadingEmpleados: boolean = false;
+  // Estados de carga
+  readonly loading: LoadingState = {
+    main: false,
+    donantes: false,
+    frascos: false,
+    empleados: false
+  };
+
+  // Estados de edición
   editingRow: ControlReenvaseData | null = null;
-  hasNewRowInEditing: boolean = false;
-  clonedData: { [s: string]: ControlReenvaseData } = {};
-  tempIdCounter: number = -1;
+  hasNewRowInEditing = false;
+  clonedData: Record<string, ControlReenvaseData> = {};
+  tempIdCounter = -1;
 
-  dataControlReenvaseOriginal: ControlReenvaseData[] = [];
-  dataControlReenvaseFiltered: ControlReenvaseData[] = [];
-  filtroFecha: { year: number; month: number } | null = null;
+  // Datos principales
+  dataOriginal: ControlReenvaseData[] = [];
+  dataFiltered: ControlReenvaseData[] = [];
+  filtroFecha: FiltroFecha | null = null;
 
+  // Opciones para selects
   opcionesResponsables: ResponsableOption[] = [];
   opcionesDonantes: DonanteOption[] = [];
-  donantesSugeridos: DonanteOption[] = [];
-
-  opcionesFrascos: FrascoOption[] = [];
   frascosFiltrados: FrascoOption[] = [];
 
-  readonly headersControlReenvase = [
+  headersControlReenvase: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
     { header: 'No. Donante', field: 'no_donante', width: '200px', tipo: 'select' },
     { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '200px', tipo: 'select' },
     { header: 'VOLUMEN', field: 'volumen_frasco_anterior', width: '150px', tipo: 'text' },
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
-    { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
+    { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
 
+  private readonly mesesDelAno = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ] as const;
+
   get dataControlReenvase(): ControlReenvaseData[] {
-    return this.dataControlReenvaseFiltered;
+    return this.dataFiltered;
   }
 
-  set dataControlReenvase(value: ControlReenvaseData[]) {
-    this.dataControlReenvaseFiltered = value;
+  get loadingDonantes(): boolean {
+    return this.loading.donantes;
+  }
+
+  get loadingFrascos(): boolean {
+    return this.loading.frascos;
   }
 
   constructor(
@@ -83,30 +99,137 @@ export class ControlReenvaseTableComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarEmpleados();
-    this.cargarMadresDonantes();
-    this.loadDataControlReenvase();
+    this.inicializarComponente();
   }
 
-  private obtenerAñoActualCorto(): string {
-    const añoCompleto = new Date().getFullYear();
-    return añoCompleto.toString().slice(-2);
+  // ============= INICIALIZACIÓN =============
+
+  private async inicializarComponente(): Promise<void> {
+    try {
+      await Promise.all([
+        this.cargarEmpleados(),
+        this.cargarMadresDonantes(),
+        this.cargarDatosControlReenvase()
+      ]);
+    } catch (error) {
+      console.error('Error al inicializar componente:', error);
+      this.mostrarMensaje('error', 'Error de inicialización', 'Error al cargar datos iniciales');
+    }
   }
 
-  private generarCodigoLHC(id: number): string {
-    const añoActual = this.obtenerAñoActualCorto();
-    return `LHC ${añoActual} ${id}`;
+  // ============= CARGA DE DATOS =============
+
+  private cargarEmpleados(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.loading.empleados = true;
+
+      this.controlReenvaseService.getEmpleados().subscribe({
+        next: (empleados) => {
+          this.opcionesResponsables = empleados;
+          this.loading.empleados = false;
+          resolve();
+        },
+        error: (error) => {
+          this.loading.empleados = false;
+          console.error('Error al cargar empleados:', error);
+          this.cargarEmpleadosFallback();
+          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los empleados');
+          reject(error);
+        }
+      });
+    });
   }
 
-  private extraerIdDeCodigoLHC(codigoCompleto: string): number | null {
-    if (!codigoCompleto) return null;
-    const match = codigoCompleto.match(/LHC\s+\d+\s+(\d+)/);
-    return match ? parseInt(match[1]) : null;
+  private cargarMadresDonantes(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.loading.donantes = true;
+
+      this.controlReenvaseService.getMadresDonantes().subscribe({
+        next: (donantes) => {
+          this.opcionesDonantes = donantes;
+          this.loading.donantes = false;
+          resolve();
+        },
+        error: (error) => {
+          this.loading.donantes = false;
+          console.error('Error al cargar madres donantes:', error);
+          this.cargarDonantesFallback();
+          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar las madres donantes');
+          reject(error);
+        }
+      });
+    });
   }
 
-  /**
-   * Transformar datos de frascos de la API a FrascoOption
-   */
+  private cargarDatosControlReenvase(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.loading.main = true;
+
+      this.controlReenvaseService.getAllControlReenvase().subscribe({
+        next: (registros) => {
+          this.dataOriginal = this.transformarDatosBackend(registros);
+          this.dataFiltered = [...this.dataOriginal];
+          this.corregirVolumenesInternas(registros);
+          this.mostrarMensajeExitosoCarga();
+          this.loading.main = false;
+          resolve();
+        },
+        error: (error) => {
+          this.loading.main = false;
+          console.error('Error al cargar datos del backend:', error);
+          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los datos del backend');
+          reject(error);
+        }
+      });
+    });
+  }
+
+  private cargarFrascosPorDonante(idMadreDonante: string): void {
+    if (!idMadreDonante) {
+      this.frascosFiltrados = [];
+      return;
+    }
+
+    this.loading.frascos = true;
+
+    this.controlReenvaseService.getFrascosByMadreDonante(idMadreDonante).subscribe({
+      next: (frascos) => {
+        this.frascosFiltrados = this.transformarFrascosAPI(frascos, idMadreDonante);
+        this.loading.frascos = false;
+
+        if (this.frascosFiltrados.length === 0) {
+          this.mostrarMensaje('info', 'Información', 'No se encontraron frascos disponibles para esta donante');
+        }
+      },
+      error: (error) => {
+        this.loading.frascos = false;
+        console.error('Error al cargar frascos:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al cargar los frascos de la donante');
+        this.frascosFiltrados = [];
+      }
+    });
+  }
+
+  // ============= FALLBACKS =============
+
+  private cargarEmpleadosFallback(): void {
+    this.opcionesResponsables = [
+      { label: 'Juan López', value: 'Juan López' },
+      { label: 'María Fernández', value: 'María Fernández' },
+      { label: 'Pedro Sánchez', value: 'Pedro Sánchez' },
+      { label: 'Ana García', value: 'Ana García' }
+    ];
+  }
+
+  private cargarDonantesFallback(): void {
+    this.opcionesDonantes = [
+      { label: '123456 - María Pérez González', value: '123456', documento: '12345678' },
+      { label: '789012 - Ana García Rodríguez', value: '789012', documento: '87654321' }
+    ];
+  }
+
+  // ============= TRANSFORMACIÓN DE DATOS =============
+
   private transformarFrascosAPI(frascos: any[], idMadreDonante: string): FrascoOption[] {
     return frascos
       .map((frasco: any) => {
@@ -115,14 +238,15 @@ export class ControlReenvaseTableComponent implements OnInit {
 
         if (!frascoData) return null;
 
-        const codigoLHC = this.generarCodigoLHC(frasco.id);
+        const volumenValue = esExtraccion
+          ? frascoData.cantidad?.toString() || '0'
+          : frascoData.volumen?.toString() || '0';
 
         return {
-          label: codigoLHC,
-          value: codigoLHC,
+          label: this.generarCodigoLHC(frasco.id),
+          value: this.generarCodigoLHC(frasco.id),
           donante: idMadreDonante,
-          volumen: frascoData.volumen ? frascoData.volumen.toString() : '0',
-
+          volumen: volumenValue,
           id_frasco_principal: frasco.id,
           id_frasco_data: frascoData.id,
           tipo: esExtraccion ? 'extraccion' : 'recolectado',
@@ -138,344 +262,150 @@ export class ControlReenvaseTableComponent implements OnInit {
       .filter((frasco): frasco is FrascoOption => frasco !== null);
   }
 
-  private inicializarOpciones(): void {
-    this.opcionesResponsables = [];
-    this.opcionesFrascos = [];
-  }
+  private transformarDatosBackend(registros: any[]): ControlReenvaseData[] {
+    return registros.map((registro: any) => {
+      const { volumen, tipo, idExtraccion, idFrascoRecolectado } = this.extraerVolumenYTipo(registro);
 
-  private cargarEmpleados(): void {
-    this.loadingEmpleados = true;
-
-    this.controlReenvaseService.getEmpleados().subscribe({
-      next: (empleados) => {
-        this.opcionesResponsables = empleados;
-        this.loadingEmpleados = false;
-        console.log('Empleados cargados:', empleados);
-      },
-      error: (error) => {
-        this.loadingEmpleados = false;
-        console.error('Error al cargar empleados:', error);
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar los empleados. Usando datos locales.',
-          key: 'tr',
-          life: 4000,
-        });
-
-        this.cargarEmpleadosFallback();
-      }
+      return {
+        id: registro.id,
+        fecha: this.parsearFechaDesdeBackend(registro.fecha),
+        no_donante: registro.madreDonante.id.toString(),
+        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
+        id_frasco_anterior: registro.frascoCrudo,
+        volumen_frasco_anterior: volumen,
+        responsable: registro.empleado.nombre,
+        madre_donante_info: registro.madreDonante,
+        empleado_info: registro.empleado,
+        id_empleado: registro.empleado.id,
+        tipo_frasco: tipo,
+        id_extraccion: idExtraccion,
+        id_frasco_recolectado: idFrascoRecolectado
+      };
     });
   }
 
-  /**
-   * Método de respaldo para empleados
-   */
-  private cargarEmpleadosFallback(): void {
-    this.opcionesResponsables = [
-      { label: 'Juan López', value: 'Juan López' },
-      { label: 'María Fernández', value: 'María Fernández' },
-      { label: 'Pedro Sánchez', value: 'Pedro Sánchez' },
-      { label: 'Ana García', value: 'Ana García' }
-    ];
-  }
+  private extraerVolumenYTipo(registro: any): {
+    volumen: string;
+    tipo: TipoFrasco;
+    idExtraccion?: number;
+    idFrascoRecolectado?: number;
+  } {
+    const tipoDonante = registro.madreDonante?.tipoDonante;
 
-  /**
-   * Cargar madres donantes desde la API
-   */
-  private cargarMadresDonantes(): void {
-    this.loadingDonantes = true;
-
-    this.controlReenvaseService.getMadresDonantes().subscribe({
-      next: (donantes) => {
-        this.opcionesDonantes = donantes;
-        this.loadingDonantes = false;
-      },
-      error: (error) => {
-        this.loadingDonantes = false;
-        console.error('Error al cargar madres donantes:', error);
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar las madres donantes. Usando datos locales.',
-          key: 'tr',
-          life: 4000,
-        });
-
-        this.cargarDonantesFallback();
-      }
-    });
-  }
-
-  /**
-   * Cargar frascos por madre donante desde la API
-   */
-  private cargarFrascosPorDonante(idMadreDonante: string): void {
-    if (!idMadreDonante) {
-      this.frascosFiltrados = [];
-      return;
+    if (tipoDonante === 'externa') {
+      return this.buscarEnFrascosRecolectados(registro);
+    } else if (tipoDonante === 'interna') {
+      return this.buscarEnExtracciones(registro);
     }
 
-    this.loadingFrascos = true;
-
-    this.controlReenvaseService.getFrascosByMadreDonante(idMadreDonante).subscribe({
-      next: (frascos) => {
-        this.frascosFiltrados = this.transformarFrascosAPI(frascos, idMadreDonante);
-        this.loadingFrascos = false;
-
-        console.log(`Frascos cargados para donante ${idMadreDonante}:`, this.frascosFiltrados);
-
-        if (this.frascosFiltrados.length > 0) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: `${this.frascosFiltrados.length} frasco${this.frascosFiltrados.length > 1 ? 's' : ''} disponible${this.frascosFiltrados.length > 1 ? 's' : ''} para la donante`,
-            key: 'tr',
-            life: 2000,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: 'No se encontraron frascos disponibles para esta donante',
-            key: 'tr',
-            life: 3000,
-          });
-        }
-      },
-      error: (error) => {
-        this.loadingFrascos = false;
-        console.error('Error real al cargar frascos:', error);
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Ocurrió un problema al cargar los frascos de la donante',
-          key: 'tr',
-          life: 4000,
-        });
-
-        this.frascosFiltrados = [];
-      }
-    });
+    return { volumen: '0', tipo: 'recolectado' };
   }
 
-  /**
-   * Método de respaldo en caso de fallo de la API
-   */
-  private cargarDonantesFallback(): void {
-    this.opcionesDonantes = [
-      { label: '123456 - María Pérez González', value: '123456', documento: '12345678' },
-      { label: '789012 - Ana García Rodríguez', value: '789012', documento: '87654321' },
-      { label: '345678 - Carmen Martínez López', value: '345678', documento: '11223344' },
-      { label: '901234 - Lucía Hernández Silva', value: '901234', documento: '44556677' },
-      { label: '567890 - Isabel Ruiz Castro', value: '567890', documento: '99887766' },
-      { label: '234567 - Patricia Moreno Jiménez', value: '234567', documento: '55443322' },
-      { label: '678901 - Sandra López Vargas', value: '678901', documento: '22334455' },
-      { label: '012345 - Carolina Díaz Méndez', value: '012345', documento: '66778899' },
-      { label: '456789 - Alejandra Torres Vega', value: '456789', documento: '33445566' },
-      { label: '890123 - Mónica Ramírez Cruz', value: '890123', documento: '77889900' }
-    ];
-  }
-
-  private loadDataControlReenvase(): void {
-    this.loading = true;
-
-    this.controlReenvaseService.getAllControlReenvase().subscribe({
-      next: (registros) => {
-        console.log('Datos recibidos del backend:', registros);
-
-        this.dataControlReenvaseOriginal = this.transformarDatosBackend(registros);
-        this.dataControlReenvaseFiltered = [...this.dataControlReenvaseOriginal];
-
-        this.showSuccessMessageInitial();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar datos del backend:', error);
-        this.loading = false;
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar los datos del backend. Usando datos locales.',
-          key: 'tr',
-          life: 4000,
-        });
-
-        this.loadDataControlReenvaseFallback();
-      }
-    });
-  }
-
-  /**
-   * Método de fallback para cargar datos mock
-   */
-  private loadDataControlReenvaseFallback(): void {
-    try {
-      const rawData = this.controlReenvaseService.getControlReenvaseData();
-
-      const datosTransformados = rawData.map(item => ({
-        ...item,
-        no_frasco_anterior: item.id_frasco_anterior
-          ? this.generarCodigoLHC(item.id_frasco_anterior)
-          : item.no_frasco_anterior
-      }));
-
-      this.dataControlReenvaseOriginal = this.formatData(datosTransformados);
-      this.dataControlReenvaseFiltered = [...this.dataControlReenvaseOriginal];
-
-      this.showSuccessMessageInitial();
-      this.loading = false;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  filtrarFrascosPorDonante(codigoDonante: string): FrascoOption[] {
-    if (!codigoDonante) return [];
-    return this.opcionesFrascos.filter(frasco => frasco.donante === codigoDonante);
-  }
-
-  onDonanteSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    let codigoDonante = '';
-
-    if (event && event.value) {
-      codigoDonante = event.value;
-    } else if (typeof event === 'string') {
-      codigoDonante = event;
-    } else {
-      return;
-    }
-
-    rowData.no_donante = codigoDonante;
-
-    if (codigoDonante && codigoDonante.trim()) {
-      rowData.no_frasco_anterior = '';
-      rowData.volumen_frasco_anterior = '';
-
-      this.cargarFrascosPorDonante(codigoDonante);
-    } else {
-      rowData.no_frasco_anterior = '';
-      rowData.volumen_frasco_anterior = '';
-      this.frascosFiltrados = [];
-    }
-  }
-
-  onFrascoSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    if (event && event.value) {
-      rowData.no_frasco_anterior = event.value;
-
-      const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === event.value);
-      if (frascoSeleccionado) {
-        if (frascoSeleccionado.volumen) {
-          rowData.volumen_frasco_anterior = frascoSeleccionado.volumen;
-        }
-
-        if (frascoSeleccionado.id_frasco_principal) {
-          rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_principal;
+  private buscarEnFrascosRecolectados(registro: any): {
+    volumen: string;
+    tipo: TipoFrasco;
+    idFrascoRecolectado?: number;
+  } {
+    if (registro.madreDonante?.casaVisita?.length > 0) {
+      for (const casa of registro.madreDonante.casaVisita) {
+        if (casa.frascoRecolectado?.length > 0) {
+          const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
+          if (frasco) {
+            return {
+              volumen: frasco.volumen?.toString() || '0',
+              tipo: 'recolectado',
+              idFrascoRecolectado: frasco.id
+            };
+          }
         }
       }
     }
+    return { volumen: '0', tipo: 'recolectado' };
   }
 
-  onResponsableSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    let responsable = '';
-
-    if (event && typeof event === 'object' && event.value) {
-      responsable = event.value;
-    } else if (typeof event === 'string') {
-      responsable = event;
-    } else {
-      return;
+  private buscarEnExtracciones(registro: any): {
+    volumen: string;
+    tipo: TipoFrasco;
+    idExtraccion?: number;
+  } {
+    const extracciones = registro.madreDonante?.madrePotencial?.lecheSalaExtraccion?.extracciones;
+    if (extracciones) {
+      const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
+      if (extraccion) {
+        return {
+          volumen: extraccion.cantidad?.toString() || '0',
+          tipo: 'extraccion',
+          idExtraccion: extraccion.id
+        };
+      }
     }
-
-    rowData.responsable = responsable;
-
-    const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === responsable);
-    if (empleadoSeleccionado && empleadoSeleccionado.id_empleado) {
-      (rowData as any).id_empleado = empleadoSeleccionado.id_empleado;
-      console.log('Empleado seleccionado - ID:', empleadoSeleccionado.id_empleado);
-    }
+    return { volumen: '0', tipo: 'extraccion' };
   }
 
-  onRowClick(rowData: ControlReenvaseData): void {
-    if (this.isAnyRowEditing()) {
-      this.showWarningMessage('Debe guardar o cancelar la edición actual antes de ver las pasteurizaciones');
-      return;
-    }
+  private corregirVolumenesInternas(registros: any[]): void {
+    registros.forEach((registro: any) => {
+      if (registro.madreDonante?.tipoDonante !== 'interna') return;
 
-    this.rowClick.emit(rowData);
-  }
+      const row = this.dataOriginal.find(r => r.id === registro.id);
+      if (!row || (row.volumen_frasco_anterior && row.volumen_frasco_anterior !== '0')) return;
 
-  isCampoEditable(campo: string, rowData: ControlReenvaseData): boolean {
-    if (campo === 'volumen_frasco_anterior' || campo === 'responsable') {
-      return true;
-    }
+      const idMadre = registro.madreDonante?.id;
+      if (!idMadre) return;
 
-    if (campo === 'fecha') {
-      return rowData.isNew === true;
-    }
+      this.controlReenvaseService.getFrascosByMadreDonante(String(idMadre)).subscribe({
+        next: (entradas: any[]) => {
+          const entradaMatch = entradas.find((e: any) => e.id === registro.frascoCrudo);
+          if (!entradaMatch?.extraccion) return;
 
-    if (campo === 'no_donante') {
-      return rowData.isNew === true;
-    }
-
-    if (campo === 'no_frasco_anterior') {
-      return !!(rowData.no_donante && rowData.no_donante.trim());
-    }
-
-    return false;
-  }
-
-  getFrascosDisponibles(rowData: ControlReenvaseData): FrascoOption[] {
-    if (!rowData.no_donante) {
-      return [];
-    }
-
-    return this.frascosFiltrados;
-  }
-
-  filtrarPorFecha(filtro: { year: number; month: number } | null): void {
-    this.aplicarFiltroConNotificacion(filtro);
-  }
-
-  aplicarFiltroInicialConNotificacion(filtro: { year: number; month: number } | null): void {
-    this.aplicarFiltroConNotificacion(filtro);
-  }
-
-  private aplicarFiltroConNotificacion(filtro: { year: number; month: number } | null): void {
-    this.filtroFecha = filtro;
-    this.aplicarFiltros();
-    this.mostrarNotificacionFiltro();
-  }
-
-  private aplicarFiltros(): void {
-    let datosFiltrados = [...this.dataControlReenvaseOriginal];
-
-    if (this.filtroFecha) {
-      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
-    }
-
-    this.dataControlReenvaseFiltered = datosFiltrados;
-  }
-
-  private filtrarPorMesYAno(datos: ControlReenvaseData[], filtro: { year: number; month: number }): ControlReenvaseData[] {
-    return datos.filter(item => {
-      if (!item.fecha) return false;
-
-      const fechaParseada = this.parsearFechaSegura(item.fecha);
-      if (!fechaParseada) return false;
-
-      if (isNaN(fechaParseada.getTime())) return false;
-
-      const mesItem = fechaParseada.getMonth() + 1;
-      const añoItem = fechaParseada.getFullYear();
-
-      return mesItem === filtro.month && añoItem === filtro.year;
+          row.volumen_frasco_anterior = entradaMatch.extraccion.cantidad?.toString() || '0';
+          row.tipo_frasco = 'extraccion';
+          row.id_extraccion = entradaMatch.extraccion.id;
+          this.dataFiltered = [...this.dataOriginal];
+        },
+        error: (err) => console.error(`Error al corregir volumen para madre ${idMadre}:`, err)
+      });
     });
+  }
+
+  // ============= UTILIDADES =============
+
+  private generarCodigoLHC(id: number): string {
+    const añoActual = new Date().getFullYear().toString().slice(-2);
+    return `LHC ${añoActual} ${id}`;
+  }
+
+  private extraerIdDeCodigoLHC(codigo: string): number | null {
+    if (!codigo) return null;
+    const match = codigo.match(/LHC\s+\d+\s+(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }
+
+  private parsearFechaSegura(fechaString: string | Date | null): Date | null {
+    if (!fechaString) return null;
+    if (fechaString instanceof Date) return fechaString;
+
+    if (typeof fechaString === 'string') {
+      if (fechaString.includes('-')) {
+        const [year, month, day] = fechaString.split('-').map(Number);
+        return new Date(year, month - 1, day, 12, 0, 0, 0);
+      }
+      if (fechaString.includes('/')) {
+        const [day, month, year] = fechaString.split('/').map(Number);
+        return new Date(year, month - 1, day, 12, 0, 0, 0);
+      }
+    }
+    return null;
+  }
+
+  private parsearFechaDesdeBackend(fechaString: string): Date {
+    if (!fechaString) return new Date();
+
+    if (fechaString.includes('T')) {
+      fechaString = fechaString.split('T')[0];
+    }
+
+    const [year, month, day] = fechaString.split('-').map(Number);
+    return new Date(year, month - 1, day, 12, 0, 0, 0);
   }
 
   private formatearFechaParaAPI(fecha: Date): string {
@@ -488,269 +418,87 @@ export class ControlReenvaseTableComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  private mostrarNotificacionFiltro(): void {
-    const cantidad = this.dataControlReenvaseFiltered.length;
-    const totalOriginal = this.dataControlReenvaseOriginal.length;
+  // ============= EVENTOS DE UI =============
 
-    if (this.filtroFecha) {
-      const nombreMes = this.obtenerNombreMes(this.filtroFecha.month);
-      const año = this.filtroFecha.year;
+  onDonanteSeleccionado(event: any, rowData: ControlReenvaseData): void {
+    const codigoDonante = this.extraerValorEvento(event);
+    if (!codigoDonante) return;
 
-      if (cantidad > 0) {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Filtro aplicado',
-          detail: `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${año}`,
-          key: 'tr',
-          life: 3000,
-        });
-      } else {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Sin resultados',
-          detail: `No se encontraron registros para ${nombreMes} ${año}`,
-          key: 'tr',
-          life: 3000,
-        });
-      }
+    rowData.no_donante = codigoDonante;
+
+    if (codigoDonante.trim()) {
+      rowData.no_frasco_anterior = '';
+      rowData.volumen_frasco_anterior = '';
+      this.cargarFrascosPorDonante(codigoDonante);
     } else {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Filtro removido',
-        detail: `Mostrando todos los registros (${totalOriginal})`,
-        key: 'tr',
-        life: 2000,
-      });
+      this.limpiarSeleccionFrasco(rowData);
     }
   }
 
-  private obtenerNombreMes(mes: number): string {
-    const meses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return meses[mes - 1] || 'Mes inválido';
-  }
+  onFrascoSeleccionado(event: any, rowData: ControlReenvaseData): void {
+    const valorFrasco = this.extraerValorEvento(event);
+    if (!valorFrasco) return;
 
-  private formatData(data: ControlReenvaseData[]): ControlReenvaseData[] {
-    return data.map((item, index) => ({
-      ...item,
-      id: item.id || index + 1,
-      fecha: item.fecha ? this.parsearFechaSegura(item.fecha) : null
-    }));
-  }
+    rowData.no_frasco_anterior = valorFrasco;
 
-  private parsearFechaSegura(fechaString: string | Date): Date | null {
-    if (!fechaString) return null;
-
-    if (fechaString instanceof Date) return fechaString;
-
-    if (typeof fechaString === 'string') {
-      if (fechaString.includes('-')) {
-        const [year, month, day] = fechaString.split('-').map(Number);
-        return new Date(year, month - 1, day, 12, 0, 0, 0);
-      }
-
-      if (fechaString.includes('/')) {
-        const [day, month, year] = fechaString.split('/').map(Number);
-        return new Date(year, month - 1, day, 12, 0, 0, 0);
-      }
+    const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === valorFrasco);
+    if (frascoSeleccionado) {
+      rowData.volumen_frasco_anterior = frascoSeleccionado.volumen || '';
+      rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_principal;
     }
-
-    return null;
   }
+
+  onResponsableSeleccionado(event: any, rowData: ControlReenvaseData): void {
+    const responsable = this.extraerValorEvento(event);
+    if (!responsable) return;
+
+    rowData.responsable = responsable;
+
+    const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === responsable);
+    if (empleadoSeleccionado?.id_empleado) {
+      (rowData as any).id_empleado = empleadoSeleccionado.id_empleado;
+    }
+  }
+
+  onRowClick(rowData: ControlReenvaseData): void {
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de ver las pasteurizaciones');
+      return;
+    }
+    this.rowClick.emit(rowData);
+  }
+
+  private extraerValorEvento(event: any): string {
+    if (event?.value) return event.value;
+    if (typeof event === 'string') return event;
+    return '';
+  }
+
+  private limpiarSeleccionFrasco(rowData: ControlReenvaseData): void {
+    rowData.no_frasco_anterior = '';
+    rowData.volumen_frasco_anterior = '';
+    this.frascosFiltrados = [];
+  }
+
+  // ============= CRUD OPERATIONS =============
 
   crearNuevoRegistro(): void {
     if (this.hasNewRowInEditing) {
-      this.showWarningMessage('Debe guardar o cancelar el registro actual antes de crear uno nuevo');
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar el registro actual antes de crear uno nuevo');
       return;
     }
 
     if (this.isAnyRowEditing()) {
-      this.showWarningMessage('Debe completar la edición actual antes de crear un nuevo registro');
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe completar la edición actual antes de crear un nuevo registro');
       return;
     }
 
-    const nuevoRegistro = this.createNewRecord();
-
-    this.dataControlReenvaseOriginal.push(nuevoRegistro);
-    this.dataControlReenvaseFiltered.push(nuevoRegistro);
-    this.dataControlReenvaseFiltered = [...this.dataControlReenvaseFiltered];
-
-    this.hasNewRowInEditing = true;
-    this.editingRow = nuevoRegistro;
-
-    setTimeout(() => this.table.initRowEdit(nuevoRegistro), 100);
-    this.showInfoMessage('Se ha creado un nuevo registro. Complete los campos requeridos.');
+    const nuevoRegistro = this.crearRegistroVacio();
+    this.agregarRegistroATabla(nuevoRegistro);
+    this.iniciarEdicionRegistro(nuevoRegistro);
   }
 
-  private removeNewRowFromData(dataRow: ControlReenvaseData): void {
-    const originalIndex = this.dataControlReenvaseOriginal.findIndex(item =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
-    );
-
-    if (originalIndex !== -1) {
-      this.dataControlReenvaseOriginal.splice(originalIndex, 1);
-    }
-
-    const filteredIndex = this.dataControlReenvaseFiltered.findIndex(item =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
-    );
-
-    if (filteredIndex !== -1) {
-      this.dataControlReenvaseFiltered.splice(filteredIndex, 1);
-      this.dataControlReenvaseFiltered = [...this.dataControlReenvaseFiltered];
-    }
-  }
-
-  private guardarNuevoRegistro(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
-    const dataParaBackend = this.prepararDatosParaBackend(dataRow);
-
-    if (!dataParaBackend) {
-      this.showErrorMessage('Error al preparar los datos para guardar');
-      return;
-    }
-
-    console.log('Datos que se enviarán al backend:', dataParaBackend);
-
-    this.controlReenvaseService.postControlReenvase(dataParaBackend).subscribe({
-      next: (response) => {
-        console.log('Respuesta del backend:', response);
-
-        if (response.data && response.data.id) {
-          dataRow.id = response.data.id;
-        }
-
-        dataRow.isNew = false;
-        delete dataRow._uid;
-
-        const originalIndex = this.dataControlReenvaseOriginal.findIndex(item =>
-          item === dataRow || (item._uid && item._uid === dataRow._uid)
-        );
-
-        if (originalIndex !== -1) {
-          this.dataControlReenvaseOriginal[originalIndex] = { ...dataRow };
-        }
-
-        this.resetEditingState();
-        this.table.saveRowEdit(dataRow, rowElement);
-        this.showSuccessMessage('Registro guardado exitosamente en la base de datos');
-      },
-      error: (error) => {
-        console.error('Error al guardar en el backend:', error);
-
-        this.showErrorMessage('Error al guardar el registro. Por favor intente de nuevo.');
-      }
-    });
-  }
-
-  /**
-   * Preparar datos para enviar al backend según la estructura requerida
-   */
-  private prepararDatosParaBackend(dataRow: ControlReenvaseData): any | null {
-    try {
-      if (!dataRow.fecha || !dataRow.no_donante || !dataRow.no_frasco_anterior || !dataRow.responsable) {
-        console.error('Faltan campos requeridos:', {
-          fecha: !!dataRow.fecha,
-          no_donante: !!dataRow.no_donante,
-          no_frasco_anterior: !!dataRow.no_frasco_anterior,
-          responsable: !!dataRow.responsable
-        });
-        return null;
-      }
-
-      const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
-      if (!idFrasco) {
-        console.error('No se pudo extraer el ID del frasco:', dataRow.no_frasco_anterior);
-        return null;
-      }
-
-      const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
-      if (!empleadoSeleccionado || !empleadoSeleccionado.id_empleado) {
-        console.error('No se encontró el ID del empleado:', dataRow.responsable);
-        return null;
-      }
-
-      const fechaFormateada = this.formatearFechaParaAPI(dataRow.fecha as Date);
-
-      const datos = {
-        fecha: fechaFormateada,
-        frascoCrudo: idFrasco,
-        madreDonante: { id: parseInt(dataRow.no_donante!) },
-        empleado: { id: empleadoSeleccionado.id_empleado }
-      };
-
-      console.log('Datos preparados:', datos);
-      return datos;
-
-    } catch (error) {
-      console.error('Error al preparar datos para backend:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Transformar datos del backend a formato del frontend
-   */
-  private transformarDatosBackend(registros: any[]): ControlReenvaseData[] {
-    return registros.map((registro: any) => {
-      let volumenFrasco = '0';
-      let idFrasco = registro.frascoCrudo;
-
-      if (registro.madreDonante?.casaVisita) {
-        for (const casa of registro.madreDonante.casaVisita) {
-          if (casa.frascoRecolectado) {
-            const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
-            if (frasco) {
-              volumenFrasco = frasco.volumen.toString();
-              break;
-            }
-          }
-        }
-      }
-
-      if (registro.madreDonante?.madrePotencial?.lecheSalaExtraccion) {
-        const extracciones = registro.madreDonante.madrePotencial.lecheSalaExtraccion.extracciones;
-        if (extracciones) {
-          const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
-          if (extraccion) {
-            volumenFrasco = extraccion.cantidad?.toString() || '0';
-          }
-        }
-      }
-
-      return {
-        id: registro.id,
-        fecha: this.parsearFechaDesdeBackend(registro.fecha),
-        no_donante: registro.madreDonante.id.toString(),
-        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
-        id_frasco_anterior: registro.frascoCrudo,
-        volumen_frasco_anterior: volumenFrasco,
-        responsable: registro.empleado.nombre,
-
-        madre_donante_info: registro.madreDonante,
-        empleado_info: registro.empleado,
-        id_empleado: registro.empleado.id
-      };
-    });
-  }
-
-  /**
-   * Parsear fecha desde el backend evitando problemas de zona horaria
-   */
-  private parsearFechaDesdeBackend(fechaString: string): Date {
-    if (!fechaString) return new Date();
-
-    if (fechaString.includes('T')) {
-      fechaString = fechaString.split('T')[0];
-    }
-
-    const [year, month, day] = fechaString.split('-').map(Number);
-
-    return new Date(year, month - 1, day, 12, 0, 0, 0);
-  }
-
-  private createNewRecord(): ControlReenvaseData {
+  private crearRegistroVacio(): ControlReenvaseData {
     return {
       id: null,
       fecha: new Date(),
@@ -763,19 +511,29 @@ export class ControlReenvaseTableComponent implements OnInit {
     };
   }
 
+  private agregarRegistroATabla(registro: ControlReenvaseData): void {
+    this.dataOriginal.push(registro);
+    this.dataFiltered.push(registro);
+    this.dataFiltered = [...this.dataFiltered];
+  }
+
+  private iniciarEdicionRegistro(registro: ControlReenvaseData): void {
+    this.hasNewRowInEditing = true;
+    this.editingRow = registro;
+    setTimeout(() => this.table.initRowEdit(registro), 100);
+    this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
+  }
+
   onRowEditInit(dataRow: ControlReenvaseData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
-      this.showWarningMessage('Debe guardar o cancelar la edición actual antes de editar otra fila.');
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
       return;
     }
 
-    const rowId = this.getRowId(dataRow);
-    this.clonedData[rowId] = { ...dataRow };
+    this.guardarEstadoOriginal(dataRow);
     this.editingRow = dataRow;
 
-    if (dataRow.no_donante && !dataRow.isNew) {
-      this.cargarFrascosPorDonante(dataRow.no_donante);
-    } else if (dataRow.no_donante) {
+    if (dataRow.no_donante) {
       this.cargarFrascosPorDonante(dataRow.no_donante);
     } else {
       this.frascosFiltrados = [];
@@ -787,8 +545,8 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   onRowEditSave(dataRow: ControlReenvaseData, index: number, event: MouseEvent): void {
-    if (!this.validateRequiredFields(dataRow)) {
-      this.showErrorMessage('Por favor complete todos los campos requeridos');
+    if (!this.validarCamposRequeridos(dataRow)) {
+      this.mostrarMensaje('error', 'Error', 'Por favor complete todos los campos requeridos');
       return;
     }
 
@@ -803,72 +561,185 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   onRowEditCancel(dataRow: ControlReenvaseData, index: number): void {
     if (dataRow.isNew) {
-      this.removeNewRowFromData(dataRow);
+      this.eliminarRegistroTemporal(dataRow);
       this.hasNewRowInEditing = false;
     } else {
-      const rowId = this.getRowId(dataRow);
-      this.dataControlReenvaseFiltered[index] = this.clonedData[rowId];
-      delete this.clonedData[rowId];
+      this.restaurarEstadoOriginal(dataRow, index);
     }
     this.editingRow = null;
+  }
+
+  private guardarNuevoRegistro(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
+    const datosBackend = this.prepararDatosParaCreacion(dataRow);
+    if (!datosBackend) return;
+
+    this.controlReenvaseService.postControlReenvase(datosBackend).subscribe({
+      next: (response) => {
+        this.procesarRespuestaCreacion(response, dataRow, rowElement);
+      },
+      error: (error) => {
+        console.error('Error al guardar:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al guardar el registro');
+      }
+    });
   }
 
   private actualizarRegistroExistente(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
-    if (dataRow.no_frasco_anterior) {
-      dataRow.id_frasco_anterior = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior);
-    }
+    const datosBackend = this.prepararDatosParaActualizacion(dataRow);
+    if (!datosBackend) return;
 
-    const rowId = this.getRowId(dataRow);
-    delete this.clonedData[rowId];
-    this.editingRow = null;
-
-    // Aquí podrías implementar la llamada a PUT si necesitas actualizar en el backend
-    // this.controlReenvaseService.putControlReenvase(dataRow.id, datosParaBackend)
-
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.showSuccessMessage('Registro actualizado exitosamente');
+    this.controlReenvaseService.putControlReenvase(datosBackend).subscribe({
+      next: (response) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement);
+      },
+      error: (error) => {
+        console.error('Error al actualizar:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al actualizar el registro');
+      }
+    });
   }
 
-  private getRowId(dataRow: ControlReenvaseData): string {
-    return dataRow._uid || dataRow.id?.toString() || 'unknown';
+  private prepararDatosParaCreacion(dataRow: ControlReenvaseData): DatosBackendParaCreacion | null {
+    if (!this.validarDatosBasicos(dataRow)) return null;
+
+    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
+    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+
+    if (!idFrasco || !empleado?.id_empleado) return null;
+
+    return {
+      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+      frascoCrudo: idFrasco,
+      madreDonante: { id: parseInt(dataRow.no_donante!) },
+      empleado: { id: empleado.id_empleado }
+    };
   }
 
-  private validateRequiredFields(dataRow: ControlReenvaseData): boolean {
-    const camposBasicos = !!(
+  private prepararDatosParaActualizacion(dataRow: ControlReenvaseData): DatosBackendParaActualizacion | null {
+    if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
+
+    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
+    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+
+    if (!idFrasco || !empleado?.id_empleado) return null;
+
+    const esExtraccion = dataRow.tipo_frasco === 'extraccion';
+
+    return {
+      id: dataRow.id,
+      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+      volumen: parseFloat(dataRow.volumen_frasco_anterior || '0'),
+      frascoCrudo: idFrasco,
+      madreDonante: {
+        id: parseInt(dataRow.no_donante!),
+        tipoDonante: dataRow.madre_donante_info?.tipoDonante || (esExtraccion ? 'interna' : 'externa')
+      },
+      empleado: { id: empleado.id_empleado },
+      extraccion: esExtraccion ? dataRow.id_extraccion || null : null,
+      frascoRecolectado: !esExtraccion ? dataRow.id_frasco_recolectado || null : null
+    };
+  }
+
+  // ============= VALIDACIONES =============
+
+  private validarCamposRequeridos(dataRow: ControlReenvaseData): boolean {
+    return !!(
       dataRow.fecha &&
       dataRow.responsable?.trim() &&
       dataRow.no_donante?.trim() &&
       dataRow.no_frasco_anterior?.trim() &&
       dataRow.volumen_frasco_anterior?.trim()
     );
+  }
 
-    if (!camposBasicos) {
-      return false;
-    }
+  private validarDatosBasicos(dataRow: ControlReenvaseData): boolean {
+    if (!this.validarCamposRequeridos(dataRow)) return false;
 
-    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
-    if (!idFrasco) {
-      console.error('ID del frasco inválido');
-      return false;
-    }
-
-    const empleadoSeleccionado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
-    if (!empleadoSeleccionado || !empleadoSeleccionado.id_empleado) {
-      console.error('Empleado no válido');
-      return false;
-    }
-
-    if (!dataRow.no_donante || isNaN(parseInt(dataRow.no_donante))) {
-      console.error('ID de madre donante inválido');
-      return false;
+    if (!dataRow.isNew) {
+      const volumen = parseFloat(dataRow.volumen_frasco_anterior!);
+      if (isNaN(volumen) || volumen <= 0) {
+        this.mostrarMensaje('error', 'Error', 'El volumen debe ser un número mayor a 0');
+        return false;
+      }
     }
 
     return true;
   }
 
-  private resetEditingState(): void {
+  // ============= ESTADOS DE EDICIÓN =============
+
+  private guardarEstadoOriginal(dataRow: ControlReenvaseData): void {
+    const rowId = this.getRowId(dataRow);
+    this.clonedData[rowId] = { ...dataRow };
+  }
+
+  private restaurarEstadoOriginal(dataRow: ControlReenvaseData, index: number): void {
+    const rowId = this.getRowId(dataRow);
+    this.dataFiltered[index] = this.clonedData[rowId];
+    delete this.clonedData[rowId];
+  }
+
+  private eliminarRegistroTemporal(dataRow: ControlReenvaseData): void {
+    const predicate = (item: ControlReenvaseData) =>
+      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew);
+
+    const originalIndex = this.dataOriginal.findIndex(predicate);
+    if (originalIndex !== -1) this.dataOriginal.splice(originalIndex, 1);
+
+    const filteredIndex = this.dataFiltered.findIndex(predicate);
+    if (filteredIndex !== -1) {
+      this.dataFiltered.splice(filteredIndex, 1);
+      this.dataFiltered = [...this.dataFiltered];
+    }
+  }
+
+  private procesarRespuestaCreacion(response: any, dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
+    if (response.data?.id) dataRow.id = response.data.id;
+
+    dataRow.isNew = false;
+    delete dataRow._uid;
+
+    const originalIndex = this.dataOriginal.findIndex(item =>
+      item === dataRow || (item._uid && item._uid === dataRow._uid)
+    );
+
+    if (originalIndex !== -1) {
+      this.dataOriginal[originalIndex] = { ...dataRow };
+    }
+
+    this.resetearEstadoEdicion();
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarMensaje('success', 'Éxito', 'Registro guardado exitosamente');
+  }
+
+  private procesarRespuestaActualizacion(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
+    const rowId = this.getRowId(dataRow);
+    delete this.clonedData[rowId];
+    this.editingRow = null;
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+  }
+
+  private resetearEstadoEdicion(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
+  }
+
+  // ============= UTILIDADES DE ESTADO =============
+
+  isCampoEditable(campo: string, rowData: ControlReenvaseData): boolean {
+    if (rowData.isNew && (campo === 'fecha' || campo === 'no_donante')) return true;
+    if (campo === 'volumen_frasco_anterior' || campo === 'responsable') return true;
+    if (campo === 'no_frasco_anterior') {
+      const tieneDonante = Boolean(rowData.no_donante?.trim());
+      return tieneDonante && Boolean(rowData.isNew);
+    }
+    if ((campo === 'fecha' || campo === 'no_donante') && rowData.isNew) return true;
+    return false;
+  }
+
+  getFrascosDisponibles(rowData: ControlReenvaseData): FrascoOption[] {
+    return rowData.no_donante ? this.frascosFiltrados : [];
   }
 
   isEditing(rowData: ControlReenvaseData): boolean {
@@ -886,76 +757,76 @@ export class ControlReenvaseTableComponent implements OnInit {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  private showSuccessMessageInitial(): void {
-  const cantidad = this.dataControlReenvaseOriginal.length;
-
-  if (cantidad > 0) {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''}`,
-      key: 'tr',
-      life: 2000,
-    });
-  } else {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Sin registros',
-      detail: 'No se encontraron registros de control de reenvase en la base de datos',
-      key: 'tr',
-      life: 2000,
-    });
-  }
-}
-
-  private showSuccessMessage(message: string): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Éxito',
-      detail: message,
-      key: 'tr',
-      life: 2000,
-    });
+  private getRowId(dataRow: ControlReenvaseData): string {
+    return dataRow._uid || dataRow.id?.toString() || 'unknown';
   }
 
-  private showErrorMessage(message: string): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: message,
-      key: 'tr',
-      life: 3000,
+  // ============= FILTROS =============
+
+  filtrarPorFecha(filtro: FiltroFecha | null): void {
+    this.filtroFecha = filtro;
+    this.aplicarFiltros();
+    this.mostrarNotificacionFiltro();
+  }
+
+  aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
+    this.filtrarPorFecha(filtro);
+  }
+
+  private aplicarFiltros(): void {
+    this.dataFiltered = this.filtroFecha
+      ? this.filtrarPorMesYAno(this.dataOriginal, this.filtroFecha)
+      : [...this.dataOriginal];
+  }
+
+  private filtrarPorMesYAno(datos: ControlReenvaseData[], filtro: FiltroFecha): ControlReenvaseData[] {
+    return datos.filter(item => {
+      if (!item.fecha) return false;
+
+      const fechaParseada = this.parsearFechaSegura(item.fecha);
+      if (!fechaParseada || isNaN(fechaParseada.getTime())) return false;
+
+      const mesItem = fechaParseada.getMonth() + 1;
+      const añoItem = fechaParseada.getFullYear();
+
+      return mesItem === filtro.month && añoItem === filtro.year;
     });
   }
 
-  private showWarningMessage(message: string): void {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Advertencia',
-      detail: message,
-      key: 'tr',
-      life: 3000,
-    });
+  private mostrarNotificacionFiltro(): void {
+    const cantidad = this.dataFiltered.length;
+    const totalOriginal = this.dataOriginal.length;
+
+    if (this.filtroFecha) {
+      const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+      const mensaje = cantidad > 0
+        ? `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`
+        : `No se encontraron registros para ${nombreMes} ${this.filtroFecha.year}`;
+
+      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', cantidad > 0 ? 'Filtro aplicado' : 'Sin resultados', mensaje);
+    } else {
+      this.mostrarMensaje('info', 'Filtro removido', `Mostrando todos los registros (${totalOriginal})`);
+    }
   }
 
-  private showInfoMessage(message: string): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Información',
-      detail: message,
-      key: 'tr',
-      life: 2000,
-    });
+  // ============= MENSAJES =============
+
+  private mostrarMensajeExitosoCarga(): void {
+    const cantidad = this.dataOriginal.length;
+    const mensaje = cantidad > 0
+      ? `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''}`
+      : 'No se encontraron registros de control de reenvase en la base de datos';
+
+    this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
   }
 
-  private handleError(error: any): void {
+  private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudieron cargar los datos de control de reenvase',
+      severity,
+      summary,
+      detail,
       key: 'tr',
-      life: 3000,
+      life
     });
-    this.loading = false;
   }
 }

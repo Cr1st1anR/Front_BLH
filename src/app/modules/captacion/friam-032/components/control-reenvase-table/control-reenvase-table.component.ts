@@ -150,16 +150,7 @@ export class ControlReenvaseTableComponent implements OnInit {
       next: (empleados) => {
         this.opcionesResponsables = empleados;
         this.loadingEmpleados = false;
-
         console.log('Empleados cargados:', empleados);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: `${empleados.length} empleado${empleados.length > 1 ? 's' : ''} cargado${empleados.length > 1 ? 's' : ''} como responsables`,
-          key: 'tr',
-          life: 2000,
-        });
       },
       error: (error) => {
         this.loadingEmpleados = false;

@@ -893,7 +893,7 @@ export class ControlReenvaseTableComponent implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Éxito',
-      detail: `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''} desde la base de datos`,
+      detail: `${cantidad} registro${cantidad > 1 ? 's' : ''} de control de reenvase cargado${cantidad > 1 ? 's' : ''}`,
       key: 'tr',
       life: 2000,
     });

@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
@@ -10,13 +11,18 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { PasterizacionService } from '../../services/pasterizacion.service';
-import type { PasterizacionData } from '../../interfaces/pasterizacion.interface';
+import type {
+  PasterizacionData,
+  PasterizacionBackendRequest,
+  PasterizacionBackendResponse
+} from '../../interfaces/pasterizacion.interface';
 
 @Component({
   selector: 'pasterizacion-table',
   imports: [
     TableModule,
     CommonModule,
+    HttpClientModule,
     ProgressSpinnerModule,
     ToastModule,
     FormsModule,
@@ -97,39 +103,57 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   loadDataPasterizacion(): void {
-    if (!this.idControlReenvase) return;
-    if (this.loading) return;
-
-    this.loading = true;
-
-    this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
-      .subscribe({
-        next: (pasteurizacionesBackend: any[]) => {
-          this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
-
-          this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
-            this.todasLasPasterizaciones,
-            this.idControlReenvase!
-          );
-
-          this.mostrarMensajeCarga(this.dataPasterizacion);
-          this.loading = false;
-        },
-        error: (error) => {
-          this.manejarErrorCarga(error);
-          this.loading = false;
-        }
-      });
+  if (!this.idControlReenvase) {
+    console.warn('No hay idControlReenvase para cargar datos');
+    return;
   }
 
-  private transformarDatosBackendAFrontend(datosBackend: any[]): PasterizacionData[] {
-    return datosBackend.map(item => ({
-      ...item,
-      no_frasco_pasterizacion: item.id_frasco_pasterizacion
-        ? this.generarCodigoLHP(item.id_frasco_pasterizacion)
-        : item.no_frasco_pasterizacion || ''
-    }));
+  if (this.loading) {
+    console.warn('Ya hay una carga en progreso');
+    return;
   }
+
+  console.log('Cargando pasteurizaciones para control reenvase:', this.idControlReenvase); // 👈 Debug
+  this.loading = true;
+
+  this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
+    .subscribe({
+      next: (pasteurizacionesBackend: PasterizacionBackendResponse[]) => {
+        console.log('Datos recibidos del backend:', pasteurizacionesBackend); // 👈 Debug
+
+        this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
+
+        this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
+          this.todasLasPasterizaciones,
+          this.idControlReenvase!
+        );
+
+        console.log('Datos transformados para mostrar:', this.dataPasterizacion); // 👈 Debug
+        this.mostrarMensajeCarga(this.dataPasterizacion);
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error completo al cargar pasteurizaciones:', error); // 👈 Debug mejorado
+        this.manejarErrorCarga(error);
+        this.loading = false;
+      }
+    });
+}
+
+  private transformarDatosBackendAFrontend(datosBackend: PasterizacionBackendResponse[]): PasterizacionData[] {
+  return datosBackend.map(item => {
+    console.log('Transformando item:', item); // 👈 Debug temporal
+
+    return {
+      id: item.id,
+      no_frasco_pasterizacion: item.numeroFrasco ? this.generarCodigoLHP(item.numeroFrasco) : '',
+      id_frasco_pasterizacion: item.numeroFrasco,
+      volumen_frasco_pasterizacion: item.volumen ? item.volumen.toString() : '0',
+      observaciones_pasterizacion: item.observaciones || '',
+      id_control_reenvase: item.controlReenvase?.id
+    };
+  });
+}
 
   private filtrarPasterizacionesPorControlReenvase(
     pasterizaciones: PasterizacionData[],
@@ -251,10 +275,11 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
     this.pasterizacionService.postPasterizacion(datosParaBackend).subscribe({
-      next: (response) => {
+      next: (response: PasterizacionBackendResponse) => {
         this.manejarExitoCreacion(dataRow, response, rowElement);
       },
       error: (error) => {
+        console.error('Error al crear pasteurización:', error);
         this.manejarErrorCreacion(error);
       }
     });
@@ -268,28 +293,37 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
         this.manejarExitoActualizacion(dataRow, response, rowElement);
       },
       error: (error) => {
+        console.error('Error al actualizar pasteurización:', error);
         this.manejarErrorActualizacion(error);
       }
     });
   }
 
-  private prepararDatosParaBackend(dataRow: PasterizacionData): any {
+  private prepararDatosParaBackend(dataRow: PasterizacionData): PasterizacionBackendRequest {
+    const tieneObservaciones = !!(dataRow.observaciones_pasterizacion?.trim());
+
     return {
-      id_frasco_pasterizacion: dataRow.id_frasco_pasterizacion,
-      volumen_frasco_pasterizacion: dataRow.volumen_frasco_pasterizacion?.trim() || '0',
-      observaciones_pasterizacion: dataRow.observaciones_pasterizacion?.trim() || '',
-      id_control_reenvase: dataRow.id_control_reenvase
+      volumen: tieneObservaciones ? null : parseFloat(dataRow.volumen_frasco_pasterizacion) || null,
+      controlReenvase: { id: this.idControlReenvase! },
+      observaciones: dataRow.observaciones_pasterizacion?.trim() || null,
+      numeroFrasco: tieneObservaciones ? null : dataRow.id_frasco_pasterizacion
     };
   }
 
-  private manejarExitoCreacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
+  private manejarExitoCreacion(dataRow: PasterizacionData, response: PasterizacionBackendResponse, rowElement: HTMLTableRowElement): void {
     dataRow.isNew = false;
-    dataRow.id = response.id || Date.now();
+    dataRow.id = response.id;
+
+    if (response.numeroFrasco) {
+      dataRow.no_frasco_pasterizacion = this.generarCodigoLHP(response.numeroFrasco);
+      dataRow.id_frasco_pasterizacion = response.numeroFrasco;
+    }
+
     delete dataRow._uid;
 
     this.resetearEstadoEdicion();
     this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarExito(response.message || 'Pasteurización creada correctamente');
+    this.mostrarExito('Pasteurización creada correctamente');
   }
 
   private manejarExitoActualizacion(dataRow: PasterizacionData, response: any, rowElement: HTMLTableRowElement): void {
@@ -298,7 +332,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     this.editingRow = null;
 
     this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarExito(response.message || 'Pasteurización actualizada correctamente');
+    this.mostrarExito('Pasteurización actualizada correctamente');
   }
 
   private manejarErrorCreacion(error: any): void {
@@ -398,6 +432,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private manejarErrorCarga(error: any): void {
+    console.error('Error al cargar pasteurizaciones:', error);
     this.mostrarError('Error al cargar las pasteurizaciones');
   }
 

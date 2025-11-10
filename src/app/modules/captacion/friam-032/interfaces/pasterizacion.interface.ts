@@ -8,3 +8,28 @@ export interface PasterizacionData {
   isNew?: boolean;
   _uid?: string;
 }
+
+export interface PasterizacionBackendRequest {
+  volumen: number | null;
+  controlReenvase: { id: number };
+  observaciones: string | null;
+  numeroFrasco?: number | null;
+}
+
+export interface PasterizacionBackendResponse {
+  id: number;
+  volumen: number | null;
+  numeroFrasco: number | null;
+  observaciones: string | null;
+  controlReenvase: {
+    id: number;
+    fecha?: string;
+    frascoCrudo?: number;
+  };
+}
+
+export interface BackendApiResponse<T> {
+  status: number;
+  statusmsg: string;
+  data: T;
+}

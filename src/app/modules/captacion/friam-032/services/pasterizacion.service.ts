@@ -1,97 +1,65 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import type { PasterizacionData } from '../interfaces/pasterizacion.interface';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from 'src/environments/environments';
+import type {
+  PasterizacionData,
+  PasterizacionBackendRequest,
+  PasterizacionBackendResponse,
+  BackendApiResponse
+} from '../interfaces/pasterizacion.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PasterizacionService {
 
-  constructor() { }
+  private readonly baseUrl = environment.ApiBLH;
 
-  getPasterizacionesPorControlReenvase(idControlReenvase: number): Observable<PasterizacionData[]> {
-    const datosPasterizacion: PasterizacionData[] = [
-      {
-        id: 1,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 1,
-        volumen_frasco_pasterizacion: '480',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 1
-      },
-      {
-        id: 2,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 2,
-        volumen_frasco_pasterizacion: '750',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 1
-      },
-      {
-        id: 3,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 3,
-        volumen_frasco_pasterizacion: '600',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 2
-      },
-      {
-        id: 4,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 4,
-        volumen_frasco_pasterizacion: '1100',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 2
-      },
-      {
-        id: 5,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: null,
-        volumen_frasco_pasterizacion: '0',
-        observaciones_pasterizacion: 'Sale por impureza',
-        id_control_reenvase: 2
-      },
-      {
-        id: 6,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 5,
-        volumen_frasco_pasterizacion: '850',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 3
-      },
-      {
-        id: 7,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 6,
-        volumen_frasco_pasterizacion: '920',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 4
-      },
-      {
-        id: 8,
-        no_frasco_pasterizacion: '',
-        id_frasco_pasterizacion: 7,
-        volumen_frasco_pasterizacion: '1020',
-        observaciones_pasterizacion: '',
-        id_control_reenvase: 5
-      }
-    ];
+  constructor(private readonly http: HttpClient) { }
 
-    return of(datosPasterizacion);
+  getPasterizacionesPorControlReenvase(idControlReenvase: number): Observable<PasterizacionBackendResponse[]> {
+    return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
+      `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`
+    ).pipe(
+      map(response => {
+        console.log('Respuesta del backend:', response);
+        return response.data || [];
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error al obtener pasteurizaciones:', error);
+        if (error.status === 204) {
+          return [];
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
-  postPasterizacion(pasterizacion: any): Observable<any> {
-    return of({
-      success: true,
-      id: Date.now(),
-      message: 'Pasteurización creada correctamente'
-    });
+  postPasterizacion(datos: PasterizacionBackendRequest): Observable<PasterizacionBackendResponse> {
+    return this.http.post<BackendApiResponse<PasterizacionBackendResponse>>(
+      `${this.baseUrl}/postFrascoPasteurizado`,
+      datos
+    ).pipe(
+      map(response => response.data),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error al crear pasteurización:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  putPasterizacion(id: number, pasterizacion: any): Observable<any> {
-    return of({
-      success: true,
-      message: 'Pasteurización actualizada correctamente'
-    });
+  putPasterizacion(id: number, datos: PasterizacionBackendRequest): Observable<any> {
+    return this.http.put<BackendApiResponse<any>>(
+      `${this.baseUrl}/putFrascoPasteurizado/${id}`,
+      datos
+    ).pipe(
+      map(response => response.data),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error al actualizar pasteurización:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

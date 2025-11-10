@@ -89,11 +89,11 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
   private isTableReadyForFilter(): boolean {
     return !!(
       this.tableComponent &&
-      this.tableComponent.dataControlReenvase &&
-      this.tableComponent.dataControlReenvase.length >= 0 &&
-      !this.tableComponent.loading
+      this.tableComponent.dataControlReenvase !== undefined &&
+      !this.tableComponent.loading?.main
     );
   }
+
 
   private aplicarFiltroMesActual(): void {
     if (this.isInitialized || !this.filtroMesActualPendiente) {

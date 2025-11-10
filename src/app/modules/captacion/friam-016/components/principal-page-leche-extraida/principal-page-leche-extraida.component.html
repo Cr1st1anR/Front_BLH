@@ -1,0 +1,12 @@
+<app-header [title]="'REGISTRO DE LECHE MATERNA EXTRAIDA EN SALA DE EXTRACCIÓN DE BLH (FRIAM-016)'" />
+
+<div class="flex justify-between items-center mx-4 mt-1 mb-1 pl-1 pr-0">
+  <new-register-button-leche-extraida (nuevoRegistro)="crearNuevoRegistroLecheExtraida()"
+    [disabled]="hasNewRowInEditing" />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+<table-leche-extraida (rowClick)="onRowClick($event)" />
+
+@if (showDialog && selectedRowData) {
+<dialog-extracciones [visible]="showDialog" [rowData]="selectedRowData" (dialogClosed)="onDialogClosed()" />
+}

@@ -1,0 +1,203 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table pr-3">
+  <p-table #tableLecheExtraida [value]="dataLecheExtraidaFiltered" [scrollable]="true" scrollHeight="600px"
+    [columns]="headersLecheExtraida" [tableStyle]="{ 'min-width': '50rem', 'width': '100%', 'max-width': '100%' }"
+    dataKey="id_extraccion" editMode="row" [style]="{ width: '100%', 'max-width': '100%' }"
+    [globalFilterFields]="['identificacion']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field === 'identificacion') {
+        <th [style.width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="identificacion" [placeholder]="'Buscar ' + col.header" [showMenu]="false"
+            ariaLabel="Filter Identificación"></p-columnFilter>
+        </th>
+        } @else {
+        <th [style.width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'consejeria') {
+        <th [style.width]="col.width" class="consejeria-header-main">
+          <div class="consejeria-header-container">
+            <div class="consejeria-main-title">{{ col.header }}</div>
+            <div class="consejeria-sub-headers">
+              <div class="consejeria-sub-item">INDIVIDUAL</div>
+              <div class="consejeria-sub-item">GRUPAL</div>
+            </div>
+          </div>
+        </th>
+        } @else {
+        <th [style.width]="col.width">{{ col.header }}</th>
+        }
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns" let-editing="editing">
+      <tr [pEditableRow]="rowData" [class.new-row]="rowData.isNew" (click)="onRowClick(rowData)"
+        [style.cursor]="editingRow === null ? 'pointer' : 'default'">
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'text' || col.tipo === 'number') {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]"
+                class="w-full p-2 border border-gray-300 rounded" [placeholder]="'Ingrese ' + col.header.toLowerCase()">
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span>{{ rowData[col.field] || '-' }}</span>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'date') {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData[col.field + '_aux']" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span>{{ rowData[col.field] || 'Sin fecha' }}</span>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'edad') {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.fecha_nacimiento_aux" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Fecha de nacimiento" appendTo="body" class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span>{{ rowData[col.field] || '-' }}</span>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'consejeria') {
+        <td class="consejeria-cell" [style.width]="col.width" [style.min-width]="col.width">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <div class="consejeria-container">
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
+                        [inputId]="'individual_si_' + rowIndex" />
+                      <label [for]="'individual_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="2"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
+                        [inputId]="'individual_no_' + rowIndex" />
+                      <label [for]="'individual_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="3"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
+                        [inputId]="'grupal_si_' + rowIndex" />
+                      <label [for]="'grupal_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_' + rowIndex" [value]="4"
+                        [ngModel]="getConsejeriaValue(rowData)" (ngModelChange)="onConsejeriaChange(rowIndex, $event)"
+                        [inputId]="'grupal_no_' + rowIndex" />
+                      <label [for]="'grupal_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="output">
+              <div class="consejeria-container">
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="1"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'individual_readonly_si_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'individual_readonly_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="2"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'individual_readonly_no_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'individual_readonly_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="consejeria-section">
+                  <div class="radio-group">
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="3"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'grupal_readonly_si_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'grupal_readonly_si_' + rowIndex" class="radio-label">Sí</label>
+                    </div>
+                    <div class="radio-item">
+                      <p-radioButton [name]="'consejeria_readonly_' + rowIndex" [value]="4"
+                        [ngModel]="getConsejeriaValue(rowData)" [inputId]="'grupal_readonly_no_' + rowIndex"
+                        [disabled]="true" />
+                      <label [for]="'grupal_readonly_no_' + rowIndex" class="radio-label">No</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        } @else if (col.tipo === 'acciones') {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData); $event.stopPropagation()"
+              [disabled]="isEditButtonDisabled(rowData)">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event); $event.stopPropagation()">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex); $event.stopPropagation()">
+            </button>
+          </div>
+        </td>
+        } @else {
+        <td [style.width]="col.width" [style.min-width]="col.width">
+          <span>{{ rowData[col.field] }}</span>
+        </td>
+        }
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (dataLecheExtraidaFiltered && dataLecheExtraidaFiltered.length === 0 && dataLecheExtraida.length > 0) {
+  <p class="text-gray-400 text-center italic mt-4">No se encontraron registros que coincidan con los filtros aplicados
+  </p>
+  } @else if (!dataLecheExtraidaFiltered || dataLecheExtraidaFiltered.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay registros para mostrar</p>
+  }
+</div>

@@ -61,6 +61,27 @@ export const CAPTACION_ROUTES: Routes = [
       ).then((c) => c.PrincipalPageComponent),
   },
   {
+    path: 'control-leche-cruda',
+    loadComponent: () =>
+      import('./friam-012/components/table-control-leche-cruda/table-control-leche-cruda.component').then(
+        (c) => c.TableControlLecheCrudaComponent
+      ),
+  },
+  {
+    path: 'registro-leche-extraida',
+    loadComponent: () =>
+      import(
+        './friam-016/components/principal-page-leche-extraida/principal-page-leche-extraida.component'
+      ).then((c) => c.PrincipalPageLecheExtraidaComponent)
+  },
+  {
+    path: 'entrega-leche-cruda',
+    loadComponent: () =>
+      import(
+        './frhos-063/pages/entrega-leche-cruda-page/entrega-leche-cruda-page.component'
+      ).then((c) => c.EntregaLecheCrudaPageComponent),
+  },
+  {
     path: 'control-reenvase',
     loadComponent: () =>
       import(

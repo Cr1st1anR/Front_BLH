@@ -1,0 +1,483 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.new-row {
+  background-color: #f8f9fa;
+  border-left: 3px solid #224186;
+}
+
+/**
+ * Estilos para headers de extracción (AM/PM)
+ */
+.extraccion-header-main {
+  background-color: #224186;
+  color: white;
+  padding: 15px 8px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+  min-width: 200px;
+}
+
+.extraccion-header-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+}
+
+.extraccion-main-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.extraccion-sub-headers {
+  display: flex;
+  justify-content: space-between;
+}
+
+.extraccion-sub-item {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+/**
+ * Estilos para celdas de extracción
+ */
+.extraccion-cell {
+  padding: 12px 8px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+  min-width: 200px;
+}
+
+.extraccion-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-width: 180px;
+}
+
+.extraccion-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 6px;
+  border-right: 1px solid #eee;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.extraccion-input {
+  width: 100% !important;
+  max-width: 90px;
+  min-width: 70px;
+  padding: 6px 8px !important;
+  text-align: center;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px;
+  font-size: 13px;
+
+  &.ml-input {
+    max-width: 70px;
+    min-width: 60px;
+    font-size: 15px !important;
+  }
+
+  &:focus {
+    border-color: #224186 !important;
+    box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+  }
+}
+
+.time-selector {
+  width: 100% !important;
+  max-width: 110px;
+  min-width: 90px;
+}
+
+.extraccion-display {
+  font-size: 15px !important;
+  color: #333;
+  text-align: center;
+  display: block;
+  width: 100%;
+  word-break: break-word;
+
+  &.numero-ml {
+    font-size: 16px !important;
+    color: #333;
+  }
+}
+
+/**
+ * Estilos principales de la tabla de extracciones
+ */
+:host ::ng-deep {
+  .p-table {
+    width: 100%;
+    min-width: 120rem;
+
+    .p-table-scrollable-wrapper {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      height: 500px;
+    }
+    .p-table-scrollable-body {
+      max-height: calc(500px - 60px);
+      overflow-y: auto;
+      overflow-x: auto;
+
+      &::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #224186;
+        border-radius: 6px;
+
+        &:hover {
+          background: #456dc4;
+        }
+      }
+
+      &::-webkit-scrollbar-corner {
+        background: #f1f1f1;
+      }
+    }
+
+    .p-table-thead > tr > th {
+      background-color: #224186;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 15px 12px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .p-table-tbody > tr > td {
+      padding: 12px 10px;
+      border: 1px solid #e5e7eb;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .p-table-tbody > tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .p-table-tbody > tr:hover {
+      background-color: #f3f4f6 !important;
+    }
+  }
+
+  /**
+   * Estilos para botones de acción
+   */
+  .p-button.p-button-text.p-button-secondary {
+    color: #6c757d;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: #495057;
+    }
+
+    &:disabled {
+      color: #c6c7c8 !important;
+      cursor: not-allowed !important;
+      opacity: 0.4 !important;
+    }
+  }
+
+  .p-button.p-button-text.p-button-success {
+    color: #28a745;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #1e7e34;
+    }
+  }
+
+  .p-button.p-button-text.p-button-danger {
+    color: #dc3545;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #bd2130;
+    }
+  }
+  .p-inputtext {
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+    }
+  }
+
+  /**
+   * Estilos para calendario y selector de tiempo
+   */
+  .p-datepicker {
+    width: 100% !important;
+
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+    }
+
+    &.time-selector {
+      .p-datepicker-input {
+        text-align: center;
+        font-family: "Courier New", monospace;
+        font-size: 14px !important;
+        max-width: 110px;
+        min-width: 90px;
+      }
+    }
+
+    .p-datepicker-trigger {
+      color: #224186;
+
+      &:hover {
+        color: #456dc4;
+      }
+    }
+  }
+}
+
+/**
+ * Responsive design para diferentes tamaños de pantalla
+ */
+@media (max-width: 1400px) {
+  .container-table {
+    margin: 15px 0;
+  }
+
+  :host ::ng-deep .p-table {
+    min-width: 110rem;
+
+    .p-table-scrollable-wrapper {
+      height: 450px;
+    }
+
+    .p-table-scrollable-body {
+      max-height: calc(450px - 60px);
+    }
+
+    .p-table-thead > tr > th {
+      padding: 12px 8px;
+      font-size: 13px;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 10px 6px;
+      font-size: 12px;
+    }
+  }
+
+  .extraccion-display {
+    font-size: 14px !important;
+
+    &.numero-ml {
+      font-size: 15px !important;
+    }
+  }
+
+  .extraccion-input.ml-input {
+    font-size: 14px !important;
+  }
+
+  :host ::ng-deep .p-datepicker.time-selector .p-datepicker-input {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container-table {
+    margin: 10px 0;
+  }
+
+  :host ::ng-deep .p-table {
+    min-width: 100rem;
+
+    .p-table-scrollable-wrapper {
+      height: 400px;
+    }
+
+    .p-table-scrollable-body {
+      max-height: calc(400px - 60px);
+    }
+
+    .p-table-thead > tr > th {
+      padding: 10px 6px;
+      font-size: 12px;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 8px 4px;
+      font-size: 11px;
+    }
+  }
+
+  .extraccion-header-main {
+    min-width: 180px;
+  }
+
+  .extraccion-cell {
+    min-width: 180px;
+  }
+
+  .extraccion-display {
+    font-size: 13px !important;
+
+    &.numero-ml {
+      font-size: 14px !important;
+    }
+  }
+
+  .extraccion-input.ml-input {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  :host ::ng-deep .p-table {
+    min-width: 90rem;
+
+    .p-table-scrollable-wrapper {
+      height: 350px;
+    }
+
+    .p-table-scrollable-body {
+      max-height: calc(350px - 60px);
+    }
+  }
+
+  .extraccion-main-title {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .extraccion-sub-item {
+    font-size: 11px;
+    padding: 3px 4px;
+  }
+
+  .extraccion-input {
+    font-size: 12px;
+    padding: 4px 6px !important;
+    max-width: 80px;
+    min-width: 60px;
+
+    &.ml-input {
+      max-width: 60px;
+      min-width: 50px;
+      font-size: 13px !important;
+    }
+  }
+
+  .time-selector {
+    max-width: 100px;
+    min-width: 80px;
+  }
+
+  .extraccion-display {
+    font-size: 13px !important;
+
+    &.numero-ml {
+      font-size: 14px !important;
+    }
+  }
+
+  .extraccion-section {
+    padding: 0 4px;
+  }
+
+  .extraccion-header-main {
+    min-width: 160px;
+  }
+
+  .extraccion-cell {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host ::ng-deep .p-table {
+    min-width: 80rem;
+
+    .p-table-scrollable-wrapper {
+      height: 300px;
+    }
+
+    .p-table-scrollable-body {
+      max-height: calc(300px - 60px);
+    }
+
+    .p-table-thead > tr > th {
+      padding: 8px 4px;
+      font-size: 11px;
+    }
+
+    .p-table-tbody > tr > td {
+      padding: 6px 3px;
+      font-size: 10px;
+    }
+  }
+
+  .extraccion-header-main {
+    min-width: 140px;
+  }
+
+  .extraccion-cell {
+    min-width: 140px;
+  }
+
+  .extraccion-display {
+    font-size: 12px !important;
+
+    &.numero-ml {
+      font-size: 13px !important;
+    }
+  }
+
+  .extraccion-input.ml-input {
+    font-size: 12px !important;
+  }
+}

@@ -31,7 +31,6 @@ export class PrincipalPageComponent implements OnInit {
   }
 
   onRowClick(row: any) {
-    console.log('Fila seleccionada:', row);
     // Guardar el idSeguimiento internamente
     this.idSeguimiento = row.id_seguimiento;
 

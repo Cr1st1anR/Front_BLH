@@ -1,0 +1,8 @@
+<app-header [title]="'ENTREGA DE LECHE HUMANA CRUDA A SALA DE DISTRIBUCION BLH (FRHOS-063)'" />
+
+<div class="flex justify-between items-center mx-4 mt-8">
+  <new-register-button-distribucion (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+
+<entrega-leche-cruda-table />

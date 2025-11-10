@@ -189,7 +189,6 @@ export class AccordionComponent implements OnInit, OnDestroy {
         return acc;
       }, {})
     );
-    console.log(agrupado);
     return agrupado;
   }
 

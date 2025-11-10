@@ -59,7 +59,7 @@ export interface ResponseMadresDonantes {
   observacion: string;
   fecha_registro: Date | string;
   infoMadre: InfoMadre;
-  MadreDonante: MadreDonante;
+  madreDonante: MadreDonante;
   laboratorio: Laboratorio[];
 }
 

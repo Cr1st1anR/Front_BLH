@@ -46,7 +46,7 @@
           <label class="font-bold">Examen VDRL </label>
           @if (docVdrl) {
           <span class="nombre-archivo" [title]="fileNames.vdrl">
-            {{ docVdrl || 'Sin archivo' }}
+            {{ fileNames.vdrl || 'Sin archivo' }}
           </span>
           <p-button label="Ver" (onClick)="downloadPDF(0)" severity="secondary" class="ml-2"
             [disabled]="uploading['vdrl']"></p-button>
@@ -57,7 +57,7 @@
             [maxFileSize]="1000000" [accept]="'.pdf,.jpg,.png'" styleClass="p-0" [styleClass]="'custom-file-upload'"
             [style]="{'border': 'none'}" chooseStyleClass="p-button-blue-custom"></p-fileUpload>
           <span class="nombre-archivo" [title]="fileNames.vdrl">
-            {{ docVdrl || 'Sin archivo' }}
+            {{ fileNames.vdrl || 'Sin archivo' }}
           </span>
           <p-button label="Subir" (onClick)="onUpload('vdrl')" severity="secondary" class="ml-2"
             [disabled]="uploading['vdrl']"></p-button>
@@ -95,7 +95,7 @@
           <label class="font-bold">Examen HbsAg </label>
           @if (docHbsag) {
           <span class="nombre-archivo" [title]="fileNames.hbsag">
-            {{ docHbsag || 'Sin archivo' }}
+            {{ fileNames.hbsag || 'Sin archivo' }}
           </span>
           <p-button label="Ver" (onClick)="downloadPDF(1)" severity="secondary" class="ml-2"
             [disabled]="uploading['hbsag']"></p-button>
@@ -107,7 +107,7 @@
             styleClass="p-0 custom-file-upload" [style]="{'border': 'none'}"
             chooseStyleClass="p-button-blue-custom"></p-fileUpload>
           <span class="nombre-archivo" [title]="fileNames.hbsag">
-            {{ docHbsag || 'Sin archivo' }}
+            {{ fileNames.hbsag || 'Sin archivo' }}
           </span>
           <p-button label="Subir" (onClick)="onUpload('hbsag')" severity="secondary" class="ml-2"
             [disabled]="uploading['hbsag']"></p-button>
@@ -148,7 +148,7 @@
           <label class="font-bold">Examen HIV </label>
           @if (docHiv) {
           <span class="nombre-archivo" [title]="fileNames.hiv">
-            {{ docHiv || 'Sin archivo' }}
+            {{ fileNames.hiv || 'Sin archivo' }}
           </span>
           <p-button label="Ver" (onClick)="downloadPDF(2)" severity="secondary" class="ml-2"
             [disabled]="uploading['hiv']"></p-button>
@@ -159,7 +159,7 @@
             [maxFileSize]="1000000" [accept]="'.pdf,.jpg,.png'" styleClass="p-0 custom-file-upload"
             [style]="{'border': 'none'}" chooseStyleClass="p-button-blue-custom"></p-fileUpload>
           <span class="nombre-archivo" [title]="fileNames.hiv">
-            {{ docHiv|| 'Sin archivo' }}
+            {{ fileNames.hiv || 'Sin archivo' }}
           </span>
           <p-button label="Subir" (onClick)="onUpload('hiv')" severity="secondary" class="ml-2"
             [disabled]="uploading['hiv']"></p-button>

@@ -511,3 +511,28 @@ p-checkbox {
 .p-accordionheader:focus {
   color: #1a3366 !important;
 }
+
+// Estilos globales para tablas con scroll (eliminar scroll horizontal friam-016)
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+table-leche-extraida {
+  display: block;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.p-table-scrollable-wrapper {
+  contain: layout style paint !important;
+  overflow-x: auto !important;
+  max-width: 100% !important;
+}

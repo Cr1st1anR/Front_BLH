@@ -103,107 +103,94 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   loadDataPasterizacion(): void {
-  if (!this.idControlReenvase) {
-    console.warn('No hay idControlReenvase para cargar datos');
-    return;
-  }
-
-  if (this.loading) {
-    console.warn('Ya hay una carga en progreso');
-    return;
-  }
-
-  console.log('Cargando pasteurizaciones para control reenvase:', this.idControlReenvase);
-  this.loading = true;
-
-  this.cargarTodasLasPasteurizacionesGlobales()
-    .then(() => {
-      return this.cargarPasteurizacionesEspecificas();
-    })
-    .catch(error => {
-      console.error('Error al cargar pasteurizaciones:', error);
-      this.manejarErrorCarga(error);
-      this.loading = false;
-    });
-}
-
-// Método para cargar todas las pasteurizaciones globalmente
-private cargarTodasLasPasteurizacionesGlobales(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    this.pasterizacionService.getAllPasteurizaciones()
-      .subscribe({
-        next: (todasPasteurizaciones: PasterizacionBackendResponse[]) => {
-          this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(todasPasteurizaciones);
-          console.log('Pasteurizaciones globales cargadas:', this.todasLasPasterizaciones.length);
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error al cargar pasteurizaciones globales:', error);
-          // Si falla, seguimos con array vacío
-          this.todasLasPasterizaciones = [];
-          resolve();
-        }
-      });
-  });
-}
-
-private cargarPasteurizacionesEspecificas(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase!)
-      .subscribe({
-        next: (pasteurizacionesBackend: PasterizacionBackendResponse[]) => {
-          console.log('Datos recibidos del backend:', pasteurizacionesBackend);
-
-          const nuevasPasteurizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
-
-          this.actualizarPasteurizacionesGlobales(nuevasPasteurizaciones);
-
-          this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
-            this.todasLasPasterizaciones,
-            this.idControlReenvase!
-          );
-
-          console.log('Datos transformados para mostrar:', this.dataPasterizacion);
-          this.mostrarMensajeCarga(this.dataPasterizacion);
-          this.loading = false;
-          resolve();
-        },
-        error: (error) => {
-          this.loading = false;
-          reject(error);
-        }
-      });
-  });
-}
-
-private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: PasterizacionData[]): void {
-  nuevasPasteurizaciones.forEach(nueva => {
-    const existe = this.todasLasPasterizaciones.find(existente =>
-      existente.id === nueva.id
-    );
-
-    if (!existe) {
-      this.todasLasPasterizaciones.push(nueva);
-    } else {
-      Object.assign(existe, nueva);
+    if (!this.idControlReenvase) {
+      return;
     }
-  });
-}
+
+    if (this.loading) {
+      return;
+    }
+
+    this.loading = true;
+
+    this.cargarTodasLasPasteurizacionesGlobales()
+      .then(() => {
+        return this.cargarPasteurizacionesEspecificas();
+      })
+      .catch(error => {
+        this.manejarErrorCarga(error);
+        this.loading = false;
+      });
+  }
+
+  private cargarTodasLasPasteurizacionesGlobales(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.pasterizacionService.getAllPasteurizaciones()
+        .subscribe({
+          next: (todasPasteurizaciones: PasterizacionBackendResponse[]) => {
+            this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(todasPasteurizaciones);
+            resolve();
+          },
+          error: (error) => {
+            this.todasLasPasterizaciones = [];
+            resolve();
+          }
+        });
+    });
+  }
+
+  private cargarPasteurizacionesEspecificas(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase!)
+        .subscribe({
+          next: (pasteurizacionesBackend: PasterizacionBackendResponse[]) => {
+            const nuevasPasteurizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
+
+            this.actualizarPasteurizacionesGlobales(nuevasPasteurizaciones);
+
+            this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
+              this.todasLasPasterizaciones,
+              this.idControlReenvase!
+            );
+
+            this.mostrarMensajeCarga(this.dataPasterizacion);
+            this.loading = false;
+            resolve();
+          },
+          error: (error) => {
+            this.loading = false;
+            reject(error);
+          }
+        });
+    });
+  }
+
+  private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: PasterizacionData[]): void {
+    nuevasPasteurizaciones.forEach(nueva => {
+      const existe = this.todasLasPasterizaciones.find(existente =>
+        existente.id === nueva.id
+      );
+
+      if (!existe) {
+        this.todasLasPasterizaciones.push(nueva);
+      } else {
+        Object.assign(existe, nueva);
+      }
+    });
+  }
 
   private transformarDatosBackendAFrontend(datosBackend: PasterizacionBackendResponse[]): PasterizacionData[] {
-  return datosBackend.map(item => {
-    console.log('Transformando item:', item);
-
-    return {
-      id: item.id,
-      no_frasco_pasterizacion: item.numeroFrasco ? this.generarCodigoLHP(item.numeroFrasco) : '',
-      id_frasco_pasterizacion: item.numeroFrasco,
-      volumen_frasco_pasterizacion: item.volumen ? item.volumen.toString() : '0',
-      observaciones_pasterizacion: item.observaciones || '',
-      id_control_reenvase: item.controlReenvase?.id
-    };
-  });
-}
+    return datosBackend.map(item => {
+      return {
+        id: item.id,
+        no_frasco_pasterizacion: item.numeroFrasco ? this.generarCodigoLHP(item.numeroFrasco) : '',
+        id_frasco_pasterizacion: item.numeroFrasco,
+        volumen_frasco_pasterizacion: item.volumen ? item.volumen.toString() : '0',
+        observaciones_pasterizacion: item.observaciones || '',
+        id_control_reenvase: item.controlReenvase?.id
+      };
+    });
+  }
 
   private filtrarPasterizacionesPorControlReenvase(
     pasterizaciones: PasterizacionData[],
@@ -329,7 +316,6 @@ private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: Pasterizacion
         this.manejarExitoCreacion(dataRow, response, rowElement);
       },
       error: (error) => {
-        console.error('Error al crear pasteurización:', error);
         this.manejarErrorCreacion(error);
       }
     });
@@ -343,7 +329,6 @@ private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: Pasterizacion
         this.manejarExitoActualizacion(dataRow, response, rowElement);
       },
       error: (error) => {
-        console.error('Error al actualizar pasteurización:', error);
         this.manejarErrorActualizacion(error);
       }
     });
@@ -482,14 +467,12 @@ private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: Pasterizacion
   }
 
   private manejarErrorCarga(error: any): void {
-  console.error('Error completo al cargar pasteurizaciones:', error);
-
-  if (error.status === 204 || !error.status) {
-    this.mostrarInfo('No hay pasteurizaciones registradas para esta donante');
-  } else {
-    this.mostrarError('Error al cargar las pasteurizaciones');
+    if (error.status === 204 || !error.status) {
+      this.mostrarInfo('No hay pasteurizaciones registradas para esta donante');
+    } else {
+      this.mostrarError('Error al cargar las pasteurizaciones');
+    }
   }
-}
 
   private mostrarExito(mensaje: string): void {
     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: mensaje, key: 'tr', life: 2000 });

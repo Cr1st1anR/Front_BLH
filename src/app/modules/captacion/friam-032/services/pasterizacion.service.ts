@@ -23,8 +23,6 @@ export class PasterizacionService {
       { observe: 'response' }
     ).pipe(
       map(response => {
-        console.log('Respuesta del backend:', response);
-
         if (response.status === 204 || !response.body?.data) {
           return [];
         }
@@ -32,8 +30,6 @@ export class PasterizacionService {
         return response.body.data || [];
       }),
       catchError((error: HttpErrorResponse) => {
-        console.error('Error al obtener pasteurizaciones:', error);
-
         if (error.status === 204) {
           return of([]);
         }
@@ -50,7 +46,6 @@ export class PasterizacionService {
     ).pipe(
       map(response => response.data),
       catchError((error: HttpErrorResponse) => {
-        console.error('Error al crear pasteurización:', error);
         return throwError(() => error);
       })
     );
@@ -63,7 +58,6 @@ export class PasterizacionService {
     ).pipe(
       map(response => response.data),
       catchError((error: HttpErrorResponse) => {
-        console.error('Error al actualizar pasteurización:', error);
         return throwError(() => error);
       })
     );
@@ -75,7 +69,6 @@ export class PasterizacionService {
     ).pipe(
       map(response => response.data || []),
       catchError((error: HttpErrorResponse) => {
-        console.error('Error al obtener todas las pasteurizaciones:', error);
         if (error.status === 204) {
           return of([]);
         }

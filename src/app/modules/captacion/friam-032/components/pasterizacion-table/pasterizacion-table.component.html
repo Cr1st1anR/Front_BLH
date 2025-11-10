@@ -28,7 +28,8 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="text" [(ngModel)]="rowData.no_frasco_pasterizacion" class="w-full"
-                placeholder="Número de frasco" [disabled]="true" [readonly]="!!rowData.observaciones_pasterizacion?.trim()">
+                placeholder="Número de frasco" [disabled]="true"
+                [readonly]="!!rowData.observaciones_pasterizacion?.trim()">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.no_frasco_pasterizacion || 'Sin número' }}

@@ -1,0 +1,224 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableControlReenvase [value]="dataControlReenvase" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersControlReenvase" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
+    editMode="row" [globalFilterFields]="['no_donante', 'responsable']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        @if (col.field === 'no_donante') {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
+          <p-columnFilter type="text" field="no_donante" [placeholder]="'Buscar por donante'" [showMenu]="false"
+            ariaLabel="Filter No Donante">
+          </p-columnFilter>
+        </th>
+        } @else {
+        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
+        }
+        }
+      </tr>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width">{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData" (click)="!editing ? onRowClick(rowData) : null"
+        [style.cursor]="!editing ? 'pointer' : 'default'" [class]="!editing ? 'hover:bg-gray-100' : ''">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+
+          @if (col.field === 'fecha') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              @if (isCampoEditable('fecha', rowData)) {
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              </p-datepicker>
+              } @else {
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full" [disabled]="true">
+              </p-datepicker>
+              }
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData.fecha) {
+              {{ rowData.fecha | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'responsable') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.responsable" [options]="opcionesResponsables" optionLabel="label"
+                optionValue="value" placeholder="Seleccione responsable"
+                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full"
+                [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.responsable || 'Sin responsable' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'no_donante') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              @if (isCampoEditable('no_donante', rowData)) {
+              @if (loadingDonantes) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando donantes...</span>
+              </div>
+              } @else {
+              <p-select [(ngModel)]="rowData.no_donante" [options]="opcionesDonantes" optionLabel="label"
+                optionValue="value" placeholder="Seleccione donante" (onChange)="onDonanteSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true" [filter]="true" filterBy="label,value,documento"
+                [filterMatchMode]="'contains'" [filterPlaceholder]="'Buscar donante...'"
+                [disabled]="opcionesDonantes.length === 0">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @if (selectedOption) {
+                  <span>{{ selectedOption.value }}</span>
+                  } @else {
+                  <span>Seleccione donante</span>
+                  }
+                </ng-template>
+
+                <ng-template #item let-donante>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ donante.label }}</span>
+                    <small class="text-gray-500">Doc: {{ donante.documento }}</small>
+                  </div>
+                </ng-template>
+              </p-select>
+              }
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData.no_donante" class="w-full" placeholder="No editable"
+                [disabled]="true">
+              }
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.no_donante || 'Sin donante' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'no_frasco_anterior') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              @if (isCampoEditable('no_frasco_anterior', rowData)) {
+              @if (loadingFrascos && rowData.no_donante) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando frascos...</span>
+              </div>
+              } @else {
+              <p-select [(ngModel)]="rowData.no_frasco_anterior" [options]="getFrascosDisponibles(rowData)"
+                optionLabel="label" optionValue="value" placeholder="Seleccione frasco"
+                (onChange)="onFrascoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true"
+                [disabled]="!rowData.no_donante || loadingFrascos">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @if (selectedOption) {
+                  <span>{{ selectedOption.value }}</span>
+                  } @else {
+                  <span>Seleccione frasco</span>
+                  }
+                </ng-template>
+
+                <ng-template #item let-frasco>
+                  <div class="flex flex-col p-2">
+                    <span class="font-medium text-sm">{{ frasco.label }}</span>
+                    <div class="flex gap-2 text-xs text-gray-600 mt-1">
+                      <span class="bg-blue-100 px-1 rounded">Vol: {{ frasco.volumen }}ml</span>
+                      <span class="bg-green-100 px-1 rounded">
+                        {{ frasco.tipo === 'extraccion' ? 'Interna' : 'Externa' }}
+                      </span>
+                    </div>
+                    @if (frasco.procedencia) {
+                    <small class="text-gray-500 mt-1">Proc: {{ frasco.procedencia }}</small>
+                    }
+                    @if (frasco.fechaExtraccion) {
+                    <small class="text-gray-400">{{ frasco.fechaExtraccion | date:'dd/MM/yyyy' }}</small>
+                    }
+                  </div>
+                </ng-template>
+              </p-select>
+              }
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData.no_frasco_anterior" class="w-full"
+                placeholder="Seleccione primero un donante" [disabled]="true">
+              }
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.no_frasco_anterior || 'Sin frasco' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'volumen_frasco_anterior') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.volumen_frasco_anterior" class="w-full"
+                placeholder="ml">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.volumen_frasco_anterior || '0' }} ml
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          }
+
+          @else {
+          @if (col.tipo === 'date' && rowData[col.field]) {
+          {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+          } @else if (col.tipo === 'number') {
+          {{ rowData[col.field] | number }}
+          } @else {
+          {{ rowData[col.field] }}
+          }
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataControlReenvase || dataControlReenvase.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

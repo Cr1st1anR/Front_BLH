@@ -427,7 +427,7 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     if (pasterizaciones.length > 0) {
       this.mostrarExito(`${pasterizaciones.length} pasteurización${pasterizaciones.length > 1 ? 'es' : ''} cargada${pasterizaciones.length > 1 ? 's' : ''}`);
     } else {
-      this.mostrarInfo('No hay pasteurizaciones registradas para este control de reenvase');
+      this.mostrarInfo('No hay pasteurizaciones registradas para esta donante');
     }
   }
 

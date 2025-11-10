@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
 import type {
@@ -20,22 +20,30 @@ export class PasterizacionService {
   constructor(private readonly http: HttpClient) { }
 
   getPasterizacionesPorControlReenvase(idControlReenvase: number): Observable<PasterizacionBackendResponse[]> {
-    return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
-      `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`
-    ).pipe(
-      map(response => {
-        console.log('Respuesta del backend:', response);
-        return response.data || [];
-      }),
-      catchError((error: HttpErrorResponse) => {
-        console.error('Error al obtener pasteurizaciones:', error);
-        if (error.status === 204) {
-          return [];
-        }
-        return throwError(() => error);
-      })
-    );
-  }
+  return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
+    `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`,
+    { observe: 'response' }
+  ).pipe(
+    map(response => {
+      console.log('Respuesta del backend:', response);
+
+      if (response.status === 204 || !response.body?.data) {
+        return [];
+      }
+
+      return response.body.data || [];
+    }),
+    catchError((error: HttpErrorResponse) => {
+      console.error('Error al obtener pasteurizaciones:', error);
+
+      if (error.status === 204) {
+        return of([]);
+      }
+
+      return throwError(() => error);
+    })
+  );
+}
 
   postPasterizacion(datos: PasterizacionBackendRequest): Observable<PasterizacionBackendResponse> {
     return this.http.post<BackendApiResponse<PasterizacionBackendResponse>>(

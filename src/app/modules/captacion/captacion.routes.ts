@@ -80,12 +80,5 @@ export const CAPTACION_ROUTES: Routes = [
       import(
         './frhos-063/pages/entrega-leche-cruda-page/entrega-leche-cruda-page.component'
       ).then((c) => c.EntregaLecheCrudaPageComponent),
-  },
-  {
-    path: 'control-reenvase',
-    loadComponent: () =>
-      import(
-        './friam-032/pages/control-reenvase-page/control-reenvase-page.component'
-      ).then((c) => c.ControlReenvasePageComponent),
-  },
+  }
 ];

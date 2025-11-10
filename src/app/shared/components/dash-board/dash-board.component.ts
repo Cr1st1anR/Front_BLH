@@ -84,18 +84,19 @@ export class DashBoardComponent {
           subLabel: '(FRHOS-063)',
           route: '/blh/captacion/entrega-leche-cruda',
         },
-        {
-          label: 'Control de reenvase red colombiana de bancos de leche humana',
-          subLabel: '(FRIAM-032)',
-          route: '/blh/captacion/control-reenvase',
-        },
       ],
     },
     {
       label: 'Pasteurizacion',
       icon: 'fa-solid fa-flask-vial',
       route: '/pasteurizacion',
-      items: [],
+      items: [
+        {
+          label: 'Control de reenvase red colombiana de bancos de leche humana',
+          subLabel: '(FRIAM-032)',
+          route: '/blh/pasteurizacion/control-reenvase',
+        },
+      ],
     },
     {
       label: 'Liberacion',

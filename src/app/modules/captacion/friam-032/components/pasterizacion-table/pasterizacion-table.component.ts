@@ -113,36 +113,86 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     return;
   }
 
-  console.log('Cargando pasteurizaciones para control reenvase:', this.idControlReenvase); // 👈 Debug
+  console.log('Cargando pasteurizaciones para control reenvase:', this.idControlReenvase);
   this.loading = true;
 
-  this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase)
-    .subscribe({
-      next: (pasteurizacionesBackend: PasterizacionBackendResponse[]) => {
-        console.log('Datos recibidos del backend:', pasteurizacionesBackend); // 👈 Debug
-
-        this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
-
-        this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
-          this.todasLasPasterizaciones,
-          this.idControlReenvase!
-        );
-
-        console.log('Datos transformados para mostrar:', this.dataPasterizacion); // 👈 Debug
-        this.mostrarMensajeCarga(this.dataPasterizacion);
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error completo al cargar pasteurizaciones:', error); // 👈 Debug mejorado
-        this.manejarErrorCarga(error);
-        this.loading = false;
-      }
+  this.cargarTodasLasPasteurizacionesGlobales()
+    .then(() => {
+      return this.cargarPasteurizacionesEspecificas();
+    })
+    .catch(error => {
+      console.error('Error al cargar pasteurizaciones:', error);
+      this.manejarErrorCarga(error);
+      this.loading = false;
     });
+}
+
+// Método para cargar todas las pasteurizaciones globalmente
+private cargarTodasLasPasteurizacionesGlobales(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    this.pasterizacionService.getAllPasteurizaciones()
+      .subscribe({
+        next: (todasPasteurizaciones: PasterizacionBackendResponse[]) => {
+          this.todasLasPasterizaciones = this.transformarDatosBackendAFrontend(todasPasteurizaciones);
+          console.log('Pasteurizaciones globales cargadas:', this.todasLasPasterizaciones.length);
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error al cargar pasteurizaciones globales:', error);
+          // Si falla, seguimos con array vacío
+          this.todasLasPasterizaciones = [];
+          resolve();
+        }
+      });
+  });
+}
+
+private cargarPasteurizacionesEspecificas(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    this.pasterizacionService.getPasterizacionesPorControlReenvase(this.idControlReenvase!)
+      .subscribe({
+        next: (pasteurizacionesBackend: PasterizacionBackendResponse[]) => {
+          console.log('Datos recibidos del backend:', pasteurizacionesBackend);
+
+          const nuevasPasteurizaciones = this.transformarDatosBackendAFrontend(pasteurizacionesBackend);
+
+          this.actualizarPasteurizacionesGlobales(nuevasPasteurizaciones);
+
+          this.dataPasterizacion = this.filtrarPasterizacionesPorControlReenvase(
+            this.todasLasPasterizaciones,
+            this.idControlReenvase!
+          );
+
+          console.log('Datos transformados para mostrar:', this.dataPasterizacion);
+          this.mostrarMensajeCarga(this.dataPasterizacion);
+          this.loading = false;
+          resolve();
+        },
+        error: (error) => {
+          this.loading = false;
+          reject(error);
+        }
+      });
+  });
+}
+
+private actualizarPasteurizacionesGlobales(nuevasPasteurizaciones: PasterizacionData[]): void {
+  nuevasPasteurizaciones.forEach(nueva => {
+    const existe = this.todasLasPasterizaciones.find(existente =>
+      existente.id === nueva.id
+    );
+
+    if (!existe) {
+      this.todasLasPasterizaciones.push(nueva);
+    } else {
+      Object.assign(existe, nueva);
+    }
+  });
 }
 
   private transformarDatosBackendAFrontend(datosBackend: PasterizacionBackendResponse[]): PasterizacionData[] {
   return datosBackend.map(item => {
-    console.log('Transformando item:', item); // 👈 Debug temporal
+    console.log('Transformando item:', item);
 
     return {
       id: item.id,
@@ -432,9 +482,14 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
   }
 
   private manejarErrorCarga(error: any): void {
-    console.error('Error al cargar pasteurizaciones:', error);
+  console.error('Error completo al cargar pasteurizaciones:', error);
+
+  if (error.status === 204 || !error.status) {
+    this.mostrarInfo('No hay pasteurizaciones registradas para esta donante');
+  } else {
     this.mostrarError('Error al cargar las pasteurizaciones');
   }
+}
 
   private mostrarExito(mensaje: string): void {
     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: mensaje, key: 'tr', life: 2000 });

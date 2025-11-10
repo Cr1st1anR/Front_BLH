@@ -20,30 +20,30 @@ export class PasterizacionService {
   constructor(private readonly http: HttpClient) { }
 
   getPasterizacionesPorControlReenvase(idControlReenvase: number): Observable<PasterizacionBackendResponse[]> {
-  return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
-    `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`,
-    { observe: 'response' }
-  ).pipe(
-    map(response => {
-      console.log('Respuesta del backend:', response);
+    return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
+      `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`,
+      { observe: 'response' }
+    ).pipe(
+      map(response => {
+        console.log('Respuesta del backend:', response);
 
-      if (response.status === 204 || !response.body?.data) {
-        return [];
-      }
+        if (response.status === 204 || !response.body?.data) {
+          return [];
+        }
 
-      return response.body.data || [];
-    }),
-    catchError((error: HttpErrorResponse) => {
-      console.error('Error al obtener pasteurizaciones:', error);
+        return response.body.data || [];
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error al obtener pasteurizaciones:', error);
 
-      if (error.status === 204) {
-        return of([]);
-      }
+        if (error.status === 204) {
+          return of([]);
+        }
 
-      return throwError(() => error);
-    })
-  );
-}
+        return throwError(() => error);
+      })
+    );
+  }
 
   postPasterizacion(datos: PasterizacionBackendRequest): Observable<PasterizacionBackendResponse> {
     return this.http.post<BackendApiResponse<PasterizacionBackendResponse>>(
@@ -66,6 +66,21 @@ export class PasterizacionService {
       map(response => response.data),
       catchError((error: HttpErrorResponse) => {
         console.error('Error al actualizar pasteurización:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getAllPasteurizaciones(): Observable<PasterizacionBackendResponse[]> {
+    return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
+      `${this.baseUrl}/getAllFrascosPasteurizados`
+    ).pipe(
+      map(response => response.data || []),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error al obtener todas las pasteurizaciones:', error);
+        if (error.status === 204) {
+          return of([]);
+        }
         return throwError(() => error);
       })
     );

@@ -15,13 +15,11 @@ import type {
 })
 export class PasterizacionService {
 
-  private readonly baseUrl = environment.ApiBLH;
-
   constructor(private readonly http: HttpClient) { }
 
   getPasterizacionesPorControlReenvase(idControlReenvase: number): Observable<PasterizacionBackendResponse[]> {
     return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
-      `${this.baseUrl}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`,
+      `${environment.ApiBLH}/getFrascoPasteurizadoByControlReenvase/${idControlReenvase}`,
       { observe: 'response' }
     ).pipe(
       map(response => {
@@ -47,7 +45,7 @@ export class PasterizacionService {
 
   postPasterizacion(datos: PasterizacionBackendRequest): Observable<PasterizacionBackendResponse> {
     return this.http.post<BackendApiResponse<PasterizacionBackendResponse>>(
-      `${this.baseUrl}/postFrascoPasteurizado`,
+      `${environment.ApiBLH}/postFrascoPasteurizado`,
       datos
     ).pipe(
       map(response => response.data),
@@ -60,7 +58,7 @@ export class PasterizacionService {
 
   putPasterizacion(id: number, datos: PasterizacionBackendRequest): Observable<any> {
     return this.http.put<BackendApiResponse<any>>(
-      `${this.baseUrl}/putFrascoPasteurizado/${id}`,
+      `${environment.ApiBLH}/putFrascoPasteurizado/${id}`,
       datos
     ).pipe(
       map(response => response.data),
@@ -73,7 +71,7 @@ export class PasterizacionService {
 
   getAllPasteurizaciones(): Observable<PasterizacionBackendResponse[]> {
     return this.http.get<BackendApiResponse<PasterizacionBackendResponse[]>>(
-      `${this.baseUrl}/getAllFrascosPasteurizados`
+      `${environment.ApiBLH}/getAllFrascosPasteurizados`
     ).pipe(
       map(response => response.data || []),
       catchError((error: HttpErrorResponse) => {

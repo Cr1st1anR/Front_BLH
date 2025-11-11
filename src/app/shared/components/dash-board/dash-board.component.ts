@@ -70,7 +70,8 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
         },
-        { label: 'Control de entradas y salidas de leche humana extraida cruda',
+        {
+          label: 'Control de entradas y salidas de leche humana extraida cruda',
           subLabel: '(FRIAM-012)',
           route: '/blh/captacion/control-leche-cruda'
         },
@@ -89,7 +90,6 @@ export class DashBoardComponent {
     {
       label: 'Pasteurizacion',
       icon: 'fa-solid fa-flask-vial',
-      route: '/pasteurizacion',
       items: [
         {
           label: 'Control de reenvase red colombiana de bancos de leche humana',
@@ -101,7 +101,6 @@ export class DashBoardComponent {
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
-      route: '/liberacion',
       items: [],
     },
   ];

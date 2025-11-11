@@ -1,9 +1,128 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { map, catchError, delay } from 'rxjs/operators';
+import {
+  SeleccionClasificacionData,
+  DonanteOption,
+  ResponsableOption,
+  FrascoOption,
+  BackendResponse
+} from '../interfaces/seleccion-clasificacion.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeleccionClasificacionService {
 
-  constructor() { }
+  constructor(private readonly http: HttpClient) { }
+
+  // DATOS MOCK - Reemplazar con llamadas HTTP reales
+  getAllSeleccionClasificacion(): Observable<SeleccionClasificacionData[]> {
+    const mockData: SeleccionClasificacionData[] = [
+      {
+        id: 1,
+        fecha: new Date('2025-11-15'),
+        gaveta_cruda: '3',
+        dias_produccion: '2M',
+        no_frasco_procesado: 'LHP 25 1',
+        donante: '1834',
+        frasco_leche_cruda: 'LHC 25 1',
+        edad_gestacional: 38.1,
+        volumen: '150',
+        nombre_profesional: 'Alejandra Lopez',
+        nombre_auxiliar: 'Ana Benavides',
+        n_frascos_pasteurizados: 30,
+        volumen_pasteurizado: '100',
+        fecha_vencimiento: new Date('2025-11-22'),
+        observaciones: 'Sin observaciones',
+        ciclo: '13',
+        n_lote_medios_cultivo: '259-260',
+        fecha_vencimiento_cultivos: new Date('2025-11-15'),
+        lote: '1062'
+      },
+      {
+        id: 1,
+        fecha: new Date('2025-11-16'),
+        gaveta_cruda: '3',
+        dias_produccion: '9D',
+        no_frasco_procesado: 'LHP 25 2',
+        donante: '1845',
+        frasco_leche_cruda: 'LHC 25 2',
+        edad_gestacional: 39,
+        volumen: '176',
+        nombre_profesional: 'Alejandra Lopez',
+        nombre_auxiliar: 'Ana Benavides',
+        n_frascos_pasteurizados: 30,
+        volumen_pasteurizado: '100',
+        fecha_vencimiento: new Date('2025-11-22'),
+        observaciones: 'Sin observaciones',
+        ciclo: '13',
+        n_lote_medios_cultivo: '259-260',
+        fecha_vencimiento_cultivos: new Date('2025-11-15'),
+        lote: '1062'
+      },
+    ];
+
+    return of(mockData).pipe(delay(500));
+  }
+
+  getMadresDonantes(): Observable<DonanteOption[]> {
+    const mockDonantes: DonanteOption[] = [
+      { label: '1001 - María García', value: '1001', documento: '12345678' },
+      { label: '1002 - Laura Martínez', value: '1002', documento: '87654321' },
+      { label: '1003 - Ana Rodríguez', value: '1003', documento: '11223344' }
+    ];
+
+    return of(mockDonantes).pipe(delay(300));
+  }
+
+  getEmpleados(): Observable<ResponsableOption[]> {
+    const mockEmpleados: ResponsableOption[] = [
+      { label: 'Dr. Juan Pérez', value: 'Dr. Juan Pérez', id_empleado: 1, cargo: 'Médico' },
+      { label: 'Dra. Carmen Silva', value: 'Dra. Carmen Silva', id_empleado: 2, cargo: 'Médico' },
+      { label: 'Ana López', value: 'Ana López', id_empleado: 3, cargo: 'Auxiliar' },
+      { label: 'Pedro Gómez', value: 'Pedro Gómez', id_empleado: 4, cargo: 'Auxiliar' }
+    ];
+
+    return of(mockEmpleados).pipe(delay(300));
+  }
+
+  getFrascosByMadreDonante(idMadreDonante: string): Observable<FrascoOption[]> {
+    const mockFrascos: FrascoOption[] = [
+      { label: 'FC-001 - 150ml', value: 'FC-001', donante: idMadreDonante, volumen: '150ml', id_frasco: 1 },
+      { label: 'FC-002 - 200ml', value: 'FC-002', donante: idMadreDonante, volumen: '200ml', id_frasco: 2 }
+    ];
+
+    return of(mockFrascos).pipe(delay(300));
+  }
+
+  postSeleccionClasificacion(data: any): Observable<any> {
+    console.log('Creando registro:', data);
+    return of({ success: true, data: { id: Date.now(), ...data } }).pipe(delay(500));
+  }
+
+  putSeleccionClasificacion(data: any): Observable<any> {
+    console.log('Actualizando registro:', data);
+    return of({ success: true, data }).pipe(delay(500));
+  }
+
+  // Métodos reales para cuando estén las APIs (comentados)
+  /*
+  getAllSeleccionClasificacion(): Observable<SeleccionClasificacionData[]> {
+    return this.http.get<BackendResponse<SeleccionClasificacionData[]>>(
+      `${environment.ApiBLH}/getAllSeleccionClasificacion`,
+      { observe: 'response' }
+    ).pipe(
+      map(response => {
+        if (response.status === 204) return [];
+        return response.body?.data || [];
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error en getAllSeleccionClasificacion:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+  */
 }

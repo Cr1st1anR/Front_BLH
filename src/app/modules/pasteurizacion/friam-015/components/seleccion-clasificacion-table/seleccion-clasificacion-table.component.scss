@@ -1,0 +1,315 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+// Estilos para columnas verticales - 130px MUY COMPACTO
+.vertical-text {
+  height: 130px !important;
+  min-height: 130px !important;
+  vertical-align: bottom !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background-color: #224186 !important;
+  color: white !important;
+}
+
+// Estilos para columnas horizontales
+th:not(.vertical-text) {
+  background-color: #224186 !important;
+  color: white !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 8px 6px !important;
+  line-height: 1.3 !important;
+  min-height: 45px !important;
+}
+
+.rotate-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 3px !important;
+  gap: 0px;
+  line-height: 0.98 !important;
+
+  span {
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  br {
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 0;
+  }
+}
+
+// Ajustes específicos para ng-deep
+:host ::ng-deep {
+  // Forzar altura de las filas del header
+  .p-datatable .p-datatable-thead > tr {
+    height: auto !important;
+    min-height: 130px !important;
+  }
+
+  // Altura de las filas del cuerpo de la tabla
+  .p-datatable .p-datatable-tbody > tr {
+    height: 55px !important;
+    min-height: 55px !important;
+  }
+
+  // Celdas del cuerpo de la tabla - TEXTO CON PESO NORMAL
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding: 8px 6px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+    border: 1px solid #e5e7eb !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important; // ✅ Cambiado de 500 a 400 (normal, sin negrilla)
+    line-height: 1.4 !important;
+  }
+
+  // Celdas de columnas verticales
+  .vertical-text td {
+    padding: 8px 5px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+  }
+
+  // Headers de la tabla - forzar altura
+  .p-datatable .p-datatable-thead > tr > th {
+    border: 1px solid #1a3366 !important;
+    font-weight: 600 !important;
+
+    &.vertical-text {
+      height: 130px !important;
+      min-height: 130px !important;
+      max-height: none !important;
+    }
+
+    &:not(.vertical-text) {
+      min-height: 45px !important;
+    }
+  }
+
+  // Mejor alineación de los iconos de ojo en columnas verticales
+  .vertical-text td .flex {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Estilos para inputs y selects dentro de las celdas - TEXTO NORMAL
+  .p-datatable .p-datatable-tbody > tr > td {
+    .p-inputtext,
+    .p-select,
+    .p-datepicker {
+      width: 100%;
+      text-align: center;
+      font-size: 0.95rem !important;
+      font-weight: 400 !important; // ✅ Peso normal también en inputs
+    }
+
+    // Placeholder de los inputs
+    .p-inputtext::placeholder {
+      font-size: 0.90rem;
+      font-weight: 400; // ✅ Peso normal en placeholders
+    }
+
+    // Dropdown text
+    .p-select-label {
+      font-size: 0.95rem !important;
+      font-weight: 400 !important; // ✅ Peso normal en selects
+    }
+
+    // Input dentro del datepicker
+    .p-datepicker-input {
+      font-size: 0.95rem !important;
+      font-weight: 400 !important; // ✅ Peso normal en datepicker
+    }
+  }
+
+  // Asegurar que el contenido de las celdas esté centrado - TEXTO NORMAL
+  .p-datatable .p-datatable-tbody > tr > td > span,
+  .p-datatable .p-datatable-tbody > tr > td > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important; // ✅ Peso normal en contenido de celdas
+  }
+
+  // Estilos específicos para las columnas con iconos de ojo
+  td .flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  // Ajustar botones dentro de las celdas
+  .p-button {
+    margin: 0 auto;
+  }
+
+  // Ajustar el tamaño de los iconos de ojo
+  .p-button-icon {
+    font-size: 1.0rem !important;
+  }
+
+  // Asegurar que las celdas tengan suficiente espacio mínimo
+  .p-datatable .p-datatable-tbody > tr > td {
+    min-height: 45px !important;
+  }
+
+  // Forzar que el wrapper del header respete la altura
+  .p-datatable-thead {
+    height: auto !important;
+  }
+
+  // Asegurar que el scrollable-header tenga altura suficiente
+  .p-datatable-scrollable-header {
+    min-height: 130px !important;
+  }
+
+  // Estilos para fechas en el body
+  .p-datatable .p-datatable-tbody > tr > td {
+    .p-datepicker-trigger {
+      font-size: 0.95rem !important;
+    }
+  }
+}
+
+// Media queries para responsive
+@media (max-width: 1600px) {
+  .vertical-text {
+    height: 128px !important;
+    min-height: 128px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.83rem;
+    padding: 5px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 128px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 128px !important;
+      min-height: 128px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 52px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.92rem !important;
+      font-weight: 400 !important; // ✅ Mantener peso normal en responsive
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 128px !important;
+    }
+  }
+}
+
+@media (max-width: 1400px) {
+  .vertical-text {
+    height: 125px !important;
+    min-height: 125px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.80rem;
+    padding: 5px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 125px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 125px !important;
+      min-height: 125px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 50px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.90rem !important;
+      font-weight: 400 !important; // ✅ Mantener peso normal en responsive
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 125px !important;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .vertical-text {
+    height: 122px !important;
+    min-height: 122px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.78rem;
+    padding: 4px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 122px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 122px !important;
+      min-height: 122px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 48px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.88rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 122px !important;
+    }
+  }
+}

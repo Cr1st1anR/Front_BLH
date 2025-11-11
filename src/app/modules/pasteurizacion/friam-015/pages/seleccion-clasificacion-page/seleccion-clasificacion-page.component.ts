@@ -1,12 +1,132 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
+import { SeleccionClasificacionTableComponent } from "../../components/seleccion-clasificacion-table/seleccion-clasificacion-table.component";
+import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
+import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
+import { TipoDialog } from '../../interfaces/seleccion-clasificacion.interface';
 
 @Component({
-  selector: 'app-seleccion-clasificacion-page',
-  imports: [HeaderComponent],
+  selector: 'seleccion-clasificacion-page',
+  standalone: true,
+  imports: [
+    HeaderComponent,
+    SeleccionClasificacionTableComponent,
+    MonthPickerComponent,
+    NewRegisterButtonComponent
+  ],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'
 })
-export class SeleccionClasificacionPageComponent {
+export class SeleccionClasificacionPageComponent implements OnInit, AfterViewInit {
 
+  @ViewChild(SeleccionClasificacionTableComponent)
+  private readonly tableComponent!: SeleccionClasificacionTableComponent;
+
+  @ViewChild(MonthPickerComponent)
+  private readonly monthPickerComponent!: MonthPickerComponent;
+
+  private isInitialized = false;
+  private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  // Para los futuros dialogs
+  showAnalisisSensorialDialog = false;
+  showAcidezDornicDialog = false;
+  showCrematocritoDialog = false;
+  selectedData: any = null;
+
+  ngOnInit(): void {
+    this.prepararFiltroMesActual();
+  }
+
+  ngAfterViewInit(): void {
+    this.esperarInicializacionTabla();
+  }
+
+  get hasNewRowInEditing(): boolean {
+    return this.tableComponent?.isAnyRowEditing() ?? false;
+  }
+
+  crearNuevoRegistro(): void {
+    this.tableComponent?.crearNuevoRegistro();
+  }
+
+  onMonthPickerChange(filtro: { year: number; month: number }): void {
+    this.tableComponent?.filtrarPorFecha(filtro);
+  }
+
+  onEyeClicked(event: { tipo: TipoDialog; data: any }): void {
+    this.selectedData = event.data;
+
+    switch (event.tipo) {
+      case 'analisis_sensorial':
+        this.showAnalisisSensorialDialog = true;
+        break;
+      case 'acidez_dornic':
+        this.showAcidezDornicDialog = true;
+        break;
+      case 'crematocrito':
+        this.showCrematocritoDialog = true;
+        break;
+    }
+  }
+
+  // Métodos para cerrar dialogs (implementar cuando se creen los componentes)
+  onAnalisisSensorialDialogClosed(): void {
+    this.showAnalisisSensorialDialog = false;
+    this.selectedData = null;
+  }
+
+  onAcidezDornicDialogClosed(): void {
+    this.showAcidezDornicDialog = false;
+    this.selectedData = null;
+  }
+
+  onCrematocritoDialogClosed(): void {
+    this.showCrematocritoDialog = false;
+    this.selectedData = null;
+  }
+
+  private prepararFiltroMesActual(): void {
+    const fechaActual = new Date();
+    this.filtroMesActualPendiente = {
+      year: fechaActual.getFullYear(),
+      month: fechaActual.getMonth() + 1
+    };
+  }
+
+  private esperarInicializacionTabla(): void {
+    const interval = setInterval(() => {
+      if (this.isTableReadyForFilter()) {
+        this.aplicarFiltroMesActual();
+        clearInterval(interval);
+      }
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      if (!this.isInitialized) {
+        console.warn('Timeout: No se pudo aplicar el filtro inicial del mes actual');
+      }
+    }, 5000);
+  }
+
+  private isTableReadyForFilter(): boolean {
+    return !!(
+      this.tableComponent &&
+      this.tableComponent.dataSeleccionClasificacion !== undefined &&
+      !this.tableComponent.loading?.main
+    );
+  }
+
+  private aplicarFiltroMesActual(): void {
+    if (this.isInitialized || !this.filtroMesActualPendiente) {
+      return;
+    }
+
+    if (this.tableComponent?.dataSeleccionClasificacion?.length >= 0) {
+      this.tableComponent.aplicarFiltroInicialConNotificacion(this.filtroMesActualPendiente);
+      this.isInitialized = true;
+      this.filtroMesActualPendiente = null;
+    }
+  }
 }

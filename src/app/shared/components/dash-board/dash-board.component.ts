@@ -96,6 +96,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-032)',
           route: '/blh/pasteurizacion/control-reenvase',
         },
+        {
+          label: 'Seleccion y clasificacion de leche humana extraida cruda',
+          subLabel: '(FRIAM-015)',
+          route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
+        },
       ],
     },
     {

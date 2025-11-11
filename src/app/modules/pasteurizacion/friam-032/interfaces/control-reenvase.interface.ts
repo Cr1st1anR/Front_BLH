@@ -124,6 +124,8 @@ export interface DatosBackendParaCreacion {
   frascoCrudo: number;
   madreDonante: { id: number };
   empleado: { id: number };
+  extraccion?: number | null;
+  frascoRecolectado?: number | null;
 }
 
 export interface DatosBackendParaActualizacion {

@@ -448,6 +448,8 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_data;
 
+    rowData.tipo_frasco = frascoSeleccionado.tipo;
+
     if (frascoSeleccionado.tipo === 'extraccion') {
       rowData.id_extraccion = frascoSeleccionado.id_frasco_data;
       rowData.id_frasco_recolectado = null;
@@ -617,11 +619,15 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   if (!idFrasco || !empleado?.id_empleado) return null;
 
+  const esExtraccion = dataRow.tipo_frasco === 'extraccion' || dataRow.id_extraccion;
+
   return {
     fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
     frascoCrudo: idFrasco,
     madreDonante: { id: parseInt(dataRow.no_donante!) },
-    empleado: { id: empleado.id_empleado }
+    empleado: { id: empleado.id_empleado },
+    extraccion: esExtraccion ? idFrasco : null,
+    frascoRecolectado: !esExtraccion ? idFrasco : null
   };
 }
 
@@ -645,8 +651,8 @@ export class ControlReenvaseTableComponent implements OnInit {
       tipoDonante: dataRow.madre_donante_info?.tipoDonante || (esExtraccion ? 'interna' : 'externa')
     },
     empleado: { id: empleado.id_empleado },
-    extraccion: esExtraccion ? dataRow.id_extraccion || null : null,
-    frascoRecolectado: !esExtraccion ? dataRow.id_frasco_recolectado || null : null
+    extraccion: esExtraccion ? idFrasco : null,
+    frascoRecolectado: !esExtraccion ? idFrasco : null
   };
 }
 

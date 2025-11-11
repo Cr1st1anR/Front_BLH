@@ -43,7 +43,6 @@ export class ControlReenvaseTableComponent implements OnInit {
   @ViewChild('tableControlReenvase') table!: Table;
   @Output() rowClick = new EventEmitter<ControlReenvaseData>();
 
-  // Estados de carga
   readonly loading: LoadingState = {
     main: false,
     donantes: false,
@@ -51,18 +50,15 @@ export class ControlReenvaseTableComponent implements OnInit {
     empleados: false
   };
 
-  // Estados de edición
   editingRow: ControlReenvaseData | null = null;
   hasNewRowInEditing = false;
   clonedData: Record<string, ControlReenvaseData> = {};
   tempIdCounter = -1;
 
-  // Datos principales
   dataOriginal: ControlReenvaseData[] = [];
   dataFiltered: ControlReenvaseData[] = [];
   filtroFecha: FiltroFecha | null = null;
 
-  // Opciones para selects
   opcionesResponsables: ResponsableOption[] = [];
   opcionesDonantes: DonanteOption[] = [];
   frascosFiltrados: FrascoOption[] = [];
@@ -232,9 +228,9 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   private transformarFrascosAPI(frascos: any[], idMadreDonante: string): FrascoOption[] {
     return frascos
-      .map((frasco: any) => {
-        const esExtraccion = frasco.extraccion !== null;
-        const frascoData = esExtraccion ? frasco.extraccion : frasco.frascoRecolectado;
+      .map((entrada: any) => {
+        const esExtraccion = entrada.extraccion !== null;
+        const frascoData = esExtraccion ? entrada.extraccion : entrada.frascoRecolectado;
 
         if (!frascoData) return null;
 
@@ -242,21 +238,22 @@ export class ControlReenvaseTableComponent implements OnInit {
           ? frascoData.cantidad?.toString() || '0'
           : frascoData.volumen?.toString() || '0';
 
+        const idFrascoReal = frascoData.id;
+
         return {
-          label: this.generarCodigoLHC(frasco.id),
-          value: this.generarCodigoLHC(frasco.id),
-          donante: idMadreDonante,
+          label: this.generarCodigoLHC(idFrascoReal),
+          value: this.generarCodigoLHC(idFrascoReal),
           volumen: volumenValue,
-          id_frasco_principal: frasco.id,
-          id_frasco_data: frascoData.id,
+          id_frasco_principal: entrada.id,
+          id_frasco_data: idFrascoReal,
           tipo: esExtraccion ? 'extraccion' : 'recolectado',
           fechaExtraccion: frascoData.fechaDeExtraccion || frascoData.fechaExtraccion,
           termo: frascoData.termo,
           gaveta: frascoData.gaveta,
-          procedencia: frasco.procedencia,
-          fechaVencimiento: frasco.fechaVencimiento,
-          fechaEntrada: frasco.fechaEntrada,
-          fechaSalida: frasco.fechaSalida
+          procedencia: entrada.procedencia,
+          fechaVencimiento: entrada.fechaVencimiento,
+          fechaEntrada: entrada.fechaEntrada,
+          fechaSalida: entrada.fechaSalida
         } as FrascoOption;
       })
       .filter((frasco): frasco is FrascoOption => frasco !== null);
@@ -302,70 +299,74 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private buscarEnFrascosRecolectados(registro: any): {
-    volumen: string;
-    tipo: TipoFrasco;
-    idFrascoRecolectado?: number;
-  } {
-    if (registro.madreDonante?.casaVisita?.length > 0) {
-      for (const casa of registro.madreDonante.casaVisita) {
-        if (casa.frascoRecolectado?.length > 0) {
-          const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
-          if (frasco) {
-            return {
-              volumen: frasco.volumen?.toString() || '0',
-              tipo: 'recolectado',
-              idFrascoRecolectado: frasco.id
-            };
-          }
+  volumen: string;
+  tipo: TipoFrasco;
+  idFrascoRecolectado?: number;
+} {
+  if (registro.madreDonante?.casaVisita?.length > 0) {
+    for (const casa of registro.madreDonante.casaVisita) {
+      if (casa.frascoRecolectado?.length > 0) {
+        const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
+        if (frasco) {
+          return {
+            volumen: frasco.volumen?.toString() || '0',
+            tipo: 'recolectado',
+            idFrascoRecolectado: frasco.id
+          };
         }
       }
     }
-    return { volumen: '0', tipo: 'recolectado' };
   }
+  return { volumen: '0', tipo: 'recolectado' };
+}
 
   private buscarEnExtracciones(registro: any): {
-    volumen: string;
-    tipo: TipoFrasco;
-    idExtraccion?: number;
-  } {
-    const extracciones = registro.madreDonante?.madrePotencial?.lecheSalaExtraccion?.extracciones;
-    if (extracciones) {
-      const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
-      if (extraccion) {
-        return {
-          volumen: extraccion.cantidad?.toString() || '0',
-          tipo: 'extraccion',
-          idExtraccion: extraccion.id
-        };
-      }
+  volumen: string;
+  tipo: TipoFrasco;
+  idExtraccion?: number;
+} {
+  const extracciones = registro.madreDonante?.madrePotencial?.lecheSalaExtraccion?.extracciones;
+  if (extracciones) {
+    const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
+    if (extraccion) {
+      return {
+        volumen: extraccion.cantidad?.toString() || '0',
+        tipo: 'extraccion',
+        idExtraccion: extraccion.id
+      };
     }
-    return { volumen: '0', tipo: 'extraccion' };
   }
+  return { volumen: '0', tipo: 'extraccion' };
+}
 
   private corregirVolumenesInternas(registros: any[]): void {
-    registros.forEach((registro: any) => {
-      if (registro.madreDonante?.tipoDonante !== 'interna') return;
+  registros.forEach((registro: any) => {
+    if (registro.madreDonante?.tipoDonante !== 'interna') return;
 
-      const row = this.dataOriginal.find(r => r.id === registro.id);
-      if (!row || (row.volumen_frasco_anterior && row.volumen_frasco_anterior !== '0')) return;
+    const row = this.dataOriginal.find(r => r.id === registro.id);
+    if (!row || (row.volumen_frasco_anterior && row.volumen_frasco_anterior !== '0')) return;
 
-      const idMadre = registro.madreDonante?.id;
-      if (!idMadre) return;
+    const idMadre = registro.madreDonante?.id;
+    if (!idMadre) return;
 
-      this.controlReenvaseService.getFrascosByMadreDonante(String(idMadre)).subscribe({
-        next: (entradas: any[]) => {
-          const entradaMatch = entradas.find((e: any) => e.id === registro.frascoCrudo);
-          if (!entradaMatch?.extraccion) return;
+    this.controlReenvaseService.getFrascosByMadreDonante(String(idMadre)).subscribe({
+      next: (entradas: any[]) => {
+        const entradaMatch = entradas.find((e: any) =>
+          e.extraccion && e.extraccion.id === registro.frascoCrudo
+        );
 
+        if (entradaMatch?.extraccion) {
           row.volumen_frasco_anterior = entradaMatch.extraccion.cantidad?.toString() || '0';
           row.tipo_frasco = 'extraccion';
           row.id_extraccion = entradaMatch.extraccion.id;
+          row.id_frasco_anterior = entradaMatch.extraccion.id;
           this.dataFiltered = [...this.dataOriginal];
-        },
-        error: (err) => console.error(`Error al corregir volumen para madre ${idMadre}:`, err)
-      });
+        }
+      },
+      error: (err) => console.error(`Error al corregir volumen para madre ${idMadre}:`, err)
     });
-  }
+  });
+}
 
   // ============= UTILIDADES =============
 
@@ -436,17 +437,28 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   onFrascoSeleccionado(event: any, rowData: ControlReenvaseData): void {
-    const valorFrasco = this.extraerValorEvento(event);
-    if (!valorFrasco) return;
+  const valorFrasco = this.extraerValorEvento(event);
+  if (!valorFrasco) return;
 
-    rowData.no_frasco_anterior = valorFrasco;
+  rowData.no_frasco_anterior = valorFrasco;
 
-    const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === valorFrasco);
-    if (frascoSeleccionado) {
-      rowData.volumen_frasco_anterior = frascoSeleccionado.volumen || '';
-      rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_principal;
+  const frascoSeleccionado = this.frascosFiltrados.find(f => f.value === valorFrasco);
+  if (frascoSeleccionado) {
+    rowData.volumen_frasco_anterior = frascoSeleccionado.volumen || '';
+
+    rowData.id_frasco_anterior = frascoSeleccionado.id_frasco_data;
+
+    rowData.tipo_frasco = frascoSeleccionado.tipo;
+
+    if (frascoSeleccionado.tipo === 'extraccion') {
+      rowData.id_extraccion = frascoSeleccionado.id_frasco_data;
+      rowData.id_frasco_recolectado = null;
+    } else {
+      rowData.id_frasco_recolectado = frascoSeleccionado.id_frasco_data;
+      rowData.id_extraccion = null;
     }
   }
+}
 
   onResponsableSeleccionado(event: any, rowData: ControlReenvaseData): void {
     const responsable = this.extraerValorEvento(event);
@@ -600,45 +612,49 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private prepararDatosParaCreacion(dataRow: ControlReenvaseData): DatosBackendParaCreacion | null {
-    if (!this.validarDatosBasicos(dataRow)) return null;
+  if (!this.validarDatosBasicos(dataRow)) return null;
 
-    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
-    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+  const idFrasco = dataRow.id_frasco_anterior;
+  const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
 
-    if (!idFrasco || !empleado?.id_empleado) return null;
+  if (!idFrasco || !empleado?.id_empleado) return null;
 
-    return {
-      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-      frascoCrudo: idFrasco,
-      madreDonante: { id: parseInt(dataRow.no_donante!) },
-      empleado: { id: empleado.id_empleado }
-    };
-  }
+  const esExtraccion = dataRow.tipo_frasco === 'extraccion' || dataRow.id_extraccion;
+
+  return {
+    fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+    frascoCrudo: idFrasco,
+    madreDonante: { id: parseInt(dataRow.no_donante!) },
+    empleado: { id: empleado.id_empleado },
+    extraccion: esExtraccion ? idFrasco : null,
+    frascoRecolectado: !esExtraccion ? idFrasco : null
+  };
+}
 
   private prepararDatosParaActualizacion(dataRow: ControlReenvaseData): DatosBackendParaActualizacion | null {
-    if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
+  if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
 
-    const idFrasco = this.extraerIdDeCodigoLHC(dataRow.no_frasco_anterior!);
-    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+  const idFrasco = dataRow.id_frasco_anterior;
+  const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
 
-    if (!idFrasco || !empleado?.id_empleado) return null;
+  if (!idFrasco || !empleado?.id_empleado) return null;
 
-    const esExtraccion = dataRow.tipo_frasco === 'extraccion';
+  const esExtraccion = dataRow.tipo_frasco === 'extraccion';
 
-    return {
-      id: dataRow.id,
-      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-      volumen: parseFloat(dataRow.volumen_frasco_anterior || '0'),
-      frascoCrudo: idFrasco,
-      madreDonante: {
-        id: parseInt(dataRow.no_donante!),
-        tipoDonante: dataRow.madre_donante_info?.tipoDonante || (esExtraccion ? 'interna' : 'externa')
-      },
-      empleado: { id: empleado.id_empleado },
-      extraccion: esExtraccion ? dataRow.id_extraccion || null : null,
-      frascoRecolectado: !esExtraccion ? dataRow.id_frasco_recolectado || null : null
-    };
-  }
+  return {
+    id: dataRow.id,
+    fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+    volumen: parseFloat(dataRow.volumen_frasco_anterior || '0'),
+    frascoCrudo: idFrasco,
+    madreDonante: {
+      id: parseInt(dataRow.no_donante!),
+      tipoDonante: dataRow.madre_donante_info?.tipoDonante || (esExtraccion ? 'interna' : 'externa')
+    },
+    empleado: { id: empleado.id_empleado },
+    extraccion: esExtraccion ? idFrasco : null,
+    frascoRecolectado: !esExtraccion ? idFrasco : null
+  };
+}
 
   // ============= VALIDACIONES =============
 

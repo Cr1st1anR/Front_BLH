@@ -13,8 +13,8 @@ export interface ControlReenvaseData {
   madre_donante_info?: MadreDonante;
   empleado_info?: EmpleadoInfo;
   tipo_frasco?: TipoFrasco;
-  id_extraccion?: number;
-  id_frasco_recolectado?: number;
+  id_extraccion?: number | null;
+  id_frasco_recolectado?: number | null;
 }
 
 export interface LoadingState {

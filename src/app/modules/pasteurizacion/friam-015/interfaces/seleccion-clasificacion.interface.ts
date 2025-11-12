@@ -54,6 +54,12 @@ export interface FiltroFecha {
   month: number;
 }
 
+export interface FiltrosBusqueda {
+  no_frasco_procesado: string;
+  donante: string;
+  frasco_leche_cruda: string;
+}
+
 export interface BackendResponse<T> {
   data: T;
   message?: string;

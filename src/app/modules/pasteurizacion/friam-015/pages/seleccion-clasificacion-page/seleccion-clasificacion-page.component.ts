@@ -2,12 +2,21 @@ import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { SeleccionClasificacionTableComponent } from "../../components/seleccion-clasificacion-table/seleccion-clasificacion-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-import { TipoDialog } from '../../interfaces/seleccion-clasificacion.interface';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+
+import type { TipoDialog, FiltrosBusqueda } from '../../interfaces/seleccion-clasificacion.interface';
 
 @Component({
   selector: 'seleccion-clasificacion-page',
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
+    InputTextModule,
+    ButtonModule,
     HeaderComponent,
     SeleccionClasificacionTableComponent,
     MonthPickerComponent
@@ -26,6 +35,12 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;
 
+  filtrosBusqueda: FiltrosBusqueda = {
+    no_frasco_procesado: '',
+    donante: '',
+    frasco_leche_cruda: ''
+  };
+
   // Para los futuros dialogs
   showAnalisisSensorialDialog = false;
   showAcidezDornicDialog = false;
@@ -42,6 +57,19 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);
+  }
+
+  aplicarFiltros(): void {
+    this.tableComponent?.aplicarFiltrosBusqueda(this.filtrosBusqueda);
+  }
+
+  limpiarFiltros(): void {
+    this.filtrosBusqueda = {
+      no_frasco_procesado: '',
+      donante: '',
+      frasco_leche_cruda: ''
+    };
+    this.aplicarFiltros();
   }
 
   onEyeClicked(event: { tipo: TipoDialog; data: any }): void {

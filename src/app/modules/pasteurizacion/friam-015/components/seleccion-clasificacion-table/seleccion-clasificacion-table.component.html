@@ -13,6 +13,7 @@
     editMode="row">
 
     <ng-template #header let-columns>
+      <!-- FILA DE HEADERS -->
       <tr>
         @for (col of columns; track $index) {
         <th [style.width]="col.width" [style.min-width]="col.width" [class.vertical-text]="col.vertical">
@@ -20,8 +21,8 @@
             @if (col.vertical) {
             @for (linea of col.header.split('\n'); track $index) {
             <span>{{ linea }}</span>
-            @if ($index
-            < col.header.split('\n').length - 1) { <br />
+            @if ($index < col.header.split('\n').length - 1) {
+            <br />
             }
             }
             } @else {
@@ -44,6 +45,7 @@
         @for (col of columns; track $index) {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
+          <!-- COLUMNAS VERTICALES (NO EDITABLES) -->
           @if (col.vertical) {
           @if (col.tipo === 'date') {
           <span>{{ rowData[col.field] | date:'dd/MM/yyyy' }}</span>
@@ -51,8 +53,7 @@
           <div class="flex justify-center">
             <button pButton pRipple type="button" icon="pi pi-eye"
               class="p-button-rounded p-button-text p-button-secondary" (click)="onEyeClick(col.field, rowData, $event)"
-              [pTooltip]="col.header.replace('\n', ' ')" tooltipPosition="top"
-              [disabled]="isEyeButtonDisabled(rowData)">
+              [pTooltip]="col.header.replace('\n', ' ')" tooltipPosition="top" [disabled]="isAnyRowEditing()">
             </button>
           </div>
           } @else {
@@ -60,6 +61,7 @@
           }
           }
 
+          <!-- COLUMNAS HORIZONTALES (EDITABLES) -->
           @else {
           @if (col.field === 'fecha' || col.field === 'fecha_vencimiento' || col.field === 'fecha_vencimiento_cultivos')
           {

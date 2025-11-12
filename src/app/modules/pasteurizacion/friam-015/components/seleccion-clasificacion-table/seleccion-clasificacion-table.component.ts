@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -17,6 +17,7 @@ import {
   TableColumn,
   ResponsableOption,
   FiltroFecha,
+  FiltrosBusqueda,
   TipoMensaje,
   TipoDialog
 } from '../../interfaces/seleccion-clasificacion.interface';
@@ -46,6 +47,12 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   @ViewChild('tableSeleccionClasificacion') table!: Table;
   @Output() eyeClicked = new EventEmitter<{ tipo: TipoDialog; data: SeleccionClasificacionData }>();
+
+  @Input() filtrosBusqueda: FiltrosBusqueda = {
+    no_frasco_procesado: '',
+    donante: '',
+    frasco_leche_cruda: ''
+  };
 
   readonly loading: LoadingState = {
     main: false,
@@ -267,7 +274,7 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   onEyeClick(tipo: TipoDialog, rowData: SeleccionClasificacionData, event: Event): void {
     event.stopPropagation();
 
-    if (this.isEditing(rowData)) {
+    if (this.isAnyRowEditing()) {
       return;
     }
 
@@ -412,10 +419,6 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  isEyeButtonDisabled(rowData: SeleccionClasificacionData): boolean {
-    return this.isEditing(rowData);
-  }
-
   isColumnEditable(field: string): boolean {
     // Solo las columnas horizontales son editables
     const header = this.headersSeleccionClasificacion.find(h => h.field === field);
@@ -429,21 +432,46 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     this.mostrarNotificacionFiltro();
   }
 
+  aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
+    this.filtrosBusqueda = filtros;
+    this.aplicarFiltros();
+  }
+
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
     this.filtrarPorFecha(filtro);
   }
 
   private aplicarFiltros(): void {
-    this.dataFiltered = this.filtroFecha
-      ? this.filtrarPorMesYAno(this.dataOriginal, this.filtroFecha)
-      : [...this.dataOriginal];
+    let datosFiltrados = [...this.dataOriginal];
+
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
+
+    datosFiltrados = this.aplicarFiltrosBusquedaTexto(datosFiltrados);
+
+    this.dataFiltered = datosFiltrados;
+  }
+
+  private aplicarFiltrosBusquedaTexto(datos: SeleccionClasificacionData[]): SeleccionClasificacionData[] {
+    return datos.filter(item => {
+      const cumpleFrascoProcesado = !this.filtrosBusqueda.no_frasco_procesado ||
+        item.no_frasco_procesado?.toLowerCase().includes(this.filtrosBusqueda.no_frasco_procesado.toLowerCase());
+
+      const cumpleDonante = !this.filtrosBusqueda.donante ||
+        item.donante?.toLowerCase().includes(this.filtrosBusqueda.donante.toLowerCase());
+
+      const cumpleFrascoCrudo = !this.filtrosBusqueda.frasco_leche_cruda ||
+        item.frasco_leche_cruda?.toLowerCase().includes(this.filtrosBusqueda.frasco_leche_cruda.toLowerCase());
+
+      return cumpleFrascoProcesado && cumpleDonante && cumpleFrascoCrudo;
+    });
   }
 
   private filtrarPorMesYAno(datos: SeleccionClasificacionData[], filtro: FiltroFecha): SeleccionClasificacionData[] {
     return datos.filter(item => {
       if (!item.fecha) return false;
 
-      // Asegurar que tenemos un objeto Date
       const fechaParseada = item.fecha instanceof Date ? item.fecha : this.parsearFechaDesdeBackend(item.fecha);
       if (!fechaParseada || isNaN(fechaParseada.getTime())) return false;
 

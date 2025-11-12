@@ -1,13 +1,14 @@
 import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { SeleccionClasificacionTableComponent } from "../../components/seleccion-clasificacion-table/seleccion-clasificacion-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
+import { AnalisisSensorialDialogComponent } from "../../components/analisis-sensorial-dialog/analisis-sensorial-dialog.component";
 
-import type { TipoDialog, FiltrosBusqueda } from '../../interfaces/seleccion-clasificacion.interface';
+import type { TipoDialog, FiltrosBusqueda, SeleccionClasificacionData } from '../../interfaces/seleccion-clasificacion.interface';
 
 @Component({
   selector: 'seleccion-clasificacion-page',
@@ -19,7 +20,8 @@ import type { TipoDialog, FiltrosBusqueda } from '../../interfaces/seleccion-cla
     ButtonModule,
     HeaderComponent,
     SeleccionClasificacionTableComponent,
-    MonthPickerComponent
+    MonthPickerComponent,
+    AnalisisSensorialDialogComponent
   ],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'
@@ -41,11 +43,10 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
     frasco_leche_cruda: ''
   };
 
-  // Para los futuros dialogs
   showAnalisisSensorialDialog = false;
   showAcidezDornicDialog = false;
   showCrematocritoDialog = false;
-  selectedData: any = null;
+  selectedData: SeleccionClasificacionData | null = null;
 
   ngOnInit(): void {
     this.prepararFiltroMesActual();
@@ -72,7 +73,7 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
     this.aplicarFiltros();
   }
 
-  onEyeClicked(event: { tipo: TipoDialog; data: any }): void {
+  onEyeClicked(event: { tipo: TipoDialog; data: SeleccionClasificacionData }): void {
     if (this.tableComponent?.isAnyRowEditing()) {
       return;
     }

@@ -22,10 +22,7 @@
 
 <seleccion-clasificacion-table [filtrosBusqueda]="filtrosBusqueda" (eyeClicked)="onEyeClicked($event)" />
 
-<!-- Los dialogs se crearán después -->
-<!-- @if (showAnalisisSensorialDialog && selectedData) {
-  <analisis-sensorial-dialog
-    [visible]="showAnalisisSensorialDialog"
-    [data]="selectedData"
-    (dialogClosed)="onAnalisisSensorialDialogClosed()" />
-} -->
+@if (showAnalisisSensorialDialog && selectedData) {
+<analisis-sensorial-dialog [visible]="showAnalisisSensorialDialog" [seleccionClasificacionData]="selectedData"
+  (dialogClosed)="onAnalisisSensorialDialogClosed()" />
+}

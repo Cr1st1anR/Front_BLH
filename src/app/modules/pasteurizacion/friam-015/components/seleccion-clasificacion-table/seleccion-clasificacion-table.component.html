@@ -13,178 +13,83 @@
     editMode="row">
 
     <ng-template #header let-columns>
-  <tr>
-    @for (col of columns; track $index) {
-    <th [style.width]="col.width"
-        [style.min-width]="col.width"
-        [class.vertical-text]="col.vertical">
-      <div [class.rotate-text]="col.vertical">
-        @if (col.vertical) {
-        <!-- Para columnas verticales: mantener saltos de línea -->
-        @for (linea of col.header.split('\n'); track $index) {
-        <span>{{ linea }}</span>
-        @if ($index < col.header.split('\n').length - 1) {
-        <br />
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width" [class.vertical-text]="col.vertical">
+          <div [class.rotate-text]="col.vertical">
+            @if (col.vertical) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span>{{ linea }}</span>
+            @if ($index
+            < col.header.split('\n').length - 1) { <br />
+            }
+            }
+            } @else {
+            @if (col.header.includes('\n')) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span style="display: block;">{{ linea }}</span>
+            }
+            } @else {
+            {{ col.header }}
+            }
+            }
+          </div>
+        </th>
         }
-        }
-        } @else {
-        <!-- Para columnas horizontales: también procesar saltos de línea -->
-        @if (col.header.includes('\n')) {
-          @for (linea of col.header.split('\n'); track $index) {
-          <span style="display: block;">{{ linea }}</span>
-          }
-        } @else {
-          {{ col.header }}
-        }
-        }
-      </div>
-    </th>
-    }
-  </tr>
-</ng-template>
+      </tr>
+    </ng-template>
 
     <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
       <tr [pEditableRow]="rowData">
         @for (col of columns; track $index) {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
-          @if (col.field === 'fecha') {
+          @if (col.vertical) {
+          @if (col.tipo === 'date') {
+          <span>{{ rowData[col.field] | date:'dd/MM/yyyy' }}</span>
+          } @else if (col.tipo === 'eye') {
+          <div class="flex justify-center">
+            <button pButton pRipple type="button" icon="pi pi-eye"
+              class="p-button-rounded p-button-text p-button-secondary" (click)="onEyeClick(col.field, rowData, $event)"
+              [pTooltip]="col.header.replace('\n', ' ')" tooltipPosition="top"
+              [disabled]="isEyeButtonDisabled(rowData)">
+            </button>
+          </div>
+          } @else {
+          <span>{{ rowData[col.field] }}</span>
+          }
+          }
+
+          @else {
+          @if (col.field === 'fecha' || col.field === 'fecha_vencimiento' || col.field === 'fecha_vencimiento_cultivos')
+          {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-datepicker [(ngModel)]="rowData.fecha" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"
-                [style]="{ width: '100%' }">
+              <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
               </p-datepicker>
             </ng-template>
             <ng-template pTemplate="output">
-              <span>{{ rowData.fecha | date:'dd/MM/yyyy' }}</span>
+              @if (rowData[col.field]) {
+              {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
             </ng-template>
           </p-cellEditor>
-          }
-
-          @else if (col.field === 'gaveta_cruda') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.gaveta_cruda" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.gaveta_cruda }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'dias_produccion') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.dias_produccion" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.dias_produccion }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'no_frasco_procesado') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.no_frasco_procesado" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.no_frasco_procesado }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'donante') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <p-select [(ngModel)]="rowData.donante" [options]="opcionesDonantes" optionLabel="label"
-                optionValue="label" placeholder="Seleccionar donante" [loading]="loadingDonantes" [filter]="true"
-                [style]="{ width: '100%' }" (onChange)="onDonanteSeleccionado($event, rowData)" appendTo="body">
-              </p-select>
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.donante }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'frasco_leche_cruda') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <p-select [(ngModel)]="rowData.frasco_leche_cruda" [options]="getFrascosDisponibles(rowData)"
-                optionLabel="label" optionValue="value" placeholder="Seleccionar frasco" [loading]="loadingFrascos"
-                [filter]="true" [style]="{ width: '100%' }" [disabled]="!rowData.donante"
-                (onChange)="onFrascoSeleccionado($event, rowData)" appendTo="body">
-              </p-select>
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.frasco_leche_cruda }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'edad_gestacional') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.edad_gestacional" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.edad_gestacional }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'volumen') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.volumen" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.volumen }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'analisis_sensorial') {
-          <div class="flex justify-center">
-            <button pButton pRipple type="button" icon="pi pi-eye"
-              class="p-button-rounded p-button-text p-button-secondary"
-              (click)="onEyeClick('analisis_sensorial', rowData, $event)" pTooltip="Ver Análisis Sensorial"
-              tooltipPosition="top" [disabled]="isEyeButtonDisabled(rowData)">
-            </button>
-          </div>
-          }
-
-          @else if (col.field === 'acidez_dornic') {
-          <div class="flex justify-center">
-            <button pButton pRipple type="button" icon="pi pi-eye"
-              class="p-button-rounded p-button-text p-button-secondary"
-              (click)="onEyeClick('acidez_dornic', rowData, $event)" pTooltip="Ver Acidez Dornic" tooltipPosition="top"
-              [disabled]="isEyeButtonDisabled(rowData)">
-            </button>
-          </div>
-          }
-
-          @else if (col.field === 'crematocrito') {
-          <div class="flex justify-center">
-            <button pButton pRipple type="button" icon="pi pi-eye"
-              class="p-button-rounded p-button-text p-button-secondary"
-              (click)="onEyeClick('crematocrito', rowData, $event)" pTooltip="Ver Crematocrito" tooltipPosition="top"
-              [disabled]="isEyeButtonDisabled(rowData)">
-            </button>
-          </div>
           }
 
           @else if (col.field === 'nombre_profesional') {
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-select [(ngModel)]="rowData.nombre_profesional" [options]="opcionesProfesionales" optionLabel="label"
-                optionValue="label" placeholder="Seleccionar profesional" [filter]="true" [style]="{ width: '100%' }"
-                (onChange)="onProfesionalSeleccionado($event, rowData)" appendTo="body">
+                optionValue="value" placeholder="Seleccione profesional"
+                (onChange)="onProfesionalSeleccionado($event, rowData)" appendTo="body" class="w-full"
+                [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
-              <span>{{ rowData.nombre_profesional }}</span>
+              {{ rowData.nombre_profesional || 'Sin profesional' }}
             </ng-template>
           </p-cellEditor>
           }
@@ -193,104 +98,23 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-select [(ngModel)]="rowData.nombre_auxiliar" [options]="opcionesAuxiliares" optionLabel="label"
-                optionValue="label" placeholder="Seleccionar auxiliar" [filter]="true" [style]="{ width: '100%' }"
-                (onChange)="onAuxiliarSeleccionado($event, rowData)" appendTo="body">
+                optionValue="value" placeholder="Seleccione auxiliar"
+                (onChange)="onAuxiliarSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
-              <span>{{ rowData.nombre_auxiliar }}</span>
+              {{ rowData.nombre_auxiliar || 'Sin auxiliar' }}
             </ng-template>
           </p-cellEditor>
           }
 
-          @else if (col.field === 'n_frascos_pasteurizados') {
+          @else if (col.field === 'n_frascos_pasteurizados' || col.field === 'edad_gestacional') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.n_frascos_pasteurizados" />
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
             </ng-template>
             <ng-template pTemplate="output">
-              <span>{{ rowData.n_frascos_pasteurizados }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'volumen_pasteurizado') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.volumen_pasteurizado" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.volumen_pasteurizado }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'fecha_vencimiento') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <p-datepicker [(ngModel)]="rowData.fecha_vencimiento" dateFormat="dd/mm/yy" [showIcon]="true"
-                appendTo="body" [style]="{ width: '100%' }">
-              </p-datepicker>
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.fecha_vencimiento | date:'dd/MM/yyyy' }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'observaciones') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.observaciones" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.observaciones }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'ciclo') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.ciclo" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.ciclo }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'n_lote_medios_cultivo') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.n_lote_medios_cultivo" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.n_lote_medios_cultivo }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'fecha_vencimiento_cultivos') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <p-datepicker [(ngModel)]="rowData.fecha_vencimiento_cultivos" dateFormat="dd/mm/yy" [showIcon]="true"
-                appendTo="body" [style]="{ width: '100%' }">
-              </p-datepicker>
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.fecha_vencimiento_cultivos | date:'dd/MM/yyyy' }}</span>
-            </ng-template>
-          </p-cellEditor>
-          }
-
-          @else if (col.field === 'lote') {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.lote" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              <span>{{ rowData.lote }}</span>
+              {{ rowData[col.field] }}
             </ng-template>
           </p-cellEditor>
           }
@@ -310,6 +134,18 @@
               severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
             </button>
           </div>
+          }
+
+          @else {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] }}
+            </ng-template>
+          </p-cellEditor>
+          }
           }
 
         </td>

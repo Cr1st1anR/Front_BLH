@@ -8,9 +8,9 @@ export interface SeleccionClasificacionData {
   frasco_leche_cruda?: string;
   edad_gestacional?: number;
   volumen?: string;
-  analisis_sensorial?: any; // Para el dialog
-  acidez_dornic?: any; // Para el dialog
-  crematocrito?: any; // Para el dialog
+  analisis_sensorial?: any;
+  acidez_dornic?: any;
+  crematocrito?: any;
   nombre_profesional?: string;
   nombre_auxiliar?: string;
   n_frascos_pasteurizados?: number;
@@ -21,11 +21,8 @@ export interface SeleccionClasificacionData {
   n_lote_medios_cultivo?: string;
   fecha_vencimiento_cultivos?: string | Date | null;
   lote?: string;
-  isNew?: boolean;
-  _uid?: string;
   id_empleado_profesional?: number;
   id_empleado_auxiliar?: number;
-  id_madre_donante?: number;
 }
 
 export interface LoadingState {
@@ -40,7 +37,7 @@ export interface TableColumn {
   field: string;
   width: string;
   tipo: string;
-  vertical?: boolean; // Nueva propiedad para columnas verticales
+  vertical?: boolean;
 }
 
 export interface ResponsableOption {
@@ -50,20 +47,6 @@ export interface ResponsableOption {
   cargo?: string;
   telefono?: number;
   correo?: string;
-}
-
-export interface DonanteOption {
-  label: string;
-  value: string;
-  documento?: string;
-}
-
-export interface FrascoOption {
-  label: string;
-  value: string;
-  donante?: string;
-  volumen?: string;
-  id_frasco?: number;
 }
 
 export interface FiltroFecha {
@@ -83,19 +66,4 @@ export interface ApiError {
 }
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
-
 export type TipoDialog = 'analisis_sensorial' | 'acidez_dornic' | 'crematocrito';
-
-export interface DatosBackendParaCreacion {
-  fecha: string;
-  gavetaCruda: string;
-  diasProduccion: number;
-  madreDonante: { id: number };
-  empleadoProfesional: { id: number };
-  empleadoAuxiliar: { id: number };
-  // ... otros campos según necesites
-}
-
-export interface DatosBackendParaActualizacion extends DatosBackendParaCreacion {
-  id: number;
-}

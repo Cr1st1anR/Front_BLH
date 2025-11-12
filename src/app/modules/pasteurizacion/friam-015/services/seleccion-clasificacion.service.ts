@@ -4,9 +4,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { map, catchError, delay } from 'rxjs/operators';
 import {
   SeleccionClasificacionData,
-  DonanteOption,
   ResponsableOption,
-  FrascoOption,
   BackendResponse
 } from '../interfaces/seleccion-clasificacion.interface';
 
@@ -17,12 +15,11 @@ export class SeleccionClasificacionService {
 
   constructor(private readonly http: HttpClient) { }
 
-  // DATOS MOCK - Reemplazar con llamadas HTTP reales
   getAllSeleccionClasificacion(): Observable<SeleccionClasificacionData[]> {
     const mockData: SeleccionClasificacionData[] = [
       {
         id: 1,
-        fecha: new Date('2025-11-15'),
+        fecha: '2025-11-15',
         gaveta_cruda: '3',
         dias_produccion: '2M',
         no_frasco_procesado: 'LHP 25 1',
@@ -34,16 +31,16 @@ export class SeleccionClasificacionService {
         nombre_auxiliar: 'Ana Benavides',
         n_frascos_pasteurizados: 30,
         volumen_pasteurizado: '100',
-        fecha_vencimiento: new Date('2025-11-22'),
+        fecha_vencimiento: '2025-11-22',
         observaciones: 'Sin observaciones',
         ciclo: '13',
         n_lote_medios_cultivo: '259-260',
-        fecha_vencimiento_cultivos: new Date('2025-11-15'),
+        fecha_vencimiento_cultivos: '2025-11-15',
         lote: '1062'
       },
       {
-        id: 1,
-        fecha: new Date('2025-11-16'),
+        id: 2,
+        fecha: '2025-11-16',
         gaveta_cruda: '3',
         dias_produccion: '9D',
         no_frasco_procesado: 'LHP 25 2',
@@ -55,26 +52,37 @@ export class SeleccionClasificacionService {
         nombre_auxiliar: 'Ana Benavides',
         n_frascos_pasteurizados: 30,
         volumen_pasteurizado: '100',
-        fecha_vencimiento: new Date('2025-11-22'),
+        fecha_vencimiento: '2025-11-22',
         observaciones: 'Sin observaciones',
         ciclo: '13',
         n_lote_medios_cultivo: '259-260',
-        fecha_vencimiento_cultivos: new Date('2025-11-15'),
+        fecha_vencimiento_cultivos: '2025-11-15',
         lote: '1062'
       },
+      {
+        id: 3,
+        fecha: '2025-11-20',
+        gaveta_cruda: '4',
+        dias_produccion: '5D',
+        no_frasco_procesado: 'LHP 25 3',
+        donante: '1850',
+        frasco_leche_cruda: 'LHC 25 3',
+        edad_gestacional: 40,
+        volumen: '200',
+        nombre_profesional: 'Alejandra Lopez',
+        nombre_auxiliar: 'Ana Benavides',
+        n_frascos_pasteurizados: 35,
+        volumen_pasteurizado: '120',
+        fecha_vencimiento: '2025-11-27',
+        observaciones: 'Sin observaciones',
+        ciclo: '14',
+        n_lote_medios_cultivo: '261-262',
+        fecha_vencimiento_cultivos: '2025-11-20',
+        lote: '1063'
+      }
     ];
 
     return of(mockData).pipe(delay(500));
-  }
-
-  getMadresDonantes(): Observable<DonanteOption[]> {
-    const mockDonantes: DonanteOption[] = [
-      { label: '1001 - María García', value: '1001', documento: '12345678' },
-      { label: '1002 - Laura Martínez', value: '1002', documento: '87654321' },
-      { label: '1003 - Ana Rodríguez', value: '1003', documento: '11223344' }
-    ];
-
-    return of(mockDonantes).pipe(delay(300));
   }
 
   getEmpleados(): Observable<ResponsableOption[]> {
@@ -88,26 +96,11 @@ export class SeleccionClasificacionService {
     return of(mockEmpleados).pipe(delay(300));
   }
 
-  getFrascosByMadreDonante(idMadreDonante: string): Observable<FrascoOption[]> {
-    const mockFrascos: FrascoOption[] = [
-      { label: 'FC-001 - 150ml', value: 'FC-001', donante: idMadreDonante, volumen: '150ml', id_frasco: 1 },
-      { label: 'FC-002 - 200ml', value: 'FC-002', donante: idMadreDonante, volumen: '200ml', id_frasco: 2 }
-    ];
-
-    return of(mockFrascos).pipe(delay(300));
-  }
-
-  postSeleccionClasificacion(data: any): Observable<any> {
-    console.log('Creando registro:', data);
-    return of({ success: true, data: { id: Date.now(), ...data } }).pipe(delay(500));
-  }
-
   putSeleccionClasificacion(data: any): Observable<any> {
     console.log('Actualizando registro:', data);
     return of({ success: true, data }).pipe(delay(500));
   }
 
-  // Métodos reales para cuando estén las APIs (comentados)
   /*
   getAllSeleccionClasificacion(): Observable<SeleccionClasificacionData[]> {
     return this.http.get<BackendResponse<SeleccionClasificacionData[]>>(
@@ -123,6 +116,40 @@ export class SeleccionClasificacionService {
         return throwError(() => error);
       })
     );
+  }
+
+  getEmpleados(): Observable<ResponsableOption[]> {
+    return this.http.get<BackendResponse<any[]>>(`${environment.ApiBLH}/GetEmpleados`, {
+      observe: 'response'
+    })
+      .pipe(
+        map(response => {
+          if (response.status === 204) return [];
+          const empleados = response.body?.data || [];
+          return empleados.map((empleado: any) => ({
+            label: empleado.nombre,
+            value: empleado.nombre,
+            id_empleado: empleado.id,
+            cargo: empleado.cargo,
+            telefono: empleado.telefono,
+            correo: empleado.correo
+          }));
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en getEmpleados:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  putSeleccionClasificacion(data: any): Observable<any> {
+    return this.http.put<BackendResponse<any>>(`${environment.ApiBLH}/putSeleccionClasificacion`, data)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en putSeleccionClasificacion:', error);
+          return throwError(() => error);
+        })
+      );
   }
   */
 }

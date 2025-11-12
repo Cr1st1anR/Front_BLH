@@ -2,7 +2,6 @@ import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { SeleccionClasificacionTableComponent } from "../../components/seleccion-clasificacion-table/seleccion-clasificacion-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import { TipoDialog } from '../../interfaces/seleccion-clasificacion.interface';
 
 @Component({
@@ -11,8 +10,7 @@ import { TipoDialog } from '../../interfaces/seleccion-clasificacion.interface';
   imports: [
     HeaderComponent,
     SeleccionClasificacionTableComponent,
-    MonthPickerComponent,
-    NewRegisterButtonComponent
+    MonthPickerComponent
   ],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'
@@ -42,19 +40,15 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
     this.esperarInicializacionTabla();
   }
 
-  get hasNewRowInEditing(): boolean {
-    return this.tableComponent?.isAnyRowEditing() ?? false;
-  }
-
-  crearNuevoRegistro(): void {
-    this.tableComponent?.crearNuevoRegistro();
-  }
-
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);
   }
 
   onEyeClicked(event: { tipo: TipoDialog; data: any }): void {
+    if (this.tableComponent?.isAnyRowEditing()) {
+      return;
+    }
+
     this.selectedData = event.data;
 
     switch (event.tipo) {
@@ -70,7 +64,6 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
     }
   }
 
-  // Métodos para cerrar dialogs (implementar cuando se creen los componentes)
   onAnalisisSensorialDialogClosed(): void {
     this.showAnalisisSensorialDialog = false;
     this.selectedData = null;

@@ -1,7 +1,6 @@
 <app-header [title]="'SELECCIÓN Y CLASIFICACIÓN DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-015)'" />
 
-<div class="flex justify-between items-center mx-4 mt-8">
-  <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+<div class="flex justify-end items-center mx-4 mt-10">
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 

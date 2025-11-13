@@ -23,15 +23,16 @@
 <seleccion-clasificacion-table [filtrosBusqueda]="filtrosBusqueda" (eyeClicked)="onEyeClicked($event)" />
 
 @if (showAnalisisSensorialDialog && selectedData) {
-  <analisis-sensorial-dialog
-    [visible]="showAnalisisSensorialDialog"
-    [seleccionClasificacionData]="selectedData"
-    (dialogClosed)="onAnalisisSensorialDialogClosed()" />
+<analisis-sensorial-dialog [visible]="showAnalisisSensorialDialog" [seleccionClasificacionData]="selectedData"
+  (dialogClosed)="onAnalisisSensorialDialogClosed()" />
 }
 
 @if (showAcidezDornicDialog && selectedData) {
-  <acidez-dornic-dialog
-    [visible]="showAcidezDornicDialog"
-    [seleccionClasificacionData]="selectedData"
-    (dialogClosed)="onAcidezDornicDialogClosed()" />
+<acidez-dornic-dialog [visible]="showAcidezDornicDialog" [seleccionClasificacionData]="selectedData"
+  (dialogClosed)="onAcidezDornicDialogClosed()" />
+}
+
+@if (showCrematocritoDialog && selectedData) {
+<crematocrito-dialog [visible]="showCrematocritoDialog" [seleccionClasificacionData]="selectedData"
+  (dialogClosed)="onCrematocritoDialogClosed()" />
 }

@@ -10,6 +10,7 @@ import { AnalisisSensorialDialogComponent } from "../../components/analisis-sens
 import { AcidezDornicDialogComponent } from "../../components/acidez-dornic-dialog/acidez-dornic-dialog.component";
 
 import type { TipoDialog, FiltrosBusqueda, SeleccionClasificacionData } from '../../interfaces/seleccion-clasificacion.interface';
+import { CrematocritoDialogComponent } from "../../components/crematocrito-dialog/crematocrito-dialog.component";
 
 @Component({
   selector: 'seleccion-clasificacion-page',
@@ -23,7 +24,8 @@ import type { TipoDialog, FiltrosBusqueda, SeleccionClasificacionData } from '..
     SeleccionClasificacionTableComponent,
     MonthPickerComponent,
     AnalisisSensorialDialogComponent,
-    AcidezDornicDialogComponent
+    AcidezDornicDialogComponent,
+    CrematocritoDialogComponent
 ],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'

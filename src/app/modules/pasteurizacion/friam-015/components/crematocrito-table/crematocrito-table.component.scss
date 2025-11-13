@@ -1,0 +1,11 @@
+.grid-lines {
+  border: 1px solid white;
+}
+
+// Estilos para headers de grupos
+:host ::ng-deep {
+  .header-group {
+    background-color: #3b82f6 !important;
+    font-weight: 700 !important;
+  }
+}

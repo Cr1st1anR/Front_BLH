@@ -1,0 +1,92 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="flex flex-col items-center justify-center mx-auto my-6 max-w-6xl">
+  <p-table #tableAnalisisSensorial [value]="dataAnalisisSensorial" [scrollable]="true" scrollHeight="400px"
+    [columns]="headersAnalisisSensorial" [tableStyle]="{ 'min-width': '50rem', 'max-width': '80rem' }" dataKey="id"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th class="grid-lines">{{ col.header }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td>
+          @if (col.field === 'embalaje') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.embalaje" class="w-full"
+                placeholder="Ej: Íntegro, roto">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.embalaje || 'Sin dato' }}
+            </ng-template>
+          </p-cellEditor>
+          } @else if (col.field === 'suciedad') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.suciedad" class="w-full"
+                placeholder="Ej: Presente, ausente">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.suciedad || 'Sin dato' }}
+            </ng-template>
+          </p-cellEditor>
+          } @else if (col.field === 'color') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.color" class="w-full"
+                placeholder="Ej: Blanco, amarillo">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.color || 'Sin dato' }}
+            </ng-template>
+          </p-cellEditor>
+          } @else if (col.field === 'flavor') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.flavor" class="w-full" placeholder="Ej: Dulce, rancio">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.flavor || 'Sin dato' }}
+            </ng-template>
+          </p-cellEditor>
+          } @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          } @else {
+          {{ rowData[col.field] }}
+          }
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataAnalisisSensorial || dataAnalisisSensorial.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

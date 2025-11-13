@@ -7,6 +7,7 @@ import { HeaderComponent } from "src/app/shared/components/header/header.compone
 import { SeleccionClasificacionTableComponent } from "../../components/seleccion-clasificacion-table/seleccion-clasificacion-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { AnalisisSensorialDialogComponent } from "../../components/analisis-sensorial-dialog/analisis-sensorial-dialog.component";
+import { AcidezDornicDialogComponent } from "../../components/acidez-dornic-dialog/acidez-dornic-dialog.component";
 
 import type { TipoDialog, FiltrosBusqueda, SeleccionClasificacionData } from '../../interfaces/seleccion-clasificacion.interface';
 
@@ -21,8 +22,9 @@ import type { TipoDialog, FiltrosBusqueda, SeleccionClasificacionData } from '..
     HeaderComponent,
     SeleccionClasificacionTableComponent,
     MonthPickerComponent,
-    AnalisisSensorialDialogComponent
-  ],
+    AnalisisSensorialDialogComponent,
+    AcidezDornicDialogComponent
+],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'
 })

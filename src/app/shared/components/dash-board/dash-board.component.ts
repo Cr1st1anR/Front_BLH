@@ -96,6 +96,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-032)',
           route: '/blh/pasteurizacion/control-reenvase',
         },
+        {
+          label: 'Registro diario de no conformidades',
+          subLabel: '(FRIAM-017)',
+          route: '/blh/pasteurizacion/registro-no-conformidades',
+        },
       ],
     },
     {

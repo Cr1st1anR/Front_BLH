@@ -5,6 +5,7 @@ import { MonthPickerComponent } from "src/app/shared/components/month-picker/mon
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import { CalentamientoDialogComponent } from "../../components/calentamiento-dialog/calentamiento-dialog.component";
 import type { ControlTemperaturaData, TipoDialog } from '../../interfaces/control-temperatura.interface';
+import { EnfriamientoDialogComponent } from "../../components/enfriamiento-dialog/enfriamiento-dialog.component";
 
 @Component({
   selector: 'app-control-temperatura-page',
@@ -13,9 +14,9 @@ import type { ControlTemperaturaData, TipoDialog } from '../../interfaces/contro
     ControlTemperaturaTableComponent,
     MonthPickerComponent,
     NewRegisterButtonComponent,
-    CalentamientoDialogComponent
-    // TODO: Agregar EnfriamientoDialogComponent cuando se implemente
-  ],
+    CalentamientoDialogComponent,
+    EnfriamientoDialogComponent
+],
   templateUrl: './control-temperatura-page.component.html',
   styleUrl: './control-temperatura-page.component.scss'
 })

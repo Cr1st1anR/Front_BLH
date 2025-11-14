@@ -5,7 +5,6 @@
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 
-<!-- CAMBIADO: Ahora usamos (eyeClicked) en lugar de (calentamientoClicked) -->
 <control-temperatura-table (eyeClicked)="onEyeClicked($event)" />
 
 @if (showCalentamientoDialog && selectedControlTemperaturaData) {
@@ -13,8 +12,7 @@
   (dialogClosed)="onCalentamientoDialogClosed()" />
 }
 
-<!-- TODO: Descomentar cuando se implemente el diálogo de enfriamiento -->
-<!-- @if (showEnfriamientoDialog && selectedControlTemperaturaData) {
+@if (showEnfriamientoDialog && selectedControlTemperaturaData) {
 <enfriamiento-dialog [visible]="showEnfriamientoDialog" [controlTemperaturaData]="selectedControlTemperaturaData"
   (dialogClosed)="onEnfriamientoDialogClosed()" />
-} -->
+}

@@ -3,6 +3,8 @@ import { HeaderComponent } from "src/app/shared/components/header/header.compone
 import { ControlTemperaturaTableComponent } from "../../components/control-temperatura-table/control-temperatura-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
+import { CalentamientoDialogComponent } from "../../components/calentamiento-dialog/calentamiento-dialog.component";
+import type { ControlTemperaturaData, TipoDialog } from '../../interfaces/control-temperatura.interface';
 
 @Component({
   selector: 'app-control-temperatura-page',
@@ -10,7 +12,9 @@ import { NewRegisterButtonComponent } from "src/app/shared/components/new-regist
     HeaderComponent,
     ControlTemperaturaTableComponent,
     MonthPickerComponent,
-    NewRegisterButtonComponent
+    NewRegisterButtonComponent,
+    CalentamientoDialogComponent
+    // TODO: Agregar EnfriamientoDialogComponent cuando se implemente
   ],
   templateUrl: './control-temperatura-page.component.html',
   styleUrl: './control-temperatura-page.component.scss'
@@ -25,6 +29,10 @@ export class ControlTemperaturaPageComponent implements OnInit, AfterViewInit {
 
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  showCalentamientoDialog = false;
+  showEnfriamientoDialog = false;
+  selectedControlTemperaturaData: ControlTemperaturaData | null = null;
 
   ngOnInit(): void {
     this.prepararFiltroMesActual();
@@ -44,6 +52,33 @@ export class ControlTemperaturaPageComponent implements OnInit, AfterViewInit {
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);
+  }
+
+  onEyeClicked(event: { tipo: TipoDialog; data: ControlTemperaturaData }): void {
+    if (this.tableComponent?.isAnyRowEditing()) {
+      return;
+    }
+
+    this.selectedControlTemperaturaData = event.data;
+
+    switch (event.tipo) {
+      case 'calentamiento':
+        this.showCalentamientoDialog = true;
+        break;
+      case 'enfriamiento':
+        this.showEnfriamientoDialog = true;
+        break;
+    }
+  }
+
+  onCalentamientoDialogClosed(): void {
+    this.showCalentamientoDialog = false;
+    this.selectedControlTemperaturaData = null;
+  }
+
+  onEnfriamientoDialogClosed(): void {
+    this.showEnfriamientoDialog = false;
+    this.selectedControlTemperaturaData = null;
   }
 
   private prepararFiltroMesActual(): void {

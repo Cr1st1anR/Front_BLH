@@ -20,7 +20,8 @@ import type {
   DatosBackendParaCreacion,
   DatosBackendParaActualizacion,
   LoadingState,
-  TableColumn
+  TableColumn,
+  TipoDialog
 } from '../../interfaces/control-temperatura.interface';
 
 @Component({
@@ -37,6 +38,8 @@ import type {
 export class ControlTemperaturaTableComponent implements OnInit {
 
   @ViewChild('tableControlTemperatura') table!: Table;
+  @Output() eyeClicked = new EventEmitter<{ tipo: TipoDialog; data: ControlTemperaturaData }>();
+
 
   readonly loading: LoadingState = {
     main: false,
@@ -282,17 +285,30 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   onVerCalentamiento(rowData: ControlTemperaturaData, event: MouseEvent): void {
-    event.stopPropagation();
-    console.log('Ver calentamiento para:', rowData);
-    // TODO: Implementar apertura de diálogo de calentamiento
-    this.mostrarMensaje('info', 'Información', 'Diálogo de calentamiento próximamente');
+    this.onEyeClick('calentamiento', rowData, event);
   }
 
   onVerEnfriamiento(rowData: ControlTemperaturaData, event: MouseEvent): void {
+    this.onEyeClick('enfriamiento', rowData, event);
+  }
+
+
+  private onEyeClick(tipo: TipoDialog, rowData: ControlTemperaturaData, event: MouseEvent): void {
     event.stopPropagation();
-    console.log('Ver enfriamiento para:', rowData);
-    // TODO: Implementar apertura de diálogo de enfriamiento
-    this.mostrarMensaje('info', 'Información', 'Diálogo de enfriamiento próximamente');
+
+    // Validar que haya edición en curso
+    if (this.isAnyRowEditing()) {
+      return;
+    }
+
+    // Validar que el registro esté guardado
+    if (!rowData.id) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar el registro antes de ver los detalles');
+      return;
+    }
+
+    // Emitir el evento con el tipo y los datos
+    this.eyeClicked.emit({ tipo, data: rowData });
   }
 
   private extraerValorEvento(event: any): string {
@@ -300,7 +316,6 @@ export class ControlTemperaturaTableComponent implements OnInit {
     if (typeof event === 'string') return event;
     return '';
   }
-
   // ============= CRUD OPERATIONS =============
 
   crearNuevoRegistro(): void {

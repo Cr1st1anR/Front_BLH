@@ -1,0 +1,171 @@
+:host ::ng-deep {
+  .p-datatable {
+    border-radius: 0 !important;
+
+    .p-datatable-thead {
+      > tr:first-child > th {
+        background-color: #224186;
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        text-align: center;
+
+        &.header-tiempo-lectura {
+          background-color: #224186;
+          font-size: 14px;
+          font-weight: 700;
+          text-transform: uppercase;
+          padding: 0.5rem 1rem !important;
+          letter-spacing: 0.4px;
+          line-height: 1.1 !important;
+          vertical-align: middle;
+          height: auto !important;
+          min-height: unset !important;
+          max-height: 45px !important;
+
+          // Bordes redondeados solo en las esquinas superiores
+          border-top-left-radius: 8px !important;
+          border-top-right-radius: 8px !important;
+        }
+      }
+
+      > tr:nth-child(2) > th {
+        background-color: #224186;
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        text-align: center;
+        border-radius: 0 !important;
+      }
+    }
+
+    .p-datatable-tbody {
+      > tr:last-child > td {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e9ecef;
+        text-align: center;
+
+        // Bordes redondeados solo en las esquinas inferiores de la última fila
+        &:first-child {
+          border-bottom-left-radius: 8px !important;
+        }
+
+        &:last-child {
+          border-bottom-right-radius: 8px !important;
+        }
+      }
+
+      > tr:not(:last-child) > td {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e9ecef;
+        text-align: center;
+        border-radius: 0 !important;
+      }
+    }
+
+    .p-datatable-tbody > tr:hover {
+      background-color: #f8f9fa !important;
+    }
+
+    // Eliminar bordes redondeados del wrapper de la tabla
+    .p-datatable-wrapper {
+      border-radius: 0 !important;
+    }
+
+    // Eliminar bordes redondeados del contenedor scrollable
+    .p-datatable-scrollable-header,
+    .p-datatable-scrollable-body {
+      border-radius: 0 !important;
+    }
+  }
+
+  // Estilos para botones de acción
+  .p-button.p-button-text.p-button-secondary {
+    color: #6c757d;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: #495057;
+    }
+  }
+
+  .p-button.p-button-text.p-button-success {
+    color: #28a745;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #1e7e34;
+    }
+  }
+
+  .p-button.p-button-text.p-button-danger {
+    color: #dc3545;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #bd2130;
+    }
+  }
+
+  // Estilos para inputs
+  .p-inputtext {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.text-gray-400 {
+  color: #9ca3af;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.max-w-full {
+  max-width: 100%;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}

@@ -62,6 +62,8 @@ export interface ApiError {
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
 
+export type TipoDialog = 'calentamiento' | 'enfriamiento';
+
 export interface DatosBackendParaCreacion {
   fecha: string;
   lote: string;

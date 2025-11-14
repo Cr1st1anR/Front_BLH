@@ -1,1 +1,8 @@
-<p>control-temperatura-page works!</p>
+<app-header [title]="'CONTROL DE TEMPERATURA DEL PASTEURIZADOR BLH (FRIAM-036)'" />
+
+<div class="flex justify-between items-center mx-4 mt-8">
+  <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+
+<control-temperatura-table />

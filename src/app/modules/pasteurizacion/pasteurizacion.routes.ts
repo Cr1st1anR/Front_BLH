@@ -8,4 +8,11 @@ export const PASTEURIZACION_ROUTES: Routes = [
         './friam-032/pages/control-reenvase-page/control-reenvase-page.component'
       ).then((c) => c.ControlReenvasePageComponent),
   },
+  {
+    path: 'seleccion-clasificacion-leche-cruda',
+    loadComponent: () =>
+      import(
+        './friam-015/pages/seleccion-clasificacion-page/seleccion-clasificacion-page.component'
+      ).then((c) => c.SeleccionClasificacionPageComponent),
+  },
 ];

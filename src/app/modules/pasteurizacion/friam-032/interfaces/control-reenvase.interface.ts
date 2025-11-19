@@ -6,8 +6,10 @@ export interface ControlReenvaseData {
   no_frasco_anterior?: string;
   id_frasco_anterior?: number | null;
   volumen_frasco_anterior?: string;
-  ciclo?: string;
-  lote?: string;
+  ciclo?: string | number; // Permitir tanto string como number
+  lote?: string | number; // Permitir tanto string como number
+  ciclo_id?: number | null;
+  lote_id?: number | null;
   isNew?: boolean;
   _uid?: string;
   id_empleado?: number;
@@ -124,6 +126,8 @@ export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
 export interface DatosBackendParaCreacion {
   fecha: string;
   frascoCrudo: number;
+  ciclo: { id: number };
+  lote: { id: number };
   madreDonante: { id: number };
   empleado: { id: number };
   extraccion?: number | null;
@@ -135,6 +139,14 @@ export interface DatosBackendParaActualizacion {
   fecha: string;
   volumen: number;
   frascoCrudo: number;
+  ciclo: {
+    id: number;
+    numeroCiclo: number;
+  };
+  lote: {
+    id: number;
+    numeroLote: number;
+  };
   madreDonante: {
     id: number;
     tipoDonante: string;

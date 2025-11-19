@@ -269,28 +269,32 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private transformarDatosBackend(registros: any[]): ControlReenvaseData[] {
-    return registros.map((registro: any) => {
-      const { volumen, tipo, idExtraccion, idFrascoRecolectado } = this.extraerVolumenYTipo(registro);
+  return registros.map((registro: any) => {
+    const { volumen, tipo, idExtraccion, idFrascoRecolectado } = this.extraerVolumenYTipo(registro);
 
-      return {
-        id: registro.id,
-        fecha: this.parsearFechaDesdeBackend(registro.fecha),
-        no_donante: registro.madreDonante.id.toString(),
-        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
-        id_frasco_anterior: registro.frascoCrudo,
-        volumen_frasco_anterior: volumen,
-        ciclo: registro.ciclo || '',
-        lote: registro.lote || '',
-        responsable: registro.empleado.nombre,
-        madre_donante_info: registro.madreDonante,
-        empleado_info: registro.empleado,
-        id_empleado: registro.empleado.id,
-        tipo_frasco: tipo,
-        id_extraccion: idExtraccion,
-        id_frasco_recolectado: idFrascoRecolectado
-      };
-    });
-  }
+    return {
+      id: registro.id,
+      fecha: this.parsearFechaDesdeBackend(registro.fecha),
+      no_donante: registro.madreDonante.id.toString(),
+      no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
+      id_frasco_anterior: registro.frascoCrudo,
+      volumen_frasco_anterior: volumen,
+      // Corregir la extracción de ciclo y lote
+      ciclo: registro.lote?.ciclo?.numeroCiclo?.toString() || '',
+      lote: registro.lote?.numeroLote?.toString() || '',
+      responsable: registro.empleado.nombre,
+      madre_donante_info: registro.madreDonante,
+      empleado_info: registro.empleado,
+      id_empleado: registro.empleado.id,
+      tipo_frasco: tipo,
+      id_extraccion: idExtraccion,
+      id_frasco_recolectado: idFrascoRecolectado,
+      // Guardamos los IDs para las actualizaciones
+      ciclo_id: registro.lote?.ciclo?.id || null,
+      lote_id: registro.lote?.id || null
+    };
+  });
+}
 
   private extraerVolumenYTipo(registro: any): {
     volumen: string;
@@ -522,19 +526,21 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private crearRegistroVacio(): ControlReenvaseData {
-    return {
-      id: null,
-      fecha: new Date(),
-      responsable: '',
-      no_donante: '',
-      no_frasco_anterior: '',
-      volumen_frasco_anterior: '',
-      ciclo: '',
-      lote: '',
-      _uid: `tmp_${this.tempIdCounter--}`,
-      isNew: true
-    };
-  }
+  return {
+    id: null,
+    fecha: new Date(),
+    responsable: '',
+    no_donante: '',
+    no_frasco_anterior: '',
+    volumen_frasco_anterior: '',
+    ciclo: '',
+    lote: '',
+    ciclo_id: null,
+    lote_id: null,
+    _uid: `tmp_${this.tempIdCounter--}`,
+    isNew: true
+  };
+}
 
   private agregarRegistroATabla(registro: ControlReenvaseData): void {
     this.dataOriginal.push(registro);
@@ -632,11 +638,26 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   if (!idFrasco || !empleado?.id_empleado) return null;
 
+  // Convertir a string si es número antes de procesar
+  const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
+  const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
+
+  // Convertir ciclo y lote a números, si están vacíos usar 0
+  const cicloValue = cicloStr.trim() ? parseInt(cicloStr.trim()) : 0;
+  const loteValue = loteStr.trim() ? parseInt(loteStr.trim()) : 0;
+
+  if (isNaN(cicloValue) || isNaN(loteValue)) {
+    this.mostrarMensaje('error', 'Error', 'Los valores de Ciclo y Lote deben ser números válidos');
+    return null;
+  }
+
   const esExtraccion = dataRow.tipo_frasco === 'extraccion' || dataRow.id_extraccion;
 
   return {
     fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
     frascoCrudo: idFrasco,
+    ciclo: { id: cicloValue },
+    lote: { id: loteValue },
     madreDonante: { id: parseInt(dataRow.no_donante!) },
     empleado: { id: empleado.id_empleado },
     extraccion: esExtraccion ? idFrasco : null,
@@ -644,13 +665,26 @@ export class ControlReenvaseTableComponent implements OnInit {
   };
 }
 
-  private prepararDatosParaActualizacion(dataRow: ControlReenvaseData): DatosBackendParaActualizacion | null {
+private prepararDatosParaActualizacion(dataRow: ControlReenvaseData): DatosBackendParaActualizacion | null {
   if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
 
   const idFrasco = dataRow.id_frasco_anterior;
   const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
 
   if (!idFrasco || !empleado?.id_empleado) return null;
+
+  // Convertir a string si es número antes de procesar
+  const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
+  const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
+
+  // Convertir ciclo y lote a números
+  const cicloValue = cicloStr.trim() ? parseInt(cicloStr.trim()) : 0;
+  const loteValue = loteStr.trim() ? parseInt(loteStr.trim()) : 0;
+
+  if (isNaN(cicloValue) || isNaN(loteValue)) {
+    this.mostrarMensaje('error', 'Error', 'Los valores de Ciclo y Lote deben ser números válidos');
+    return null;
+  }
 
   const esExtraccion = dataRow.tipo_frasco === 'extraccion';
 
@@ -659,6 +693,14 @@ export class ControlReenvaseTableComponent implements OnInit {
     fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
     volumen: parseFloat(dataRow.volumen_frasco_anterior || '0'),
     frascoCrudo: idFrasco,
+    ciclo: {
+      id: dataRow.ciclo_id || 0, // Usar el ID existente o 0 para nuevos
+      numeroCiclo: cicloValue
+    },
+    lote: {
+      id: dataRow.lote_id || 0, // Usar el ID existente o 0 para nuevos
+      numeroLote: loteValue
+    },
     madreDonante: {
       id: parseInt(dataRow.no_donante!),
       tipoDonante: dataRow.madre_donante_info?.tipoDonante || (esExtraccion ? 'interna' : 'externa')
@@ -672,28 +714,63 @@ export class ControlReenvaseTableComponent implements OnInit {
   // ============= VALIDACIONES =============
 
   private validarCamposRequeridos(dataRow: ControlReenvaseData): boolean {
-    return !!(
-      dataRow.fecha &&
-      dataRow.responsable?.trim() &&
-      dataRow.no_donante?.trim() &&
-      dataRow.no_frasco_anterior?.trim() &&
-      dataRow.volumen_frasco_anterior?.trim()
-    );
+  const camposBasicos = !!(
+    dataRow.fecha &&
+    dataRow.responsable?.trim() &&
+    dataRow.no_donante?.trim() &&
+    dataRow.no_frasco_anterior?.trim() &&
+    dataRow.volumen_frasco_anterior?.trim()
+  );
+
+  // Para registros nuevos, ciclo y lote son opcionales (se pueden dejar en 0)
+  // Para registros existentes, validamos si están presentes y son números válidos
+  if (!dataRow.isNew) {
+    // Convertir a string si es número antes de hacer trim
+    const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
+    const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
+
+    const cicloValido = !cicloStr.trim() || !isNaN(parseInt(cicloStr.trim()));
+    const loteValido = !loteStr.trim() || !isNaN(parseInt(loteStr.trim()));
+
+    return camposBasicos && cicloValido && loteValido;
   }
 
-  private validarDatosBasicos(dataRow: ControlReenvaseData): boolean {
-    if (!this.validarCamposRequeridos(dataRow)) return false;
+  return camposBasicos;
+}
 
-    if (!dataRow.isNew) {
-      const volumen = parseFloat(dataRow.volumen_frasco_anterior!);
-      if (isNaN(volumen) || volumen <= 0) {
-        this.mostrarMensaje('error', 'Error', 'El volumen debe ser un número mayor a 0');
+private validarDatosBasicos(dataRow: ControlReenvaseData): boolean {
+  if (!this.validarCamposRequeridos(dataRow)) return false;
+
+  if (!dataRow.isNew) {
+    const volumen = parseFloat(dataRow.volumen_frasco_anterior!);
+    if (isNaN(volumen) || volumen <= 0) {
+      this.mostrarMensaje('error', 'Error', 'El volumen debe ser un número mayor a 0');
+      return false;
+    }
+
+    // Validar ciclo y lote si están presentes - convertir a string si es necesario
+    const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
+    const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
+
+    if (cicloStr.trim()) {
+      const ciclo = parseInt(cicloStr.trim());
+      if (isNaN(ciclo) || ciclo < 0) {
+        this.mostrarMensaje('error', 'Error', 'El ciclo debe ser un número válido mayor o igual a 0');
         return false;
       }
     }
 
-    return true;
+    if (loteStr.trim()) {
+      const lote = parseInt(loteStr.trim());
+      if (isNaN(lote) || lote < 0) {
+        this.mostrarMensaje('error', 'Error', 'El lote debe ser un número válido mayor o igual a 0');
+        return false;
+      }
+    }
   }
+
+  return true;
+}
 
   // ============= ESTADOS DE EDICIÓN =============
 
@@ -820,19 +897,23 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private aplicarFiltrosBusquedaTexto(datos: ControlReenvaseData[]): ControlReenvaseData[] {
-    return datos.filter(item => {
-      const cumpleDonante = !this.filtrosBusqueda.no_donante ||
-        item.no_donante?.toLowerCase().includes(this.filtrosBusqueda.no_donante.toLowerCase());
+  return datos.filter(item => {
+    const cumpleDonante = !this.filtrosBusqueda.no_donante ||
+      item.no_donante?.toLowerCase().includes(this.filtrosBusqueda.no_donante.toLowerCase());
 
-      const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
-        item.ciclo?.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
+    // Convertir a string si es número antes de aplicar filtro
+    const cicloStr = typeof item.ciclo === 'number' ? item.ciclo.toString() : item.ciclo || '';
+    const loteStr = typeof item.lote === 'number' ? item.lote.toString() : item.lote || '';
 
-      const cumpleLote = !this.filtrosBusqueda.lote ||
-        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+    const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
+      cicloStr.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
 
-      return cumpleDonante && cumpleCiclo && cumpleLote;
-    });
-  }
+    const cumpleLote = !this.filtrosBusqueda.lote ||
+      loteStr.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+
+    return cumpleDonante && cumpleCiclo && cumpleLote;
+  });
+}
 
   private filtrarPorMesYAno(datos: ControlReenvaseData[], filtro: FiltroFecha): ControlReenvaseData[] {
     return datos.filter(item => {

@@ -1,14 +1,22 @@
 import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { ControlReenvaseTableComponent } from "../../components/control-reenvase-table/control-reenvase-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterButtonComponent } from "../../components/new-register-control-reenvase/new-register-control-reenvase.component";
 import { PasterizacionDialogComponent } from "../../components/pasterizacion-dialog/pasterizacion-dialog.component";
-import type { ControlReenvaseData } from '../../interfaces/control-reenvase.interface';
+import type { ControlReenvaseData, FiltrosBusqueda } from '../../interfaces/control-reenvase.interface';
 
 @Component({
   selector: 'control-reenvase-page',
   imports: [
+    CommonModule,
+    FormsModule,
+    InputTextModule,
+    ButtonModule,
     HeaderComponent,
     ControlReenvaseTableComponent,
     MonthPickerComponent,
@@ -28,6 +36,12 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
 
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  filtrosBusqueda: FiltrosBusqueda = {
+    no_donante: '',
+    ciclo: '',
+    lote: ''
+  };
 
   showPasterizacionDialog: boolean = false;
   selectedControlReenvaseData: ControlReenvaseData | null = null;
@@ -50,6 +64,19 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);
+  }
+
+  aplicarFiltros(): void {
+    this.tableComponent?.aplicarFiltrosBusqueda(this.filtrosBusqueda);
+  }
+
+  limpiarFiltros(): void {
+    this.filtrosBusqueda = {
+      no_donante: '',
+      ciclo: '',
+      lote: ''
+    };
+    this.aplicarFiltros();
   }
 
   onRowClick(controlReenvaseData: ControlReenvaseData): void {
@@ -93,7 +120,6 @@ export class ControlReenvasePageComponent implements OnInit, AfterViewInit {
       !this.tableComponent.loading?.main
     );
   }
-
 
   private aplicarFiltroMesActual(): void {
     if (this.isInitialized || !this.filtroMesActualPendiente) {

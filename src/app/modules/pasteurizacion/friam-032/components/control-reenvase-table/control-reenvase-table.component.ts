@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { TableModule, Table } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -24,7 +24,8 @@ import type {
   DatosBackendParaCreacion,
   DatosBackendParaActualizacion,
   LoadingState,
-  TableColumn
+  TableColumn,
+  FiltrosBusqueda
 } from '../../interfaces/control-reenvase.interface';
 
 @Component({
@@ -42,6 +43,12 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   @ViewChild('tableControlReenvase') table!: Table;
   @Output() rowClick = new EventEmitter<ControlReenvaseData>();
+
+  @Input() filtrosBusqueda: FiltrosBusqueda = {
+    no_donante: '',
+    ciclo: '',
+    lote: ''
+  };
 
   readonly loading: LoadingState = {
     main: false,
@@ -68,6 +75,8 @@ export class ControlReenvaseTableComponent implements OnInit {
     { header: 'No. Donante', field: 'no_donante', width: '200px', tipo: 'select' },
     { header: 'No. FRASCO ANTERIOR', field: 'no_frasco_anterior', width: '200px', tipo: 'select' },
     { header: 'VOLUMEN', field: 'volumen_frasco_anterior', width: '150px', tipo: 'text' },
+    { header: 'CICLO', field: 'ciclo', width: '120px', tipo: 'text' },
+    { header: 'LOTE', field: 'lote', width: '120px', tipo: 'text' },
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
@@ -270,6 +279,8 @@ export class ControlReenvaseTableComponent implements OnInit {
         no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
         id_frasco_anterior: registro.frascoCrudo,
         volumen_frasco_anterior: volumen,
+        ciclo: registro.ciclo || '',
+        lote: registro.lote || '',
         responsable: registro.empleado.nombre,
         madre_donante_info: registro.madreDonante,
         empleado_info: registro.empleado,
@@ -518,6 +529,8 @@ export class ControlReenvaseTableComponent implements OnInit {
       no_donante: '',
       no_frasco_anterior: '',
       volumen_frasco_anterior: '',
+      ciclo: '',
+      lote: '',
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
@@ -745,7 +758,7 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   isCampoEditable(campo: string, rowData: ControlReenvaseData): boolean {
     if (rowData.isNew && (campo === 'fecha' || campo === 'no_donante')) return true;
-    if (campo === 'volumen_frasco_anterior' || campo === 'responsable') return true;
+    if (campo === 'volumen_frasco_anterior' || campo === 'responsable' || campo === 'ciclo' || campo === 'lote') return true;
     if (campo === 'no_frasco_anterior') {
       const tieneDonante = Boolean(rowData.no_donante?.trim());
       return tieneDonante && Boolean(rowData.isNew);
@@ -789,10 +802,36 @@ export class ControlReenvaseTableComponent implements OnInit {
     this.filtrarPorFecha(filtro);
   }
 
+  aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
+    this.filtrosBusqueda = filtros;
+    this.aplicarFiltros();
+  }
+
   private aplicarFiltros(): void {
-    this.dataFiltered = this.filtroFecha
-      ? this.filtrarPorMesYAno(this.dataOriginal, this.filtroFecha)
-      : [...this.dataOriginal];
+    let datosFiltrados = [...this.dataOriginal];
+
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
+
+    datosFiltrados = this.aplicarFiltrosBusquedaTexto(datosFiltrados);
+
+    this.dataFiltered = datosFiltrados;
+  }
+
+  private aplicarFiltrosBusquedaTexto(datos: ControlReenvaseData[]): ControlReenvaseData[] {
+    return datos.filter(item => {
+      const cumpleDonante = !this.filtrosBusqueda.no_donante ||
+        item.no_donante?.toLowerCase().includes(this.filtrosBusqueda.no_donante.toLowerCase());
+
+      const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
+        item.ciclo?.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
+
+      const cumpleLote = !this.filtrosBusqueda.lote ||
+        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+
+      return cumpleDonante && cumpleCiclo && cumpleLote;
+    });
   }
 
   private filtrarPorMesYAno(datos: ControlReenvaseData[], filtro: FiltroFecha): ControlReenvaseData[] {

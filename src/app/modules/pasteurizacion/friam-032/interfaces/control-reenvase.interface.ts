@@ -6,6 +6,8 @@ export interface ControlReenvaseData {
   no_frasco_anterior?: string;
   id_frasco_anterior?: number | null;
   volumen_frasco_anterior?: string;
+  ciclo?: string;
+  lote?: string;
   isNew?: boolean;
   _uid?: string;
   id_empleado?: number;
@@ -140,4 +142,10 @@ export interface DatosBackendParaActualizacion {
   empleado: { id: number };
   extraccion: number | null;
   frascoRecolectado: number | null;
+}
+
+export interface FiltrosBusqueda {
+  no_donante: string;
+  ciclo: string;
+  lote: string;
 }

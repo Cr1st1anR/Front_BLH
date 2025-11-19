@@ -175,8 +175,8 @@
           @else if (col.field === 'ciclo') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.ciclo" class="w-full" placeholder="Ciclo" min="0"
-                step="1">
+              <input pInputText type="number" [(ngModel)]="rowData.ciclo" class="w-full" min="1" step="1"
+                [class.border-red-500]="rowData.isNew && (!rowData.ciclo || rowData.ciclo <= 0)">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.ciclo || '' }}
@@ -187,8 +187,8 @@
           @else if (col.field === 'lote') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.lote" class="w-full" placeholder="Lote" min="0"
-                step="1">
+              <input pInputText type="number" [(ngModel)]="rowData.lote" class="w-full" min="1" step="1"
+                [class.border-red-500]="rowData.isNew && (!rowData.lote || rowData.lote <= 0)">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.lote || '' }}

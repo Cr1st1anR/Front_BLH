@@ -59,7 +59,7 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
     { header: 'CC2', field: 'cc2', width: '100px', tipo: 'number' },
     { header: 'CC3', field: 'cc3', width: '100px', tipo: 'number' },
     { header: 'MEDIA CC', field: 'media_cc', width: '120px', tipo: 'calculated' },
-    { header: 'KCAL/L', field: 'kcal_l', width: '120px', tipo: 'pending' },
+    { header: 'KCAL/L', field: 'kcal_l', width: '120px', tipo: 'calculated' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
 
@@ -172,25 +172,22 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
       rowData.media_cc = null;
     }
 
-    // TODO: Calcular KCAL/L cuando se tenga la fórmula
-    // Por ahora lo dejamos en null
-    // rowData.kcal_l = this.calcularKcalL(rowData.media_ct, rowData.media_cc);
+    // Calcular KCAL/L usando la fórmula: (media cc x 100)/media ct x 66.8+290
+    rowData.kcal_l = this.calcularKcalL(rowData.media_ct, rowData.media_cc);
   }
 
   // ============= MÉTODO PENDIENTE PARA KCAL/L =============
-  // Cuando tengas la fórmula, descomenta y completa este método
-  /*
   private calcularKcalL(mediaCt: number | null, mediaCc: number | null): number | null {
-    if (mediaCt === null || mediaCc === null) {
+    if (mediaCt === null || mediaCc === null || mediaCt === 0) {
       return null;
     }
 
-    // TODO: Implementar la fórmula correcta aquí
-    // Ejemplo: return (mediaCt * 0.5) + (mediaCc * 0.3) + 50;
+    // Fórmula: (media cc x 100) / media ct x 66.8 + 290
+    const resultado = ((mediaCc * 100) / mediaCt) * 66.8 + 290;
 
-    return null;
+    // Retornar solo la parte entera (sin decimales)
+    return Math.floor(resultado);
   }
-  */
 
   onRowEditInit(dataRow: CrematocritoData): void {
     this.iniciarEdicionFila(dataRow);
@@ -267,7 +264,7 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
       cc2: Number(dataRow.cc2),
       cc3: Number(dataRow.cc3),
       mediaCc: Number(dataRow.media_cc),
-      kcalL: dataRow.kcal_l !== null ? Number(dataRow.kcal_l) : null,
+      kcalL: dataRow.kcal_l,
       seleccionClasificacion: { id: this.idSeleccionClasificacion! }
     };
   }

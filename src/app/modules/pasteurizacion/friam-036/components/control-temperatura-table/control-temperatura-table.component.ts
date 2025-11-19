@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { TableModule, Table } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -16,6 +16,7 @@ import type {
   ControlTemperaturaData,
   ResponsableOption,
   FiltroFecha,
+  FiltrosBusqueda,
   TipoMensaje,
   DatosBackendParaCreacion,
   DatosBackendParaActualizacion,
@@ -39,6 +40,11 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
   @ViewChild('tableControlTemperatura') table!: Table;
   @Output() eyeClicked = new EventEmitter<{ tipo: TipoDialog; data: ControlTemperaturaData }>();
+
+  @Input() filtrosBusqueda: FiltrosBusqueda = {
+    lote: '',
+    ciclo: ''
+  };
 
 
   readonly loading: LoadingState = {
@@ -181,9 +187,9 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
   // ============= UTILIDADES =============
 
-    /**
-   * Convierte una hora en formato string (HH:MM) a objeto Date
-   */
+  /**
+ * Convierte una hora en formato string (HH:MM) a objeto Date
+ */
   private convertirHoraADate(hora: string): Date | null {
     if (!hora) return null;
 
@@ -594,14 +600,37 @@ export class ControlTemperaturaTableComponent implements OnInit {
     this.mostrarNotificacionFiltro();
   }
 
+  aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
+    this.filtrosBusqueda = filtros;
+    this.aplicarFiltros();
+  }
+
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
     this.filtrarPorFecha(filtro);
   }
 
   private aplicarFiltros(): void {
-    this.dataFiltered = this.filtroFecha
-      ? this.filtrarPorMesYAno(this.dataOriginal, this.filtroFecha)
-      : [...this.dataOriginal];
+    let datosFiltrados = [...this.dataOriginal];
+
+    if (this.filtroFecha) {
+      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
+    }
+
+    datosFiltrados = this.aplicarFiltrosBusquedaTexto(datosFiltrados);
+
+    this.dataFiltered = datosFiltrados;
+  }
+
+  private aplicarFiltrosBusquedaTexto(datos: ControlTemperaturaData[]): ControlTemperaturaData[] {
+    return datos.filter(item => {
+      const cumpleLote = !this.filtrosBusqueda.lote ||
+        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+
+      const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
+        item.ciclo?.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
+
+      return cumpleLote && cumpleCiclo;
+    });
   }
 
   private filtrarPorMesYAno(datos: ControlTemperaturaData[], filtro: FiltroFecha): ControlTemperaturaData[] {

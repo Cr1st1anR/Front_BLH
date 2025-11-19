@@ -49,6 +49,11 @@ export interface FiltroFecha {
   month: number;
 }
 
+export interface FiltrosBusqueda {
+  lote: string;
+  ciclo: string;
+}
+
 export interface BackendResponse<T> {
   data: T;
   message?: string;

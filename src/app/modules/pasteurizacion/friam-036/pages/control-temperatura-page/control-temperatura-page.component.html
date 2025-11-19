@@ -5,7 +5,22 @@
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 
-<control-temperatura-table (eyeClicked)="onEyeClicked($event)" />
+<div class="flex justify-start items-center mx-4 mt-4">
+  <div class="flex gap-3 items-center">
+    <span class="font-semibold text-gray-700">Filtros:</span>
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      class="w-36" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.ciclo" (input)="aplicarFiltros()" placeholder="Ciclo"
+      class="w-36" />
+
+    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+      (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+  </div>
+</div>
+
+<control-temperatura-table [filtrosBusqueda]="filtrosBusqueda" (eyeClicked)="onEyeClicked($event)" />
 
 @if (showCalentamientoDialog && selectedControlTemperaturaData) {
 <calentamiento-dialog [visible]="showCalentamientoDialog" [controlTemperaturaData]="selectedControlTemperaturaData"

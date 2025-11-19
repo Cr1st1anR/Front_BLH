@@ -94,7 +94,7 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     { header: 'NOMBRE DE\nAUXILIAR', field: 'nombre_auxiliar', width: '200px', tipo: 'select', vertical: false },
     { header: 'N. FRASCOS\nPASTEURIZADOS', field: 'n_frascos_pasteurizados', width: '150px', tipo: 'number', vertical: false },
     { header: 'VOLUMEN', field: 'volumen_pasteurizado', width: '120px', tipo: 'text', vertical: false },
-    { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'date', vertical: false },
+    { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'readonly_date', vertical: false },
     { header: 'OBSERVACIONES', field: 'observaciones', width: '200px', tipo: 'text', vertical: false },
     { header: 'CICLO', field: 'ciclo', width: '100px', tipo: 'text', vertical: false },
     { header: 'N LOTE DE LOS MEDIOS\nDE CULTIVO', field: 'n_lote_medios_cultivo', width: '220px', tipo: 'text', vertical: false },
@@ -215,7 +215,7 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       nombre_auxiliar: registro.nombre_auxiliar || registro.nombreAuxiliar,
       n_frascos_pasteurizados: registro.n_frascos_pasteurizados || registro.nFrascosPasteurizados,
       volumen_pasteurizado: registro.volumen_pasteurizado || registro.volumenPasteurizado,
-      fecha_vencimiento: this.parsearFechaDesdeBackend(registro.fecha_vencimiento || registro.fechaVencimiento),
+      fecha_vencimiento: this.calcularFechaVencimiento(this.parsearFechaDesdeBackend(registro.fecha)),
       observaciones: registro.observaciones,
       ciclo: registro.ciclo,
       n_lote_medios_cultivo: registro.n_lote_medios_cultivo || registro.nLoteMediosCultivo,
@@ -250,7 +250,42 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     return new Date(year, month, day, 12, 0, 0, 0);
   }
 
+  // ============= CÁLCULOS DE FECHAS =============
+
+  /**
+   * Calcula la fecha de vencimiento (15 días después de la fecha base)
+   */
+  private calcularFechaVencimiento(fechaBase: Date | null): Date | null {
+    if (!fechaBase || !(fechaBase instanceof Date) || isNaN(fechaBase.getTime())) {
+      return null;
+    }
+
+    const fechaVencimiento = new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate());
+
+    fechaVencimiento.setDate(fechaVencimiento.getDate() + 15);
+
+    fechaVencimiento.setHours(12, 0, 0, 0);
+
+    return fechaVencimiento;
+  }
+
+  /**
+   * Actualiza la fecha de vencimiento cuando cambia la fecha base
+   */
+  private actualizarFechaVencimiento(rowData: SeleccionClasificacionData): void {
+    if (rowData.fecha) {
+      rowData.fecha_vencimiento = this.calcularFechaVencimiento(rowData.fecha as Date);
+    } else {
+      rowData.fecha_vencimiento = null;
+    }
+  }
+
   // ============= EVENTOS DE UI =============
+
+  onFechaChanged(rowData: SeleccionClasificacionData): void {
+    this.actualizarFechaVencimiento(rowData);
+  }
+
   onProfesionalSeleccionado(event: any, rowData: SeleccionClasificacionData): void {
     const responsable = this.extraerValorEvento(event);
     if (!responsable) return;

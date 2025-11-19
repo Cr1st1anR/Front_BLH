@@ -21,8 +21,8 @@
             @if (col.vertical) {
             @for (linea of col.header.split('\n'); track $index) {
             <span>{{ linea }}</span>
-            @if ($index < col.header.split('\n').length - 1) {
-            <br />
+            @if ($index
+            < col.header.split('\n').length - 1) { <br />
             }
             }
             } @else {
@@ -63,7 +63,36 @@
 
           <!-- COLUMNAS HORIZONTALES (ALGUNAS EDITABLES) -->
           @else {
-          @if (col.field === 'fecha' || col.field === 'fecha_vencimiento_cultivos') {
+          @if (col.field === 'fecha') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full"
+                (onSelect)="onFechaChanged(rowData)">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData[col.field]) {
+              {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'fecha_vencimiento') {
+          <!-- FECHA VENCIMIENTO - SOLO LECTURA (CALCULADA AUTOMÁTICAMENTE) -->
+          <span>
+            @if (rowData.fecha_vencimiento) {
+            {{ rowData.fecha_vencimiento | date:'dd/MM/yyyy' }}
+            } @else {
+            Sin fecha base
+            }
+          </span>
+          }
+
+          @else if (col.field === 'fecha_vencimiento_cultivos') {
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"

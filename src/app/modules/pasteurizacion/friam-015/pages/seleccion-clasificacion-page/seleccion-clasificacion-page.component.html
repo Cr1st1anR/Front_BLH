@@ -1,17 +1,23 @@
 <app-header [title]="'SELECCIÓN Y CLASIFICACIÓN DE LECHE HUMANA EXTRAIDA CRUDA (FRIAM-015)'" />
 
 <div class="flex justify-between items-center mx-4 mt-10">
-  <div class="flex gap-3 items-center">
+  <div class="flex gap-1 items-center">
     <span class="font-semibold text-gray-700">Filtros:</span>
 
     <input pInputText type="text" [(ngModel)]="filtrosBusqueda.no_frasco_procesado" (input)="aplicarFiltros()"
-      placeholder="N° Frasco Procesado" class="w-48" />
+      placeholder="N° Frasco Procesado" style="width: 200px; font-size: 16px;" />
 
     <input pInputText type="text" [(ngModel)]="filtrosBusqueda.donante" (input)="aplicarFiltros()" placeholder="Donante"
-      class="w-36" />
+      style="width: 130px; font-size: 16px;" />
 
     <input pInputText type="text" [(ngModel)]="filtrosBusqueda.frasco_leche_cruda" (input)="aplicarFiltros()"
-      placeholder="Frasco Leche Cruda" class="w-48" />
+      placeholder="Frasco Leche Cruda" style="width: 200px; font-size: 16px;" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.ciclo" (input)="aplicarFiltros()" placeholder="Ciclo"
+      style="width: 120px; font-size: 16px;" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      style="width: 120px; font-size: 16px;" />
 
     <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
       (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>

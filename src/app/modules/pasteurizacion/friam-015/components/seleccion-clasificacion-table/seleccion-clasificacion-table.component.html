@@ -61,10 +61,9 @@
           }
           }
 
-          <!-- COLUMNAS HORIZONTALES (EDITABLES) -->
+          <!-- COLUMNAS HORIZONTALES (ALGUNAS EDITABLES) -->
           @else {
-          @if (col.field === 'fecha' || col.field === 'fecha_vencimiento' || col.field === 'fecha_vencimiento_cultivos')
-          {
+          @if (col.field === 'fecha' || col.field === 'fecha_vencimiento_cultivos') {
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
@@ -110,7 +109,7 @@
           </p-cellEditor>
           }
 
-          @else if (col.field === 'n_frascos_pasteurizados' || col.field === 'edad_gestacional') {
+          @else if (col.field === 'observaciones' || col.field === 'n_lote_medios_cultivo') {
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
@@ -139,14 +138,8 @@
           }
 
           @else {
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
-            </ng-template>
-            <ng-template pTemplate="output">
-              {{ rowData[col.field] }}
-            </ng-template>
-          </p-cellEditor>
+          <!-- Columnas NO EDITABLES - solo mostrar datos -->
+          <span>{{ rowData[col.field] }}</span>
           }
           }
 

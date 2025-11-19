@@ -51,7 +51,9 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   @Input() filtrosBusqueda: FiltrosBusqueda = {
     no_frasco_procesado: '',
     donante: '',
-    frasco_leche_cruda: ''
+    frasco_leche_cruda: '',
+    ciclo: '',
+    lote: ''
   };
 
   readonly loading: LoadingState = {
@@ -202,10 +204,12 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       fecha: this.parsearFechaDesdeBackend(registro.fecha),
       gaveta_cruda: registro.gaveta_cruda || registro.gavetaCruda,
       dias_produccion: registro.dias_produccion || registro.diasProduccion,
+      // TODO: Calcular dias_produccion con calcularDiasProduccion() cuando se integre la API
       no_frasco_procesado: registro.no_frasco_procesado || registro.noFrascoProcesado,
       donante: registro.donante,
       frasco_leche_cruda: registro.frasco_leche_cruda || registro.frascoLecheCruda,
       edad_gestacional: registro.edad_gestacional || registro.edadGestacional,
+      // TODO: Obtener edad_gestacional desde historia-gestacion del accordion cuando se integre la API
       volumen: registro.volumen,
       nombre_profesional: registro.nombre_profesional || registro.nombreProfesional,
       nombre_auxiliar: registro.nombre_auxiliar || registro.nombreAuxiliar,
@@ -406,6 +410,40 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     return dataRow.id?.toString() || 'unknown';
   }
 
+  // ============= CÁLCULOS PARA FUTURAS INTEGRACIONES =============
+
+  /**
+   * Calcula la edad gestacional basada en las semanas de gestación del accordion
+   * TODO: Integrar con la API cuando esté lista
+   */
+  private calcularEdadGestacional(semanasGestacion: number): string {
+    if (!semanasGestacion || semanasGestacion <= 0) return '';
+    return `${semanasGestacion} semanas`;
+  }
+
+  /**
+   * Calcula los días transcurridos desde la fecha de parto hasta la fecha de extracción
+   * TODO: Integrar con la API cuando esté lista
+   */
+  private calcularDiasProduccion(fechaParto: Date, fechaExtraccion: Date): string {
+    if (!fechaParto || !fechaExtraccion) return '';
+
+    const tiempoDiferencia = fechaExtraccion.getTime() - fechaParto.getTime();
+    const diasTranscurridos = Math.floor(tiempoDiferencia / (1000 * 3600 * 24));
+
+    return diasTranscurridos >= 0 ? `${diasTranscurridos} días` : '';
+  }
+
+  /**
+   * Método para obtener datos de historia de gestación desde el accordion
+   * TODO: Implementar cuando se integren las APIs
+   */
+  private obtenerDatosHistoriaGestacion(idMadre: number): any {
+    // Esta función se conectará con los datos del accordion de historia-gestacion
+    // Por ahora retorna null, se implementará con las APIs
+    return null;
+  }
+
   // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: SeleccionClasificacionData): boolean {
     return this.editingRow !== null && this.editingRow.id === rowData.id;
@@ -420,9 +458,15 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   isColumnEditable(field: string): boolean {
-    // Solo las columnas horizontales son editables
-    const header = this.headersSeleccionClasificacion.find(h => h.field === field);
-    return header ? !header.vertical : false;
+    const editableColumns = [
+      'fecha',
+      'nombre_profesional',
+      'nombre_auxiliar',
+      'observaciones',
+      'n_lote_medios_cultivo',
+      'fecha_vencimiento_cultivos'
+    ];
+    return editableColumns.includes(field);
   }
 
   // ============= FILTROS =============
@@ -464,7 +508,13 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       const cumpleFrascoCrudo = !this.filtrosBusqueda.frasco_leche_cruda ||
         item.frasco_leche_cruda?.toLowerCase().includes(this.filtrosBusqueda.frasco_leche_cruda.toLowerCase());
 
-      return cumpleFrascoProcesado && cumpleDonante && cumpleFrascoCrudo;
+      const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
+        item.ciclo?.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
+
+      const cumpleLote = !this.filtrosBusqueda.lote ||
+        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+
+      return cumpleFrascoProcesado && cumpleDonante && cumpleFrascoCrudo && cumpleCiclo && cumpleLote;
     });
   }
 

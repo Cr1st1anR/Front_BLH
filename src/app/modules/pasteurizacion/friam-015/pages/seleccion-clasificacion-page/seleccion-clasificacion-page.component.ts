@@ -26,7 +26,7 @@ import { CrematocritoDialogComponent } from "../../components/crematocrito-dialo
     AnalisisSensorialDialogComponent,
     AcidezDornicDialogComponent,
     CrematocritoDialogComponent
-],
+  ],
   templateUrl: './seleccion-clasificacion-page.component.html',
   styleUrl: './seleccion-clasificacion-page.component.scss'
 })
@@ -44,7 +44,9 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
   filtrosBusqueda: FiltrosBusqueda = {
     no_frasco_procesado: '',
     donante: '',
-    frasco_leche_cruda: ''
+    frasco_leche_cruda: '',
+    ciclo: '',
+    lote: ''
   };
 
   showAnalisisSensorialDialog = false;
@@ -72,7 +74,9 @@ export class SeleccionClasificacionPageComponent implements OnInit, AfterViewIni
     this.filtrosBusqueda = {
       no_frasco_procesado: '',
       donante: '',
-      frasco_leche_cruda: ''
+      frasco_leche_cruda: '',
+      ciclo: '',
+      lote: ''
     };
     this.aplicarFiltros();
   }

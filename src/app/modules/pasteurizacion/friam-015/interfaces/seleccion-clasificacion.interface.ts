@@ -58,6 +58,8 @@ export interface FiltrosBusqueda {
   no_frasco_procesado: string;
   donante: string;
   frasco_leche_cruda: string;
+  ciclo: string;
+  lote: string;
 }
 
 export interface BackendResponse<T> {

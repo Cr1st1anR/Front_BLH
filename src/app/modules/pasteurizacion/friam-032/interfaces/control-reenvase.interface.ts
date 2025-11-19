@@ -6,8 +6,8 @@ export interface ControlReenvaseData {
   no_frasco_anterior?: string;
   id_frasco_anterior?: number | null;
   volumen_frasco_anterior?: string;
-  ciclo?: string | number; // Permitir tanto string como number
-  lote?: string | number; // Permitir tanto string como number
+  ciclo?: string | number;
+  lote?: string | number;
   ciclo_id?: number | null;
   lote_id?: number | null;
   isNew?: boolean;

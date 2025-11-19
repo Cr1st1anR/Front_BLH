@@ -279,7 +279,6 @@ export class ControlReenvaseTableComponent implements OnInit {
         no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
         id_frasco_anterior: registro.frascoCrudo,
         volumen_frasco_anterior: volumen,
-        // Corregir la extracción de ciclo y lote
         ciclo: registro.lote?.ciclo?.numeroCiclo?.toString() || '',
         lote: registro.lote?.numeroLote?.toString() || '',
         responsable: registro.empleado.nombre,
@@ -289,7 +288,6 @@ export class ControlReenvaseTableComponent implements OnInit {
         tipo_frasco: tipo,
         id_extraccion: idExtraccion,
         id_frasco_recolectado: idFrascoRecolectado,
-        // Guardamos los IDs para las actualizaciones
         ciclo_id: registro.lote?.ciclo?.id || null,
         lote_id: registro.lote?.id || null
       };
@@ -533,8 +531,8 @@ export class ControlReenvaseTableComponent implements OnInit {
       no_donante: '',
       no_frasco_anterior: '',
       volumen_frasco_anterior: '',
-      ciclo: '', // Dejar vacío para forzar al usuario a ingresar un valor
-      lote: '', // Dejar vacío para forzar al usuario a ingresar un valor
+      ciclo: '',
+      lote: '',
       ciclo_id: null,
       lote_id: null,
       _uid: `tmp_${this.tempIdCounter--}`,
@@ -638,11 +636,9 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     if (!idFrasco || !empleado?.id_empleado) return null;
 
-    // Convertir a string si es número antes de procesar
     const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
     const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
 
-    // Para creación, ciclo y lote son obligatorios y deben ser mayor a 0
     if (!cicloStr.trim() || !loteStr.trim()) {
       this.mostrarMensaje('error', 'Error', 'Ciclo y Lote son obligatorios para nuevos registros');
       return null;
@@ -678,11 +674,9 @@ export class ControlReenvaseTableComponent implements OnInit {
 
     if (!idFrasco || !empleado?.id_empleado) return null;
 
-    // Convertir a string si es número antes de procesar
     const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
     const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
 
-    // Para actualización, si hay valores deben ser válidos y mayor a 0
     let cicloValue = 0;
     let loteValue = 0;
 
@@ -727,6 +721,39 @@ export class ControlReenvaseTableComponent implements OnInit {
     };
   }
 
+  private actualizarDatosDesdeBackend(idRegistro: number, dataRow: ControlReenvaseData): void {
+    setTimeout(() => {
+      this.controlReenvaseService.getControlReenvaseById(idRegistro).subscribe({
+        next: (registroActualizado) => {
+          if (registroActualizado) {
+
+            const [datosTransformados] = this.transformarDatosBackend([registroActualizado]);
+
+            dataRow.ciclo_id = datosTransformados.ciclo_id;
+            dataRow.lote_id = datosTransformados.lote_id;
+            dataRow.ciclo = datosTransformados.ciclo;
+            dataRow.lote = datosTransformados.lote;
+
+            const originalIndex = this.dataOriginal.findIndex(item => item.id === idRegistro);
+            if (originalIndex !== -1) {
+              this.dataOriginal[originalIndex] = { ...dataRow };
+            }
+
+            const filteredIndex = this.dataFiltered.findIndex(item => item.id === idRegistro);
+            if (filteredIndex !== -1) {
+              this.dataFiltered[filteredIndex] = { ...dataRow };
+            }
+
+            this.dataFiltered = [...this.dataFiltered];
+          }
+        },
+        error: (error) => {
+          console.error('Error al obtener datos actualizados del backend:', error);
+        }
+      });
+    }, 500);
+  }
+
   // ============= VALIDACIONES =============
 
   private validarCamposRequeridos(dataRow: ControlReenvaseData): boolean {
@@ -738,11 +765,9 @@ export class ControlReenvaseTableComponent implements OnInit {
       dataRow.volumen_frasco_anterior?.trim()
     );
 
-    // Convertir a string si es número antes de hacer trim
     const cicloStr = typeof dataRow.ciclo === 'number' ? dataRow.ciclo.toString() : dataRow.ciclo || '';
     const loteStr = typeof dataRow.lote === 'number' ? dataRow.lote.toString() : dataRow.lote || '';
 
-    // Para registros nuevos, ciclo y lote son OBLIGATORIOS y deben ser mayor a 0
     if (dataRow.isNew) {
       const tieneCiclo = cicloStr.trim() !== '';
       const tieneLote = loteStr.trim() !== '';
@@ -751,7 +776,6 @@ export class ControlReenvaseTableComponent implements OnInit {
         return false;
       }
 
-      // Validar que sean números válidos y mayor a 0
       const cicloValue = parseInt(cicloStr.trim());
       const loteValue = parseInt(loteStr.trim());
 
@@ -761,7 +785,6 @@ export class ControlReenvaseTableComponent implements OnInit {
       return camposBasicos && cicloValido && loteValido;
     }
 
-    // Para registros existentes, si están presentes deben ser números válidos y mayor a 0
     else {
       const cicloValido = !cicloStr.trim() || (!isNaN(parseInt(cicloStr.trim())) && parseInt(cicloStr.trim()) > 0);
       const loteValido = !loteStr.trim() || (!isNaN(parseInt(loteStr.trim())) && parseInt(loteStr.trim()) > 0);
@@ -814,7 +837,11 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private procesarRespuestaCreacion(response: any, dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
-    if (response.data?.id) dataRow.id = response.data.id;
+    if (response.data?.id) {
+      dataRow.id = response.data.id;
+
+      this.actualizarDatosDesdeBackend(response.data.id, dataRow);
+    }
 
     dataRow.isNew = false;
     delete dataRow._uid;
@@ -833,6 +860,10 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   private procesarRespuestaActualizacion(dataRow: ControlReenvaseData, rowElement: HTMLTableRowElement): void {
+    if (dataRow.id) {
+      this.actualizarDatosDesdeBackend(dataRow.id, dataRow);
+    }
+
     const rowId = this.getRowId(dataRow);
     delete this.clonedData[rowId];
     this.editingRow = null;

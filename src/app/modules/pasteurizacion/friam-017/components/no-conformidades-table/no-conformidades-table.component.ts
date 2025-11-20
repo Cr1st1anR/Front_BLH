@@ -60,8 +60,8 @@ export class NoConformidadesTableComponent implements OnInit {
   opcionesLotes: LoteOption[] = [];
 
   headersNoConformidades: TableColumn[] = [
-    { header: 'FECHA', field: 'fecha', width: '160px', tipo: 'date' },
-    { header: 'LOTE', field: 'lote', width: '120px', tipo: 'select' },
+    { header: 'FECHA', field: 'fecha', width: '100px', tipo: 'date' },
+    { header: 'LOTE', field: 'lote', width: '100px', tipo: 'select' },
     {
       header: 'NÚMERO DE MUESTRAS REPROBADAS',
       field: 'grupo_reprobadas',
@@ -77,7 +77,7 @@ export class NoConformidadesTableComponent implements OnInit {
     },
     { header: 'NÚMERO\nDE MUESTRAS\nTESTADAS', field: 'numero_muestras_testadas', width: '120px', tipo: 'number' },
     { header: 'NÚMERO\nDE MUESTRAS\nREPROBADAS', field: 'numero_muestras_reprobadas', width: '120px', tipo: 'number' },
-    { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
+    { header: 'ACCIONES', field: 'acciones', width: '100px', tipo: 'actions' }
   ];
 
   private readonly mesesDelAno = [

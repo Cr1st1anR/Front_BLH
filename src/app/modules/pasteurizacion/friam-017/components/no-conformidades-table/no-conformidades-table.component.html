@@ -48,11 +48,12 @@
         @for (col of columns; track $index) {
 
         @if (col.field === 'fecha') {
-        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+        <td [style.width]="col.width" [style.min-width]="col.width" [style.max-width]="col.width"
+          (click)="editing ? $event.stopPropagation() : null">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
-                placeholder="Seleccione fecha" appendTo="body" class="w-full fecha-picker">
+                placeholder="Seleccione fecha" appendTo="body" class="fecha-picker">
               </p-datepicker>
             </ng-template>
             <ng-template pTemplate="output">
@@ -108,12 +109,11 @@
         <!-- Columnas agrupadas -->
         @for (subCol of col.subColumns; track subCol.field) {
         <td [style.width]="subCol.width" [style.min-width]="subCol.width"
-            (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
+          (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="number" [(ngModel)]="rowData[subCol.field]"
-                class="w-full text-center number-input" min="0" step="1"
-                (input)="calcularMuestrasReprobadas(rowData)">
+                class="w-full text-center number-input" min="0" step="1" (input)="calcularMuestrasReprobadas(rowData)">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData[subCol.field] || 0 }}
@@ -124,8 +124,8 @@
         }
 
         @else if (col.field === 'numero_muestras_testadas') {
-        <td [style.width]="col.width" [style.min-width]="col.width"
-            (click)="editing ? $event.stopPropagation() : null" class="text-center">
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null"
+          class="text-center">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="number" [(ngModel)]="rowData.numero_muestras_testadas"
@@ -146,8 +146,7 @@
         }
 
         @else if (col.field === 'acciones') {
-        <td [style.width]="col.width" [style.min-width]="col.width"
-            (click)="editing ? $event.stopPropagation() : null">
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
           <div class="flex items-center justify-center gap-2">
             <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
               severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"

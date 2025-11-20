@@ -8,24 +8,11 @@
 }
 
 <div class="container-table">
-  <p-table #tableControlReenvase [value]="dataControlReenvase" [scrollable]="true" scrollHeight="500px"
+  <p-table #tableControlReenvase [value]="dataControlReenvase" [scrollable]="true" scrollHeight="400px"
     [columns]="headersControlReenvase" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
-    editMode="row" [globalFilterFields]="['no_donante', 'responsable']">
+    editMode="row">
 
     <ng-template #header let-columns>
-      <tr>
-        @for (col of columns; track $index) {
-        @if (col.field === 'no_donante') {
-        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}">
-          <p-columnFilter type="text" field="no_donante" [placeholder]="'Buscar por donante'" [showMenu]="false"
-            ariaLabel="Filter No Donante">
-          </p-columnFilter>
-        </th>
-        } @else {
-        <th [style.width]="col.width" [style.min-width]="col.width" [ngStyle]="{'background': '#F5F6FA'}"></th>
-        }
-        }
-      </tr>
       <tr>
         @for (col of columns; track $index) {
         <th [style.width]="col.width" [style.min-width]="col.width">{{ col.header }}</th>
@@ -181,6 +168,30 @@
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.volumen_frasco_anterior || '0' }} ml
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'ciclo') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData.ciclo" class="w-full" min="1" step="1"
+                [class.border-red-500]="rowData.isNew && (!rowData.ciclo || rowData.ciclo <= 0)">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.ciclo || '' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'lote') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData.lote" class="w-full" min="1" step="1"
+                [class.border-red-500]="rowData.isNew && (!rowData.lote || rowData.lote <= 0)">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.lote || '' }}
             </ng-template>
           </p-cellEditor>
           }

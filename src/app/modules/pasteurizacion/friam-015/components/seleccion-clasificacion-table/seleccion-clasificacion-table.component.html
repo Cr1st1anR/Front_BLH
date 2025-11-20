@@ -1,0 +1,162 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableSeleccionClasificacion [value]="dataSeleccionClasificacion" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersSeleccionClasificacion" [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <!-- FILA DE HEADERS -->
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width" [class.vertical-text]="col.vertical">
+          <div [class.rotate-text]="col.vertical">
+            @if (col.vertical) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span>{{ linea }}</span>
+            @if ($index < col.header.split('\n').length - 1) {
+            <br />
+            }
+            }
+            } @else {
+            @if (col.header.includes('\n')) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span style="display: block;">{{ linea }}</span>
+            }
+            } @else {
+            {{ col.header }}
+            }
+            }
+          </div>
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+
+          <!-- COLUMNAS VERTICALES (NO EDITABLES) -->
+          @if (col.vertical) {
+          @if (col.tipo === 'date') {
+          <span>{{ rowData[col.field] | date:'dd/MM/yyyy' }}</span>
+          } @else if (col.tipo === 'eye') {
+          <div class="flex justify-center">
+            <button pButton pRipple type="button" icon="pi pi-eye"
+              class="p-button-rounded p-button-text p-button-secondary" (click)="onEyeClick(col.field, rowData, $event)"
+              [pTooltip]="col.header.replace('\n', ' ')" tooltipPosition="top" [disabled]="isAnyRowEditing()">
+            </button>
+          </div>
+          } @else {
+          <span>{{ rowData[col.field] }}</span>
+          }
+          }
+
+          <!-- COLUMNAS HORIZONTALES (EDITABLES) -->
+          @else {
+          @if (col.field === 'fecha' || col.field === 'fecha_vencimiento' || col.field === 'fecha_vencimiento_cultivos')
+          {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData[col.field]) {
+              {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'nombre_profesional') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.nombre_profesional" [options]="opcionesProfesionales" optionLabel="label"
+                optionValue="value" placeholder="Seleccione profesional"
+                (onChange)="onProfesionalSeleccionado($event, rowData)" appendTo="body" class="w-full"
+                [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.nombre_profesional || 'Sin profesional' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'nombre_auxiliar') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.nombre_auxiliar" [options]="opcionesAuxiliares" optionLabel="label"
+                optionValue="value" placeholder="Seleccione auxiliar"
+                (onChange)="onAuxiliarSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.nombre_auxiliar || 'Sin auxiliar' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'n_frascos_pasteurizados' || col.field === 'edad_gestacional') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          }
+
+          @else {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] }}
+            </ng-template>
+          </p-cellEditor>
+          }
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataSeleccionClasificacion || dataSeleccionClasificacion.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

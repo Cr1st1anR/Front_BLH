@@ -42,7 +42,6 @@
       }
     }
 
-    // Headers principales - con el color azul estándar del proyecto
     .p-datatable-thead > tr:first-child > th {
       background-color: #224186 !important;
       color: white !important;
@@ -95,14 +94,13 @@
     }
   }
 
-  // CONTROL ESTRICTO del ancho de la fecha - evitar expansión en edición
+  // CONTROL del ancho de la fecha - evitar expansión en edición
   .p-datatable-tbody > tr > td:first-child {
     width: 110px !important;
     min-width: 110px !important;
     max-width: 110px !important;
     overflow: hidden !important;
 
-    // Control del cell editor para que no se expanda
     .p-cellEditor,
     .p-cellEditor > div,
     .p-cellEditor .p-cellEditor-input,
@@ -114,7 +112,7 @@
     }
   }
 
-  // Date picker con ancho controlado exactamente para 110px
+  // Date picker con ancho controlado para 110px
   .fecha-picker {
     width: 100% !important;
     min-width: 100% !important;
@@ -130,7 +128,7 @@
       width: 100% !important;
       min-width: 100% !important;
       max-width: 100% !important;
-      font-size: 0.85rem !important; // Texto más pequeño para que quepa
+      font-size: 0.85rem !important;
     }
 
     .p-inputtext {
@@ -140,73 +138,16 @@
       font-size: 0.85rem !important;
     }
 
-    // Asegurar que todos los elementos internos respeten el ancho
     * {
       max-width: 100% !important;
     }
   }
 
-  // ELIMINACIÓN DEFINITIVA de esquinas redondeadas para inputs numéricos
-  // Selector más específico y forzado
-  .p-datatable .p-datatable-tbody input[type="number"],
-  .p-datatable .p-datatable-tbody .p-inputtext[type="number"],
-  .grouped-cell input[type="number"],
-  .grouped-cell .p-inputtext[type="number"],
-  input.number-input,
-  .number-input {
-    border-radius: 0 !important;
-    -webkit-border-radius: 0 !important;
-    -moz-border-radius: 0 !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-
-    &:focus,
-    &:active,
-    &:hover {
-      border-radius: 0 !important;
-      -webkit-border-radius: 0 !important;
-      -moz-border-radius: 0 !important;
-      border-top-left-radius: 0 !important;
-      border-top-right-radius: 0 !important;
-      border-bottom-left-radius: 0 !important;
-      border-bottom-right-radius: 0 !important;
-      border-color: #224186 !important;
-      box-shadow: 0 0 0 1px #224186 !important;
-    }
-  }
-
-  // Inputs generales - mantener esquinas redondeadas para otros elementos
+  // Estilos para inputs y selects
   .p-inputtext {
-    border-radius: 4px !important;
-
     &:focus {
       border-color: #224186 !important;
       box-shadow: 0 0 0 1px #224186 !important;
-    }
-
-    // EXCEPCIÓN: Los de tipo number deben ser cuadrados
-    &[type="number"] {
-      border-radius: 0 !important;
-      -webkit-border-radius: 0 !important;
-      -moz-border-radius: 0 !important;
-      border-top-left-radius: 0 !important;
-      border-top-right-radius: 0 !important;
-      border-bottom-left-radius: 0 !important;
-      border-bottom-right-radius: 0 !important;
-
-      &:focus,
-      &:active,
-      &:hover {
-        border-radius: 0 !important;
-        -webkit-border-radius: 0 !important;
-        -moz-border-radius: 0 !important;
-        border-top-left-radius: 0 !important;
-        border-top-right-radius: 0 !important;
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-      }
     }
   }
 
@@ -224,11 +165,6 @@
     }
   }
 
-  // Celdas agrupadas sin hover
-  .grouped-cell {
-    transition: none !important;
-  }
-
   // Filas de datos sin cursor pointer
   .data-row {
     cursor: default !important;
@@ -236,44 +172,5 @@
     &:hover {
       background-color: transparent !important;
     }
-  }
-}
-
-// OVERRIDE GLOBAL para inputs numéricos sin esquinas redondeadas
-:host ::ng-deep input[type="number"],
-:host ::ng-deep .p-inputtext[type="number"] {
-  border-radius: 0 !important;
-  -webkit-border-radius: 0 !important;
-  -moz-border-radius: 0 !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-
-  &:focus,
-  &:active,
-  &:hover,
-  &:disabled,
-  &:read-only {
-    border-radius: 0 !important;
-    -webkit-border-radius: 0 !important;
-    -moz-border-radius: 0 !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-  }
-}
-
-// OVERRIDE adicional para PrimeNG específicamente
-:host ::ng-deep .p-component input[type="number"] {
-  border-radius: 0 !important;
-  -webkit-border-radius: 0 !important;
-  -moz-border-radius: 0 !important;
-
-  &:focus {
-    border-radius: 0 !important;
-    -webkit-border-radius: 0 !important;
-    -moz-border-radius: 0 !important;
   }
 }

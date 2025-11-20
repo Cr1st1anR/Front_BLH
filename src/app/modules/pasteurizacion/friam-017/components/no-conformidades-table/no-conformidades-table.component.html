@@ -1,1 +1,176 @@
-<p>no-conformidades-table works!</p>
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableNoConformidades [value]="dataNoConformidades" [scrollable]="true" scrollHeight="400px"
+    [columns]="headersNoConformidades" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <tr class="header-row-main">
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'group') {
+        <!-- Header principal para columna agrupada -->
+        <th [style.width]="col.width" [style.min-width]="col.width" [attr.colspan]="col.subColumns?.length"
+          class="grouped-header">
+          {{ col.header }}
+        </th>
+        } @else {
+        <!-- Headers para columnas normales -->
+        <th [style.width]="col.width" [style.min-width]="col.width" [attr.rowspan]="2" class="normal-header">
+          <span [innerHTML]="col.header"></span>
+        </th>
+        }
+        }
+      </tr>
+      <!-- Segunda fila para sub-headers de columnas agrupadas -->
+      <tr class="header-row-sub">
+        @for (col of columns; track $index) {
+        @if (col.tipo === 'group' && col.subColumns) {
+        @for (subCol of col.subColumns; track subCol.field) {
+        <th [style.width]="subCol.width" [style.min-width]="subCol.width" class="sub-header">
+          {{ subCol.header }}
+        </th>
+        }
+        }
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <!-- Eliminado el click handler y cursor pointer -->
+      <tr [pEditableRow]="rowData" class="data-row">
+
+        @for (col of columns; track $index) {
+
+        @if (col.field === 'fecha') {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full fecha-picker">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData.fecha) {
+              {{ rowData.fecha | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+
+        @else if (col.field === 'lote') {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              @if (loadingLotes) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando lotes...</span>
+              </div>
+              } @else {
+              <p-select [(ngModel)]="rowData.lote" [options]="opcionesLotes" optionLabel="label" optionValue="value"
+                placeholder="Seleccione lote" (onChange)="onLoteSeleccionado($event, rowData)" appendTo="body"
+                class="w-full" [showClear]="true" [filter]="true" filterBy="label,value" [filterMatchMode]="'contains'"
+                [filterPlaceholder]="'Buscar lote...'" [disabled]="opcionesLotes.length === 0">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @if (selectedOption) {
+                  <span>{{ selectedOption.value }}</span>
+                  } @else {
+                  <span>Seleccione lote</span>
+                  }
+                </ng-template>
+
+                <ng-template #item let-lote>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ lote.label }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+              }
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.lote || 'Sin lote' }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+
+        @else if (col.tipo === 'group' && col.subColumns) {
+        <!-- Columnas agrupadas -->
+        @for (subCol of col.subColumns; track subCol.field) {
+        <td [style.width]="subCol.width" [style.min-width]="subCol.width"
+          (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData[subCol.field]"
+                class="w-full text-center number-input" min="0" step="1" (input)="calcularMuestrasReprobadas(rowData)">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[subCol.field] || 0 }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+        }
+
+        @else if (col.field === 'numero_muestras_testadas') {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null"
+          class="text-center">
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData.numero_muestras_testadas"
+                class="w-full text-center number-input" min="0" step="1">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.numero_muestras_testadas || 0 }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        }
+
+        @else if (col.field === 'numero_muestras_reprobadas') {
+        <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
+          <!-- Solo lectura, se calcula automáticamente -->
+          <span class="font-medium text-red-600">{{ rowData.numero_muestras_reprobadas || 0 }}</span>
+        </td>
+        }
+
+        @else if (col.field === 'acciones') {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+        </td>
+        }
+
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataNoConformidades || dataNoConformidades.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

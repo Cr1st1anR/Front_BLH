@@ -1,1 +1,26 @@
-<p>no-conformidades-page works!</p>
+<app-header [title]="'REGISTRO DIARIO DE NO CONFORMIDADES (FRIAM-017)'" />
+
+<div class="flex justify-between items-center mx-4 mt-8">
+  <!-- Botón temporal -->
+  <button pButton pRipple type="button" label="Nuevo Registro" icon="pi pi-plus" class="p-button-primary"
+    (click)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing">
+  </button>
+
+  <!-- <new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" /> -->
+
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+
+<div class="flex justify-between items-center mx-4 mt-6">
+  <div class="flex gap-3 items-center">
+    <span class="font-semibold text-gray-700">Filtros:</span>
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      class="w-32" />
+
+    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+      (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+  </div>
+</div>
+
+<no-conformidades-table [filtrosBusqueda]="filtrosBusqueda" />

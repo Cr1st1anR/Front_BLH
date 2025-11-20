@@ -1,28 +1,28 @@
 export interface AnalisisSensorialData {
   id?: number | null;
-  embalaje: string;
-  suciedad: string;
-  color: string;
-  flavor: string;
+  embalaje: number | null;
+  suciedad: number | null;
+  color: number | null;
+  flavor: number | null;
   id_seleccion_clasificacion?: number;
   isNew?: boolean;
   _uid?: string;
 }
 
 export interface AnalisisSensorialBackendRequest {
-  embalaje: string;
-  suciedad: string;
-  color: string;
-  flavor: string;
+  embalaje: number;
+  suciedad: number;
+  color: number;
+  flavor: number;
   seleccionClasificacion: { id: number };
 }
 
 export interface AnalisisSensorialBackendResponse {
   id: number;
-  embalaje: string;
-  suciedad: string;
-  color: string;
-  flavor: string;
+  embalaje: number;
+  suciedad: number;
+  color: number;
+  flavor: number;
   seleccionClasificacion: {
     id: number;
     fecha?: string;

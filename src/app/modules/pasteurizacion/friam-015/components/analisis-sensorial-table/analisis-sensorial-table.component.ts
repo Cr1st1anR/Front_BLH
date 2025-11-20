@@ -17,6 +17,7 @@ import type {
   AnalisisSensorialBackendResponse,
   TableColumn
 } from '../../interfaces/analisis-sensorial.interface';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @Component({
   selector: 'analisis-sensorial-table',
@@ -30,7 +31,8 @@ import type {
     FormsModule,
     ButtonModule,
     InputTextModule,
-    TooltipModule
+    TooltipModule,
+    RadioButtonModule
   ],
   templateUrl: './analisis-sensorial-table.component.html',
   styleUrl: './analisis-sensorial-table.component.scss',
@@ -110,6 +112,11 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
       });
   }
 
+  getDisplayValue(value: number | null): string {
+    if (value === null) return 'Sin selección';
+    return value === 0 ? 'C' : 'NC';
+  }
+
   private transformarDatoBackendAFrontend(analisis: AnalisisSensorialBackendResponse): AnalisisSensorialData {
     return {
       id: analisis.id,
@@ -125,10 +132,10 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
   private construirRegistroVacio(): AnalisisSensorialData {
     return {
       id: null,
-      embalaje: '',
-      suciedad: '',
-      color: '',
-      flavor: '',
+      embalaje: null,
+      suciedad: null,
+      color: null,
+      flavor: null,
       id_seleccion_clasificacion: this.idSeleccionClasificacion!,
       isNew: true
     };
@@ -155,7 +162,6 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   onRowEditCancel(dataRow: AnalisisSensorialData, index: number): void {
     if (dataRow.isNew) {
-      // Si es nuevo y se cancela, restaurar la fila vacía
       this.dataAnalisisSensorial[index] = this.construirRegistroVacio();
       this.dataAnalisisSensorial = [...this.dataAnalisisSensorial];
     } else {
@@ -198,10 +204,10 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   private prepararDatosParaBackend(dataRow: AnalisisSensorialData): AnalisisSensorialBackendRequest {
     return {
-      embalaje: dataRow.embalaje.trim(),
-      suciedad: dataRow.suciedad.trim(),
-      color: dataRow.color.trim(),
-      flavor: dataRow.flavor.trim(),
+      embalaje: dataRow.embalaje!,
+      suciedad: dataRow.suciedad!,
+      color: dataRow.color!,
+      flavor: dataRow.flavor!,
       seleccionClasificacion: { id: this.idSeleccionClasificacion! }
     };
   }
@@ -246,10 +252,10 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   private validarCamposRequeridos(dataRow: AnalisisSensorialData): boolean {
     return !!(
-      dataRow.embalaje?.trim() &&
-      dataRow.suciedad?.trim() &&
-      dataRow.color?.trim() &&
-      dataRow.flavor?.trim()
+      dataRow.embalaje !== null &&
+      dataRow.suciedad !== null &&
+      dataRow.color !== null &&
+      dataRow.flavor !== null
     );
   }
 

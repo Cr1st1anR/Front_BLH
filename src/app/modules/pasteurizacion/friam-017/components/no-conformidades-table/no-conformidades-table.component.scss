@@ -4,147 +4,167 @@
   justify-content: center;
   align-items: center;
   margin: 25px;
-
-  :host ::ng-deep {
-    .p-datatable {
-      .p-datatable-thead > tr > th {
-        border: 1px solid #e5e7eb;
-        font-weight: 600;
-        text-align: center;
-        white-space: pre-line; // Para saltos de línea en headers
-
-        &:first-child {
-          border-left: 1px solid #e5e7eb;
-        }
-
-        &:last-child {
-          border-right: 1px solid #e5e7eb;
-        }
-      }
-
-      .p-datatable-tbody > tr > td {
-        border: 1px solid #e5e7eb;
-        padding: 0.4rem; // Reducido padding para menos altura
-        vertical-align: middle;
-
-        &:first-child {
-          border-left: 1px solid #e5e7eb;
-        }
-
-        &:last-child {
-          border-right: 1px solid #e5e7eb;
-        }
-      }
-
-      // Headers principales - altura MUY reducida
-      .header-row-main > th {
-        background-color: #3b82f6;
-        color: white;
-        font-weight: bold;
-        padding: 0.3rem 0.5rem !important; // Padding muy reducido
-        height: 35px !important; // Altura muy reducida
-        font-size: 0.85rem; // Texto más pequeño
-      }
-
-      // Sub-headers - altura MUY reducida
-      .header-row-sub > th {
-        background-color: #dbeafe;
-        color: #1e40af;
-        font-weight: 600;
-        font-size: 0.75rem; // Texto más pequeño
-        padding: 0.25rem 0.4rem !important; // Padding muy reducido
-        height: 30px !important; // Altura muy reducida
-      }
-
-      // Headers normales (con rowspan) - altura total reducida
-      .normal-header {
-        background-color: #3b82f6;
-        color: white;
-        font-weight: bold;
-        padding: 0.3rem 0.5rem !important;
-        height: 65px !important; // Altura total muy reducida (35px + 30px)
-        vertical-align: middle;
-        font-size: 0.85rem;
-      }
-    }
-
-    // Estilos para inputs numéricos - SIN esquinas redondeadas
-    .number-input {
-      border-radius: 0 !important;
-
-      &:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
-        border-radius: 0 !important;
-      }
-    }
-
-    // Date picker con ancho AUMENTADO para mostrar fecha completa
-    .fecha-picker {
-      .p-datepicker-input {
-        min-width: 160px !important; // Ancho aumentado
-        width: 160px !important;
-      }
-
-      .p-inputtext {
-        min-width: 160px !important;
-        width: 160px !important;
-      }
-    }
-
-    // Inputs generales
-    .p-inputtext {
-      border-radius: 4px; // Mantener redondeado para inputs normales
-
-      &:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
-      }
-
-      // Solo los inputs numéricos sin esquinas redondeadas
-      &[type="number"] {
-        border-radius: 0 !important;
-
-        &:focus {
-          border-radius: 0 !important;
-        }
-      }
-    }
-
-    .p-select {
-      &.p-focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
-      }
-    }
-
-    .p-datepicker {
-      &.p-focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
-      }
-    }
-
-    // Celdas agrupadas sin hover
-    .grouped-cell {
-      transition: none;
-    }
-
-    // Filas de datos sin cursor pointer y padding reducido
-    .data-row {
-      cursor: default;
-
-      &:hover {
-        background-color: transparent;
-      }
-
-      td {
-        padding: 0.4rem !important; // Padding reducido en todas las celdas
-      }
-    }
-  }
 }
 
 .grid-lines {
   border: 1px solid white;
+}
+
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      border: 1px solid #e5e7eb;
+      font-weight: 600;
+      text-align: center;
+      white-space: pre-line !important; // Asegurar saltos de línea
+      vertical-align: middle;
+
+      &:first-child {
+        border-left: 1px solid #e5e7eb;
+      }
+
+      &:last-child {
+        border-right: 1px solid #e5e7eb;
+      }
+    }
+
+    .p-datatable-tbody > tr > td {
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem;
+      vertical-align: middle;
+
+      &:first-child {
+        border-left: 1px solid #e5e7eb;
+      }
+
+      &:last-child {
+        border-right: 1px solid #e5e7eb;
+      }
+    }
+
+    // Headers principales - con el color azul estándar del proyecto
+    .p-datatable-thead > tr:first-child > th {
+      background-color: #224186 !important; // Color azul estándar
+      color: white !important;
+      font-weight: bold !important;
+      padding: 0.5rem 0.75rem !important; // Padding más moderado
+      height: 50px !important; // Altura moderada
+      font-size: 0.875rem !important; // Tamaño de texto normal
+      line-height: 1.3 !important;
+    }
+
+    // Sub-headers - altura moderada
+    .p-datatable-thead > tr:nth-child(2) > th {
+      background-color: #dbeafe !important;
+      color: #224186 !important;
+      font-weight: 600 !important;
+      font-size: 0.85rem !important;
+      padding: 0.4rem 0.5rem !important; // Padding moderado
+      height: 40px !important; // Altura moderada
+      line-height: 1.2 !important;
+    }
+
+    // Headers normales con rowspan=2 - altura total moderada
+    .p-datatable-thead > tr:first-child > th[rowspan="2"] {
+      background-color: #224186 !important; // Color azul estándar
+      color: white !important;
+      font-weight: bold !important;
+      padding: 0.5rem 0.75rem !important;
+      height: 90px !important; // Altura total moderada (50px + 40px)
+      vertical-align: middle !important;
+      font-size: 0.875rem !important;
+      line-height: 1.3 !important;
+    }
+
+    // Altura de las filas del cuerpo de la tabla - moderada
+    .p-datatable-tbody > tr {
+      height: 55px !important;
+      min-height: 55px !important;
+    }
+
+    // Celdas del cuerpo - altura moderada
+    .p-datatable-tbody > tr > td {
+      padding: 0.5rem !important;
+      vertical-align: middle !important;
+      text-align: center !important;
+      font-size: 0.9rem !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+      height: 55px !important;
+      min-height: 55px !important;
+    }
+  }
+
+  // Estilos para inputs numéricos - SIN esquinas redondeadas (ENVASE, ACIDEZ, etc)
+  .number-input {
+    border-radius: 0 !important;
+
+    &:focus {
+      border-color: #224186 !important; // Color azul estándar
+      box-shadow: 0 0 0 1px #224186 !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  // Date picker con ancho aumentado
+  .fecha-picker {
+    .p-datepicker-input {
+      min-width: 160px !important;
+      width: 160px !important;
+    }
+
+    .p-inputtext {
+      min-width: 160px !important;
+      width: 160px !important;
+    }
+  }
+
+  // Inputs generales - mantener esquinas redondeadas EXCEPTO para números
+  .p-inputtext {
+    border-radius: 4px !important; // Mantener redondeado para inputs normales
+
+    &:focus {
+      border-color: #224186 !important; // Color azul estándar
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+
+    // Solo los inputs numéricos sin esquinas redondeadas
+    &[type="number"] {
+      border-radius: 0 !important;
+
+      &:focus {
+        border-radius: 0 !important;
+        border-color: #224186 !important; // Color azul estándar
+        box-shadow: 0 0 0 1px #224186 !important;
+      }
+    }
+  }
+
+  .p-select {
+    &.p-focus {
+      border-color: #224186 !important; // Color azul estándar
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+  }
+
+  .p-datepicker {
+    &.p-focus {
+      border-color: #224186 !important; // Color azul estándar
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+  }
+
+  // Celdas agrupadas sin hover
+  .grouped-cell {
+    transition: none !important;
+  }
+
+  // Filas de datos sin cursor pointer
+  .data-row {
+    cursor: default !important;
+
+    &:hover {
+      background-color: transparent !important;
+    }
+  }
 }

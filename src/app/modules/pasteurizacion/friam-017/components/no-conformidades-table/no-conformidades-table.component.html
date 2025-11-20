@@ -13,28 +13,27 @@
     editMode="row">
 
     <ng-template #header let-columns>
-      <tr class="header-row-main">
+      <tr>
         @for (col of columns; track $index) {
         @if (col.tipo === 'group') {
         <!-- Header principal para columna agrupada -->
-        <th [style.width]="col.width" [style.min-width]="col.width" [attr.colspan]="col.subColumns?.length"
-          class="grouped-header">
+        <th [style.width]="col.width" [style.min-width]="col.width" [attr.colspan]="col.subColumns?.length">
           {{ col.header }}
         </th>
         } @else {
         <!-- Headers para columnas normales -->
-        <th [style.width]="col.width" [style.min-width]="col.width" [attr.rowspan]="2" class="normal-header">
+        <th [style.width]="col.width" [style.min-width]="col.width" [attr.rowspan]="2">
           <span [innerHTML]="col.header"></span>
         </th>
         }
         }
       </tr>
       <!-- Segunda fila para sub-headers de columnas agrupadas -->
-      <tr class="header-row-sub">
+      <tr>
         @for (col of columns; track $index) {
         @if (col.tipo === 'group' && col.subColumns) {
         @for (subCol of col.subColumns; track subCol.field) {
-        <th [style.width]="subCol.width" [style.min-width]="subCol.width" class="sub-header">
+        <th [style.width]="subCol.width" [style.min-width]="subCol.width">
           {{ subCol.header }}
         </th>
         }
@@ -44,7 +43,6 @@
     </ng-template>
 
     <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
-      <!-- Eliminado el click handler y cursor pointer -->
       <tr [pEditableRow]="rowData" class="data-row">
 
         @for (col of columns; track $index) {
@@ -110,11 +108,12 @@
         <!-- Columnas agrupadas -->
         @for (subCol of col.subColumns; track subCol.field) {
         <td [style.width]="subCol.width" [style.min-width]="subCol.width"
-          (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
+            (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="number" [(ngModel)]="rowData[subCol.field]"
-                class="w-full text-center number-input" min="0" step="1" (input)="calcularMuestrasReprobadas(rowData)">
+                class="w-full text-center number-input" min="0" step="1"
+                (input)="calcularMuestrasReprobadas(rowData)">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData[subCol.field] || 0 }}
@@ -125,8 +124,8 @@
         }
 
         @else if (col.field === 'numero_muestras_testadas') {
-        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null"
-          class="text-center">
+        <td [style.width]="col.width" [style.min-width]="col.width"
+            (click)="editing ? $event.stopPropagation() : null" class="text-center">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="number" [(ngModel)]="rowData.numero_muestras_testadas"
@@ -147,7 +146,8 @@
         }
 
         @else if (col.field === 'acciones') {
-        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+        <td [style.width]="col.width" [style.min-width]="col.width"
+            (click)="editing ? $event.stopPropagation() : null">
           <div class="flex items-center justify-center gap-2">
             <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
               severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"

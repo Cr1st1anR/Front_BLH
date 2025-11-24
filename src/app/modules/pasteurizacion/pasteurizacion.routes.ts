@@ -15,4 +15,11 @@ export const PASTEURIZACION_ROUTES: Routes = [
         './friam-015/pages/seleccion-clasificacion-page/seleccion-clasificacion-page.component'
       ).then((c) => c.SeleccionClasificacionPageComponent),
   },
+  {
+    path: 'control-calidad-microbiologico-liberacion',
+    loadComponent: () =>
+      import(
+        './friam-014/pages/control-microbiologico-liberacion-page/control-microbiologico-liberacion-page.component'
+      ).then((c) => c.ControlMicrobiologicoLiberacionPageComponent),
+  },
 ];

@@ -101,6 +101,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-015)',
           route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
         },
+        {
+          label: 'Relación de control de calidad microbiologico y liberacion de producto',
+          subLabel: '(FRIAM-014)',
+          route: '/blh/pasteurizacion/control-calidad-microbiologico-liberacion',
+        },
       ],
     },
     {

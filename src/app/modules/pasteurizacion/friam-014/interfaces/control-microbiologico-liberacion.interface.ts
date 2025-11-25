@@ -2,10 +2,10 @@ export interface ControlMicrobiologicoLiberacionData {
   id?: number | null;
   numero_frasco_pasteurizado: string;
   id_frasco_pasteurizado?: number | null;
-  coliformes_totales?: 'A' | 'P' | null;
-  conformidad?: 'C' | 'NC' | null;
+  coliformes_totales?: 0 | 1 | null; // 0 = P, 1 = A
+  conformidad?: 0 | 1 | null; // 0 = NC, 1 = C
   prueba_confirmatoria?: 'PC' | null;
-  liberacion_producto?: 'Si' | 'No' | null;
+  liberacion_producto?: 0 | 1 | null; // 0 = No, 1 = Si
   fecha_pasteurizacion?: Date | string | null;
   ciclo?: number | string;
   lote?: number | string;

@@ -76,7 +76,8 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarControlesExistentes();
+    // NO cargar controles al inicializar - la tabla debe empezar vacía
+    this.mostrarMensaje('info', 'Información', 'Utilice la búsqueda por ciclo y lote para cargar los frascos pasteurizados');
   }
 
   private obtenerAñoActualCorto(): string {
@@ -112,8 +113,8 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     if (!this.validarBusqueda()) return;
 
     this.loading.search = true;
-    const ciclo = parseInt(this.busquedaCicloLote.ciclo);
-    const lote = parseInt(this.busquedaCicloLote.lote);
+    const ciclo = parseInt(String(this.busquedaCicloLote.ciclo));
+    const lote = parseInt(String(this.busquedaCicloLote.lote));
 
     this.controlMicrobiologicoService.getFrascosPasteurizadosPorCicloLote(ciclo, lote).subscribe({
       next: (frascos: FrascoPasteurizadoData[]) => {
@@ -129,27 +130,23 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private procesarResultadosBusqueda(frascos: FrascoPasteurizadoData[], ciclo: number, lote: number): void {
-    console.log(`Procesando ${frascos.length} frascos encontrados`);
+    console.log(`Procesando ${frascos.length} frascos encontrados para ciclo ${ciclo}, lote ${lote}`);
 
     if (frascos.length === 0) {
       this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
+      this.dataControlMicrobiologico = [];
+      this.fechaPasteurizacion = null;
       return;
     }
 
-    // Establecer fecha de pasteurización (todos los frascos del mismo ciclo/lote tienen la misma fecha)
+    // Establecer fecha de pasteurización
     this.fechaPasteurizacion = new Date(frascos[0].fechaPasteurizacion);
-    console.log('Fecha de pasteurización establecida:', this.fechaPasteurizacion);
-
-    // Limpiar registros temporales anteriores de búsqueda
-    this.dataControlMicrobiologico = this.dataControlMicrobiologico.filter(item => !item.isNew);
 
     // Crear registros para cada frasco encontrado
     const nuevosRegistros = frascos.map(frasco => this.crearRegistroDesdeFramco(frasco, ciclo, lote));
-    console.log('Nuevos registros creados:', nuevosRegistros);
 
-    // Agregar los nuevos registros
-    this.dataControlMicrobiologico.push(...nuevosRegistros);
-    this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
+    // Reemplazar completamente los datos (no agregar)
+    this.dataControlMicrobiologico = nuevosRegistros;
 
     this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} pasteurizado${frascos.length > 1 ? 's' : ''}`);
   }
@@ -172,15 +169,19 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private validarBusqueda(): boolean {
-    const cicloValido = this.busquedaCicloLote.ciclo.trim() && !isNaN(Number(this.busquedaCicloLote.ciclo));
-    const loteValido = this.busquedaCicloLote.lote.trim() && !isNaN(Number(this.busquedaCicloLote.lote));
+    // Convertir a string para asegurar que tenemos el método trim
+    const cicloStr = String(this.busquedaCicloLote.ciclo || '').trim();
+    const loteStr = String(this.busquedaCicloLote.lote || '').trim();
+
+    const cicloValido = cicloStr && !isNaN(Number(cicloStr));
+    const loteValido = loteStr && !isNaN(Number(loteStr));
 
     if (!cicloValido || !loteValido) {
       this.mostrarMensaje('warn', 'Advertencia', 'Por favor ingrese valores válidos para el ciclo y lote');
       return false;
     }
 
-    if (Number(this.busquedaCicloLote.ciclo) <= 0 || Number(this.busquedaCicloLote.lote) <= 0) {
+    if (Number(cicloStr) <= 0 || Number(loteStr) <= 0) {
       this.mostrarMensaje('warn', 'Advertencia', 'El ciclo y lote deben ser números mayores a 0');
       return false;
     }
@@ -271,12 +272,28 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   // ============= VALIDACIONES =============
 
+  // Métodos helper para mostrar valores en la tabla
+  getDisplayValueColiformes(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'A' : 'P';
+  }
+
+  getDisplayValueConformidad(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'C' : 'NC';
+  }
+
+  getDisplayValueLiberacion(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'Sí' : 'No';
+  }
+
   private validarCamposRequeridos(dataRow: ControlMicrobiologicoLiberacionData): boolean {
     return !!(
       dataRow.numero_frasco_pasteurizado?.trim() &&
-      dataRow.coliformes_totales &&
-      dataRow.conformidad &&
-      dataRow.liberacion_producto
+      (dataRow.coliformes_totales === 0 || dataRow.coliformes_totales === 1) &&
+      (dataRow.conformidad === 0 || dataRow.conformidad === 1) &&
+      (dataRow.liberacion_producto === 0 || dataRow.liberacion_producto === 1)
     );
   }
 
@@ -354,10 +371,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       lote: ''
     };
     this.fechaPasteurizacion = null;
-
-    // Remover registros temporales de búsqueda, pero mantener los controles existentes
-    this.dataControlMicrobiologico = this.dataControlMicrobiologico.filter(item => !item.isNew);
-    this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
+    this.dataControlMicrobiologico = [];
 
     this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
   }

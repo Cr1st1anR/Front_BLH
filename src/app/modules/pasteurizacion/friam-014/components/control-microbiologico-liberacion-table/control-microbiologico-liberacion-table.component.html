@@ -9,8 +9,8 @@
 
 <div class="container-table">
   <!-- Sección de búsqueda por ciclo y lote -->
-  <div class="search-section mb-6 p-4 bg-gray-50 rounded-lg">
-    <div class="flex items-center gap-4 justify-start">
+  <div class="search-section">
+    <div class="flex items-center gap-4">
       <span class="font-semibold text-gray-700">CICLO DE PASTEURIZACIÓN:</span>
 
       <div class="flex items-center gap-2">
@@ -83,19 +83,19 @@
             <ng-template pTemplate="input">
               <div class="radio-container-horizontal">
                 <div class="radio-option">
-                  <p-radiobutton name="coliformes_{{rowIndex}}" value="A" [(ngModel)]="rowData.coliformes_totales"
+                  <p-radiobutton name="coliformes_{{rowIndex}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
                     inputId="coliformes_a_{{rowIndex}}" />
                   <label for="coliformes_a_{{rowIndex}}" class="radio-label">A</label>
                 </div>
                 <div class="radio-option">
-                  <p-radiobutton name="coliformes_{{rowIndex}}" value="P" [(ngModel)]="rowData.coliformes_totales"
+                  <p-radiobutton name="coliformes_{{rowIndex}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
                     inputId="coliformes_p_{{rowIndex}}" />
                   <label for="coliformes_p_{{rowIndex}}" class="radio-label">P</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              <span class="table-text">{{ rowData.coliformes_totales || 'No seleccionado' }}</span>
+              <span class="table-text">{{ getDisplayValueColiformes(rowData.coliformes_totales) }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -105,19 +105,19 @@
             <ng-template pTemplate="input">
               <div class="radio-container-horizontal">
                 <div class="radio-option">
-                  <p-radiobutton name="conformidad_{{rowIndex}}" value="C" [(ngModel)]="rowData.conformidad"
+                  <p-radiobutton name="conformidad_{{rowIndex}}" [value]="1" [(ngModel)]="rowData.conformidad"
                     inputId="conformidad_c_{{rowIndex}}" />
                   <label for="conformidad_c_{{rowIndex}}" class="radio-label">C</label>
                 </div>
                 <div class="radio-option">
-                  <p-radiobutton name="conformidad_{{rowIndex}}" value="NC" [(ngModel)]="rowData.conformidad"
+                  <p-radiobutton name="conformidad_{{rowIndex}}" [value]="0" [(ngModel)]="rowData.conformidad"
                     inputId="conformidad_nc_{{rowIndex}}" />
                   <label for="conformidad_nc_{{rowIndex}}" class="radio-label">NC</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              <span class="table-text">{{ rowData.conformidad || 'No seleccionado' }}</span>
+              <span class="table-text">{{ getDisplayValueConformidad(rowData.conformidad) }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -144,19 +144,19 @@
             <ng-template pTemplate="input">
               <div class="radio-container-horizontal">
                 <div class="radio-option">
-                  <p-radiobutton name="liberacion_{{rowIndex}}" value="Si" [(ngModel)]="rowData.liberacion_producto"
+                  <p-radiobutton name="liberacion_{{rowIndex}}" [value]="1" [(ngModel)]="rowData.liberacion_producto"
                     inputId="liberacion_si_{{rowIndex}}" />
                   <label for="liberacion_si_{{rowIndex}}" class="radio-label">Sí</label>
                 </div>
                 <div class="radio-option">
-                  <p-radiobutton name="liberacion_{{rowIndex}}" value="No" [(ngModel)]="rowData.liberacion_producto"
+                  <p-radiobutton name="liberacion_{{rowIndex}}" [value]="0" [(ngModel)]="rowData.liberacion_producto"
                     inputId="liberacion_no_{{rowIndex}}" />
                   <label for="liberacion_no_{{rowIndex}}" class="radio-label">No</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              <span class="table-text">{{ rowData.liberacion_producto || 'No seleccionado' }}</span>
+              <span class="table-text">{{ getDisplayValueLiberacion(rowData.liberacion_producto) }}</span>
             </ng-template>
           </p-cellEditor>
           }

@@ -1,0 +1,47 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
+}
+
+.search-section {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+// Estilos para radio buttons en la tabla
+::ng-deep {
+  .p-radiobutton {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .p-radiobutton .p-radiobutton-box {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .p-radiobutton .p-radiobutton-icon {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+}
+
+// Estilos para el encabezado de la tabla
+::ng-deep th {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 0.5rem !important;
+}
+
+::ng-deep td {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 0.5rem !important;
+}

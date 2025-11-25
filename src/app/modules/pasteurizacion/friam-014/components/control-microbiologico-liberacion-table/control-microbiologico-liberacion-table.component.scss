@@ -2,15 +2,36 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; // Cambiar a flex-start para alinear a la izquierda
   margin: 25px;
+  width: 100%;
 }
 
 .search-section {
   width: 100%;
-  max-width: 1200px;
+  max-width: none; // Eliminar restricción de ancho
   margin-bottom: 1.5rem;
-  // Sin fondo, estilo similar a los filtros de friam-032
+  align-self: flex-start; // Asegurar alineación a la izquierda
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.search-label {
+  font-size: 1rem !important;
+  font-weight: 600;
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
 .grid-lines {
@@ -54,7 +75,7 @@
   justify-content: space-around;
   align-items: center;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   gap: 0.5rem;
 }
 
@@ -68,11 +89,11 @@
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
 }
 
 .radio-label {
-  font-size: 0.875rem !important;
+  font-size: 1rem !important; // Aumentar tamaño
   font-weight: 500;
   color: #333;
   cursor: pointer;
@@ -80,38 +101,43 @@
   white-space: nowrap;
 }
 
-// Estilos para texto de la tabla
+// Estilos para texto de la tabla - aumentar tamaños
 .table-text {
-  font-size: 0.875rem !important;
+  font-size: 1rem !important; // Aumentar de 0.875rem a 1rem
   font-weight: 500;
   color: #374151;
 }
 
 .table-input {
-  font-size: 0.875rem !important;
+  font-size: 1rem !important; // Aumentar tamaño
 }
 
-// Estilos para encabezados - restaurar color original
+// Estilos para encabezados - aumentar tamaño
 .table-header {
-  font-size: 0.875rem !important;
+  font-size: 1rem !important; // Aumentar tamaño
   font-weight: 600 !important;
   color: white !important;
 }
 
+.header-text {
+  font-size: 1rem !important; // Aumentar tamaño específico para headers
+  line-height: 1.3;
+}
+
 .table-cell {
-  font-size: 0.875rem !important;
+  font-size: 1rem !important; // Aumentar tamaño
 }
 
 // Estilos para radio buttons de PrimeNG
 ::ng-deep {
   .p-radiobutton {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1.25rem; // Aumentar tamaño
+    height: 1.25rem;
   }
 
   .p-radiobutton .p-radiobutton-box {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1.25rem; // Aumentar tamaño
+    height: 1.25rem;
     border: 2px solid #d1d5db;
 
     &:hover {
@@ -120,8 +146,8 @@
   }
 
   .p-radiobutton .p-radiobutton-icon {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.6rem; // Aumentar tamaño
+    height: 0.6rem;
     background-color: #224186;
   }
 
@@ -131,17 +157,25 @@
   }
 }
 
-// Estilos para el encabezado de la tabla - restaurar color original
+// Estilos para el encabezado de la tabla
 ::ng-deep th {
   text-align: center !important;
   vertical-align: middle !important;
-  padding: 0.75rem 0.5rem !important;
+  padding: 1rem 0.75rem !important; // Aumentar padding
   background-color: #224186 !important;
   color: white !important;
+  font-size: 1rem !important; // Aumentar tamaño
 }
 
 ::ng-deep td {
   text-align: center !important;
   vertical-align: middle !important;
-  padding: 0.75rem 0.5rem !important;
+  padding: 1rem 0.75rem !important; // Aumentar padding
+  font-size: 1rem !important; // Aumentar tamaño
+}
+
+// Alineación de la tabla con la sección de búsqueda
+::ng-deep .p-table {
+  align-self: flex-start;
+  width: 100%;
 }

@@ -10,8 +10,8 @@
 <div class="container-table">
   <!-- Sección de búsqueda por ciclo y lote -->
   <div class="search-section">
-    <div class="flex items-center gap-4">
-      <span class="font-semibold text-gray-700">CICLO DE PASTEURIZACIÓN:</span>
+    <div class="search-row">
+      <span class="font-semibold text-gray-700 search-label">CICLO DE PASTEURIZACIÓN:</span>
 
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium text-gray-600">Ciclo:</label>
@@ -40,7 +40,7 @@
     </div>
 
     @if (fechaPasteurizacion) {
-    <div class="mt-3 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
+    <div class="date-info">
       <span class="text-sm font-medium text-blue-700">FECHA DE PASTEURIZACIÓN: </span>
       <span class="text-sm text-blue-600">{{ fechaPasteurizacion | date:'dd/MM/yyyy' }}</span>
     </div>
@@ -55,7 +55,7 @@
       <tr>
         @for (col of columns; track $index) {
         <th [style.width]="col.width" [style.min-width]="col.width" class="text-center table-header">
-          <div [innerHTML]="col.header" class="whitespace-pre-line text-sm leading-tight font-medium"></div>
+          <div [innerHTML]="col.header" class="whitespace-pre-line header-text"></div>
         </th>
         }
       </tr>

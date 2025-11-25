@@ -92,23 +92,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   // ============= CARGA DE DATOS =============
 
-  private cargarControlesExistentes(): void {
-    this.loading.main = true;
-
-    this.controlMicrobiologicoService.getAllControlesMicrobiologicos().subscribe({
-      next: (controles) => {
-        this.dataControlMicrobiologico = controles;
-        this.loading.main = false;
-        this.mostrarMensajeExitosoCarga();
-      },
-      error: (error) => {
-        this.loading.main = false;
-        console.error('Error al cargar controles:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al cargar los controles microbiológicos');
-      }
-    });
-  }
-
   buscarFrascosPorCicloLote(): void {
     if (!this.validarBusqueda()) return;
 
@@ -189,6 +172,17 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     return true;
   }
 
+  limpiarBusqueda(): void {
+    this.busquedaCicloLote = {
+      ciclo: '',
+      lote: ''
+    };
+    this.fechaPasteurizacion = null;
+    this.dataControlMicrobiologico = [];
+
+    this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
+  }
+
   // ============= CRUD OPERATIONS =============
 
   onRowEditInit(dataRow: ControlMicrobiologicoLiberacionData): void {
@@ -197,12 +191,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       return;
     }
 
-    this.guardarEstadoOriginal(dataRow);
-    this.editingRow = dataRow;
-
-    if (!dataRow.isNew) {
-      this.hasNewRowInEditing = false;
-    }
+    this.iniciarEdicionFila(dataRow);
   }
 
   onRowEditSave(dataRow: ControlMicrobiologicoLiberacionData, index: number, event: MouseEvent): void {
@@ -211,49 +200,94 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       return;
     }
 
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+    const rowElement = this.obtenerElementoFila(event);
 
     if (dataRow.isNew) {
-      this.guardarNuevoRegistro(dataRow, rowElement);
+      this.procesarCreacionControl(dataRow, rowElement);
     } else {
-      this.actualizarRegistroExistente(dataRow, rowElement);
+      this.procesarActualizacionControl(dataRow, rowElement);
     }
   }
 
   onRowEditCancel(dataRow: ControlMicrobiologicoLiberacionData, index: number): void {
     if (dataRow.isNew) {
-      this.eliminarRegistroTemporal(dataRow);
-      this.hasNewRowInEditing = false;
+      this.cancelarCreacionNueva(index);
     } else {
-      this.restaurarEstadoOriginal(dataRow, index);
+      this.cancelarEdicionExistente(dataRow, index);
     }
     this.editingRow = null;
   }
 
-  private guardarNuevoRegistro(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    const datosParaGuardar = this.prepararDatosParaCreacion(dataRow);
+  private iniciarEdicionFila(dataRow: ControlMicrobiologicoLiberacionData): void {
+    const rowId = this.getRowId(dataRow);
+    this.clonedData[rowId] = { ...dataRow };
+    this.editingRow = dataRow;
+  }
 
-    this.controlMicrobiologicoService.postControlMicrobiologico(datosParaGuardar).subscribe({
+  private procesarCreacionControl(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
+    const datosParaBackend = this.prepararDatosParaCreacion(dataRow);
+
+    this.controlMicrobiologicoService.postControlMicrobiologico(datosParaBackend).subscribe({
       next: (response) => {
-        this.procesarRespuestaCreacion(response.data, dataRow, rowElement);
+        this.manejarExitoCreacion(dataRow, response.data, rowElement);
       },
       error: (error) => {
-        console.error('Error al guardar:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al guardar el control microbiológico');
+        console.error('Error al crear:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al crear el control microbiológico');
       }
     });
   }
 
-  private actualizarRegistroExistente(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
+  private procesarActualizacionControl(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
     this.controlMicrobiologicoService.putControlMicrobiologico(dataRow.id!, dataRow).subscribe({
       next: (response) => {
-        this.procesarRespuestaActualizacion(dataRow, rowElement);
+        this.manejarExitoActualizacion(dataRow, response.data, rowElement);
       },
       error: (error) => {
         console.error('Error al actualizar:', error);
         this.mostrarMensaje('error', 'Error', 'Error al actualizar el control microbiológico');
       }
     });
+  }
+
+  private manejarExitoCreacion(dataRow: ControlMicrobiologicoLiberacionData, response: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
+    dataRow.isNew = false;
+    dataRow.id = response.id;
+    delete dataRow._uid;
+
+    this.resetearEstadoEdicion();
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico creado correctamente');
+  }
+
+  private manejarExitoActualizacion(dataRow: ControlMicrobiologicoLiberacionData, response: any, rowElement: HTMLTableRowElement): void {
+    const rowId = this.getRowId(dataRow);
+    delete this.clonedData[rowId];
+    this.editingRow = null;
+
+    this.table.saveRowEdit(dataRow, rowElement);
+    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico actualizado correctamente');
+  }
+
+  private cancelarCreacionNueva(index: number): void {
+    const registroEliminado = this.dataControlMicrobiologico[index];
+    this.eliminarFilaTemporal(index);
+    this.hasNewRowInEditing = false;
+  }
+
+  private cancelarEdicionExistente(dataRow: ControlMicrobiologicoLiberacionData, index: number): void {
+    const rowId = this.getRowId(dataRow);
+    this.dataControlMicrobiologico[index] = this.clonedData[rowId];
+    delete this.clonedData[rowId];
+  }
+
+  private obtenerElementoFila(event: MouseEvent): HTMLTableRowElement {
+    return (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+  }
+
+  private eliminarFilaTemporal(index: number): void {
+    this.dataControlMicrobiologico.splice(index, 1);
+    this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
   }
 
   private prepararDatosParaCreacion(dataRow: ControlMicrobiologicoLiberacionData): Omit<ControlMicrobiologicoLiberacionData, 'id'> {
@@ -272,22 +306,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   // ============= VALIDACIONES =============
 
-  // Métodos helper para mostrar valores en la tabla
-  getDisplayValueColiformes(value: 0 | 1 | null): string {
-    if (value === null || value === undefined) return 'No seleccionado';
-    return value === 1 ? 'A' : 'P';
-  }
-
-  getDisplayValueConformidad(value: 0 | 1 | null): string {
-    if (value === null || value === undefined) return 'No seleccionado';
-    return value === 1 ? 'C' : 'NC';
-  }
-
-  getDisplayValueLiberacion(value: 0 | 1 | null): string {
-    if (value === null || value === undefined) return 'No seleccionado';
-    return value === 1 ? 'Sí' : 'No';
-  }
-
   private validarCamposRequeridos(dataRow: ControlMicrobiologicoLiberacionData): boolean {
     return !!(
       dataRow.numero_frasco_pasteurizado?.trim() &&
@@ -299,52 +317,10 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   // ============= ESTADOS DE EDICIÓN =============
 
-  private guardarEstadoOriginal(dataRow: ControlMicrobiologicoLiberacionData): void {
-    const rowId = this.getRowId(dataRow);
-    this.clonedData[rowId] = { ...dataRow };
-  }
-
-  private restaurarEstadoOriginal(dataRow: ControlMicrobiologicoLiberacionData, index: number): void {
-    const rowId = this.getRowId(dataRow);
-    this.dataControlMicrobiologico[index] = this.clonedData[rowId];
-    delete this.clonedData[rowId];
-  }
-
-  private eliminarRegistroTemporal(dataRow: ControlMicrobiologicoLiberacionData): void {
-    const index = this.dataControlMicrobiologico.findIndex(item =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew)
-    );
-
-    if (index !== -1) {
-      this.dataControlMicrobiologico.splice(index, 1);
-      this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
-    }
-  }
-
-  private procesarRespuestaCreacion(responseData: ControlMicrobiologicoLiberacionData, dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    dataRow.isNew = false;
-    dataRow.id = responseData.id;
-    delete dataRow._uid;
-
-    this.resetearEstadoEdicion();
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico guardado exitosamente');
-  }
-
-  private procesarRespuestaActualizacion(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    const rowId = this.getRowId(dataRow);
-    delete this.clonedData[rowId];
-    this.editingRow = null;
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico actualizado exitosamente');
-  }
-
   private resetearEstadoEdicion(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
   }
-
-  // ============= UTILIDADES DE ESTADO =============
 
   isEditing(rowData: ControlMicrobiologicoLiberacionData): boolean {
     return this.editingRow !== null && (
@@ -365,27 +341,24 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     return dataRow._uid || dataRow.id?.toString() || 'unknown';
   }
 
-  limpiarBusqueda(): void {
-    this.busquedaCicloLote = {
-      ciclo: '',
-      lote: ''
-    };
-    this.fechaPasteurizacion = null;
-    this.dataControlMicrobiologico = [];
+  // ============= MÉTODOS HELPER PARA MOSTRAR VALORES =============
 
-    this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
+  getDisplayValueColiformes(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'A' : 'P';
+  }
+
+  getDisplayValueConformidad(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'C' : 'NC';
+  }
+
+  getDisplayValueLiberacion(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return 'No seleccionado';
+    return value === 1 ? 'Sí' : 'No';
   }
 
   // ============= MENSAJES =============
-
-  private mostrarMensajeExitosoCarga(): void {
-    const cantidad = this.dataControlMicrobiologico.length;
-    const mensaje = cantidad > 0
-      ? `${cantidad} control${cantidad > 1 ? 'es' : ''} microbiológico${cantidad > 1 ? 's' : ''} cargado${cantidad > 1 ? 's' : ''}`
-      : 'No se encontraron controles microbiológicos en la base de datos';
-
-    this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
-  }
 
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({

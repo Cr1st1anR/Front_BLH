@@ -129,6 +129,8 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private procesarResultadosBusqueda(frascos: FrascoPasteurizadoData[], ciclo: number, lote: number): void {
+    console.log(`Procesando ${frascos.length} frascos encontrados`);
+
     if (frascos.length === 0) {
       this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
       return;
@@ -136,12 +138,14 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
     // Establecer fecha de pasteurización (todos los frascos del mismo ciclo/lote tienen la misma fecha)
     this.fechaPasteurizacion = new Date(frascos[0].fechaPasteurizacion);
+    console.log('Fecha de pasteurización establecida:', this.fechaPasteurizacion);
 
-    // Limpiar registros anteriores de la búsqueda
+    // Limpiar registros temporales anteriores de búsqueda
     this.dataControlMicrobiologico = this.dataControlMicrobiologico.filter(item => !item.isNew);
 
     // Crear registros para cada frasco encontrado
     const nuevosRegistros = frascos.map(frasco => this.crearRegistroDesdeFramco(frasco, ciclo, lote));
+    console.log('Nuevos registros creados:', nuevosRegistros);
 
     // Agregar los nuevos registros
     this.dataControlMicrobiologico.push(...nuevosRegistros);
@@ -351,7 +355,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     };
     this.fechaPasteurizacion = null;
 
-    // Remover registros temporales
+    // Remover registros temporales de búsqueda, pero mantener los controles existentes
     this.dataControlMicrobiologico = this.dataControlMicrobiologico.filter(item => !item.isNew);
     this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
 

@@ -10,28 +10,25 @@
 <div class="container-table">
   <!-- Sección de búsqueda por ciclo y lote -->
   <div class="search-section mb-6 p-4 bg-gray-50 rounded-lg">
-    <div class="flex flex-wrap items-center gap-4">
+    <div class="flex items-center gap-4 justify-start">
       <span class="font-semibold text-gray-700">CICLO DE PASTEURIZACIÓN:</span>
 
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium text-gray-600">Ciclo:</label>
-        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.ciclo" placeholder="Ej: 1" class="w-20 p-2"
-          min="1" step="1" />
+        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.ciclo" class="w-20 p-2" min="1" step="1" />
       </div>
 
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium text-gray-600">Lote:</label>
-        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.lote" placeholder="Ej: 1" class="w-20 p-2"
-          min="1" step="1" />
+        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.lote" class="w-20 p-2" min="1" step="1" />
       </div>
 
-      <button pButton pRipple type="button" icon="pi pi-search" label="Buscar" class="p-button-primary"
-        (click)="buscarFrascosPorCicloLote()" [disabled]="loading.search" pTooltip="Buscar frascos pasteurizados"
-        tooltipPosition="top">
+      <button pButton pRipple type="button" icon="pi pi-search" label="Buscar" class="search-button p-button-sm"
+        (click)="buscarFrascosPorCicloLote()" [disabled]="loading.search">
       </button>
 
-      <button pButton pRipple type="button" icon="pi pi-times" label="Limpiar" class="p-button-secondary"
-        (click)="limpiarBusqueda()" pTooltip="Limpiar búsqueda" tooltipPosition="top">
+      <button pButton pRipple type="button" icon="pi pi-times" label="Limpiar" class="clear-button p-button-sm"
+        (click)="limpiarBusqueda()">
       </button>
 
       @if (loading.search) {
@@ -57,8 +54,8 @@
     <ng-template #header let-columns>
       <tr>
         @for (col of columns; track $index) {
-        <th [style.width]="col.width" [style.min-width]="col.width" class="text-center">
-          <div [innerHTML]="col.header" class="whitespace-pre-line text-xs leading-tight"></div>
+        <th [style.width]="col.width" [style.min-width]="col.width" class="text-center table-header">
+          <div [innerHTML]="col.header" class="whitespace-pre-line text-sm leading-tight font-medium"></div>
         </th>
         }
       </tr>
@@ -67,16 +64,16 @@
     <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
       <tr [pEditableRow]="rowData" [style.cursor]="'default'">
         @for (col of columns; track $index) {
-        <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
+        <td [style.width]="col.width" [style.min-width]="col.width" class="text-center table-cell">
 
           @if (col.field === 'numero_frasco_pasteurizado') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado" class="w-full text-center"
-                [disabled]="true" [readonly]="true">
+              <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado"
+                class="w-full text-center table-input" [disabled]="true" [readonly]="true">
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.numero_frasco_pasteurizado || 'Sin número' }}
+              <span class="table-text">{{ rowData.numero_frasco_pasteurizado || 'Sin número' }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -84,21 +81,21 @@
           @else if (col.field === 'coliformes_totales') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <div class="flex flex-col gap-2 items-center">
-                <div class="flex items-center gap-1">
+              <div class="radio-container-horizontal">
+                <div class="radio-option">
                   <p-radiobutton name="coliformes_{{rowIndex}}" value="A" [(ngModel)]="rowData.coliformes_totales"
                     inputId="coliformes_a_{{rowIndex}}" />
-                  <label for="coliformes_a_{{rowIndex}}" class="text-xs font-medium">A</label>
+                  <label for="coliformes_a_{{rowIndex}}" class="radio-label">A</label>
                 </div>
-                <div class="flex items-center gap-1">
+                <div class="radio-option">
                   <p-radiobutton name="coliformes_{{rowIndex}}" value="P" [(ngModel)]="rowData.coliformes_totales"
                     inputId="coliformes_p_{{rowIndex}}" />
-                  <label for="coliformes_p_{{rowIndex}}" class="text-xs font-medium">P</label>
+                  <label for="coliformes_p_{{rowIndex}}" class="radio-label">P</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.coliformes_totales || 'No seleccionado' }}
+              <span class="table-text">{{ rowData.coliformes_totales || 'No seleccionado' }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -106,21 +103,21 @@
           @else if (col.field === 'conformidad') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <div class="flex flex-col gap-2 items-center">
-                <div class="flex items-center gap-1">
+              <div class="radio-container-horizontal">
+                <div class="radio-option">
                   <p-radiobutton name="conformidad_{{rowIndex}}" value="C" [(ngModel)]="rowData.conformidad"
                     inputId="conformidad_c_{{rowIndex}}" />
-                  <label for="conformidad_c_{{rowIndex}}" class="text-xs font-medium">C</label>
+                  <label for="conformidad_c_{{rowIndex}}" class="radio-label">C</label>
                 </div>
-                <div class="flex items-center gap-1">
+                <div class="radio-option">
                   <p-radiobutton name="conformidad_{{rowIndex}}" value="NC" [(ngModel)]="rowData.conformidad"
                     inputId="conformidad_nc_{{rowIndex}}" />
-                  <label for="conformidad_nc_{{rowIndex}}" class="text-xs font-medium">NC</label>
+                  <label for="conformidad_nc_{{rowIndex}}" class="radio-label">NC</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.conformidad || 'No seleccionado' }}
+              <span class="table-text">{{ rowData.conformidad || 'No seleccionado' }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -128,16 +125,16 @@
           @else if (col.field === 'prueba_confirmatoria') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <div class="flex justify-center">
-                <div class="flex items-center gap-1">
+              <div class="radio-container-centered">
+                <div class="radio-option">
                   <p-radiobutton name="prueba_{{rowIndex}}" value="PC" [(ngModel)]="rowData.prueba_confirmatoria"
                     inputId="prueba_pc_{{rowIndex}}" />
-                  <label for="prueba_pc_{{rowIndex}}" class="text-xs font-medium">PC</label>
+                  <label for="prueba_pc_{{rowIndex}}" class="radio-label">PC</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.prueba_confirmatoria || 'No seleccionado' }}
+              <span class="table-text">{{ rowData.prueba_confirmatoria || 'No seleccionado' }}</span>
             </ng-template>
           </p-cellEditor>
           }
@@ -145,21 +142,21 @@
           @else if (col.field === 'liberacion_producto') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <div class="flex flex-col gap-2 items-center">
-                <div class="flex items-center gap-1">
+              <div class="radio-container-horizontal">
+                <div class="radio-option">
                   <p-radiobutton name="liberacion_{{rowIndex}}" value="Si" [(ngModel)]="rowData.liberacion_producto"
                     inputId="liberacion_si_{{rowIndex}}" />
-                  <label for="liberacion_si_{{rowIndex}}" class="text-xs font-medium">Sí</label>
+                  <label for="liberacion_si_{{rowIndex}}" class="radio-label">Sí</label>
                 </div>
-                <div class="flex items-center gap-1">
+                <div class="radio-option">
                   <p-radiobutton name="liberacion_{{rowIndex}}" value="No" [(ngModel)]="rowData.liberacion_producto"
                     inputId="liberacion_no_{{rowIndex}}" />
-                  <label for="liberacion_no_{{rowIndex}}" class="text-xs font-medium">No</label>
+                  <label for="liberacion_no_{{rowIndex}}" class="radio-label">No</label>
                 </div>
               </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.liberacion_producto || 'No seleccionado' }}
+              <span class="table-text">{{ rowData.liberacion_producto || 'No seleccionado' }}</span>
             </ng-template>
           </p-cellEditor>
           }

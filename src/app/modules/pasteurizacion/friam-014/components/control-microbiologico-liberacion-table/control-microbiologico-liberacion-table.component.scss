@@ -15,21 +15,116 @@
   border: 1px solid white;
 }
 
-// Estilos para radio buttons en la tabla
+// Estilos para los botones de búsqueda
+::ng-deep .search-button {
+  background-color: #224186 !important;
+  border-color: #224186 !important;
+  color: white !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+
+  &:hover:not(:disabled) {
+    background-color: #1a3670 !important;
+    border-color: #1a3670 !important;
+  }
+
+  &:disabled {
+    opacity: 0.6 !important;
+  }
+}
+
+::ng-deep .clear-button {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+
+  &:hover:not(:disabled) {
+    background-color: #c82333 !important;
+    border-color: #c82333 !important;
+  }
+}
+
+// Radio buttons horizontales
+.radio-container-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 0.5rem;
+}
+
+.radio-container-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.radio-label {
+  font-size: 0.875rem !important;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  margin: 0;
+  white-space: nowrap;
+}
+
+// Estilos para texto de la tabla
+.table-text {
+  font-size: 0.875rem !important;
+  font-weight: 500;
+  color: #374151;
+}
+
+.table-input {
+  font-size: 0.875rem !important;
+}
+
+// Estilos para encabezados
+.table-header {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+}
+
+.table-cell {
+  font-size: 0.875rem !important;
+}
+
+// Estilos para radio buttons de PrimeNG
 ::ng-deep {
   .p-radiobutton {
-    width: 1rem;
-    height: 1rem;
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   .p-radiobutton .p-radiobutton-box {
-    width: 1rem;
-    height: 1rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid #d1d5db;
+
+    &:hover {
+      border-color: #224186;
+    }
   }
 
   .p-radiobutton .p-radiobutton-icon {
     width: 0.5rem;
     height: 0.5rem;
+    background-color: #224186;
+  }
+
+  .p-radiobutton.p-radiobutton-checked .p-radiobutton-box {
+    border-color: #224186;
+    background-color: white;
   }
 }
 
@@ -37,11 +132,12 @@
 ::ng-deep th {
   text-align: center !important;
   vertical-align: middle !important;
-  padding: 0.5rem !important;
+  padding: 0.75rem 0.5rem !important;
+  background-color: #f8fafc !important;
 }
 
 ::ng-deep td {
   text-align: center !important;
   vertical-align: middle !important;
-  padding: 0.5rem !important;
+  padding: 0.75rem 0.5rem !important;
 }

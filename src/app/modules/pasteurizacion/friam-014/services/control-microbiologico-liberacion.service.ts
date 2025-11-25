@@ -16,7 +16,6 @@ export class ControlMicrobiologicoLiberacionService {
       id: 1,
       numeroFrasco: 1,
       volumen: 150,
-      // observaciones: null,
       fechaPasteurizacion: '2024-11-20',
       ciclo: 1,
       lote: 1
@@ -25,7 +24,6 @@ export class ControlMicrobiologicoLiberacionService {
       id: 2,
       numeroFrasco: 2,
       volumen: 200,
-      // observaciones: null,
       fechaPasteurizacion: '2024-11-20',
       ciclo: 1,
       lote: 1
@@ -34,7 +32,6 @@ export class ControlMicrobiologicoLiberacionService {
       id: 3,
       numeroFrasco: 3,
       volumen: 175,
-      // observaciones: null,
       fechaPasteurizacion: '2024-11-21',
       ciclo: 1,
       lote: 2
@@ -43,7 +40,6 @@ export class ControlMicrobiologicoLiberacionService {
       id: 4,
       numeroFrasco: 4,
       volumen: 180,
-      // observaciones: null,
       fechaPasteurizacion: '2024-11-21',
       ciclo: 1,
       lote: 2
@@ -52,10 +48,33 @@ export class ControlMicrobiologicoLiberacionService {
       id: 5,
       numeroFrasco: 5,
       volumen: 160,
-      // observaciones: null,
       fechaPasteurizacion: '2024-11-22',
       ciclo: 2,
       lote: 1
+    },
+    {
+      id: 6,
+      numeroFrasco: 6,
+      volumen: 185,
+      fechaPasteurizacion: '2024-11-22',
+      ciclo: 2,
+      lote: 1
+    },
+    {
+      id: 7,
+      numeroFrasco: 7,
+      volumen: 170,
+      fechaPasteurizacion: '2024-11-23',
+      ciclo: 2,
+      lote: 2
+    },
+    {
+      id: 8,
+      numeroFrasco: 8,
+      volumen: 190,
+      fechaPasteurizacion: '2024-11-23',
+      ciclo: 2,
+      lote: 2
     }
   ];
 
@@ -90,9 +109,13 @@ export class ControlMicrobiologicoLiberacionService {
   constructor() { }
 
   getFrascosPasteurizadosPorCicloLote(ciclo: number, lote: number): Observable<FrascoPasteurizadoData[]> {
+    console.log(`Buscando frascos para ciclo: ${ciclo}, lote: ${lote}`);
+
     const frascosFiltrados = this.frascosPasteurizadosMock.filter(
       frasco => frasco.ciclo === ciclo && frasco.lote === lote
     );
+
+    console.log('Frascos encontrados:', frascosFiltrados);
 
     return of(frascosFiltrados).pipe(delay(800));
   }

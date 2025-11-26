@@ -111,4 +111,20 @@ export class ControlReenvaseService {
         })
       );
   }
+
+  getControlReenvaseById(id: number): Observable<any> {
+    return this.http.get<BackendResponse<any>>(`${environment.ApiBLH}/getControlReenvase/${id}`, {
+      observe: 'response'
+    })
+      .pipe(
+        map(response => {
+          if (response.status === 204) return null;
+          return response.body?.data || null;
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error en getControlReenvaseById:', error);
+          return throwError(() => error);
+        })
+      );
+  }
 }

@@ -149,7 +149,7 @@ export class ControlLecheCrudaService {
    * Crea un registro de tabla a partir de los datos de la API
    */
   private crearRegistroTabla(item: EntradasSalidasApiResponse): ControlLecheCrudaData {
-    
+
     const datosExtraccion = this.extraerDatosExtraccion(item);
     const fechaVencimiento = this.calcularFechaVencimiento(datosExtraccion.fechaExtraccion);
     const diasPosparto = this.calcularDiasPosparto(
@@ -215,7 +215,7 @@ export class ControlLecheCrudaService {
    * Obtiene la edad gestacional formateada
    */
   private obtenerEdadGestacional(gestacion: any): string {
-    return gestacion?.semanas ? `${gestacion.semanas}.0` : '';
+    return gestacion?.semanas ? gestacion.semanas.toString() : '';
   }
 
   /**

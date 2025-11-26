@@ -5,7 +5,25 @@
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>
 
-<control-reenvase-table (rowClick)="onRowClick($event)" />
+<div class="flex justify-between items-center mx-4 mt-6">
+  <div class="flex gap-3 items-center">
+    <span class="font-semibold text-gray-700">Filtros:</span>
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.no_donante" (input)="aplicarFiltros()"
+      placeholder="No. Donante" class="w-40" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.ciclo" (input)="aplicarFiltros()" placeholder="Ciclo"
+      class="w-32" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      class="w-32" />
+
+    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+      (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+  </div>
+</div>
+
+<control-reenvase-table [filtrosBusqueda]="filtrosBusqueda" (rowClick)="onRowClick($event)" />
 
 @if (showPasterizacionDialog && selectedControlReenvaseData) {
 <pasterizacion-dialog [visible]="showPasterizacionDialog" [controlReenvaseData]="selectedControlReenvaseData"

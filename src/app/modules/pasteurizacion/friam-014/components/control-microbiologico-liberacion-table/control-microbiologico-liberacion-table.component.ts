@@ -110,7 +110,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       },
       error: (error) => {
         this.loading.search = false;
-        console.error('Error en búsqueda:', error);
         this.mostrarMensaje('error', 'Error', 'Error al buscar frascos pasteurizados');
       }
     });
@@ -134,8 +133,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
     // Reemplazar completamente los datos
     this.dataControlMicrobiologico = nuevosRegistros;
-
-    console.log('Registros creados:', this.dataControlMicrobiologico.map(r => ({ uid: r._uid, numero: r.numero_frasco_pasteurizado })));
 
     this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} pasteurizado${frascos.length > 1 ? 's' : ''}`);
   }
@@ -214,8 +211,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
     // Establecer el ID de la fila actual como editando
     this.editingRowId = currentRowId;
-
-    console.log('Editando fila ID:', this.editingRowId, 'Número frasco:', dataRow.numero_frasco_pasteurizado);
   }
 
   onRowEditSave(dataRow: ControlMicrobiologicoLiberacionData, index: number, event: MouseEvent): void {
@@ -249,7 +244,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
         this.procesarRespuestaCreacion(response, dataRow, rowElement);
       },
       error: (error) => {
-        console.error('Error al guardar:', error);
         this.mostrarMensaje('error', 'Error', 'Error al guardar el control microbiológico');
       }
     });
@@ -261,7 +255,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
         this.procesarRespuestaActualizacion(dataRow, rowElement);
       },
       error: (error) => {
-        console.error('Error al actualizar:', error);
         this.mostrarMensaje('error', 'Error', 'Error al actualizar el control microbiológico');
       }
     });
@@ -316,7 +309,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   private guardarEstadoOriginal(dataRow: ControlMicrobiologicoLiberacionData): void {
     const rowId = this.getRowId(dataRow);
     this.clonedData[rowId] = { ...dataRow };
-    console.log('Estado original guardado para:', rowId);
   }
 
   private restaurarEstadoOriginal(dataRow: ControlMicrobiologicoLiberacionData): void {
@@ -334,7 +326,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
         // Forzar actualización de la vista
         this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
-        console.log('Estado restaurado para:', rowId);
       }
     }
   }
@@ -350,7 +341,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private resetearEstadoEdicion(): void {
-    console.log('Reseteando estado de edición');
     this.editingRowId = null;
     this.clonedData = {}; // Limpiar completamente
   }
@@ -394,9 +384,7 @@ isRowCurrentlyEditing(rowData: ControlMicrobiologicoLiberacionData): boolean {
   const currentRowId = this.getRowId(rowData);
   const isCurrentlyEditing = this.editingRowId === currentRowId;
 
-  // Log para debugging (puedes remover en producción)
   if (isCurrentlyEditing) {
-    console.log(`✓ Fila en edición: ${currentRowId} (${rowData.numero_frasco_pasteurizado})`);
   }
 
   return isCurrentlyEditing;

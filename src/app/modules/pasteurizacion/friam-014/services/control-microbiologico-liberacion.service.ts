@@ -109,14 +109,9 @@ export class ControlMicrobiologicoLiberacionService {
   constructor() { }
 
   getFrascosPasteurizadosPorCicloLote(ciclo: number, lote: number): Observable<FrascoPasteurizadoData[]> {
-    console.log(`Buscando frascos para ciclo: ${ciclo}, lote: ${lote}`);
-
     const frascosFiltrados = this.frascosPasteurizadosMock.filter(
       frasco => frasco.ciclo === ciclo && frasco.lote === lote
     );
-
-    console.log('Frascos encontrados:', frascosFiltrados);
-
     return of(frascosFiltrados).pipe(delay(800));
   }
 

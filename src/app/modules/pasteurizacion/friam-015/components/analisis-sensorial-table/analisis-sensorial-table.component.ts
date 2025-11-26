@@ -114,7 +114,7 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   getDisplayValue(value: number | null): string {
     if (value === null) return 'Sin selección';
-    return value === 0 ? 'C' : 'NC';
+    return value === 1 ? 'C' : 'NC'; // C = 1 (Conforme), NC = 0 (No Conforme)
   }
 
   private transformarDatoBackendAFrontend(analisis: AnalisisSensorialBackendResponse): AnalisisSensorialData {

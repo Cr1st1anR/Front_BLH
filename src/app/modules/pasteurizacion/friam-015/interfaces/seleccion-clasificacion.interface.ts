@@ -1,3 +1,4 @@
+// Agregar a la interfaz para futuras mejoras
 export interface SeleccionClasificacionData {
   id?: number | null;
   fecha: string | Date | null;
@@ -23,6 +24,9 @@ export interface SeleccionClasificacionData {
   lote?: string;
   id_empleado_profesional?: number;
   id_empleado_auxiliar?: number;
+
+  // Nuevo campo para almacenar el ID real de infoSeleccionClasificacion cuando el backend lo envíe
+  id_info_seleccion_clasificacion?: number;
 }
 
 export interface LoadingState {
@@ -60,6 +64,12 @@ export interface FiltrosBusqueda {
   frasco_leche_cruda: string;
   ciclo: string;
   lote: string;
+}
+
+export interface ApiResponse<T> {
+  status: number;
+  statusmsg: string;
+  data: T;
 }
 
 export interface BackendResponse<T> {

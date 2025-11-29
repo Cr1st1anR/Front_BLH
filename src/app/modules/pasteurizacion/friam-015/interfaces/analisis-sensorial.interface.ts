@@ -21,12 +21,8 @@ export interface AnalisisSensorialBackendResponse {
   id: number;
   embalaje: number;
   suciedad: number;
-  color: number;
-  flavor: number;
-  seleccionClasificacion: {
-    id: number;
-    fecha?: string;
-  };
+  color: number;   
+  flavor: number;  
 }
 
 export interface BackendApiResponse<T> {

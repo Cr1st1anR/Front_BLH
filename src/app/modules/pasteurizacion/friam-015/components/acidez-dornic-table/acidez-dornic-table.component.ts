@@ -66,66 +66,53 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    if (this.idSeleccionClasificacion) {
-      this.loadDataAcidezDornic();
-      this.isInitialLoad = false;
-    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['idSeleccionClasificacion']?.currentValue && !this.isInitialLoad) {
-      this.loadDataAcidezDornic();
-    } else if (changes['idSeleccionClasificacion']?.currentValue && this.isInitialLoad) {
-      this.loadDataAcidezDornic();
-      this.isInitialLoad = false;
-    }
+  if (changes['idSeleccionClasificacion']?.currentValue) {
+    this.loadDataAcidezDornic();
   }
+}
 
   loadDataAcidezDornic(): void {
-    if (!this.idSeleccionClasificacion) {
-      return;
-    }
-
-    if (this.loading) {
-      return;
-    }
-
-    this.loading = true;
-
-    this.acidezDornicService.getAcidezDornicBySeleccionClasificacion(this.idSeleccionClasificacion)
-      .subscribe({
-        next: (acidezBackend: AcidezDornicBackendResponse | null) => {
-          if (acidezBackend) {
-            // Si hay datos, transformarlos
-            this.dataAcidezDornic = [this.transformarDatoBackendAFrontend(acidezBackend)];
-            this.mostrarExito('Acidez Dornic cargada correctamente');
-          } else {
-            // Si no hay datos, crear fila vacía por defecto
-            this.dataAcidezDornic = [this.construirRegistroVacio()];
-            this.mostrarInfo('No hay acidez dornic registrada. Complete los campos.');
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.loading = false;
-          this.manejarErrorCarga(error);
-        }
-      });
+  if (!this.idSeleccionClasificacion || this.loading) {
+    return;
   }
+
+  this.loading = true;
+
+  this.acidezDornicService.getAcidezDornicBySeleccionClasificacion(this.idSeleccionClasificacion)
+    .subscribe({
+      next: (acidezBackend: AcidezDornicBackendResponse | null) => {
+        if (acidezBackend) {
+          this.dataAcidezDornic = [this.transformarDatoBackendAFrontend(acidezBackend)];
+          this.mostrarExito('Acidez Dornic cargada correctamente');
+        } else {
+          this.dataAcidezDornic = [this.construirRegistroVacio()];
+          this.mostrarInfo('No hay acidez dornic registrada. Complete los campos.');
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        this.manejarErrorCarga(error);
+      }
+    });
+}
 
   private transformarDatoBackendAFrontend(acidez: AcidezDornicBackendResponse): AcidezDornicData {
-    return {
-      id: acidez.id,
-      a1: acidez.a1,
-      a2: acidez.a2,
-      a3: acidez.a3,
-      media: acidez.media,
-      factor: acidez.factor,
-      resultado: acidez.resultado,
-      id_seleccion_clasificacion: acidez.seleccionClasificacion.id,
-      isNew: false
-    };
-  }
+  return {
+    id: acidez.id,
+    a1: acidez.primera,
+    a2: acidez.segunda,
+    a3: acidez.tercera,
+    media: acidez.resultado,
+    factor: 1,
+    resultado: acidez.resultado,
+    id_seleccion_clasificacion: this.idSeleccionClasificacion!,
+    isNew: false
+  };
+}
 
   private construirRegistroVacio(): AcidezDornicData {
     return {
@@ -134,7 +121,7 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
       a2: null,
       a3: null,
       media: null,
-      factor: 1, // Siempre es 1
+      factor: 1,
       resultado: null,
       id_seleccion_clasificacion: this.idSeleccionClasificacion!,
       isNew: true
@@ -147,10 +134,8 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
     const a2 = rowData.a2 !== null ? Number(rowData.a2) : 0;
     const a3 = rowData.a3 !== null ? Number(rowData.a3) : 0;
 
-    // Calcular media: (A1 + A2 + A3) / 3
     if (rowData.a1 !== null && rowData.a2 !== null && rowData.a3 !== null) {
       rowData.media = (a1 + a2 + a3) / 3;
-      // El resultado es igual a la media (ya que el factor siempre es 1)
       rowData.resultado = rowData.media;
     } else {
       rowData.media = null;
@@ -168,7 +153,6 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Recalcular antes de guardar
     this.calcularMedia(dataRow);
 
     const rowElement = this.obtenerElementoFila(event);
@@ -182,7 +166,6 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
 
   onRowEditCancel(dataRow: AcidezDornicData, index: number): void {
     if (dataRow.isNew) {
-      // Si es nuevo y se cancela, restaurar la fila vacía
       this.dataAcidezDornic[index] = this.construirRegistroVacio();
       this.dataAcidezDornic = [...this.dataAcidezDornic];
     } else {
@@ -198,42 +181,41 @@ export class AcidezDornicTableComponent implements OnInit, OnChanges {
   }
 
   private procesarCreacionAcidez(dataRow: AcidezDornicData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.acidezDornicService.postAcidezDornic(datosParaBackend).subscribe({
-      next: (response: AcidezDornicBackendResponse) => {
-        this.manejarExitoCreacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorCreacion(error);
-      }
-    });
-  }
+  this.acidezDornicService.postAcidezDornic(datosParaBackend).subscribe({
+    next: (response: AcidezDornicBackendResponse) => {
+      this.manejarExitoCreacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorCreacion(error);
+    }
+  });
+}
+
 
   private procesarActualizacionAcidez(dataRow: AcidezDornicData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.acidezDornicService.putAcidezDornic(dataRow.id!, datosParaBackend).subscribe({
-      next: (response) => {
-        this.manejarExitoActualizacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorActualizacion(error);
-      }
-    });
-  }
+  this.acidezDornicService.putAcidezDornic(dataRow.id!, datosParaBackend).subscribe({
+    next: (response) => {
+      this.manejarExitoActualizacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorActualizacion(error);
+    }
+  });
+}
 
   private prepararDatosParaBackend(dataRow: AcidezDornicData): AcidezDornicBackendRequest {
-    return {
-      a1: Number(dataRow.a1),
-      a2: Number(dataRow.a2),
-      a3: Number(dataRow.a3),
-      media: Number(dataRow.media),
-      factor: dataRow.factor,
-      resultado: Number(dataRow.resultado),
-      seleccionClasificacion: { id: this.idSeleccionClasificacion! }
-    };
-  }
+  return {
+    primera: Number(dataRow.a1),
+    segunda: Number(dataRow.a2),
+    tercera: Number(dataRow.a3),
+    resultado: Number(dataRow.resultado),
+    seleccionClasificacion: { id: this.idSeleccionClasificacion! }
+  };
+}
 
   private manejarExitoCreacion(dataRow: AcidezDornicData, response: AcidezDornicBackendResponse, rowElement: HTMLTableRowElement): void {
     dataRow.isNew = false;

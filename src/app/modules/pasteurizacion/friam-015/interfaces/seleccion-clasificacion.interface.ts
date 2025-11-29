@@ -1,4 +1,3 @@
-// Agregar a la interfaz para futuras mejoras
 export interface SeleccionClasificacionData {
   id?: number | null;
   fecha: string | Date | null;
@@ -24,9 +23,7 @@ export interface SeleccionClasificacionData {
   lote?: string;
   id_empleado_profesional?: number;
   id_empleado_auxiliar?: number;
-
-  // Nuevo campo para almacenar el ID real de infoSeleccionClasificacion cuando el backend lo envíe
-  id_info_seleccion_clasificacion?: number;
+  id_info_seleccion_clasificacion?: number | null;
 }
 
 export interface LoadingState {

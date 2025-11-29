@@ -30,8 +30,8 @@
           @if (col.field === 'ct1' || col.field === 'ct2' || col.field === 'ct3') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" step="0.01" [(ngModel)]="rowData[col.field]"
-                (ngModelChange)="calcularMedias(rowData)" class="w-full" placeholder="0.00">
+              <input pInputText type="number" step="0.1" [(ngModel)]="rowData[col.field]"
+                (ngModelChange)="calcularMedias(rowData)" class="w-full" placeholder="0.0">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData[col.field] !== null ? rowData[col.field] : 'Sin dato' }}
@@ -42,7 +42,7 @@
           <!-- MEDIA CT -->
           @else if (col.field === 'media_ct') {
           <span class="font-semibold text-blue-600">
-            {{ rowData.media_ct !== null ? (rowData.media_ct | number:'1.2-2') : 'Sin dato' }}
+            {{ rowData.media_ct !== null ? (rowData.media_ct | number:'1.1-1') : 'Sin dato' }}
           </span>
           }
 
@@ -50,8 +50,8 @@
           @else if (col.field === 'cc1' || col.field === 'cc2' || col.field === 'cc3') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="number" step="0.01" [(ngModel)]="rowData[col.field]"
-                (ngModelChange)="calcularMedias(rowData)" class="w-full" placeholder="0.00">
+              <input pInputText type="number" step="0.1" [(ngModel)]="rowData[col.field]"
+                (ngModelChange)="calcularMedias(rowData)" class="w-full" placeholder="0.0">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData[col.field] !== null ? rowData[col.field] : 'Sin dato' }}
@@ -62,7 +62,7 @@
           <!-- MEDIA CC -->
           @else if (col.field === 'media_cc') {
           <span class="font-semibold text-green-600">
-            {{ rowData.media_cc !== null ? (rowData.media_cc | number:'1.2-2') : 'Sin dato' }}
+            {{ rowData.media_cc !== null ? (rowData.media_cc | number:'1.1-1') : 'Sin dato' }}
           </span>
           }
 

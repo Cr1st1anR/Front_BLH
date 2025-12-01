@@ -143,7 +143,11 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
   // ============= CÁLCULO DE MEDIAS =============
 
   private calcularMediaCt(ct1: number | null, ct2: number | null, ct3: number | null): number | null {
-  const valores = [ct1, ct2, ct3].filter(val => val !== null && val !== undefined) as number[];
+  const valores = [ct1, ct2, ct3].filter(val => {
+    if (val === null || val === undefined) return false;
+    const numero = Number(val);
+    return !isNaN(numero);
+  }).map(val => Number(val));
 
   if (valores.length === 0) return null;
 
@@ -152,7 +156,11 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
 }
 
 private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | null): number | null {
-  const valores = [cc1, cc2, cc3].filter(val => val !== null && val !== undefined) as number[];
+  const valores = [cc1, cc2, cc3].filter(val => {
+    if (val === null || val === undefined) return false;
+    const numero = Number(val);
+    return !isNaN(numero);
+  }).map(val => Number(val));
 
   if (valores.length === 0) return null;
 
@@ -160,12 +168,30 @@ private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | nu
   return suma / valores.length;
 }
 
-  calcularMedias(rowData: CrematocritoData): void {
+calcularMedias(rowData: CrematocritoData): void {
+  rowData.ct1 = this.limpiarValor(rowData.ct1);
+  rowData.ct2 = this.limpiarValor(rowData.ct2);
+  rowData.ct3 = this.limpiarValor(rowData.ct3);
+  rowData.cc1 = this.limpiarValor(rowData.cc1);
+  rowData.cc2 = this.limpiarValor(rowData.cc2);
+  rowData.cc3 = this.limpiarValor(rowData.cc3);
+
   rowData.media_ct = this.calcularMediaCt(rowData.ct1, rowData.ct2, rowData.ct3);
-
   rowData.media_cc = this.calcularMediaCc(rowData.cc1, rowData.cc2, rowData.cc3);
-
   rowData.kcal_l = this.calcularKcalL(rowData.media_ct, rowData.media_cc);
+}
+
+private limpiarValor(valor: any): number | null {
+  if (valor === null || valor === undefined) {
+    return null;
+  }
+
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return null;
+  }
+
+  const numero = Number(valor);
+  return isNaN(numero) ? null : numero;
 }
 
   // ============= MÉTODO PARA KCAL/L =============
@@ -245,15 +271,33 @@ private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | nu
 
   private prepararDatosParaBackend(dataRow: CrematocritoData): CrematocritoBackendRequest {
   return {
-    ct1: dataRow.ct1 !== null ? Number(dataRow.ct1) : null,
-    ct2: dataRow.ct2 !== null ? Number(dataRow.ct2) : null,
-    ct3: dataRow.ct3 !== null ? Number(dataRow.ct3) : null,
-    cc1: dataRow.cc1 !== null ? Number(dataRow.cc1) : null,
-    cc2: dataRow.cc2 !== null ? Number(dataRow.cc2) : null,
-    cc3: dataRow.cc3 !== null ? Number(dataRow.cc3) : null,
+    ct1: this.convertirANumeroONull(dataRow.ct1),
+    ct2: this.convertirANumeroONull(dataRow.ct2),
+    ct3: this.convertirANumeroONull(dataRow.ct3),
+    cc1: this.convertirANumeroONull(dataRow.cc1),
+    cc2: this.convertirANumeroONull(dataRow.cc2),
+    cc3: this.convertirANumeroONull(dataRow.cc3),
     kcal: Number(dataRow.kcal_l),
     seleccionClasificacion: { id: this.idSeleccionClasificacion! }
   };
+}
+
+private convertirANumeroONull(valor: any): number | null {
+  if (valor === null || valor === undefined) {
+    return null;
+  }
+
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return null;
+  }
+
+  const numero = Number(valor);
+
+  if (isNaN(numero)) {
+    return null;
+  }
+
+  return numero;
 }
 
   private manejarExitoCreacion(dataRow: CrematocritoData, response: CrematocritoBackendResponse, rowElement: HTMLTableRowElement): void {
@@ -295,9 +339,8 @@ private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | nu
   }
 
   private validarCamposRequeridos(dataRow: CrematocritoData): boolean {
-  const valoresCt = [dataRow.ct1, dataRow.ct2, dataRow.ct3].filter(val => val !== null && val !== undefined);
-
-  const valoresCc = [dataRow.cc1, dataRow.cc2, dataRow.cc3].filter(val => val !== null && val !== undefined);
+  const valoresCt = [dataRow.ct1, dataRow.ct2, dataRow.ct3].filter(val => this.esValorValido(val));
+  const valoresCc = [dataRow.cc1, dataRow.cc2, dataRow.cc3].filter(val => this.esValorValido(val));
 
   const tieneCtSuficientes = valoresCt.length >= 2;
   const tieneCcSuficientes = valoresCc.length >= 2;
@@ -313,6 +356,19 @@ private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | nu
   }
 
   return true;
+}
+
+esValorValido(valor: any): boolean {
+  if (valor === null || valor === undefined) {
+    return false;
+  }
+
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return false;
+  }
+
+  const numero = Number(valor);
+  return !isNaN(numero);
 }
 
   private getRowId(dataRow: CrematocritoData): string {

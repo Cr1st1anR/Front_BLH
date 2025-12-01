@@ -27,12 +27,12 @@ export interface CrematocritoBackendRequest {
 
 export interface CrematocritoBackendResponse {
   id: number;
-  ct1: number;
-  ct2: number;
-  ct3: number;
-  cc1: number;
-  cc2: number;
-  cc3: number;
+  ct1: number | null;
+  ct2: number | null;
+  ct3: number | null;
+  cc1: number | null;
+  cc2: number | null;
+  cc3: number | null;
   kcal: number;
 }
 

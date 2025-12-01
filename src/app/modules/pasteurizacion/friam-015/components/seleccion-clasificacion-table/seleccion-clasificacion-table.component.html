@@ -56,6 +56,8 @@
               [pTooltip]="col.header.replace('\n', ' ')" tooltipPosition="top" [disabled]="isAnyRowEditing()">
             </button>
           </div>
+          } @else if (col.field === 'no_frasco_procesado' || col.field === 'frasco_leche_cruda') {
+          <div class="text-center text-xs leading-tight" [innerHTML]="formatearCodigoFrasco(rowData[col.field])"></div>
           } @else {
           <span>{{ rowData[col.field] }}</span>
           }

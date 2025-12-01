@@ -118,53 +118,53 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   // ============= INICIALIZACIÓN =============
   private async inicializarComponente(): Promise<void> {
-  try {
-    await this.cargarEmpleados();
-  } catch (error) {
-    console.error('Error al inicializar componente:', error);
-    this.mostrarMensaje('error', 'Error', 'Error al cargar datos iniciales');
+    try {
+      await this.cargarEmpleados();
+    } catch (error) {
+      console.error('Error al inicializar componente:', error);
+      this.mostrarMensaje('error', 'Error', 'Error al cargar datos iniciales');
+    }
   }
-}
 
   private cargarEmpleados(): Promise<void> {
-  return new Promise((resolve) => {
-    this.loading.empleados = true;
+    return new Promise((resolve) => {
+      this.loading.empleados = true;
 
-    this.seleccionClasificacionService.getEmpleados().subscribe({
-      next: (response: any) => {
-        if (response && response.data && Array.isArray(response.data)) {
-          if (response.data.length > 0) {
-            const empleados = this.transformarEmpleadosDesdeAPI(response.data);
-            this.procesarEmpleadosTransformados(empleados);
-            console.info(`${response.data.length} empleados cargados correctamente`);
+      this.seleccionClasificacionService.getEmpleados().subscribe({
+        next: (response: any) => {
+          if (response && response.data && Array.isArray(response.data)) {
+            if (response.data.length > 0) {
+              const empleados = this.transformarEmpleadosDesdeAPI(response.data);
+              this.procesarEmpleadosTransformados(empleados);
+              console.info(`${response.data.length} empleados cargados correctamente`);
+            } else {
+              this.opcionesProfesionales = [];
+              this.opcionesAuxiliares = [];
+              console.warn('No hay empleados registrados en el sistema');
+            }
           } else {
             this.opcionesProfesionales = [];
             this.opcionesAuxiliares = [];
-            console.warn('No hay empleados registrados en el sistema');
+            console.warn('Respuesta de empleados inválida');
           }
-        } else {
+
+          this.loading.empleados = false;
+          resolve();
+        },
+        error: (error: any) => {
+          console.error('Error al cargar empleados:', error);
           this.opcionesProfesionales = [];
           this.opcionesAuxiliares = [];
-          console.warn('Respuesta de empleados inválida');
+          this.loading.empleados = false;
+
+          const mensajeError = this.extraerMensajeError(error);
+          this.mostrarMensaje('warn', 'Advertencia', `No se pudieron cargar los empleados: ${mensajeError}`);
+
+          resolve();
         }
-
-        this.loading.empleados = false;
-        resolve();
-      },
-      error: (error: any) => {
-        console.error('Error al cargar empleados:', error);
-        this.opcionesProfesionales = [];
-        this.opcionesAuxiliares = [];
-        this.loading.empleados = false;
-
-        const mensajeError = this.extraerMensajeError(error);
-        this.mostrarMensaje('warn', 'Advertencia', `No se pudieron cargar los empleados: ${mensajeError}`);
-
-        resolve();
-      }
+      });
     });
-  });
-}
+  }
 
   // ============= TRANSFORMACIÓN DE DATOS DESDE API =============
   private transformarDatosDesdeAPI(registros: any[]): SeleccionClasificacionData[] {
@@ -180,9 +180,9 @@ export class SeleccionClasificacionTableComponent implements OnInit {
           registro.controlReenvase?.madreDonante?.gestacion?.fechaParto,
           origen.fechaExtraccion
         ),
-        no_frasco_procesado: '',
+        no_frasco_procesado: this.generarCodigoFrascosProcesados(registro.controlReenvase?.frascosPasteurizados || []),
         donante: registro.controlReenvase?.madreDonante?.id?.toString() || '',
-        frasco_leche_cruda: origen.frascoId?.toString() || '',
+        frasco_leche_cruda: this.generarCodigoFrascoCrudo(origen.frascoId),
         edad_gestacional: registro.controlReenvase?.madreDonante?.gestacion?.semanas || 0,
         volumen: origen.volumen?.toString() || '',
         nombre_profesional: registro.infoSeleccionClasificacion?.profesional?.nombre || '',
@@ -203,7 +203,39 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   private determinarOrigenDatos(controlReenvase: any): any {
-  if (!controlReenvase?.madreDonante?.entradasSalidas) {
+    if (!controlReenvase?.madreDonante?.entradasSalidas) {
+      return {
+        gaveta: null,
+        fechaExtraccion: null,
+        volumen: null,
+        frascoId: null
+      };
+    }
+
+    const entradasSalidas = controlReenvase.madreDonante.entradasSalidas[0];
+
+    if (entradasSalidas?.extraccion) {
+      const extraccion = entradasSalidas.extraccion;
+
+      return {
+        gaveta: extraccion.gaveta,
+        fechaExtraccion: extraccion.fechaExtraccion,
+        volumen: extraccion.cantidad,
+        frascoId: extraccion.id
+      };
+    }
+
+    else if (entradasSalidas?.frascoRecolectado) {
+      const frascoRecolectado = entradasSalidas.frascoRecolectado;
+
+      return {
+        gaveta: frascoRecolectado.gaveta,
+        fechaExtraccion: frascoRecolectado.fechaDeExtraccion,
+        volumen: frascoRecolectado.volumen,
+        frascoId: frascoRecolectado.id
+      };
+    }
+
     return {
       gaveta: null,
       fechaExtraccion: null,
@@ -211,38 +243,6 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       frascoId: null
     };
   }
-  
-  const entradasSalidas = controlReenvase.madreDonante.entradasSalidas[0];
-
-  if (entradasSalidas?.extraccion) {
-    const extraccion = entradasSalidas.extraccion;
-
-    return {
-      gaveta: extraccion.gaveta,
-      fechaExtraccion: extraccion.fechaExtraccion,
-      volumen: extraccion.cantidad,
-      frascoId: extraccion.id
-    };
-  }
-
-  else if (entradasSalidas?.frascoRecolectado) {
-    const frascoRecolectado = entradasSalidas.frascoRecolectado;
-
-    return {
-      gaveta: frascoRecolectado.gaveta,
-      fechaExtraccion: frascoRecolectado.fechaDeExtraccion,
-      volumen: frascoRecolectado.volumen,
-      frascoId: frascoRecolectado.id
-    };
-  }
-
-  return {
-    gaveta: null,
-    fechaExtraccion: null,
-    volumen: null,
-    frascoId: null
-  };
-}
 
   private calcularDiasProduccion(fechaParto: string, fechaExtraccion: string): string {
     if (!fechaParto || !fechaExtraccion) return '';
@@ -504,6 +504,55 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
+  // ============= FUNCIONES PARA GENERAR CÓDIGOS DE FRASCOS =============
+
+  private obtenerAñoActualCorto(): string {
+    const añoCompleto = new Date().getFullYear();
+    return añoCompleto.toString().slice(-2);
+  }
+
+  private generarCodigoFrascosProcesados(frascosPasteurizados: any[]): string {
+    if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
+      return 'Sin frascos\nprocesados';
+    }
+
+    const añoActual = this.obtenerAñoActualCorto();
+
+    const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
+      const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
+      const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
+
+      return tieneNumero && sinObservaciones;
+    });
+
+    if (frascosSinObservaciones.length === 0) {
+      return 'Frascos con\nobservaciones';
+    }
+
+    const numerosFrascos = frascosSinObservaciones
+      .map(frasco => frasco.numeroFrasco)
+      .sort((a, b) => a - b);
+
+    if (numerosFrascos.length === 1) {
+      const resultado = `LHP ${añoActual}\n${numerosFrascos[0]}`;
+      return resultado;
+    } else {
+      const frascoInicial = numerosFrascos[0];
+      const frascoFinal = numerosFrascos[numerosFrascos.length - 1];
+      const resultado = `LHP ${añoActual}\n${frascoInicial} -\n${frascoFinal}`;
+      return resultado;
+    }
+  }
+
+  private generarCodigoFrascoCrudo(idFrasco: number | null): string {
+    if (!idFrasco) {
+      return '';
+    }
+
+    const añoActual = this.obtenerAñoActualCorto();
+    return `LHC ${añoActual}\n${idFrasco}`;
+  }
+
   // ============= VALIDACIONES =============
   private validarCamposRequeridos(dataRow: SeleccionClasificacionData): boolean {
     return !!(
@@ -558,6 +607,32 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     return dataRow.id?.toString() || 'unknown';
   }
 
+  // ============= UTILIDADES PARA FORMATEO =============
+
+  formatearCodigoFrasco(codigo: string): string {
+    if (!codigo) {
+      return '<span class="text-gray-400 italic text-xs">Sin datos</span>';
+    }
+
+    if (codigo.includes('Sin frascos')) {
+      return `<span class="text-gray-500 italic text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.includes('observaciones')) {
+      return `<span class="text-orange-500 italic text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.startsWith('LHP')) {
+      return `<span class="text-blue-600 font-medium text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.startsWith('LHC')) {
+      return `<span class="text-green-600 font-medium text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    return codigo.replace(/\n/g, '<br>');
+  }
+
   // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: SeleccionClasificacionData): boolean {
     return this.editingRow !== null && this.editingRow.id === rowData.id;
@@ -585,50 +660,50 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   // ============= FILTROS =============
   filtrarPorFecha(filtro: FiltroFecha | null): void {
-  this.filtroFecha = filtro;
+    this.filtroFecha = filtro;
 
-  if (filtro) {
-    this.loading.main = true;
-    this.seleccionClasificacionService
-      .getSeleccionClasificacionPorMesYAnio(filtro.month, filtro.year)
-      .subscribe({
-        next: (response: any) => {
-          if (response && response.data && Array.isArray(response.data)) {
-            if (response.data.length > 0) {
-              this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
-              this.mostrarMensajeExitosoCarga(true);
+    if (filtro) {
+      this.loading.main = true;
+      this.seleccionClasificacionService
+        .getSeleccionClasificacionPorMesYAnio(filtro.month, filtro.year)
+        .subscribe({
+          next: (response: any) => {
+            if (response && response.data && Array.isArray(response.data)) {
+              if (response.data.length > 0) {
+                this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
+                this.mostrarMensajeExitosoCarga(true);
+              } else {
+                this.dataOriginal = [];
+                this.mostrarMensajeExitosoCarga(false);
+              }
             } else {
               this.dataOriginal = [];
               this.mostrarMensajeExitosoCarga(false);
             }
-          } else {
+
+            this.aplicarFiltros();
+            this.loading.main = false;
+            this.mostrarNotificacionFiltro();
+          },
+          error: (error: any) => {
+            console.error('Error al filtrar por fecha:', error);
             this.dataOriginal = [];
-            this.mostrarMensajeExitosoCarga(false);
+            this.aplicarFiltros();
+            this.loading.main = false;
+
+            const mensajeError = this.extraerMensajeError(error);
+            this.mostrarMensaje('error', 'Error', `Error al cargar datos: ${mensajeError}`);
           }
-
-          this.aplicarFiltros();
-          this.loading.main = false;
-          this.mostrarNotificacionFiltro();
-        },
-        error: (error: any) => {
-          console.error('Error al filtrar por fecha:', error);
-          this.dataOriginal = [];
-          this.aplicarFiltros();
-          this.loading.main = false;
-
-          const mensajeError = this.extraerMensajeError(error);
-          this.mostrarMensaje('error', 'Error', `Error al cargar datos: ${mensajeError}`);
-        }
-      });
-  } else {
-    this.dataOriginal = [];
-    this.aplicarFiltros();
+        });
+    } else {
+      this.dataOriginal = [];
+      this.aplicarFiltros();
+    }
   }
-}
 
-isTableInitialized(): boolean {
-  return !this.loading.empleados;
-}
+  isTableInitialized(): boolean {
+    return !this.loading.empleados;
+  }
 
   aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
     this.filtrosBusqueda = filtros;
@@ -687,38 +762,38 @@ isTableInitialized(): boolean {
   }
 
   private mostrarNotificacionFiltro(): void {
-  const cantidad = this.dataFiltered.length;
+    const cantidad = this.dataFiltered.length;
 
-  if (this.filtroFecha) {
-    const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+    if (this.filtroFecha) {
+      const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
 
-    const hayFiltrosBusqueda = Object.values(this.filtrosBusqueda).some(filtro => filtro.trim() !== '');
+      const hayFiltrosBusqueda = Object.values(this.filtrosBusqueda).some(filtro => filtro.trim() !== '');
 
-    if (hayFiltrosBusqueda) {
-      const mensaje = cantidad > 0
-        ? `${cantidad} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} después de aplicar filtros`
-        : `No se encontraron registros que coincidan con los filtros aplicados`;
+      if (hayFiltrosBusqueda) {
+        const mensaje = cantidad > 0
+          ? `${cantidad} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} después de aplicar filtros`
+          : `No se encontraron registros que coincidan con los filtros aplicados`;
 
-      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', 'Filtros aplicados', mensaje);
+        this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', 'Filtros aplicados', mensaje);
+      }
     }
   }
-}
 
   // ============= MENSAJES =============
   private mostrarMensajeExitosoCarga(hayDatos: boolean): void {
-  if (!this.filtroFecha) return;
+    if (!this.filtroFecha) return;
 
-  const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
-  const cantidad = this.dataOriginal.length;
+    const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+    const cantidad = this.dataOriginal.length;
 
-  if (hayDatos) {
-    const mensaje = `${cantidad} registro${cantidad > 1 ? 's' : ''} cargado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`;
-    this.mostrarMensaje('success', 'Datos cargados', mensaje);
-  } else {
-    const mensaje = `No hay registros de selección y clasificación para ${nombreMes} ${this.filtroFecha.year}`;
-    this.mostrarMensaje('info', 'Sin datos', mensaje);
+    if (hayDatos) {
+      const mensaje = `${cantidad} registro${cantidad > 1 ? 's' : ''} cargado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`;
+      this.mostrarMensaje('success', 'Datos cargados', mensaje);
+    } else {
+      const mensaje = `No hay registros de selección y clasificación para ${nombreMes} ${this.filtroFecha.year}`;
+      this.mostrarMensaje('info', 'Sin datos', mensaje);
+    }
   }
-}
 
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({

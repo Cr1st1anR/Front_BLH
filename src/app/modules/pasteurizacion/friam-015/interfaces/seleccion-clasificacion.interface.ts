@@ -21,8 +21,8 @@ export interface SeleccionClasificacionData {
   n_lote_medios_cultivo?: string;
   fecha_vencimiento_cultivos?: string | Date | null;
   lote?: string;
-  id_empleado_profesional?: number;
-  id_empleado_auxiliar?: number;
+  id_empleado_profesional?: number | null;
+  id_empleado_auxiliar?: number | null;
   id_info_seleccion_clasificacion?: number | null;
 }
 

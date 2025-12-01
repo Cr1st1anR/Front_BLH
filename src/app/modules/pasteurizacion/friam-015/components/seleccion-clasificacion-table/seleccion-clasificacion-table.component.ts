@@ -127,25 +127,44 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 }
 
   private cargarEmpleados(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.loading.empleados = true;
+  return new Promise((resolve) => {
+    this.loading.empleados = true;
 
-      this.seleccionClasificacionService.getEmpleados().subscribe({
-        next: (response: any) => {
-          const empleados = this.transformarEmpleadosDesdeAPI(response.data);
-          this.procesarEmpleadosTransformados(empleados);
-          this.loading.empleados = false;
-          resolve();
-        },
-        error: (error: any) => {
-          this.loading.empleados = false;
-          console.error('Error al cargar empleados:', error);
-          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los empleados');
-          reject(error);
+    this.seleccionClasificacionService.getEmpleados().subscribe({
+      next: (response: any) => {
+        if (response && response.data && Array.isArray(response.data)) {
+          if (response.data.length > 0) {
+            const empleados = this.transformarEmpleadosDesdeAPI(response.data);
+            this.procesarEmpleadosTransformados(empleados);
+            console.info(`${response.data.length} empleados cargados correctamente`);
+          } else {
+            this.opcionesProfesionales = [];
+            this.opcionesAuxiliares = [];
+            console.warn('No hay empleados registrados en el sistema');
+          }
+        } else {
+          this.opcionesProfesionales = [];
+          this.opcionesAuxiliares = [];
+          console.warn('Respuesta de empleados inválida');
         }
-      });
+
+        this.loading.empleados = false;
+        resolve();
+      },
+      error: (error: any) => {
+        console.error('Error al cargar empleados:', error);
+        this.opcionesProfesionales = [];
+        this.opcionesAuxiliares = [];
+        this.loading.empleados = false;
+
+        const mensajeError = this.extraerMensajeError(error);
+        this.mostrarMensaje('warn', 'Advertencia', `No se pudieron cargar los empleados: ${mensajeError}`);
+
+        resolve();
+      }
     });
-  }
+  });
+}
 
   // ============= TRANSFORMACIÓN DE DATOS DESDE API =============
   private transformarDatosDesdeAPI(registros: any[]): SeleccionClasificacionData[] {
@@ -568,19 +587,31 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       .getSeleccionClasificacionPorMesYAnio(filtro.month, filtro.year)
       .subscribe({
         next: (response: any) => {
-          if (response.data && response.data.length > 0) {
-            this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
+          if (response && response.data && Array.isArray(response.data)) {
+            if (response.data.length > 0) {
+              this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
+              this.mostrarMensajeExitosoCarga(true);
+            } else {
+              this.dataOriginal = [];
+              this.mostrarMensajeExitosoCarga(false);
+            }
           } else {
             this.dataOriginal = [];
+            this.mostrarMensajeExitosoCarga(false);
           }
+
           this.aplicarFiltros();
           this.loading.main = false;
           this.mostrarNotificacionFiltro();
         },
         error: (error: any) => {
           console.error('Error al filtrar por fecha:', error);
+          this.dataOriginal = [];
+          this.aplicarFiltros();
           this.loading.main = false;
-          this.mostrarMensaje('error', 'Error', 'Error al cargar datos del mes seleccionado');
+
+          const mensajeError = this.extraerMensajeError(error);
+          this.mostrarMensaje('error', 'Error', `Error al cargar datos: ${mensajeError}`);
         }
       });
   } else {
@@ -650,30 +681,38 @@ isTableInitialized(): boolean {
   }
 
   private mostrarNotificacionFiltro(): void {
-    const cantidad = this.dataFiltered.length;
-    const totalOriginal = this.dataOriginal.length;
+  const cantidad = this.dataFiltered.length;
 
-    if (this.filtroFecha) {
-      const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+  if (this.filtroFecha) {
+    const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+
+    const hayFiltrosBusqueda = Object.values(this.filtrosBusqueda).some(filtro => filtro.trim() !== '');
+
+    if (hayFiltrosBusqueda) {
       const mensaje = cantidad > 0
-        ? `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`
-        : `No se encontraron registros para ${nombreMes} ${this.filtroFecha.year}`;
+        ? `${cantidad} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} después de aplicar filtros`
+        : `No se encontraron registros que coincidan con los filtros aplicados`;
 
-      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', cantidad > 0 ? 'Filtro aplicado' : 'Sin resultados', mensaje);
-    } else {
-      this.mostrarMensaje('info', 'Filtro removido', `Mostrando todos los registros (${totalOriginal})`);
+      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', 'Filtros aplicados', mensaje);
     }
   }
+}
 
   // ============= MENSAJES =============
-  private mostrarMensajeExitosoCarga(): void {
-    const cantidad = this.dataOriginal.length;
-    const mensaje = cantidad > 0
-      ? `${cantidad} registro${cantidad > 1 ? 's' : ''} de selección y clasificación cargado${cantidad > 1 ? 's' : ''}`
-      : 'No se encontraron registros de selección y clasificación en la base de datos';
+  private mostrarMensajeExitosoCarga(hayDatos: boolean): void {
+  if (!this.filtroFecha) return;
 
-    this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
+  const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+  const cantidad = this.dataOriginal.length;
+
+  if (hayDatos) {
+    const mensaje = `${cantidad} registro${cantidad > 1 ? 's' : ''} cargado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`;
+    this.mostrarMensaje('success', 'Datos cargados', mensaje);
+  } else {
+    const mensaje = `No hay registros de selección y clasificación para ${nombreMes} ${this.filtroFecha.year}`;
+    this.mostrarMensaje('info', 'Sin datos', mensaje);
   }
+}
 
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({

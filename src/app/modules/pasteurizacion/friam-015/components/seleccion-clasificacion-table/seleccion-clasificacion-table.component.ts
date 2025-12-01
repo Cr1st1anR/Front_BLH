@@ -136,7 +136,6 @@ export class SeleccionClasificacionTableComponent implements OnInit {
             if (response.data.length > 0) {
               const empleados = this.transformarEmpleadosDesdeAPI(response.data);
               this.procesarEmpleadosTransformados(empleados);
-              console.info(`${response.data.length} empleados cargados correctamente`);
             } else {
               this.opcionesProfesionales = [];
               this.opcionesAuxiliares = [];

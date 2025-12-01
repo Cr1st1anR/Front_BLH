@@ -27,7 +27,7 @@ export class AcidezDornicService {
         return null;
       }),
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 404) {
+        if (error.status === 204) {
           return of(null);
         }
         console.error('Error en getAcidezDornicBySeleccionClasificacion:', error);

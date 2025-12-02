@@ -188,20 +188,18 @@
   <div class="form-section">
     <p-divider align="center" type="solid">
       <div class="inline-flex items-center">
-        <i class="pi pi-file-edit mr-2 text-primary"></i>
-        <b class="text-primary">DATOS DEL PROCESO MICROBIOLÓGICO</b>
+        <i class="pi pi-file-edit mr-2" style="color: #224186;"></i>
+        <b style="color: #224186;">DATOS DEL PROCESO MICROBIOLÓGICO</b>
       </div>
     </p-divider>
 
     <div class="form-grid">
       <!-- Card de Fechas y Horas -->
-      <p-card class="form-card dates-card">
-        <ng-template pTemplate="header">
-          <div class="card-header-custom">
-            <i class="pi pi-calendar text-blue-600"></i>
-            <span class="card-title">Fechas y Horarios</span>
-          </div>
-        </ng-template>
+      <div class="form-card dates-card">
+        <div class="card-header-custom">
+          <i class="pi pi-calendar" style="color: #224186;"></i>
+          <span class="card-title">Fechas y Horarios</span>
+        </div>
 
         <div class="form-fields-grid">
           <div class="form-field-group">
@@ -210,7 +208,7 @@
               Fecha de Siembra
             </label>
             <p-datepicker [(ngModel)]="datosFormulario.fechaSiembra" [iconDisplay]="'input'" [showIcon]="true"
-              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full custom-datepicker">
             </p-datepicker>
           </div>
 
@@ -219,8 +217,12 @@
               <i class="pi pi-clock text-orange-600"></i>
               Hora de Siembra
             </label>
-            <input pInputText type="time" [(ngModel)]="datosFormulario.horaSiembra" class="w-full time-input"
-              placeholder="00:00">
+            <p-datepicker [(ngModel)]="datosFormulario.horaSiembraAux" [timeOnly]="true" [showIcon]="true"
+              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
+              <ng-template pTemplate="inputicon">
+                <i class="pi pi-clock"></i>
+              </ng-template>
+            </p-datepicker>
           </div>
 
           <div class="form-field-group">
@@ -229,7 +231,7 @@
               Fecha Primera Lectura
             </label>
             <p-datepicker [(ngModel)]="datosFormulario.fechaPrimeraLectura" [iconDisplay]="'input'" [showIcon]="true"
-              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full custom-datepicker">
             </p-datepicker>
           </div>
 
@@ -238,20 +240,22 @@
               <i class="pi pi-clock text-red-600"></i>
               Hora Primera Lectura
             </label>
-            <input pInputText type="time" [(ngModel)]="datosFormulario.horaPrimeraLectura" class="w-full time-input"
-              placeholder="00:00">
+            <p-datepicker [(ngModel)]="datosFormulario.horaPrimeraLecturaAux" [timeOnly]="true" [showIcon]="true"
+              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
+              <ng-template pTemplate="inputicon">
+                <i class="pi pi-clock"></i>
+              </ng-template>
+            </p-datepicker>
           </div>
         </div>
-      </p-card>
+      </div>
 
       <!-- Card de Responsables -->
-      <p-card class="form-card staff-card">
-        <ng-template pTemplate="header">
-          <div class="card-header-custom">
-            <i class="pi pi-users text-indigo-600"></i>
-            <span class="card-title">Personal Responsable</span>
-          </div>
-        </ng-template>
+      <div class="form-card staff-card">
+        <div class="card-header-custom">
+          <i class="pi pi-users" style="color: #224186;"></i>
+          <span class="card-title">Personal Responsable</span>
+        </div>
 
         <div class="form-fields-grid">
           <div class="form-field-group">
@@ -260,19 +264,19 @@
               Responsable de Siembra
             </label>
             <p-select [(ngModel)]="datosFormulario.responsableSiembra" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
-              [loading]="loading.empleados">
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
             </p-select>
           </div>
 
           <div class="form-field-group">
             <label class="field-label">
-              <i class="pi pi-eye text-blue-600"></i>
+              <i class="pi pi-eye" style="color: #224186;"></i>
               Responsable de Lectura
             </label>
             <p-select [(ngModel)]="datosFormulario.responsableLectura" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
-              [loading]="loading.empleados">
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
             </p-select>
           </div>
 
@@ -282,8 +286,8 @@
               Responsable del Procesamiento
             </label>
             <p-select [(ngModel)]="datosFormulario.responsableProcesamiento" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
-              [loading]="loading.empleados">
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
             </p-select>
           </div>
 
@@ -294,11 +298,11 @@
             </label>
             <p-select [(ngModel)]="datosFormulario.coordinadorMedico" [options]="opcionesCoordinadores"
               optionLabel="label" optionValue="value" placeholder="Seleccione coordinador" appendTo="body"
-              class="w-full" [loading]="loading.empleados">
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
             </p-select>
           </div>
         </div>
-      </p-card>
+      </div>
     </div>
 
     <!-- Botones de acción del formulario -->

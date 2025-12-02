@@ -66,6 +66,7 @@
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
 
   &:hover {
     transform: translateY(-2px);
@@ -73,12 +74,13 @@
   }
 }
 
+// Ambas tarjetas con el mismo estilo
 .dates-card {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .staff-card {
-  background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .card-header-custom {
@@ -135,19 +137,6 @@
   }
 }
 
-.time-input {
-  padding: 0.75rem !important;
-  border: 2px solid #e5e7eb !important;
-  border-radius: 8px !important;
-  font-size: 0.95rem !important;
-  transition: all 0.2s ease !important;
-
-  &:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-}
-
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -175,7 +164,7 @@
   &:hover:not(:disabled) {
     background: linear-gradient(135deg, #576fa1 0%, #576fa1 100%) !important;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 6px 20px rgba(34, 65, 134, 0.3) !important;
   }
 }
 
@@ -196,7 +185,6 @@
 
 // ============= ESTILOS DE LA TABLA (EXISTENTES) =============
 
-// Estilos para los botones de búsqueda
 ::ng-deep .search-button {
   background-color: #224186 !important;
   border-color: #224186 !important;
@@ -227,7 +215,7 @@
   }
 }
 
-// Radio buttons horizontales - más juntos
+// Radio buttons horizontales
 .radio-container-horizontal {
   display: flex;
   justify-content: space-around;
@@ -314,56 +302,168 @@
     background-color: white;
   }
 
-  // Estilos para los campos del formulario
-  .p-datepicker {
-    width: 100%;
+  // ============= ESTILOS PERSONALIZADOS PARA LOS CAMPOS DEL FORMULARIO =============
 
+  // DatePicker personalizado como en friam-032
+  .custom-datepicker {
     .p-datepicker-input {
       padding: 0.75rem !important;
       border: 2px solid #e5e7eb !important;
       border-radius: 8px !important;
       font-size: 0.95rem !important;
       transition: all 0.2s ease !important;
+      width: 100% !important;
 
       &:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+      }
+    }
+
+    .p-datepicker-trigger {
+      background: transparent !important;
+      border: none !important;
+      color: #6b7280 !important;
+
+      &:hover {
+        background: rgba(34, 65, 134, 0.1) !important;
+        color: #224186 !important;
+      }
+    }
+
+    // Estilos del panel del calendario
+    .p-datepicker {
+      .p-datepicker-header {
+        background: #224186 !important;
+        color: white !important;
+        border: 1px solid #224186 !important;
+
+        .p-datepicker-prev,
+        .p-datepicker-next {
+          color: white !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+          }
+        }
+
+        .p-datepicker-title {
+          color: white !important;
+        }
+      }
+
+      .p-datepicker-content {
+        .p-datepicker-calendar {
+          th {
+            background: #f8fafc !important;
+            color: #224186 !important;
+            font-weight: 600;
+          }
+
+          td {
+            &.p-datepicker-today > span {
+              background: #224186 !important;
+              color: white !important;
+              border-color: #224186 !important;
+            }
+
+            span {
+              &:hover {
+                background: rgba(34, 65, 134, 0.1) !important;
+                color: #224186 !important;
+              }
+
+              &.p-highlight {
+                background: #224186 !important;
+                color: white !important;
+              }
+            }
+          }
+        }
       }
     }
   }
 
-  .p-select {
-    width: 100%;
+  // Time picker personalizado
+  .custom-time-picker {
+    .p-datepicker-input {
+      padding: 0.75rem !important;
+      border: 2px solid #e5e7eb !important;
+      border-radius: 8px !important;
+      font-size: 0.95rem !important;
+      transition: all 0.2s ease !important;
+      width: 100% !important;
 
+      &:focus {
+        border-color: #224186 !important;
+        box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
+      }
+    }
+
+    .p-datepicker-trigger {
+      background: transparent !important;
+      border: none !important;
+      color: #6b7280 !important;
+
+      &:hover {
+        background: rgba(34, 65, 134, 0.1) !important;
+        color: #224186 !important;
+      }
+    }
+  }
+
+  // Select personalizado como en friam-032
+  .custom-select {
     .p-select-label {
       padding: 0.75rem !important;
       border: 2px solid #e5e7eb !important;
       border-radius: 8px !important;
       font-size: 0.95rem !important;
       transition: all 0.2s ease !important;
+      min-height: 2.5rem !important;
+      display: flex !important;
+      align-items: center !important;
     }
 
-    &:focus .p-select-label {
-      border-color: #3b82f6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    &:not(.p-disabled):not(.p-invalid) .p-select-label:hover {
+      border-color: #224186 !important;
     }
 
-    &.p-select-open .p-select-label {
-      border-color: #3b82f6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    &.p-select-focused .p-select-label {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 3px rgba(34, 65, 134, 0.1) !important;
     }
 
-    .p-select-option {
-      padding: 0.75rem !important;
-      transition: background-color 0.2s ease !important;
+    .p-select-dropdown {
+      color: #6b7280 !important;
 
       &:hover {
-        background-color: #f3f4f6 !important;
+        color: #224186 !important;
+      }
+    }
+
+    // Panel del dropdown
+    .p-select-overlay {
+      .p-select-header {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e5e7eb !important;
       }
 
-      &.p-selected {
-        background-color: #3b82f6 !important;
-        color: white !important;
+      .p-select-list {
+        .p-select-option {
+          padding: 0.75rem !important;
+          transition: all 0.2s ease !important;
+
+          &:hover {
+            background: rgba(34, 65, 134, 0.1) !important;
+            color: #224186 !important;
+          }
+
+          &.p-selected {
+            background: #224186 !important;
+            color: white !important;
+          }
+        }
       }
     }
   }
@@ -424,34 +524,11 @@
   margin: 2rem 0;
 }
 
-// Estilos adicionales para mejorar la presentación
-.form-section {
-  .card-icon {
-    color: #6366f1;
-
-    &.dates-icon {
-      color: #3b82f6;
-    }
-
-    &.staff-icon {
-      color: #8b5cf6;
-    }
-  }
-}
-
 // Estados de validación para los campos
 ::ng-deep {
-  .p-datepicker.ng-invalid.ng-touched .p-datepicker-input {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-  }
-
-  .p-select.ng-invalid.ng-touched .p-select-label {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-  }
-
-  .time-input.ng-invalid.ng-touched {
+  .custom-datepicker.ng-invalid.ng-touched .p-datepicker-input,
+  .custom-time-picker.ng-invalid.ng-touched .p-datepicker-input,
+  .custom-select.ng-invalid.ng-touched .p-select-label {
     border-color: #ef4444 !important;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
   }

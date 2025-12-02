@@ -72,7 +72,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     lote: ''
   };
 
-  // Datos del formulario adicional
   datosFormulario: DatosFormulario = {
     fechaSiembra: null,
     horaSiembra: '',
@@ -84,7 +83,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     coordinadorMedico: ''
   };
 
-  // Opciones para selects de empleados
   opcionesEmpleados: EmpleadoOption[] = [];
   opcionesResponsables: { label: string; value: string }[] = [];
   opcionesCoordinadores: { label: string; value: string }[] = [];
@@ -128,20 +126,18 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private procesarOpcionesEmpleados(empleados: EmpleadoOption[]): void {
-    // Opciones para responsables (todos los empleados)
     this.opcionesResponsables = empleados.map(emp => ({
-      label: `${emp.nombre} - ${emp.cargo}`,
+      label: emp.nombre,
       value: emp.nombre
     }));
 
-    // Opciones para coordinadores médicos (filtrar por cargo que contenga "Coordinador" o "Médico")
     this.opcionesCoordinadores = empleados
       .filter(emp =>
         emp.cargo.toLowerCase().includes('coordinador') ||
         emp.cargo.toLowerCase().includes('médico')
       )
       .map(emp => ({
-        label: `${emp.nombre} - ${emp.cargo}`,
+        label: emp.nombre,
         value: emp.nombre
       }));
   }
@@ -269,8 +265,10 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     this.datosFormulario = {
       fechaSiembra: null,
       horaSiembra: '',
+      horaSiembraAux: null,
       fechaPrimeraLectura: null,
       horaPrimeraLectura: '',
+      horaPrimeraLecturaAux: null,
       responsableSiembra: '',
       responsableLectura: '',
       responsableProcesamiento: '',
@@ -279,15 +277,47 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   guardarFormulario(): void {
-  if (!this.validarFormulario()) {
-    this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos requeridos del formulario');
-    return;
+    // Procesar las horas antes de validar
+    this.procesarHorasFormulario();
+
+    if (!this.validarFormulario()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos requeridos del formulario');
+      return;
+    }
+
+    // Aquí puedes implementar la lógica para guardar el formulario
+    console.log('Datos del formulario:', this.datosFormulario);
+    this.mostrarMensaje('success', 'Éxito', 'Formulario guardado exitosamente');
   }
 
-  // Aquí puedes implementar la lógica para guardar el formulario
-  console.log('Datos del formulario:', this.datosFormulario);
-  this.mostrarMensaje('success', 'Éxito', 'Formulario guardado exitosamente');
-}
+  private procesarHorasFormulario(): void {
+    if (this.datosFormulario.horaSiembraAux) {
+      this.datosFormulario.horaSiembra = this.convertDateToHours(this.datosFormulario.horaSiembraAux);
+    }
+
+    if (this.datosFormulario.horaPrimeraLecturaAux) {
+      this.datosFormulario.horaPrimeraLectura = this.convertDateToHours(this.datosFormulario.horaPrimeraLecturaAux);
+    }
+  }
+
+  private convertDateToHours(fecha: Date): string {
+    if (!fecha) return '';
+
+    const horas = fecha.getHours().toString().padStart(2, '0');
+    const minutos = fecha.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
+  }
+
+  private convertHoursToDate(hora: string): Date | null {
+    if (!hora) return null;
+
+    const [horas, minutos] = hora.split(':').map(Number);
+    if (isNaN(horas) || isNaN(minutos)) return null;
+
+    const fecha = new Date();
+    fecha.setHours(horas, minutos, 0, 0);
+    return fecha;
+  }
 
   private validarFormulario(): boolean {
     return !!(

@@ -16,8 +16,10 @@ export interface ControlMicrobiologicoLiberacionData {
 export interface DatosFormulario {
   fechaSiembra?: Date | null;
   horaSiembra?: string;
+  horaSiembraAux?: Date | null;
   fechaPrimeraLectura?: Date | null;
   horaPrimeraLectura?: string;
+  horaPrimeraLecturaAux?: Date | null;
   responsableSiembra?: string;
   responsableLectura?: string;
   responsableProcesamiento?: string;

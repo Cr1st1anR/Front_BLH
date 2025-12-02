@@ -23,7 +23,8 @@ import type {
   LoadingState,
   TableColumn,
   TipoDialog,
-  LoteOption
+  LoteOption,
+  ControlTemperaturaBackendResponse
 } from '../../interfaces/control-temperatura.interface';
 
 @Component({
@@ -161,7 +162,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
       this.loading.main = true;
 
       this.controlTemperaturaService.getAllControlTemperatura().subscribe({
-        next: (registros) => {
+        next: (registros: ControlTemperaturaBackendResponse[]) => {
           this.dataOriginal = this.transformarDatosBackend(registros);
           this.dataFiltered = [...this.dataOriginal];
           this.mostrarMensajeExitosoCarga();
@@ -180,19 +181,25 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
   // ============= TRANSFORMACIÓN DE DATOS =============
 
-  private transformarDatosBackend(registros: any[]): ControlTemperaturaData[] {
-    return registros.map((registro: any) => {
+  private transformarDatosBackend(registros: ControlTemperaturaBackendResponse[]): ControlTemperaturaData[] {
+    return registros.map((registro: ControlTemperaturaBackendResponse) => {
       const data: ControlTemperaturaData = {
         id: registro.id,
         fecha: this.parsearFechaDesdeBackend(registro.fecha),
-        lote: registro.lote,
-        ciclo: registro.ciclo,
-        horaInicio: registro.horaInicio,
-        horaFinalizacion: registro.horaFinalizacion,
+        lote: `LT-${registro.lote.numeroLote.toString().padStart(3, '0')}`,
+        ciclo: `C${registro.ciclo.numeroCiclo}`,
+        horaInicio: registro.hora_inicio,
+        horaFinalizacion: registro.hora_finalizacio,
         observaciones: registro.observaciones || '',
-        responsable: registro.empleado.nombre,
-        empleado_info: registro.empleado,
-        id_empleado: registro.empleado.id,
+        responsable: registro.responsable.nombre,
+        empleado_info: {
+          id: registro.responsable.id,
+          nombre: registro.responsable.nombre,
+          cargo: registro.responsable.cargo,
+          telefono: registro.responsable.telefono,
+          correo: registro.responsable.correo
+        },
+        id_empleado: registro.responsable.id,
         horaInicio_aux: null,
         horaFinalizacion_aux: null
       };

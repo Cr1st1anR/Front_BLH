@@ -51,6 +51,8 @@ export interface EmpleadoInfo {
   cargo?: string;
   telefono?: number;
   correo?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface FiltroFecha {
@@ -63,9 +65,66 @@ export interface FiltrosBusqueda {
   ciclo: string;
 }
 
+// ============= INTERFACES PARA RESPUESTAS DEL BACKEND =============
+
+export interface ControlTemperaturaBackendResponse {
+  id: number;
+  fecha: string;
+  hora_inicio: string;
+  hora_finalizacio: string;
+  observaciones?: string;
+  lote: {
+    id: number;
+    numeroLote: number;
+  };
+  ciclo: {
+    id: number;
+    numeroCiclo: number;
+  };
+  responsable: {
+    id: number;
+    nombre: string;
+    cargo: string;
+    telefono: number;
+    correo?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  calentamientos: CalentamientoBackendData[];
+  enfriamientos: EnfriamientoBackendData[];
+}
+
+export interface CalentamientoBackendData {
+  id: number;
+  minuto: string;
+  valor: number;
+}
+
+export interface EnfriamientoBackendData {
+  id: number;
+  minuto: string;
+  valor: number;
+}
+
+export interface EmpleadoBackendResponse {
+  id: number;
+  nombre: string;
+  cargo: string;
+  telefono: number;
+  correo?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LoteBackendResponse {
+  numeroLote: number;
+  numeroCiclo: number;
+}
+
 export interface BackendResponse<T> {
+  status: number;
+  statusmsg: string;
   data: T;
-  message?: string;
 }
 
 export interface ApiError {

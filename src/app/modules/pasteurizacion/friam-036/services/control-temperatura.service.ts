@@ -5,13 +5,23 @@ import type {
   ResponsableOption,
   BackendResponse,
   DatosBackendParaCreacion,
-  DatosBackendParaActualizacion
+  DatosBackendParaActualizacion,
+  LoteOption
 } from '../interfaces/control-temperatura.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ControlTemperaturaService {
+
+  private readonly lotesMock: LoteOption[] = [
+    { label: 'Lote 1', value: 'LT-001', numeroLote: 1, ciclo: 'C1', numeroCiclo: 1 },
+    { label: 'Lote 2', value: 'LT-002', numeroLote: 2, ciclo: 'C1', numeroCiclo: 1 },
+    { label: 'Lote 3', value: 'LT-003', numeroLote: 3, ciclo: 'C2', numeroCiclo: 2 },
+    { label: 'Lote 4', value: 'LT-004', numeroLote: 4, ciclo: 'C2', numeroCiclo: 2 },
+    { label: 'Lote 5', value: 'LT-005', numeroLote: 5, ciclo: 'C3', numeroCiclo: 3 },
+    { label: 'Lote 6', value: 'LT-006', numeroLote: 6, ciclo: 'C3', numeroCiclo: 3 }
+  ];
 
   private readonly empleadosMock: ResponsableOption[] = [
     { label: 'Juan López', value: 'Juan López', id_empleado: 1, cargo: 'Técnico', telefono: 1234567890, correo: 'juan.lopez@example.com' },
@@ -66,6 +76,10 @@ export class ControlTemperaturaService {
   private nextId = 5;
 
   constructor() { }
+
+  getLotes(): Observable<LoteOption[]> {
+    return of(this.lotesMock).pipe(delay(400));
+  }
 
   getEmpleados(): Observable<ResponsableOption[]> {
     return of(this.empleadosMock).pipe(delay(500));

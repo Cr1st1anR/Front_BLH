@@ -142,3 +142,35 @@
 .mt-4 {
   margin-top: 1rem;
 }
+
+input[type="time"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #224186;
+    box-shadow: 0 0 0 0.2rem rgba(34, 65, 134, 0.25);
+  }
+
+  &:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    color: #6c757d;
+  }
+}
+
+.p-inputtext:disabled {
+  background-color: #e9ecef !important;
+  cursor: not-allowed !important;
+  color: #6c757d !important;
+  opacity: 0.7 !important;
+}
+
+.p-select:has(.p-select-label:disabled) {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

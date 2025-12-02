@@ -22,7 +22,8 @@ import type {
   DatosBackendParaActualizacion,
   LoadingState,
   TableColumn,
-  TipoDialog
+  TipoDialog,
+  LoteOption
 } from '../../interfaces/control-temperatura.interface';
 
 @Component({
@@ -49,7 +50,8 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
   readonly loading: LoadingState = {
     main: false,
-    empleados: false
+    empleados: false,
+    lotes: false
   };
 
   editingRow: ControlTemperaturaData | null = null;
@@ -62,6 +64,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
   filtroFecha: FiltroFecha | null = null;
 
   opcionesResponsables: ResponsableOption[] = [];
+  opcionesLotes: LoteOption[] = [];
 
   headersControlTemperatura: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
@@ -102,6 +105,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
     try {
       await Promise.all([
         this.cargarEmpleados(),
+        this.cargarLotes(),
         this.cargarDatosControlTemperatura()
       ]);
     } catch (error) {
@@ -126,6 +130,26 @@ export class ControlTemperaturaTableComponent implements OnInit {
           this.loading.empleados = false;
           console.error('Error al cargar empleados:', error);
           this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los empleados');
+          reject(error);
+        }
+      });
+    });
+  }
+
+  private cargarLotes(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.loading.lotes = true;
+
+      this.controlTemperaturaService.getLotes().subscribe({
+        next: (lotes) => {
+          this.opcionesLotes = lotes;
+          this.loading.lotes = false;
+          resolve();
+        },
+        error: (error) => {
+          this.loading.lotes = false;
+          console.error('Error al cargar lotes:', error);
+          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los lotes');
           reject(error);
         }
       });
@@ -277,6 +301,18 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   // ============= EVENTOS DE UI =============
+
+  onLoteSeleccionado(event: any, rowData: ControlTemperaturaData): void {
+    const loteSeleccionado = this.extraerValorEvento(event);
+    if (!loteSeleccionado) return;
+
+    // Buscar la información completa del lote
+    const loteInfo = this.opcionesLotes.find(lote => lote.value === loteSeleccionado);
+    if (loteInfo) {
+      rowData.lote = loteInfo.value;
+      rowData.ciclo = loteInfo.ciclo; // Asignar automáticamente el ciclo
+    }
+  }
 
   onResponsableSeleccionado(event: any, rowData: ControlTemperaturaData): void {
     const responsable = this.extraerValorEvento(event);
@@ -572,6 +608,18 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   // ============= UTILIDADES DE ESTADO =============
+
+  isCampoEditable(campo: string, rowData: ControlTemperaturaData): boolean {
+    // El ciclo nunca es editable
+    if (campo === 'ciclo') return false;
+
+    // El lote solo es editable en registros nuevos
+    if (campo === 'lote') {
+      return rowData.isNew === true;
+    }
+
+    return true;
+  }
 
   isEditing(rowData: ControlTemperaturaData): boolean {
     return this.editingRow !== null && (

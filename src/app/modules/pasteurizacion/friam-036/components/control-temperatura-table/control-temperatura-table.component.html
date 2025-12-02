@@ -48,7 +48,22 @@
           @else if (col.field === 'lote') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.lote" class="w-full" placeholder="Ingrese lote">
+              @if (isCampoEditable('lote', rowData)) {
+              @if (loading.lotes) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando lotes...</span>
+              </div>
+              } @else {
+              <p-select [(ngModel)]="rowData.lote" [options]="opcionesLotes" optionLabel="label" optionValue="value"
+                placeholder="Seleccione lote" (onChange)="onLoteSeleccionado($event, rowData)" appendTo="body"
+                class="w-full" [showClear]="true" [filter]="true" filterBy="label" [filterMatchMode]="'contains'">
+              </p-select>
+              }
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData.lote" class="w-full" placeholder="No editable"
+                [disabled]="true">
+              }
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.lote || 'Sin lote' }}
@@ -59,7 +74,8 @@
           @else if (col.field === 'ciclo') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.ciclo" class="w-full" placeholder="Ingrese ciclo">
+              <input pInputText type="text" [(ngModel)]="rowData.ciclo" class="w-full" placeholder="Automático"
+                [disabled]="true">
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.ciclo || 'Sin ciclo' }}

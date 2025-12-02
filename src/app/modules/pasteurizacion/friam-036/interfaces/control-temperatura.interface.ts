@@ -18,6 +18,7 @@ export interface ControlTemperaturaData {
 export interface LoadingState {
   main: boolean;
   empleados: boolean;
+  lotes: boolean;
 }
 
 export interface TableColumn {
@@ -25,6 +26,14 @@ export interface TableColumn {
   field: string;
   width: string;
   tipo: string;
+}
+
+export interface LoteOption {
+  label: string;
+  value: string;
+  numeroLote: number;
+  ciclo: string;
+  numeroCiclo: number;
 }
 
 export interface ResponsableOption {

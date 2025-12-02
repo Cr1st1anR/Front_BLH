@@ -202,46 +202,48 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   private determinarOrigenDatos(controlReenvase: any): any {
-    if (!controlReenvase?.madreDonante?.entradasSalidas) {
-      return {
-        gaveta: null,
-        fechaExtraccion: null,
-        volumen: null,
-        frascoId: null
-      };
-    }
+  const frascoIdCorrecto = controlReenvase?.frascoCrudo;
 
-    const entradasSalidas = controlReenvase.madreDonante.entradasSalidas[0];
-
-    if (entradasSalidas?.extraccion) {
-      const extraccion = entradasSalidas.extraccion;
-
-      return {
-        gaveta: extraccion.gaveta,
-        fechaExtraccion: extraccion.fechaExtraccion,
-        volumen: extraccion.cantidad,
-        frascoId: extraccion.id
-      };
-    }
-
-    else if (entradasSalidas?.frascoRecolectado) {
-      const frascoRecolectado = entradasSalidas.frascoRecolectado;
-
-      return {
-        gaveta: frascoRecolectado.gaveta,
-        fechaExtraccion: frascoRecolectado.fechaDeExtraccion,
-        volumen: frascoRecolectado.volumen,
-        frascoId: frascoRecolectado.id
-      };
-    }
-
+  if (!controlReenvase?.madreDonante?.entradasSalidas) {
     return {
       gaveta: null,
       fechaExtraccion: null,
       volumen: null,
-      frascoId: null
+      frascoId: frascoIdCorrecto || null
     };
   }
+
+  const entradasSalidas = controlReenvase.madreDonante.entradasSalidas[0];
+
+  if (entradasSalidas?.extraccion) {
+    const extraccion = entradasSalidas.extraccion;
+
+    return {
+      gaveta: extraccion.gaveta,
+      fechaExtraccion: extraccion.fechaExtraccion,
+      volumen: extraccion.cantidad,
+      frascoId: frascoIdCorrecto
+    };
+  }
+
+  else if (entradasSalidas?.frascoRecolectado) {
+    const frascoRecolectado = entradasSalidas.frascoRecolectado;
+
+    return {
+      gaveta: frascoRecolectado.gaveta,
+      fechaExtraccion: frascoRecolectado.fechaDeExtraccion,
+      volumen: frascoRecolectado.volumen,
+      frascoId: frascoIdCorrecto
+    };
+  }
+
+  return {
+    gaveta: null,
+    fechaExtraccion: null,
+    volumen: null,
+    frascoId: frascoIdCorrecto || null
+  };
+}
 
   private calcularDiasProduccion(fechaParto: string, fechaExtraccion: string): string {
     if (!fechaParto || !fechaExtraccion) return '';

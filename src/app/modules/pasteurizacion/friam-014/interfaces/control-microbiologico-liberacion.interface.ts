@@ -13,9 +13,27 @@ export interface ControlMicrobiologicoLiberacionData {
   _uid?: string;
 }
 
+export interface DatosFormulario {
+  fechaSiembra?: Date | null;
+  horaSiembra?: string;
+  fechaPrimeraLectura?: Date | null;
+  horaPrimeraLectura?: string;
+  responsableSiembra?: string;
+  responsableLectura?: string;
+  responsableProcesamiento?: string;
+  coordinadorMedico?: string;
+}
+
+export interface EmpleadoOption {
+  id: number;
+  nombre: string;
+  cargo: string;
+}
+
 export interface LoadingState {
   main: boolean;
   search: boolean;
+  empleados: boolean;
 }
 
 export interface TableColumn {

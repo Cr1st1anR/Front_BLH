@@ -3,7 +3,8 @@ import { Observable, of, delay } from 'rxjs';
 import type {
   FrascoPasteurizadoData,
   ControlMicrobiologicoLiberacionData,
-  BackendResponse
+  BackendResponse,
+  EmpleadoOption
 } from '../interfaces/control-microbiologico-liberacion.interface';
 
 @Injectable({
@@ -106,6 +107,18 @@ export class ControlMicrobiologicoLiberacionService {
     }
   ];
 
+  // Datos mock de empleados
+  private empleadosMock: EmpleadoOption[] = [
+    { id: 1, nombre: 'Dr. Ana García Martínez', cargo: 'Médico Pediatra' },
+    { id: 2, nombre: 'Dra. Carmen López Silva', cargo: 'Coordinador Médico' },
+    { id: 3, nombre: 'María José Rodríguez', cargo: 'Bacteriólogo' },
+    { id: 4, nombre: 'Luis Fernando Torres', cargo: 'Tecnólogo en Alimentos' },
+    { id: 5, nombre: 'Dr. Roberto Mendoza', cargo: 'Médico Neonatólogo' },
+    { id: 6, nombre: 'Patricia Suárez Vega', cargo: 'Microbióloga' },
+    { id: 7, nombre: 'Carlos Alberto Ruiz', cargo: 'Auxiliar de Laboratorio' },
+    { id: 8, nombre: 'Dra. Sandra Morales', cargo: 'Coordinador Médico' }
+  ];
+
   constructor() { }
 
   getFrascosPasteurizadosPorCicloLote(ciclo: number, lote: number): Observable<FrascoPasteurizadoData[]> {
@@ -117,6 +130,10 @@ export class ControlMicrobiologicoLiberacionService {
 
   getAllControlesMicrobiologicos(): Observable<ControlMicrobiologicoLiberacionData[]> {
     return of([...this.controlesMock]).pipe(delay(500));
+  }
+
+  getEmpleados(): Observable<EmpleadoOption[]> {
+    return of([...this.empleadosMock]).pipe(delay(400));
   }
 
   postControlMicrobiologico(data: Omit<ControlMicrobiologicoLiberacionData, 'id'>): Observable<BackendResponse<ControlMicrobiologicoLiberacionData>> {

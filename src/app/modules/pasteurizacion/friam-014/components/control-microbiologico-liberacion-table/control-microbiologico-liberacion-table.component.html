@@ -182,4 +182,136 @@
     Utilice la búsqueda por ciclo y lote para cargar los frascos pasteurizados
   </p>
   }
+
+  <!-- Formulario de datos adicionales -->
+  @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
+  <div class="form-section">
+    <p-divider align="center" type="solid">
+      <div class="inline-flex items-center">
+        <i class="pi pi-file-edit mr-2 text-primary"></i>
+        <b class="text-primary">DATOS DEL PROCESO MICROBIOLÓGICO</b>
+      </div>
+    </p-divider>
+
+    <div class="form-grid">
+      <!-- Card de Fechas y Horas -->
+      <p-card class="form-card dates-card">
+        <ng-template pTemplate="header">
+          <div class="card-header-custom">
+            <i class="pi pi-calendar text-blue-600"></i>
+            <span class="card-title">Fechas y Horarios</span>
+          </div>
+        </ng-template>
+
+        <div class="form-fields-grid">
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-calendar-plus text-green-600"></i>
+              Fecha de Siembra
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.fechaSiembra" [iconDisplay]="'input'" [showIcon]="true"
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+            </p-datepicker>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-clock text-orange-600"></i>
+              Hora de Siembra
+            </label>
+            <input pInputText type="time" [(ngModel)]="datosFormulario.horaSiembra" class="w-full time-input"
+              placeholder="00:00">
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-calendar-times text-purple-600"></i>
+              Fecha Primera Lectura
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.fechaPrimeraLectura" [iconDisplay]="'input'" [showIcon]="true"
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+            </p-datepicker>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-clock text-red-600"></i>
+              Hora Primera Lectura
+            </label>
+            <input pInputText type="time" [(ngModel)]="datosFormulario.horaPrimeraLectura" class="w-full time-input"
+              placeholder="00:00">
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Card de Responsables -->
+      <p-card class="form-card staff-card">
+        <ng-template pTemplate="header">
+          <div class="card-header-custom">
+            <i class="pi pi-users text-indigo-600"></i>
+            <span class="card-title">Personal Responsable</span>
+          </div>
+        </ng-template>
+
+        <div class="form-fields-grid">
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-user-edit text-green-600"></i>
+              Responsable de Siembra
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableSiembra" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
+              [loading]="loading.empleados">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-eye text-blue-600"></i>
+              Responsable de Lectura
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableLectura" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
+              [loading]="loading.empleados">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-cog text-orange-600"></i>
+              Responsable del Procesamiento
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableProcesamiento" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full"
+              [loading]="loading.empleados">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-verified text-purple-600"></i>
+              Coordinador Médico
+            </label>
+            <p-select [(ngModel)]="datosFormulario.coordinadorMedico" [options]="opcionesCoordinadores"
+              optionLabel="label" optionValue="value" placeholder="Seleccione coordinador" appendTo="body"
+              class="w-full" [loading]="loading.empleados">
+            </p-select>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Botones de acción del formulario -->
+    <div class="form-actions">
+      <button pButton pRipple type="button" label="Limpiar Formulario" icon="pi pi-refresh"
+        class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" pTooltip="Limpiar formulario"
+        tooltipPosition="top">
+      </button>
+
+      <button pButton pRipple type="button" label="Guardar Datos" icon="pi pi-save" class="save-form-button"
+        (click)="guardarFormulario()" pTooltip="Guardar datos del formulario" tooltipPosition="top">
+      </button>
+    </div>
+  </div>
+  }
 </div>

@@ -10,6 +10,10 @@ import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
 
 import { ControlMicrobiologicoLiberacionService } from '../../services/control-microbiologico-liberacion.service';
 import type {
@@ -18,7 +22,9 @@ import type {
   TableColumn,
   BusquedaCicloLote,
   FrascoPasteurizadoData,
-  TipoMensaje
+  TipoMensaje,
+  DatosFormulario,
+  EmpleadoOption
 } from '../../interfaces/control-microbiologico-liberacion.interface';
 
 @Component({
@@ -33,7 +39,11 @@ import type {
     ButtonModule,
     InputTextModule,
     TooltipModule,
-    RadioButtonModule
+    RadioButtonModule,
+    DatePickerModule,
+    SelectModule,
+    CardModule,
+    DividerModule
   ],
   templateUrl: './control-microbiologico-liberacion-table.component.html',
   styleUrl: './control-microbiologico-liberacion-table.component.scss',
@@ -45,7 +55,8 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   readonly loading: LoadingState = {
     main: false,
-    search: false
+    search: false,
+    empleados: false
   };
 
   // Estados de edición - usar identificación única más específica
@@ -60,6 +71,23 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     ciclo: '',
     lote: ''
   };
+
+  // Datos del formulario adicional
+  datosFormulario: DatosFormulario = {
+    fechaSiembra: null,
+    horaSiembra: '',
+    fechaPrimeraLectura: null,
+    horaPrimeraLectura: '',
+    responsableSiembra: '',
+    responsableLectura: '',
+    responsableProcesamiento: '',
+    coordinadorMedico: ''
+  };
+
+  // Opciones para selects de empleados
+  opcionesEmpleados: EmpleadoOption[] = [];
+  opcionesResponsables: { label: string; value: string }[] = [];
+  opcionesCoordinadores: { label: string; value: string }[] = [];
 
   headersControlMicrobiologico: TableColumn[] = [
     { header: 'N° DE FRASCO\nPASTEURIZADO', field: 'numero_frasco_pasteurizado', width: '150px', tipo: 'text' },
@@ -77,6 +105,45 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.mostrarMensaje('info', 'Información', 'Utilice la búsqueda por ciclo y lote para cargar los frascos pasteurizados');
+    this.cargarEmpleados();
+  }
+
+  // ============= CARGA DE EMPLEADOS =============
+
+  private cargarEmpleados(): void {
+    this.loading.empleados = true;
+
+    this.controlMicrobiologicoService.getEmpleados().subscribe({
+      next: (empleados: EmpleadoOption[]) => {
+        this.opcionesEmpleados = empleados;
+        this.procesarOpcionesEmpleados(empleados);
+        this.loading.empleados = false;
+      },
+      error: (error) => {
+        this.loading.empleados = false;
+        console.error('Error al cargar empleados:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al cargar empleados');
+      }
+    });
+  }
+
+  private procesarOpcionesEmpleados(empleados: EmpleadoOption[]): void {
+    // Opciones para responsables (todos los empleados)
+    this.opcionesResponsables = empleados.map(emp => ({
+      label: `${emp.nombre} - ${emp.cargo}`,
+      value: emp.nombre
+    }));
+
+    // Opciones para coordinadores médicos (filtrar por cargo que contenga "Coordinador" o "Médico")
+    this.opcionesCoordinadores = empleados
+      .filter(emp =>
+        emp.cargo.toLowerCase().includes('coordinador') ||
+        emp.cargo.toLowerCase().includes('médico')
+      )
+      .map(emp => ({
+        label: `${emp.nombre} - ${emp.cargo}`,
+        value: emp.nombre
+      }));
   }
 
   private obtenerAñoActualCorto(): string {
@@ -191,25 +258,61 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     this.fechaPasteurizacion = null;
     this.dataControlMicrobiologico = [];
     this.resetearEstadoEdicion();
+    this.limpiarFormulario();
 
     this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
   }
 
-  // ============= CRUD OPERATIONS (Corregido) =============
+  // ============= MANEJO DEL FORMULARIO =============
+
+  limpiarFormulario(): void {
+    this.datosFormulario = {
+      fechaSiembra: null,
+      horaSiembra: '',
+      fechaPrimeraLectura: null,
+      horaPrimeraLectura: '',
+      responsableSiembra: '',
+      responsableLectura: '',
+      responsableProcesamiento: '',
+      coordinadorMedico: ''
+    };
+  }
+
+  guardarFormulario(): void {
+  if (!this.validarFormulario()) {
+    this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos requeridos del formulario');
+    return;
+  }
+
+  // Aquí puedes implementar la lógica para guardar el formulario
+  console.log('Datos del formulario:', this.datosFormulario);
+  this.mostrarMensaje('success', 'Éxito', 'Formulario guardado exitosamente');
+}
+
+  private validarFormulario(): boolean {
+    return !!(
+      this.datosFormulario.fechaSiembra &&
+      this.datosFormulario.horaSiembra &&
+      this.datosFormulario.fechaPrimeraLectura &&
+      this.datosFormulario.horaPrimeraLectura &&
+      this.datosFormulario.responsableSiembra &&
+      this.datosFormulario.responsableLectura &&
+      this.datosFormulario.responsableProcesamiento &&
+      this.datosFormulario.coordinadorMedico
+    );
+  }
+
+  // ============= CRUD OPERATIONS (Mantengo los existentes) =============
 
   onRowEditInit(dataRow: ControlMicrobiologicoLiberacionData): void {
     const currentRowId = this.getRowId(dataRow);
 
-    // Verificar si hay otra fila siendo editada
     if (this.isAnyRowEditing() && this.editingRowId !== currentRowId) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
       return;
     }
 
-    // Guardar estado original usando UID único
     this.guardarEstadoOriginal(dataRow);
-
-    // Establecer el ID de la fila actual como editando
     this.editingRowId = currentRowId;
   }
 
@@ -229,10 +332,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   onRowEditCancel(dataRow: ControlMicrobiologicoLiberacionData, index: number): void {
-    // Restaurar estado original
     this.restaurarEstadoOriginal(dataRow);
-
-    // Resetear estado de edición
     this.resetearEstadoEdicion();
   }
 
@@ -304,7 +404,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     );
   }
 
-  // ============= ESTADOS DE EDICIÓN (Corregido con ID específico) =============
+  // ============= ESTADOS DE EDICIÓN =============
 
   private guardarEstadoOriginal(dataRow: ControlMicrobiologicoLiberacionData): void {
     const rowId = this.getRowId(dataRow);
@@ -320,11 +420,8 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       );
 
       if (index !== -1) {
-        // Restaurar todos los valores del objeto original
         Object.assign(this.dataControlMicrobiologico[index], this.clonedData[rowId]);
         delete this.clonedData[rowId];
-
-        // Forzar actualización de la vista
         this.dataControlMicrobiologico = [...this.dataControlMicrobiologico];
       }
     }
@@ -342,53 +439,38 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
   private resetearEstadoEdicion(): void {
     this.editingRowId = null;
-    this.clonedData = {}; // Limpiar completamente
+    this.clonedData = {};
   }
 
   private getRowId(dataRow: ControlMicrobiologicoLiberacionData): string {
-    // Usar UID si existe, sino usar ID, sino 'unknown'
     return dataRow._uid || dataRow.id?.toString() || 'unknown';
   }
 
-  // ============= MÉTODOS DE VERIFICACIÓN DE ESTADO (Corregidos) =============
+  // ============= MÉTODOS DE VERIFICACIÓN DE ESTADO =============
 
   isEditing(rowData: ControlMicrobiologicoLiberacionData): boolean {
-  if (!this.editingRowId || !rowData) {
-    return false;
+    if (!this.editingRowId || !rowData) {
+      return false;
+    }
+
+    const currentRowId = this.getRowId(rowData);
+    return this.editingRowId === currentRowId;
   }
 
-  const currentRowId = this.getRowId(rowData);
-  return this.editingRowId === currentRowId;
-}
-
-isAnyRowEditing(): boolean {
-  return this.editingRowId !== null;
-}
-
-isEditButtonDisabled(rowData: ControlMicrobiologicoLiberacionData): boolean {
-  if (!rowData) {
-    return true;
+  isAnyRowEditing(): boolean {
+    return this.editingRowId !== null;
   }
 
-  const currentRowId = this.getRowId(rowData);
-  return this.isAnyRowEditing() && this.editingRowId !== currentRowId;
-}
+  isEditButtonDisabled(rowData: ControlMicrobiologicoLiberacionData): boolean {
+    if (!rowData) {
+      return true;
+    }
+
+    const currentRowId = this.getRowId(rowData);
+    return this.isAnyRowEditing() && this.editingRowId !== currentRowId;
+  }
 
   // ============= MÉTODOS HELPER PARA MOSTRAR VALORES =============
-
-  /**
- * Método helper para verificar si una fila específica está en edición
- * Usado para debugging y mayor claridad en el template
- */
-isRowCurrentlyEditing(rowData: ControlMicrobiologicoLiberacionData): boolean {
-  const currentRowId = this.getRowId(rowData);
-  const isCurrentlyEditing = this.editingRowId === currentRowId;
-
-  if (isCurrentlyEditing) {
-  }
-
-  return isCurrentlyEditing;
-}
 
   getDisplayValueColiformes(value: 0 | 1 | null): string {
     if (value === null || value === undefined) return 'No seleccionado';

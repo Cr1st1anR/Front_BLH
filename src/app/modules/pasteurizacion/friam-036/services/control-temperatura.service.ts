@@ -99,9 +99,9 @@ export class ControlTemperaturaService {
     );
   }
 
-  putControlTemperatura(data: DatosBackendParaActualizacion): Observable<BackendResponse<any>> {
+  putControlTemperatura(id: number, data: DatosBackendParaActualizacion): Observable<BackendResponse<any>> {
     return this.http.put<BackendResponse<any>>(
-      `${environment.ApiBLH}/temperatura-pasteurizador/${data.id}`,
+      `${environment.ApiBLH}/temperatura-pasteurizador/${id}`,
       data
     ).pipe(
       catchError(error => {

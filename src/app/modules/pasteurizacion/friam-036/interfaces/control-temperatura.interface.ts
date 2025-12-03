@@ -13,7 +13,10 @@ export interface ControlTemperaturaData {
   empleado_info?: EmpleadoInfo;
   horaInicio_aux?: Date | null;
   horaFinalizacion_aux?: Date | null;
+  loteOriginal?: { id: number; numeroLote: number };
+  cicloOriginal?: { id: number; numeroCiclo: number };
 }
+
 
 export interface LoadingState {
   main: boolean;
@@ -139,21 +142,20 @@ export type TipoDialog = 'calentamiento' | 'enfriamiento';
 
 export interface DatosBackendParaCreacion {
   fecha: string;
-  lote: string;
-  ciclo: string;
-  horaInicio: string;
-  horaFinalizacion: string;
+  loteId: { id: number };
+  cicloId: { id: number };
+  hora_inicio: string;
+  hora_finalizacio: string;
+  responsableId: { id: number };
   observaciones?: string;
-  empleado: { id: number };
 }
 
 export interface DatosBackendParaActualizacion {
-  id: number;
   fecha: string;
-  lote: string;
-  ciclo: string;
-  horaInicio: string;
-  horaFinalizacion: string;
+  loteId: { id: number };
+  cicloId: { id: number };
+  hora_inicio: string;
+  hora_finalizacio: string;
+  responsableId: { id: number };
   observaciones?: string;
-  empleado: { id: number };
 }

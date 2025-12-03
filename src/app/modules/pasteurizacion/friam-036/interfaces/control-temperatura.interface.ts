@@ -37,6 +37,8 @@ export interface LoteOption {
   numeroLote: number;
   ciclo: string;
   numeroCiclo: number;
+  loteId?: number;
+  cicloId?: number;
 }
 
 export interface ResponsableOption {
@@ -122,6 +124,8 @@ export interface EmpleadoBackendResponse {
 export interface LoteBackendResponse {
   numeroLote: number;
   numeroCiclo: number;
+  loteId: number;
+  cicloId: number;
 }
 
 export interface BackendResponse<T> {

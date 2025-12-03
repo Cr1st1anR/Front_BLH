@@ -465,34 +465,64 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   private guardarNuevoRegistro(dataRow: ControlTemperaturaData, rowElement: HTMLTableRowElement): void {
-    const datosBackend = this.prepararDatosParaCreacion(dataRow);
-    if (!datosBackend) return;
+  const datosBackend = this.prepararDatosParaCreacion(dataRow);
+  if (!datosBackend) return;
 
-    this.controlTemperaturaService.postControlTemperatura(datosBackend).subscribe({
-      next: (response) => {
-        this.procesarRespuestaCreacion(response, dataRow, rowElement);
-      },
-      error: (error) => {
-        console.error('Error al guardar:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al guardar el registro');
+  this.controlTemperaturaService.postControlTemperatura(datosBackend).subscribe({
+    next: (response) => {
+      this.procesarRespuestaCreacion(response, dataRow, rowElement);
+    },
+    error: (httpErrorResponse) => {
+      console.error('Error al guardar:', httpErrorResponse);
+
+      let mensajeError = 'Error al guardar el registro';
+
+      // La estructura del error es: { status: 500, statusmsg: "...", error: "mensaje" }
+      if (httpErrorResponse.error?.error) {
+        mensajeError = httpErrorResponse.error.error;
+      } else if (httpErrorResponse.status === 500 && httpErrorResponse.error?.statusmsg) {
+        // Si es error 500, usar el mensaje del backend
+        mensajeError = httpErrorResponse.error.error || 'Error interno del servidor';
+      } else {
+        // Fallback para otros tipos de error
+        mensajeError = httpErrorResponse.message || 'Error al guardar el registro';
       }
-    });
-  }
+
+      this.mostrarMensaje('error', 'Error', mensajeError);
+    }
+  });
+}
 
   private actualizarRegistroExistente(dataRow: ControlTemperaturaData, rowElement: HTMLTableRowElement): void {
-    const datosBackend = this.prepararDatosParaActualizacion(dataRow);
-    if (!datosBackend) return;
+  const datosBackend = this.prepararDatosParaActualizacion(dataRow);
+  if (!datosBackend) return;
 
-this.controlTemperaturaService.putControlTemperatura(dataRow.id!, datosBackend).subscribe({
-      next: (response) => {
-        this.procesarRespuestaActualizacion(dataRow, rowElement);
-      },
-      error: (error) => {
-        console.error('Error al actualizar:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al actualizar el registro');
+  this.controlTemperaturaService.putControlTemperatura(dataRow.id!, datosBackend).subscribe({
+    next: (response) => {
+      this.procesarRespuestaActualizacion(dataRow, rowElement);
+    },
+    error: (error) => {
+      console.error('Error al actualizar:', error);
+
+      let mensajeError = 'Error al actualizar el registro';
+
+      // Verificar si hay mensaje específico del backend
+      if (error.error?.error) {
+        mensajeError = error.error.error;
+      } else if (error.error?.message) {
+        mensajeError = error.error.message;
+      } else if (error.message) {
+        mensajeError = error.message;
+      } else if (typeof error.error === 'string') {
+        mensajeError = error.error;
+      } else if (error.error?.details?.includes('Duplicate entry')) {
+        mensajeError = 'Este lote ya está siendo utilizado. Seleccione un lote diferente.';
       }
-    });
-  }
+
+      this.mostrarMensaje('error', 'Error', mensajeError);
+    }
+  });
+}
 
   private prepararDatosParaCreacion(dataRow: ControlTemperaturaData): DatosBackendParaCreacion | null {
   if (!this.validarDatosBasicos(dataRow)) return null;
@@ -580,13 +610,9 @@ private obtenerIdLotePorNumero(numeroLote: number): number | null {
     return this.editingRow.loteOriginal.id;
   }
 
-  // Para nuevos registros, buscar en las opciones disponibles o usar lógica de mapeo
-  // Por ahora, usar un mapeo basado en el número de lote conocido
-  const mapeoLotes: { [key: number]: number } = {
-    1: 6  // lote 1 tiene id 6 según tu ejemplo
-  };
-
-  return mapeoLotes[numeroLote] || null;
+  // Para nuevos registros, buscar en las opciones de lotes usando el número
+  const loteInfo = this.opcionesLotes.find(lote => lote.numeroLote === numeroLote);
+  return loteInfo?.loteId || null;
 }
 
 private obtenerIdCicloPorNumero(numeroCiclo: number): number | null {
@@ -595,13 +621,11 @@ private obtenerIdCicloPorNumero(numeroCiclo: number): number | null {
     return this.editingRow.cicloOriginal.id;
   }
 
-  // Para nuevos registros, buscar en las opciones disponibles o usar lógica de mapeo
-  const mapeoCiclos: { [key: number]: number } = {
-    1: 6  // ciclo 1 tiene id 6 según tu ejemplo
-  };
-
-  return mapeoCiclos[numeroCiclo] || null;
+  // Para nuevos registros, buscar en las opciones de lotes usando el número de ciclo
+  const loteInfo = this.opcionesLotes.find(lote => lote.numeroCiclo === numeroCiclo);
+  return loteInfo?.cicloId || null;
 }
+
 
   // ============= VALIDACIONES =============
 

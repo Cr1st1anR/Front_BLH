@@ -22,28 +22,30 @@ export class ControlTemperaturaService {
   constructor(private readonly http: HttpClient) { }
 
   getLotes(): Observable<LoteOption[]> {
-    return this.http.get<BackendResponse<LoteBackendResponse[]>>(
-      `${environment.ApiBLH}/lotes-disponibles`
-    ).pipe(
-      map(response => {
-        if (!response.data || response.data.length === 0) {
-          return [];
-        }
+  return this.http.get<BackendResponse<LoteBackendResponse[]>>(
+    `${environment.ApiBLH}/lotes-disponibles`
+  ).pipe(
+    map(response => {
+      if (!response.data || response.data.length === 0) {
+        return [];
+      }
 
-        return response.data.map(lote => ({
-          label: `Lote ${lote.numeroLote}`,
-          value: `LT-${lote.numeroLote.toString().padStart(3, '0')}`,
-          numeroLote: lote.numeroLote,
-          ciclo: `C${lote.numeroCiclo}`,
-          numeroCiclo: lote.numeroCiclo
-        }));
-      }),
-      catchError(error => {
-        console.error('Error al cargar lotes:', error);
-        return of([]);
-      })
-    );
-  }
+      return response.data.map(lote => ({
+        label: `Lote ${lote.numeroLote}`,
+        value: `LT-${lote.numeroLote.toString().padStart(3, '0')}`,
+        numeroLote: lote.numeroLote,
+        ciclo: `C${lote.numeroCiclo}`,
+        numeroCiclo: lote.numeroCiclo,
+        loteId: lote.loteId,
+        cicloId: lote.cicloId
+      }));
+    }),
+    catchError(error => {
+      console.error('Error al cargar lotes:', error);
+      return of([]);
+    })
+  );
+}
 
   getEmpleados(): Observable<ResponsableOption[]> {
     return this.http.get<BackendResponse<EmpleadoBackendResponse[]>>(

@@ -172,7 +172,6 @@ export class ControlReenvaseTableComponent implements OnInit {
         next: (registros) => {
           this.dataOriginal = this.transformarDatosBackend(registros);
           this.dataFiltered = [...this.dataOriginal];
-          this.corregirVolumenesInternas(registros);
           this.mostrarMensajeExitosoCarga();
           this.loading.main = false;
           resolve();
@@ -249,14 +248,14 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   private transformarDatosBackend(registros: any[]): ControlReenvaseData[] {
     return registros.map((registro: any) => {
-      const { volumen, tipo, idExtraccion, idFrascoRecolectado } = this.extraerVolumenYTipo(registro);
+      const { volumen, tipo, idExtraccion, idFrascoRecolectado } = this.extraerVolumenYTipoDesdeFrascoCrudo(registro);
 
       return {
         id: registro.id,
         fecha: this.parsearFechaDesdeBackend(registro.fecha),
         no_donante: registro.madreDonante.id.toString(),
-        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo),
-        id_frasco_anterior: registro.frascoCrudo,
+        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo.id),
+        id_frasco_anterior: registro.frascoCrudo.id,
         volumen_frasco_anterior: volumen,
         ciclo: registro.lote?.ciclo?.numeroCiclo?.toString() || '',
         lote: registro.lote?.numeroLote?.toString() || '',
@@ -273,98 +272,44 @@ export class ControlReenvaseTableComponent implements OnInit {
     });
   }
 
+  private extraerVolumenYTipoDesdeFrascoCrudo(registro: any): {
+    volumen: string;
+    tipo: TipoFrasco;
+    idExtraccion?: number;
+    idFrascoRecolectado?: number;
+  } {
+    const frascoCrudo = registro.frascoCrudo;
+
+    if (!frascoCrudo) {
+      return { volumen: '0', tipo: 'recolectado' };
+    }
+
+    if (frascoCrudo.extraccion) {
+      return {
+        volumen: frascoCrudo.extraccion.cantidad?.toString() || '0',
+        tipo: 'extraccion',
+        idExtraccion: frascoCrudo.id
+      };
+    }
+
+    if (frascoCrudo.frascoRecolectado) {
+      return {
+        volumen: frascoCrudo.frascoRecolectado.volumen?.toString() || '0',
+        tipo: 'recolectado',
+        idFrascoRecolectado: frascoCrudo.id
+      };
+    }
+
+    return { volumen: '0', tipo: 'recolectado' };
+  }
+
   private extraerVolumenYTipo(registro: any): {
     volumen: string;
     tipo: TipoFrasco;
     idExtraccion?: number;
     idFrascoRecolectado?: number;
   } {
-    const tipoDonante = registro.madreDonante?.tipoDonante;
-
-    if (tipoDonante === 'externa') {
-      return this.buscarEnFrascosRecolectados(registro);
-    } else if (tipoDonante === 'interna') {
-      return this.buscarEnExtracciones(registro);
-    }
-
-    return { volumen: '0', tipo: 'recolectado' };
-  }
-
-  private buscarEnFrascosRecolectados(registro: any): {
-    volumen: string;
-    tipo: TipoFrasco;
-    idFrascoRecolectado?: number;
-  } {
-    if (registro.madreDonante?.casaVisita?.length > 0) {
-      for (const casa of registro.madreDonante.casaVisita) {
-        if (casa.frascoRecolectado?.length > 0) {
-          const frasco = casa.frascoRecolectado.find((f: any) => f.id === registro.frascoCrudo);
-          if (frasco) {
-            return {
-              volumen: frasco.volumen?.toString() || '0',
-              tipo: 'recolectado',
-              idFrascoRecolectado: registro.frascoCrudo
-            };
-          }
-        }
-      }
-    }
-
-    return {
-      volumen: '0',
-      tipo: 'recolectado',
-      idFrascoRecolectado: registro.frascoCrudo
-    };
-  }
-
-  private buscarEnExtracciones(registro: any): {
-    volumen: string;
-    tipo: TipoFrasco;
-    idExtraccion?: number;
-  } {
-    const extracciones = registro.madreDonante?.madrePotencial?.lecheSalaExtraccion?.extracciones;
-    if (extracciones) {
-      const extraccion = extracciones.find((e: any) => e.id === registro.frascoCrudo);
-      if (extraccion) {
-        return {
-          volumen: extraccion.cantidad?.toString() || '0',
-          tipo: 'extraccion',
-          idExtraccion: registro.frascoCrudo
-        };
-      }
-    }
-    return {
-      volumen: '0',
-      tipo: 'extraccion',
-      idExtraccion: registro.frascoCrudo
-    };
-  }
-
-  private corregirVolumenesInternas(registros: any[]): void {
-    registros.forEach((registro: any) => {
-      if (registro.madreDonante?.tipoDonante !== 'interna') return;
-
-      const row = this.dataOriginal.find(r => r.id === registro.id);
-      if (!row || (row.volumen_frasco_anterior && row.volumen_frasco_anterior !== '0')) return;
-
-      const idMadre = registro.madreDonante?.id;
-      if (!idMadre) return;
-
-      this.controlReenvaseService.getFrascosByMadreDonante(String(idMadre)).subscribe({
-        next: (entradas: any[]) => {
-          const entradaMatch = entradas.find((e: any) => e.id === registro.frascoCrudo);
-
-          if (entradaMatch?.extraccion) {
-            row.volumen_frasco_anterior = entradaMatch.extraccion.cantidad?.toString() || '0';
-            row.tipo_frasco = 'extraccion';
-            row.id_extraccion = entradaMatch.id;
-            row.id_frasco_anterior = entradaMatch.id;
-            this.dataFiltered = [...this.dataOriginal];
-          }
-        },
-        error: (err) => console.error(`Error al corregir volumen para madre ${idMadre}:`, err)
-      });
-    });
+    return this.extraerVolumenYTipoDesdeFrascoCrudo(registro);
   }
 
   // ============= UTILIDADES =============

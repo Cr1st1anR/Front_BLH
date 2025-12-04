@@ -33,6 +33,25 @@ export interface EnfriamientoBackendResponse {
   };
 }
 
+export interface EnfriamientoAPIResponse {
+  id: number;
+  minuto: string;
+  valor: number;
+}
+
+export interface ControlTemperaturaCompleta {
+  id: number;
+  fecha: string;
+  hora_inicio: string;
+  hora_finalizacio: string;
+  observaciones?: string;
+  lote: { id: number; numeroLote: number };
+  ciclo: { id: number; numeroCiclo: number };
+  responsable: any;
+  calentamientos: any[];
+  enfriamientos: EnfriamientoAPIResponse[];
+}
+
 export interface BackendApiResponse<T> {
   status: number;
   statusmsg: string;

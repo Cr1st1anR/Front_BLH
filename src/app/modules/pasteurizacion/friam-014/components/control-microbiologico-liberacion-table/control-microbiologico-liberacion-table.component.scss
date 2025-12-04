@@ -302,23 +302,6 @@
   }
 }
 
-// Estilos para encabezados de la tabla
-::ng-deep th {
-  text-align: center !important;
-  vertical-align: middle !important;
-  padding: 1rem 0.75rem !important;
-  background-color: #224186 !important;
-  color: white !important;
-  font-size: 1rem !important;
-}
-
-::ng-deep td {
-  text-align: center !important;
-  vertical-align: middle !important;
-  padding: 1rem 0.75rem !important;
-  font-size: 1rem !important;
-}
-
 // Alineación de la tabla
 ::ng-deep .p-table {
   align-self: center;

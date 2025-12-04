@@ -15,22 +15,18 @@ import type {
   CalentamientoData,
   CalentamientoBackendRequest,
   CalentamientoBackendResponse,
-  TableColumn
+  TableColumn,
+  BackendApiResponse,
+  ControlTemperaturaCompleta,
+  CalentamientoAPIResponse
 } from '../../interfaces/calentamiento.interface';
 
 @Component({
   selector: 'calentamiento-table',
   standalone: true,
   imports: [
-    TableModule,
-    CommonModule,
-    HttpClientModule,
-    ProgressSpinnerModule,
-    ToastModule,
-    FormsModule,
-    ButtonModule,
-    InputTextModule,
-    TooltipModule
+    TableModule, CommonModule, HttpClientModule, ProgressSpinnerModule, ToastModule,
+    FormsModule, ButtonModule, InputTextModule, TooltipModule
   ],
   templateUrl: './calentamiento-table.component.html',
   styleUrl: './calentamiento-table.component.scss',
@@ -38,15 +34,12 @@ import type {
 })
 export class CalentamientoTableComponent implements OnInit, OnChanges {
   @Input() idControlTemperatura: number | null = null;
-
   @ViewChild('tableCalentamiento') table!: Table;
 
   loading: boolean = false;
   editingRow: CalentamientoData | null = null;
   clonedCalentamiento: { [s: string]: CalentamientoData } = {};
-
   dataCalentamiento: CalentamientoData[] = [];
-
   private isInitialLoad: boolean = true;
 
   readonly headersCalentamiento: TableColumn[] = [
@@ -87,80 +80,144 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
   }
 
   loadDataCalentamiento(): void {
-    if (!this.idControlTemperatura) {
-      return;
-    }
-
-    if (this.loading) {
-      return;
-    }
+    if (!this.idControlTemperatura) return;
+    if (this.loading) return;
 
     this.loading = true;
 
-    this.calentamientoService.getCalentamientoByControlTemperatura(this.idControlTemperatura)
-      .subscribe({
-        next: (calentamientoBackend: CalentamientoBackendResponse | null) => {
-          if (calentamientoBackend) {
-            // Si hay datos, transformarlos
-            this.dataCalentamiento = [this.transformarDatoBackendAFrontend(calentamientoBackend)];
-            this.mostrarExito('Calentamiento cargado correctamente');
-          } else {
-            // Si no hay datos, crear fila vacía por defecto
-            this.dataCalentamiento = [this.construirRegistroVacio()];
-            this.mostrarInfo('No hay calentamiento registrado. Complete los campos.');
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.loading = false;
-          this.manejarErrorCarga(error);
+    this.calentamientoService.getAllControlTemperatura().subscribe({
+      next: (response: BackendApiResponse<ControlTemperaturaCompleta[]>) => {
+        const registro = response.data?.find(item => item.id === this.idControlTemperatura);
+
+        if (registro && registro.calentamientos && registro.calentamientos.length > 0) {
+          this.dataCalentamiento = [this.transformarArrayCalentamientoAFrontend(registro.calentamientos, registro)];
+          this.mostrarExito('Calentamiento cargado correctamente');
+        } else {
+          this.dataCalentamiento = [this.construirRegistroVacio()];
+          this.mostrarInfo('No hay calentamiento registrado. Complete los campos.');
         }
-      });
+        this.loading = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        this.manejarErrorCarga(error);
+      }
+    });
   }
 
-  private transformarDatoBackendAFrontend(calentamiento: CalentamientoBackendResponse): CalentamientoData {
-    return {
-      id: calentamiento.id,
-      temp_0: calentamiento.temp_0,
-      temp_5: calentamiento.temp_5,
-      temp_10: calentamiento.temp_10,
-      temp_15: calentamiento.temp_15,
-      temp_20: calentamiento.temp_20,
-      temp_25: calentamiento.temp_25,
-      temp_30: calentamiento.temp_30,
-      temp_35: calentamiento.temp_35,
-      temp_40: calentamiento.temp_40,
-      temp_45: calentamiento.temp_45,
-      temp_50: calentamiento.temp_50,
-      temp_55: calentamiento.temp_55,
-      id_control_temperatura: calentamiento.controlTemperatura.id,
+  // ============= TRANSFORMACIONES DE DATOS =============
+
+  private transformarArrayCalentamientoAFrontend(
+    calentamientos: CalentamientoAPIResponse[],
+    registro: ControlTemperaturaCompleta
+  ): CalentamientoData {
+    const resultado: CalentamientoData = {
+      id: registro.id,
+      temp_0: null, temp_5: null, temp_10: null, temp_15: null,
+      temp_20: null, temp_25: null, temp_30: null, temp_35: null,
+      temp_40: null, temp_45: null, temp_50: null, temp_55: null,
+      id_control_temperatura: registro.id,
       isNew: false
     };
+
+    calentamientos.forEach(cal => {
+      switch (cal.minuto) {
+        case '0': resultado.temp_0 = cal.valor; break;
+        case '5': resultado.temp_5 = cal.valor; break;
+        case '10': resultado.temp_10 = cal.valor; break;
+        case '15': resultado.temp_15 = cal.valor; break;
+        case '20': resultado.temp_20 = cal.valor; break;
+        case '25': resultado.temp_25 = cal.valor; break;
+        case '30': resultado.temp_30 = cal.valor; break;
+        case '35': resultado.temp_35 = cal.valor; break;
+        case '40': resultado.temp_40 = cal.valor; break;
+        case '45': resultado.temp_45 = cal.valor; break;
+        case '50': resultado.temp_50 = cal.valor; break;
+        case '55': resultado.temp_55 = cal.valor; break;
+      }
+    });
+
+    return resultado;
   }
 
-  private construirRegistroVacio(): CalentamientoData {
-    return {
-      id: null,
-      temp_0: null,
-      temp_5: null,
-      temp_10: null,
-      temp_15: null,
-      temp_20: null,
-      temp_25: null,
-      temp_30: null,
-      temp_35: null,
-      temp_40: null,
-      temp_45: null,
-      temp_50: null,
-      temp_55: null,
-      id_control_temperatura: this.idControlTemperatura!,
-      isNew: true
-    };
+  private transformarFrontendAArray(datos: CalentamientoData): any[] {
+    const resultado: any[] = [];
+    const campos = [
+      { campo: 'temp_0', minuto: '0' }, { campo: 'temp_5', minuto: '5' },
+      { campo: 'temp_10', minuto: '10' }, { campo: 'temp_15', minuto: '15' },
+      { campo: 'temp_20', minuto: '20' }, { campo: 'temp_25', minuto: '25' },
+      { campo: 'temp_30', minuto: '30' }, { campo: 'temp_35', minuto: '35' },
+      { campo: 'temp_40', minuto: '40' }, { campo: 'temp_45', minuto: '45' },
+      { campo: 'temp_50', minuto: '50' }, { campo: 'temp_55', minuto: '55' }
+    ];
+
+    campos.forEach(({ campo, minuto }) => {
+      const valor = (datos as any)[campo];
+      if (valor !== null && valor !== undefined) {
+        resultado.push({
+          minuto,
+          valor,
+          temperaturaPasteurizadorId: this.idControlTemperatura!
+        });
+      }
+    });
+
+    return resultado;
   }
 
-  onRowEditInit(dataRow: CalentamientoData): void {
-    this.iniciarEdicionFila(dataRow);
+  private async obtenerIDsExistentes(): Promise<{ [minuto: string]: number }> {
+    return new Promise((resolve, reject) => {
+      this.calentamientoService.getAllControlTemperatura().subscribe({
+        next: (response: BackendApiResponse<ControlTemperaturaCompleta[]>) => {
+          const registro = response.data?.find(item => item.id === this.idControlTemperatura);
+          const idsMap: { [minuto: string]: number } = {};
+
+          if (registro?.calentamientos) {
+            registro.calentamientos.forEach(cal => {
+              idsMap[cal.minuto] = cal.id;
+            });
+          }
+
+          resolve(idsMap);
+        },
+        error: (error) => reject(error)
+      });
+    });
   }
+
+  private async transformarFrontendAArrayConIDs(datos: CalentamientoData): Promise<any[]> {
+    const idsExistentes = await this.obtenerIDsExistentes();
+    const resultado: any[] = [];
+    const campos = [
+      { campo: 'temp_0', minuto: '0' }, { campo: 'temp_5', minuto: '5' },
+      { campo: 'temp_10', minuto: '10' }, { campo: 'temp_15', minuto: '15' },
+      { campo: 'temp_20', minuto: '20' }, { campo: 'temp_25', minuto: '25' },
+      { campo: 'temp_30', minuto: '30' }, { campo: 'temp_35', minuto: '35' },
+      { campo: 'temp_40', minuto: '40' }, { campo: 'temp_45', minuto: '45' },
+      { campo: 'temp_50', minuto: '50' }, { campo: 'temp_55', minuto: '55' }
+    ];
+
+    campos.forEach(({ campo, minuto }) => {
+      const valor = (datos as any)[campo];
+      if (valor !== null && valor !== undefined) {
+        const item: any = {
+          minuto,
+          valor,
+          temperaturaPasteurizadorId: this.idControlTemperatura!
+        };
+
+        if (idsExistentes[minuto]) {
+          item.id = idsExistentes[minuto];
+        }
+
+        resultado.push(item);
+      }
+    });
+
+    return resultado;
+  }
+
+  // ============= MÉTODOS DE CRUD =============
 
   onRowEditSave(dataRow: CalentamientoData, index: number, event: MouseEvent): void {
     if (!this.validarAlMenosUnCampo(dataRow)) {
@@ -177,99 +234,80 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
     }
   }
 
-  onRowEditCancel(dataRow: CalentamientoData, index: number): void {
-    if (dataRow.isNew) {
-      // Si es nuevo y se cancela, restaurar la fila vacía
-      this.dataCalentamiento[index] = this.construirRegistroVacio();
-      this.dataCalentamiento = [...this.dataCalentamiento];
-    } else {
-      this.cancelarEdicionExistente(dataRow, index);
-    }
-    this.editingRow = null;
+  private procesarCreacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): void {
+    const arrayCalentamiento = this.transformarFrontendAArray(dataRow);
+    console.log('Creando calentamiento con array:', arrayCalentamiento);
+
+    this.calentamientoService.postCalentamiento(arrayCalentamiento).subscribe({
+      next: (response) => {
+        console.log('Respuesta POST:', response);
+        dataRow.isNew = false;
+        dataRow.id = Date.now(); // ID temporal
+        this.editingRow = null;
+        this.table.saveRowEdit(dataRow, rowElement);
+        this.mostrarExito('Calentamiento creado correctamente');
+      },
+      error: (error) => {
+        console.error('Error al crear calentamiento:', error);
+        this.mostrarError('Error al crear el calentamiento');
+      }
+    });
   }
 
-  private iniciarEdicionFila(dataRow: CalentamientoData): void {
+  private async procesarActualizacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): Promise<void> {
+    try {
+      const arrayCalentamiento = await this.transformarFrontendAArrayConIDs(dataRow);
+      console.log('Actualizando calentamiento con array:', arrayCalentamiento);
+
+      this.calentamientoService.putCalentamiento(arrayCalentamiento).subscribe({
+        next: (response) => {
+          console.log('Respuesta PUT:', response);
+          const rowId = this.getRowId(dataRow);
+          delete this.clonedCalentamiento[rowId];
+          this.editingRow = null;
+          this.table.saveRowEdit(dataRow, rowElement);
+          this.mostrarExito('Calentamiento actualizado correctamente');
+        },
+        error: (error) => {
+          console.error('Error al actualizar calentamiento:', error);
+          this.mostrarError('Error al actualizar el calentamiento');
+        }
+      });
+    } catch (error) {
+      console.error('Error al preparar datos para actualización:', error);
+      this.mostrarError('Error al preparar los datos para actualización');
+    }
+  }
+
+  // ============= MÉTODOS AUXILIARES =============
+
+  private construirRegistroVacio(): CalentamientoData {
+    return {
+      id: null,
+      temp_0: null, temp_5: null, temp_10: null, temp_15: null,
+      temp_20: null, temp_25: null, temp_30: null, temp_35: null,
+      temp_40: null, temp_45: null, temp_50: null, temp_55: null,
+      id_control_temperatura: this.idControlTemperatura!,
+      isNew: true
+    };
+  }
+
+  onRowEditInit(dataRow: CalentamientoData): void {
     const rowId = this.getRowId(dataRow);
     this.clonedCalentamiento[rowId] = { ...dataRow };
     this.editingRow = dataRow;
   }
 
-  private procesarCreacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
-
-    this.calentamientoService.postCalentamiento(datosParaBackend).subscribe({
-      next: (response: CalentamientoBackendResponse) => {
-        this.manejarExitoCreacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorCreacion(error);
-      }
-    });
-  }
-
-  private procesarActualizacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
-
-    this.calentamientoService.putCalentamiento(dataRow.id!, datosParaBackend).subscribe({
-      next: (response) => {
-        this.manejarExitoActualizacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorActualizacion(error);
-      }
-    });
-  }
-
-  private prepararDatosParaBackend(dataRow: CalentamientoData): CalentamientoBackendRequest {
-    return {
-      temp_0: dataRow.temp_0,
-      temp_5: dataRow.temp_5,
-      temp_10: dataRow.temp_10,
-      temp_15: dataRow.temp_15,
-      temp_20: dataRow.temp_20,
-      temp_25: dataRow.temp_25,
-      temp_30: dataRow.temp_30,
-      temp_35: dataRow.temp_35,
-      temp_40: dataRow.temp_40,
-      temp_45: dataRow.temp_45,
-      temp_50: dataRow.temp_50,
-      temp_55: dataRow.temp_55,
-      controlTemperatura: { id: this.idControlTemperatura! }
-    };
-  }
-
-  private manejarExitoCreacion(dataRow: CalentamientoData, response: CalentamientoBackendResponse, rowElement: HTMLTableRowElement): void {
-    dataRow.isNew = false;
-    dataRow.id = response.id;
-
+  onRowEditCancel(dataRow: CalentamientoData, index: number): void {
+    if (dataRow.isNew) {
+      this.dataCalentamiento[index] = this.construirRegistroVacio();
+      this.dataCalentamiento = [...this.dataCalentamiento];
+    } else {
+      const rowId = this.getRowId(dataRow);
+      this.dataCalentamiento[index] = this.clonedCalentamiento[rowId];
+      delete this.clonedCalentamiento[rowId];
+    }
     this.editingRow = null;
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarExito('Calentamiento creado correctamente');
-  }
-
-  private manejarExitoActualizacion(dataRow: CalentamientoData, response: any, rowElement: HTMLTableRowElement): void {
-    const rowId = this.getRowId(dataRow);
-    delete this.clonedCalentamiento[rowId];
-    this.editingRow = null;
-
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarExito('Calentamiento actualizado correctamente');
-  }
-
-  private manejarErrorCreacion(error: any): void {
-    console.error('Error al crear calentamiento:', error);
-    this.mostrarError('Error al crear el calentamiento');
-  }
-
-  private manejarErrorActualizacion(error: any): void {
-    console.error('Error al actualizar calentamiento:', error);
-    this.mostrarError('Error al actualizar el calentamiento');
-  }
-
-  private cancelarEdicionExistente(dataRow: CalentamientoData, index: number): void {
-    const rowId = this.getRowId(dataRow);
-    this.dataCalentamiento[index] = this.clonedCalentamiento[rowId];
-    delete this.clonedCalentamiento[rowId];
   }
 
   private obtenerElementoFila(event: MouseEvent): HTMLTableRowElement {
@@ -291,13 +329,8 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
     return dataRow.id?.toString() || 'new';
   }
 
-  isAnyRowEditing(): boolean {
-    return this.editingRow !== null;
-  }
-
   private manejarErrorCarga(error: any): void {
     if (error.status === 204 || !error.status) {
-      // Si no hay datos, crear fila vacía
       this.dataCalentamiento = [this.construirRegistroVacio()];
       this.mostrarInfo('No hay calentamiento registrado. Complete los campos.');
     } else {

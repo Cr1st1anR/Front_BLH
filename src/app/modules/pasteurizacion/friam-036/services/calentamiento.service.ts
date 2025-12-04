@@ -21,7 +21,6 @@ export class CalentamientoService {
   }
 
   postCalentamiento(arrayCalentamiento: any[]): Observable<any> {
-    console.log('POST calentamiento:', arrayCalentamiento);
     return this.http.post(`${environment.ApiBLH}/temperatura-pasteurizador/calentamiento`, arrayCalentamiento).pipe(
       catchError(error => {
         console.error('Error al crear calentamiento:', error);
@@ -31,7 +30,6 @@ export class CalentamientoService {
   }
 
   putCalentamiento(arrayCalentamiento: any[]): Observable<any> {
-    console.log('PUT calentamiento:', arrayCalentamiento);
     return this.http.put(`${environment.ApiBLH}/temperatura-pasteurizador/calentamiento`, arrayCalentamiento).pipe(
       catchError(error => {
         console.error('Error al actualizar calentamiento:', error);

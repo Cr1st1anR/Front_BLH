@@ -13,8 +13,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CalentamientoService } from '../../services/calentamiento.service';
 import type {
   CalentamientoData,
-  CalentamientoBackendRequest,
-  CalentamientoBackendResponse,
   TableColumn,
   BackendApiResponse,
   ControlTemperaturaCompleta,
@@ -205,17 +203,18 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
           valor,
           temperaturaPasteurizadorId: this.idControlTemperatura!
         };
-
+        // Solo agregar ID si existe (para actualización)
+        // Si no existe ID, será un registro nuevo y el backend lo creará
         if (idsExistentes[minuto]) {
           item.id = idsExistentes[minuto];
         }
-
+        // No agregamos 'id: undefined' ni 'id: null'
         resultado.push(item);
       }
     });
 
     return resultado;
-  }
+}
 
   // ============= MÉTODOS DE CRUD =============
 
@@ -236,11 +235,8 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
 
   private procesarCreacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): void {
     const arrayCalentamiento = this.transformarFrontendAArray(dataRow);
-    console.log('Creando calentamiento con array:', arrayCalentamiento);
-
     this.calentamientoService.postCalentamiento(arrayCalentamiento).subscribe({
       next: (response) => {
-        console.log('Respuesta POST:', response);
         dataRow.isNew = false;
         dataRow.id = Date.now(); // ID temporal
         this.editingRow = null;
@@ -257,11 +253,8 @@ export class CalentamientoTableComponent implements OnInit, OnChanges {
   private async procesarActualizacionCalentamiento(dataRow: CalentamientoData, rowElement: HTMLTableRowElement): Promise<void> {
     try {
       const arrayCalentamiento = await this.transformarFrontendAArrayConIDs(dataRow);
-      console.log('Actualizando calentamiento con array:', arrayCalentamiento);
-
       this.calentamientoService.putCalentamiento(arrayCalentamiento).subscribe({
         next: (response) => {
-          console.log('Respuesta PUT:', response);
           const rowId = this.getRowId(dataRow);
           delete this.clonedCalentamiento[rowId];
           this.editingRow = null;

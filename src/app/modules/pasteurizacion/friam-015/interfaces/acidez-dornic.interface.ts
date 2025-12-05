@@ -12,27 +12,19 @@ export interface AcidezDornicData {
 }
 
 export interface AcidezDornicBackendRequest {
-  a1: number;
-  a2: number;
-  a3: number;
-  media: number;
-  factor: number;
+  primera: number;
+  segunda: number;
+  tercera: number;
   resultado: number;
   seleccionClasificacion: { id: number };
 }
 
 export interface AcidezDornicBackendResponse {
   id: number;
-  a1: number;
-  a2: number;
-  a3: number;
-  media: number;
-  factor: number;
+  primera: number;
+  segunda: number;
+  tercera: number;
   resultado: number;
-  seleccionClasificacion: {
-    id: number;
-    fecha?: string;
-  };
 }
 
 export interface BackendApiResponse<T> {

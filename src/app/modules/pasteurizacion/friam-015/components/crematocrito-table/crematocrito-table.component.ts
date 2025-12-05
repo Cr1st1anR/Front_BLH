@@ -59,7 +59,7 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
     { header: 'CC2', field: 'cc2', width: '100px', tipo: 'number' },
     { header: 'CC3', field: 'cc3', width: '100px', tipo: 'number' },
     { header: 'MEDIA CC', field: 'media_cc', width: '120px', tipo: 'calculated' },
-    { header: 'KCAL/L', field: 'kcal_l', width: '120px', tipo: 'pending' },
+    { header: 'KCAL/L', field: 'kcal_l', width: '120px', tipo: 'calculated' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
 
@@ -69,69 +69,59 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    if (this.idSeleccionClasificacion) {
-      this.loadDataCrematocrito();
-      this.isInitialLoad = false;
-    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['idSeleccionClasificacion']?.currentValue && !this.isInitialLoad) {
-      this.loadDataCrematocrito();
-    } else if (changes['idSeleccionClasificacion']?.currentValue && this.isInitialLoad) {
-      this.loadDataCrematocrito();
-      this.isInitialLoad = false;
-    }
+  if (changes['idSeleccionClasificacion']?.currentValue) {
+    this.loadDataCrematocrito();
   }
+}
 
   loadDataCrematocrito(): void {
-    if (!this.idSeleccionClasificacion) {
-      return;
-    }
-
-    if (this.loading) {
-      return;
-    }
-
-    this.loading = true;
-
-    this.crematocritoService.getCrematocritoBySeleccionClasificacion(this.idSeleccionClasificacion)
-      .subscribe({
-        next: (crematocritoBackend: CrematocritoBackendResponse | null) => {
-          if (crematocritoBackend) {
-            // Si hay datos, transformarlos
-            this.dataCrematocrito = [this.transformarDatoBackendAFrontend(crematocritoBackend)];
-            this.mostrarExito('Crematocrito cargado correctamente');
-          } else {
-            // Si no hay datos, crear fila vacía por defecto
-            this.dataCrematocrito = [this.construirRegistroVacio()];
-            this.mostrarInfo('No hay crematocrito registrado. Complete los campos.');
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.loading = false;
-          this.manejarErrorCarga(error);
-        }
-      });
+  if (!this.idSeleccionClasificacion || this.loading) {
+    return;
   }
+
+  this.loading = true;
+
+  this.crematocritoService.getCrematocritoBySeleccionClasificacion(this.idSeleccionClasificacion)
+    .subscribe({
+      next: (crematocritoBackend: CrematocritoBackendResponse | null) => {
+        if (crematocritoBackend) {
+          this.dataCrematocrito = [this.transformarDatoBackendAFrontend(crematocritoBackend)];
+          this.mostrarExito('Crematocrito cargado correctamente');
+        } else {
+          this.dataCrematocrito = [this.construirRegistroVacio()];
+          this.mostrarInfo('No hay crematocrito registrado. Complete los campos.');
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        this.manejarErrorCarga(error);
+      }
+    });
+}
 
   private transformarDatoBackendAFrontend(crematocrito: CrematocritoBackendResponse): CrematocritoData {
-    return {
-      id: crematocrito.id,
-      ct1: crematocrito.ct1,
-      ct2: crematocrito.ct2,
-      ct3: crematocrito.ct3,
-      media_ct: crematocrito.mediaCt,
-      cc1: crematocrito.cc1,
-      cc2: crematocrito.cc2,
-      cc3: crematocrito.cc3,
-      media_cc: crematocrito.mediaCc,
-      kcal_l: crematocrito.kcalL,
-      id_seleccion_clasificacion: crematocrito.seleccionClasificacion.id,
-      isNew: false
-    };
-  }
+  const mediaCt = this.calcularMediaCt(crematocrito.ct1, crematocrito.ct2, crematocrito.ct3);
+  const mediaCc = this.calcularMediaCc(crematocrito.cc1, crematocrito.cc2, crematocrito.cc3);
+
+  return {
+    id: crematocrito.id,
+    ct1: crematocrito.ct1,
+    ct2: crematocrito.ct2,
+    ct3: crematocrito.ct3,
+    media_ct: mediaCt,
+    cc1: crematocrito.cc1,
+    cc2: crematocrito.cc2,
+    cc3: crematocrito.cc3,
+    media_cc: mediaCc,
+    kcal_l: crematocrito.kcal,
+    id_seleccion_clasificacion: this.idSeleccionClasificacion!,
+    isNew: false
+  };
+}
 
   private construirRegistroVacio(): CrematocritoData {
     return {
@@ -144,79 +134,101 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
       cc2: null,
       cc3: null,
       media_cc: null,
-      kcal_l: null, // Pendiente de fórmula
+      kcal_l: null,
       id_seleccion_clasificacion: this.idSeleccionClasificacion!,
       isNew: true
     };
   }
 
   // ============= CÁLCULO DE MEDIAS =============
-  calcularMedias(rowData: CrematocritoData): void {
-    // Calcular MEDIA CT: (CT1 + CT2 + CT3) / 3
-    if (rowData.ct1 !== null && rowData.ct2 !== null && rowData.ct3 !== null) {
-      const ct1 = Number(rowData.ct1);
-      const ct2 = Number(rowData.ct2);
-      const ct3 = Number(rowData.ct3);
-      rowData.media_ct = (ct1 + ct2 + ct3) / 3;
-    } else {
-      rowData.media_ct = null;
-    }
 
-    // Calcular MEDIA CC: (CC1 + CC2 + CC3) / 3
-    if (rowData.cc1 !== null && rowData.cc2 !== null && rowData.cc3 !== null) {
-      const cc1 = Number(rowData.cc1);
-      const cc2 = Number(rowData.cc2);
-      const cc3 = Number(rowData.cc3);
-      rowData.media_cc = (cc1 + cc2 + cc3) / 3;
-    } else {
-      rowData.media_cc = null;
-    }
+  private calcularMediaCt(ct1: number | null, ct2: number | null, ct3: number | null): number | null {
+  const valores = [ct1, ct2, ct3].filter(val => {
+    if (val === null || val === undefined) return false;
+    const numero = Number(val);
+    return !isNaN(numero);
+  }).map(val => Number(val));
 
-    // TODO: Calcular KCAL/L cuando se tenga la fórmula
-    // Por ahora lo dejamos en null
-    // rowData.kcal_l = this.calcularKcalL(rowData.media_ct, rowData.media_cc);
+  if (valores.length === 0) return null;
+
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / valores.length;
+}
+
+private calcularMediaCc(cc1: number | null, cc2: number | null, cc3: number | null): number | null {
+  const valores = [cc1, cc2, cc3].filter(val => {
+    if (val === null || val === undefined) return false;
+    const numero = Number(val);
+    return !isNaN(numero);
+  }).map(val => Number(val));
+
+  if (valores.length === 0) return null;
+
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / valores.length;
+}
+
+calcularMedias(rowData: CrematocritoData): void {
+  rowData.ct1 = this.limpiarValor(rowData.ct1);
+  rowData.ct2 = this.limpiarValor(rowData.ct2);
+  rowData.ct3 = this.limpiarValor(rowData.ct3);
+  rowData.cc1 = this.limpiarValor(rowData.cc1);
+  rowData.cc2 = this.limpiarValor(rowData.cc2);
+  rowData.cc3 = this.limpiarValor(rowData.cc3);
+
+  rowData.media_ct = this.calcularMediaCt(rowData.ct1, rowData.ct2, rowData.ct3);
+  rowData.media_cc = this.calcularMediaCc(rowData.cc1, rowData.cc2, rowData.cc3);
+  rowData.kcal_l = this.calcularKcalL(rowData.media_ct, rowData.media_cc);
+}
+
+private limpiarValor(valor: any): number | null {
+  if (valor === null || valor === undefined) {
+    return null;
   }
 
-  // ============= MÉTODO PENDIENTE PARA KCAL/L =============
-  // Cuando tengas la fórmula, descomenta y completa este método
-  /*
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return null;
+  }
+
+  const numero = Number(valor);
+  return isNaN(numero) ? null : numero;
+}
+
+  // ============= MÉTODO PARA KCAL/L =============
   private calcularKcalL(mediaCt: number | null, mediaCc: number | null): number | null {
-    if (mediaCt === null || mediaCc === null) {
+    if (mediaCt === null || mediaCc === null || mediaCt === 0) {
       return null;
     }
 
-    // TODO: Implementar la fórmula correcta aquí
-    // Ejemplo: return (mediaCt * 0.5) + (mediaCc * 0.3) + 50;
+    // Fórmula: (media cc x 100) / media ct x 66.8 + 290
+    const resultado = ((mediaCc * 100) / mediaCt) * 66.8 + 290;
 
-    return null;
+    // Retornar solo la parte entera (sin decimales)
+    return Math.floor(resultado);
   }
-  */
 
   onRowEditInit(dataRow: CrematocritoData): void {
     this.iniciarEdicionFila(dataRow);
   }
 
   onRowEditSave(dataRow: CrematocritoData, index: number, event: MouseEvent): void {
-    if (!this.validarCamposRequeridos(dataRow)) {
-      this.mostrarError('Por favor complete todos los campos requeridos (CT1-CT3 y CC1-CC3)');
-      return;
-    }
-
-    // Recalcular medias antes de guardar
-    this.calcularMedias(dataRow);
-
-    const rowElement = this.obtenerElementoFila(event);
-
-    if (dataRow.isNew) {
-      this.procesarCreacionCrematocrito(dataRow, rowElement);
-    } else {
-      this.procesarActualizacionCrematocrito(dataRow, rowElement);
-    }
+  if (!this.validarCamposRequeridos(dataRow)) {
+    return;
   }
+
+  this.calcularMedias(dataRow);
+
+  const rowElement = this.obtenerElementoFila(event);
+
+  if (dataRow.isNew) {
+    this.procesarCreacionCrematocrito(dataRow, rowElement);
+  } else {
+    this.procesarActualizacionCrematocrito(dataRow, rowElement);
+  }
+}
 
   onRowEditCancel(dataRow: CrematocritoData, index: number): void {
     if (dataRow.isNew) {
-      // Si es nuevo y se cancela, restaurar la fila vacía
       this.dataCrematocrito[index] = this.construirRegistroVacio();
       this.dataCrematocrito = [...this.dataCrematocrito];
     } else {
@@ -232,45 +244,61 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
   }
 
   private procesarCreacionCrematocrito(dataRow: CrematocritoData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.crematocritoService.postCrematocrito(datosParaBackend).subscribe({
-      next: (response: CrematocritoBackendResponse) => {
-        this.manejarExitoCreacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorCreacion(error);
-      }
-    });
-  }
+  this.crematocritoService.postCrematocrito(datosParaBackend).subscribe({
+    next: (response: CrematocritoBackendResponse) => {
+      this.manejarExitoCreacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorCreacion(error);
+    }
+  });
+}
 
   private procesarActualizacionCrematocrito(dataRow: CrematocritoData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.crematocritoService.putCrematocrito(dataRow.id!, datosParaBackend).subscribe({
-      next: (response) => {
-        this.manejarExitoActualizacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorActualizacion(error);
-      }
-    });
-  }
+  this.crematocritoService.putCrematocrito(dataRow.id!, datosParaBackend).subscribe({
+    next: (response) => {
+      this.manejarExitoActualizacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorActualizacion(error);
+    }
+  });
+}
 
   private prepararDatosParaBackend(dataRow: CrematocritoData): CrematocritoBackendRequest {
-    return {
-      ct1: Number(dataRow.ct1),
-      ct2: Number(dataRow.ct2),
-      ct3: Number(dataRow.ct3),
-      mediaCt: Number(dataRow.media_ct),
-      cc1: Number(dataRow.cc1),
-      cc2: Number(dataRow.cc2),
-      cc3: Number(dataRow.cc3),
-      mediaCc: Number(dataRow.media_cc),
-      kcalL: dataRow.kcal_l !== null ? Number(dataRow.kcal_l) : null,
-      seleccionClasificacion: { id: this.idSeleccionClasificacion! }
-    };
+  return {
+    ct1: this.convertirANumeroONull(dataRow.ct1),
+    ct2: this.convertirANumeroONull(dataRow.ct2),
+    ct3: this.convertirANumeroONull(dataRow.ct3),
+    cc1: this.convertirANumeroONull(dataRow.cc1),
+    cc2: this.convertirANumeroONull(dataRow.cc2),
+    cc3: this.convertirANumeroONull(dataRow.cc3),
+    kcal: Number(dataRow.kcal_l),
+    seleccionClasificacion: { id: this.idSeleccionClasificacion! }
+  };
+}
+
+private convertirANumeroONull(valor: any): number | null {
+  if (valor === null || valor === undefined) {
+    return null;
   }
+
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return null;
+  }
+
+  const numero = Number(valor);
+
+  if (isNaN(numero)) {
+    return null;
+  }
+
+  return numero;
+}
 
   private manejarExitoCreacion(dataRow: CrematocritoData, response: CrematocritoBackendResponse, rowElement: HTMLTableRowElement): void {
     dataRow.isNew = false;
@@ -311,15 +339,37 @@ export class CrematocritoTableComponent implements OnInit, OnChanges {
   }
 
   private validarCamposRequeridos(dataRow: CrematocritoData): boolean {
-    return !!(
-      dataRow.ct1 !== null &&
-      dataRow.ct2 !== null &&
-      dataRow.ct3 !== null &&
-      dataRow.cc1 !== null &&
-      dataRow.cc2 !== null &&
-      dataRow.cc3 !== null
-    );
+  const valoresCt = [dataRow.ct1, dataRow.ct2, dataRow.ct3].filter(val => this.esValorValido(val));
+  const valoresCc = [dataRow.cc1, dataRow.cc2, dataRow.cc3].filter(val => this.esValorValido(val));
+
+  const tieneCtSuficientes = valoresCt.length >= 2;
+  const tieneCcSuficientes = valoresCc.length >= 2;
+
+  if (!tieneCtSuficientes) {
+    this.mostrarError('Debe completar al menos 2 valores de CT (CT1, CT2, CT3)');
+    return false;
   }
+
+  if (!tieneCcSuficientes) {
+    this.mostrarError('Debe completar al menos 2 valores de CC (CC1, CC2, CC3)');
+    return false;
+  }
+
+  return true;
+}
+
+esValorValido(valor: any): boolean {
+  if (valor === null || valor === undefined) {
+    return false;
+  }
+
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return false;
+  }
+
+  const numero = Number(valor);
+  return !isNaN(numero);
+}
 
   private getRowId(dataRow: CrematocritoData): string {
     return dataRow.id?.toString() || 'new';

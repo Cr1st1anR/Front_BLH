@@ -15,33 +15,25 @@ export interface CrematocritoData {
 }
 
 export interface CrematocritoBackendRequest {
-  ct1: number;
-  ct2: number;
-  ct3: number;
-  mediaCt: number;
-  cc1: number;
-  cc2: number;
-  cc3: number;
-  mediaCc: number;
-  kcalL: number | null;
+  ct1: number | null;
+  ct2: number | null;
+  ct3: number | null;
+  cc1: number | null;
+  cc2: number | null;
+  cc3: number | null;
+  kcal: number;
   seleccionClasificacion: { id: number };
 }
 
 export interface CrematocritoBackendResponse {
   id: number;
-  ct1: number;
-  ct2: number;
-  ct3: number;
-  mediaCt: number;
-  cc1: number;
-  cc2: number;
-  cc3: number;
-  mediaCc: number;
-  kcalL: number | null;
-  seleccionClasificacion: {
-    id: number;
-    fecha?: string;
-  };
+  ct1: number | null;
+  ct2: number | null;
+  ct3: number | null;
+  cc1: number | null;
+  cc2: number | null;
+  cc3: number | null;
+  kcal: number;
 }
 
 export interface BackendApiResponse<T> {

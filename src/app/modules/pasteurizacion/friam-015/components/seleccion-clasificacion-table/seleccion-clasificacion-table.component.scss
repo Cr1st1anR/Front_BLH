@@ -1,0 +1,370 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+// Estilos para columnas verticales - 130px MUY COMPACTO
+.vertical-text {
+  height: 130px !important;
+  min-height: 130px !important;
+  vertical-align: bottom !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background-color: #224186 !important;
+  color: white !important;
+}
+
+// Estilos para columnas horizontales
+th:not(.vertical-text) {
+  background-color: #224186 !important;
+  color: white !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 8px 6px !important;
+  line-height: 1.3 !important;
+  min-height: 45px !important;
+}
+
+.rotate-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 3px !important;
+  gap: 0px;
+  line-height: 0.98 !important;
+
+  span {
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  br {
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 0;
+  }
+}
+
+// Ajustes específicos para ng-deep
+:host ::ng-deep {
+  // Forzar altura de las filas del header
+  .p-datatable .p-datatable-thead > tr {
+    height: auto !important;
+    min-height: 130px !important;
+  }
+
+  // Altura de las filas del cuerpo de la tabla
+  .p-datatable .p-datatable-tbody > tr {
+    height: 55px !important;
+    min-height: 55px !important;
+  }
+
+  // Celdas del cuerpo de la tabla - TEXTO CON PESO NORMAL
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding: 8px 6px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+    border: 1px solid #e5e7eb !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+  }
+
+  // Celdas de columnas verticales
+  .vertical-text td {
+    padding: 8px 5px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+  }
+
+  // Headers de la tabla - forzar altura
+  .p-datatable .p-datatable-thead > tr > th {
+    border: 1px solid #1a3366 !important;
+    font-weight: 600 !important;
+
+    &.vertical-text {
+      height: 130px !important;
+      min-height: 130px !important;
+      max-height: none !important;
+    }
+
+    &:not(.vertical-text) {
+      min-height: 45px !important;
+    }
+  }
+
+  // Mejor alineación de los iconos de ojo en columnas verticales
+  .vertical-text td .flex {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Estilos para inputs y selects dentro de las celdas - TEXTO NORMAL
+  .p-datatable .p-datatable-tbody > tr > td {
+    .p-inputtext,
+    .p-select,
+    .p-datepicker {
+      width: 100%;
+      text-align: center;
+      font-size: 0.95rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-inputtext::placeholder {
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+
+    .p-select-label {
+      font-size: 0.95rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-datepicker-input {
+      font-size: 0.95rem !important;
+      font-weight: 400 !important;
+    }
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td > span,
+  .p-datatable .p-datatable-tbody > tr > td > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+  }
+
+  td .flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .p-button {
+    margin: 0 auto;
+  }
+
+  .p-button-icon {
+    font-size: 1rem !important;
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td {
+    min-height: 45px !important;
+  }
+
+  .p-datatable-thead {
+    height: auto !important;
+  }
+
+  .p-datatable-scrollable-header {
+    min-height: 130px !important;
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td {
+    .p-datepicker-trigger {
+      font-size: 0.95rem !important;
+    }
+  }
+}
+
+::ng-deep {
+  .p-tooltip {
+    .p-tooltip-text {
+      text-align: center !important;
+      white-space: pre-line !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+  }
+}
+
+// Media queries para responsive
+@media (max-width: 1600px) {
+  .vertical-text {
+    height: 128px !important;
+    min-height: 128px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.83rem;
+    padding: 5px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 128px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 128px !important;
+      min-height: 128px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 52px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.92rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 128px !important;
+    }
+  }
+}
+
+@media (max-width: 1400px) {
+  .vertical-text {
+    height: 125px !important;
+    min-height: 125px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.8rem;
+    padding: 5px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 125px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 125px !important;
+      min-height: 125px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 50px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.9rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 125px !important;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .vertical-text {
+    height: 122px !important;
+    min-height: 122px !important;
+  }
+
+  .rotate-text {
+    font-size: 0.78rem;
+    padding: 4px 3px !important;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr {
+      min-height: 122px !important;
+    }
+
+    .p-datatable .p-datatable-thead > tr > th.vertical-text {
+      height: 122px !important;
+      min-height: 122px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+      height: 48px !important;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+      font-size: 0.88rem !important;
+      font-weight: 400 !important;
+    }
+
+    .p-datatable-scrollable-header {
+      min-height: 122px !important;
+    }
+  }
+
+.codigo-frasco {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.codigo-frasco-procesado {
+  color: #2563eb !important;
+  background-color: #eff6ff;
+}
+
+.codigo-frasco-crudo {
+  color: #059669 !important;
+  background-color: #ecfdf5;
+}
+
+:host ::ng-deep {
+  .text-gray-400 {
+    color: #9ca3af !important;
+  }
+
+  .text-gray-500 {
+    color: #6b7280 !important;
+  }
+
+  .text-orange-500 {
+    color: #f97316 !important;
+  }
+
+  .text-blue-600 {
+    color: #2563eb !important;
+  }
+
+  .text-green-600 {
+    color: #059669 !important;
+  }
+
+  .italic {
+    font-style: italic !important;
+  }
+
+  .font-medium {
+    font-weight: 500 !important;
+  }
+
+  .text-xs {
+    font-size: 0.75rem !important;
+  }
+}
+
+}

@@ -70,7 +70,8 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-038)',
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
         },
-        { label: 'Control de entradas y salidas de leche humana extraida cruda',
+        {
+          label: 'Control de entradas y salidas de leche humana extraida cruda',
           subLabel: '(FRIAM-012)',
           route: '/blh/captacion/control-leche-cruda'
         },
@@ -89,12 +90,21 @@ export class DashBoardComponent {
     {
       label: 'Pasteurizacion',
       icon: 'fa-solid fa-flask-vial',
-      route: '/pasteurizacion',
       items: [
         {
           label: 'Control de reenvase red colombiana de bancos de leche humana',
           subLabel: '(FRIAM-032)',
           route: '/blh/pasteurizacion/control-reenvase',
+        },
+        {
+          label: 'Seleccion y clasificacion de leche humana extraida cruda',
+          subLabel: '(FRIAM-015)',
+          route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
+        },
+        {
+          label: 'Control de temperatura del pasteurizador blh',
+          subLabel: '(FRIAM-036)',
+          route: '/blh/pasteurizacion/control-temperatura-pasteurizador',
         },
         {
           label: 'Registro diario de no conformidades',
@@ -106,7 +116,6 @@ export class DashBoardComponent {
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
-      route: '/liberacion',
       items: [],
     },
   ];

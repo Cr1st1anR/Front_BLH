@@ -39,6 +39,34 @@
   .p-datatable-thead > tr:nth-child(2) > th {
     border-top: 0 !important;
   }
+
+  // Eliminar esquinas redondeadas específicamente para la última fila de headers
+  .p-datatable-thead > tr:nth-child(3) > th {
+    &:first-child {
+      // CONGELADOR N° - quitar esquina inferior izquierda
+      border-bottom-left-radius: 0 !important;
+      border-radius: 0 !important;
+    }
+
+    &:last-child {
+      // ACCIONES - quitar esquina inferior derecha
+      border-bottom-right-radius: 0 !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  // Mantener esquinas redondeadas solo para el grupo header (segunda fila)
+  .p-datatable-thead > tr:nth-child(2) > th {
+    &:first-child {
+      // INFORMACIÓN DEL CONGELADOR - mantener esquina superior izquierda
+      border-top-left-radius: 4px !important;
+    }
+
+    &:last-child {
+      // EDICION - mantener esquina superior derecha
+      border-top-right-radius: 4px !important;
+    }
+  }
 }
 
 :host ::ng-deep .p-cell-editing {

@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { NoConformidadesTableComponent } from "../../components/no-conformidades-table/no-conformidades-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
-// import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import type { NoConformidadesData, FiltrosBusqueda } from '../../interfaces/no-conformidades.interface';
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 

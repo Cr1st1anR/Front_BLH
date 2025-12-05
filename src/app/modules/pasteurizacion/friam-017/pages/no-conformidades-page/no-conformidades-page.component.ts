@@ -8,6 +8,7 @@ import { NoConformidadesTableComponent } from "../../components/no-conformidades
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 // import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import type { NoConformidadesData, FiltrosBusqueda } from '../../interfaces/no-conformidades.interface';
+import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 
 @Component({
   selector: 'app-no-conformidades-page',
@@ -18,9 +19,9 @@ import type { NoConformidadesData, FiltrosBusqueda } from '../../interfaces/no-c
     ButtonModule,
     HeaderComponent,
     NoConformidadesTableComponent,
-    MonthPickerComponent
-    // NewRegisterButtonComponent // Descomentarás cuando esté disponible
-  ],
+    MonthPickerComponent,
+    NewRegisterButtonComponent
+],
   templateUrl: './no-conformidades-page.component.html',
   styleUrl: './no-conformidades-page.component.scss'
 })

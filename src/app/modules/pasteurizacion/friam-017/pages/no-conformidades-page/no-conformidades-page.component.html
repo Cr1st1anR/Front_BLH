@@ -1,12 +1,7 @@
 <app-header [title]="'REGISTRO DIARIO DE NO CONFORMIDADES (FRIAM-017)'" />
 
 <div class="flex justify-between items-center mx-4 mt-8">
-  <!-- Botón temporal -->
-  <button pButton pRipple type="button" label="Nuevo Registro" icon="pi pi-plus" class="p-button-primary"
-    (click)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing">
-  </button>
-
-  <!-- <new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" /> -->
+  <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
 
   <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 </div>

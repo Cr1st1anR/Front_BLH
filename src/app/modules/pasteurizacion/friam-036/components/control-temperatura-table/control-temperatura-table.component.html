@@ -1,0 +1,195 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableControlTemperatura [value]="dataControlTemperatura" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersControlTemperatura" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" dataKey="id"
+    editMode="row" [globalFilterFields]="['responsable']">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width" [style.white-space]="'pre-line'"
+          [style.text-align]="'center'">
+          {{ col.header }}
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width" [style.text-align]="'center'">
+
+          @if (col.field === 'fecha') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="Seleccione fecha" appendTo="body" class="w-full">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData.fecha) {
+              {{ rowData.fecha | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'lote') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              @if (isCampoEditable('lote', rowData)) {
+              @if (loading.lotes) {
+              <div class="flex items-center justify-center w-full p-2">
+                <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+                <span class="ml-2 text-sm text-gray-500">Cargando lotes...</span>
+              </div>
+              } @else {
+              <p-select [(ngModel)]="rowData.lote" [options]="opcionesLotes" optionLabel="label" optionValue="value"
+                placeholder="Seleccione lote" (onChange)="onLoteSeleccionado($event, rowData)" appendTo="body"
+                class="w-full" [showClear]="true" [filter]="true" filterBy="label" [filterMatchMode]="'contains'">
+              </p-select>
+              }
+              } @else {
+              <input pInputText type="text" [(ngModel)]="rowData.lote" class="w-full" placeholder="No editable"
+                [disabled]="true">
+              }
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.lote || 'Sin lote' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'ciclo') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.ciclo" class="w-full"
+                [disabled]="true">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.ciclo || 'Sin ciclo' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'horaInicio') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.horaInicio_aux" [timeOnly]="true" [showIcon]="true"
+                [iconDisplay]="'input'" appendTo="body" class="w-full" placeholder="Seleccione hora">
+                <ng-template pTemplate="inputicon">
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.horaInicio || 'Sin hora' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'calentamiento') {
+          <button pButton type="button" icon="pi pi-eye" class="p-button-rounded p-button-text"
+            (click)="onVerCalentamiento(rowData, $event)" [disabled]="isAnyRowEditing()" pTooltip="Calentamiento"
+            tooltipPosition="top">
+          </button>
+          }
+
+          @else if (col.field === 'enfriamiento') {
+          <button pButton type="button" icon="pi pi-eye" class="p-button-rounded p-button-text"
+            (click)="onVerEnfriamiento(rowData, $event)" [disabled]="isAnyRowEditing()" pTooltip="Enfriamiento"
+            tooltipPosition="top">
+          </button>
+          }
+
+          @else if (col.field === 'horaFinalizacion') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData.horaFinalizacion_aux" [timeOnly]="true" [showIcon]="true"
+                [iconDisplay]="'input'" appendTo="body" class="w-full" placeholder="Seleccione hora">
+                <ng-template pTemplate="inputicon">
+                  <i class="pi pi-clock"></i>
+                </ng-template>
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.horaFinalizacion || 'Sin hora' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'observaciones') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData.observaciones" class="w-full"
+                placeholder="Ingrese observaciones">
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.observaciones || 'Sin observaciones' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'responsable') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.responsable" [options]="opcionesResponsables" optionLabel="label"
+                optionValue="value" placeholder="Seleccione responsable"
+                (onChange)="onResponsableSeleccionado($event, rowData)" appendTo="body" class="w-full"
+                [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.responsable || 'Sin responsable' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          }
+
+          @else {
+          @if (col.tipo === 'date' && rowData[col.field]) {
+          {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+          } @else if (col.tipo === 'number') {
+          {{ rowData[col.field] | number }}
+          } @else {
+          {{ rowData[col.field] }}
+          }
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataControlTemperatura || dataControlTemperatura.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

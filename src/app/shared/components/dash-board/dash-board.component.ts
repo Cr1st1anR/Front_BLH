@@ -101,6 +101,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-015)',
           route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
         },
+        {
+          label: 'Control de temperatura del pasteurizador blh',
+          subLabel: '(FRIAM-036)',
+          route: '/blh/pasteurizacion/control-temperatura-pasteurizador',
+        },
       ],
     },
     {

@@ -1,5 +1,3 @@
-import { N } from "node_modules/@angular/core/navigation_types.d-Lh6SmhKv";
-
 export interface BodyMadreDonante {
   madreDonante: object;
   infoMadre: object;

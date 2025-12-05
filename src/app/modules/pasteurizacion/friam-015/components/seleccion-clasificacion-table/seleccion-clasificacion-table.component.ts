@@ -41,7 +41,7 @@ import type {
   ],
   templateUrl: './seleccion-clasificacion-table.component.html',
   styleUrl: './seleccion-clasificacion-table.component.scss',
-  providers: [MessageService, SeleccionClasificacionService]
+  providers: [MessageService]
 })
 export class SeleccionClasificacionTableComponent implements OnInit {
 

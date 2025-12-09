@@ -1,9 +1,14 @@
 <p-toast position="top-right" key="tr" />
 
-@if (loading.main) {
+@if (loading.main || loading.calculando) {
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
-  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
-    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+  <div class="flex flex-col items-center">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+    @if (loading.calculando) {
+    <span class="mt-2 text-white">Calculando datos...</span>
+    }
+  </div>
 </div>
 }
 
@@ -16,19 +21,16 @@
       <tr>
         @for (col of columns; track $index) {
         @if (col.tipo === 'group') {
-        <!-- Header principal para columna agrupada -->
         <th [style.width]="col.width" [style.min-width]="col.width" [attr.colspan]="col.subColumns?.length">
           {{ col.header }}
         </th>
         } @else {
-        <!-- Headers para columnas normales -->
         <th [style.width]="col.width" [style.min-width]="col.width" [attr.rowspan]="2">
           <span [innerHTML]="col.header"></span>
         </th>
         }
         }
       </tr>
-      <!-- Segunda fila para sub-headers de columnas agrupadas -->
       <tr>
         @for (col of columns; track $index) {
         @if (col.tipo === 'group' && col.subColumns) {
@@ -53,7 +55,8 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <p-datepicker [(ngModel)]="rowData.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
-                placeholder="Seleccione fecha" appendTo="body" class="fecha-picker">
+                placeholder="Seleccione fecha" appendTo="body" class="fecha-picker"
+                (onSelect)="onFechaSeleccionada($event, rowData)">
               </p-datepicker>
             </ng-template>
             <ng-template pTemplate="output">
@@ -84,7 +87,7 @@
 
                 <ng-template #selectedItem let-selectedOption>
                   @if (selectedOption) {
-                  <span>{{ selectedOption.value }}</span>
+                  <span>Lote {{ selectedOption.value }}</span>
                   } @else {
                   <span>Seleccione lote</span>
                   }
@@ -99,67 +102,56 @@
               }
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.lote || 'Sin lote' }}
+              @if (rowData.lote) {
+              Lote {{ rowData.lote }}
+              } @else {
+              Sin lote
+              }
             </ng-template>
           </p-cellEditor>
         </td>
         }
 
         @else if (col.tipo === 'group' && col.subColumns) {
-        <!-- Columnas agrupadas -->
         @for (subCol of col.subColumns; track subCol.field) {
-        <td [style.width]="subCol.width" [style.min-width]="subCol.width"
-          (click)="editing ? $event.stopPropagation() : null" class="text-center grouped-cell">
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData[subCol.field]"
-                class="w-full text-center number-input" min="0" step="1" (input)="calcularMuestrasReprobadas(rowData)">
-            </ng-template>
-            <ng-template pTemplate="output">
-              {{ rowData[subCol.field] || 0 }}
-            </ng-template>
-          </p-cellEditor>
+        <td [style.width]="subCol.width" [style.min-width]="subCol.width" class="text-center grouped-cell">
+          <!-- Solo lectura - Los valores se calculan automáticamente -->
+          <span>{{ rowData[subCol.field] || 0 }}</span>
         </td>
         }
         }
 
-        @else if (col.field === 'numero_muestras_testadas') {
-        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null"
-          class="text-center">
-          <p-cellEditor>
-            <ng-template pTemplate="input">
-              <input pInputText type="number" [(ngModel)]="rowData.numero_muestras_testadas"
-                class="w-full text-center number-input" min="0" step="1">
-            </ng-template>
-            <ng-template pTemplate="output">
-              {{ rowData.numero_muestras_testadas || 0 }}
-            </ng-template>
-          </p-cellEditor>
-        </td>
-        }
-
-        @else if (col.field === 'numero_muestras_reprobadas') {
+        @else if (col.field === 'muestrasTesteadas') {
         <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
-          <!-- Solo lectura, se calcula automáticamente -->
-          <span class="font-medium text-red-600">{{ rowData.numero_muestras_reprobadas || 0 }}</span>
+          <!-- Solo lectura - Se calcula automáticamente -->
+          <span>{{ rowData.muestrasTesteadas || 0 }}</span>
+        </td>
+        }
+
+        @else if (col.field === 'muestrasReprobadas') {
+        <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
+          <!-- Solo lectura - Se calcula automáticamente -->
+          <span class="font-medium text-red-600">{{ rowData.muestrasReprobadas || 0 }}</span>
         </td>
         }
 
         @else if (col.field === 'acciones') {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
           <div class="flex items-center justify-center gap-2">
-            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
-              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
-              pTooltip="Editar" tooltipPosition="top">
-            </button>
-
+            <!-- Solo mostrar botón de editar para registros nuevos en edición -->
+            @if (rowData.isNew) {
             <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
-              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top"
+              [disabled]="loading.calculando">
             </button>
 
             <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
               severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
             </button>
+            } @else {
+            <!-- Los registros existentes son de solo lectura -->
+            <span class="text-gray-400 text-sm italic">Solo lectura</span>
+            }
           </div>
         </td>
         }

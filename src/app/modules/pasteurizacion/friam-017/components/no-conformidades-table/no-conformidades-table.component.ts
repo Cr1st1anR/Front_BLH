@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { TableModule, Table } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -18,10 +18,10 @@ import type {
   FiltroFecha,
   TipoMensaje,
   DatosBackendParaCreacion,
-  DatosBackendParaActualizacion,
   LoadingState,
   TableColumn,
-  FiltrosBusqueda
+  FiltrosBusqueda,
+  NoConformidadesBackendResponse
 } from '../../interfaces/no-conformidades.interface';
 
 @Component({
@@ -45,7 +45,8 @@ export class NoConformidadesTableComponent implements OnInit {
 
   readonly loading: LoadingState = {
     main: false,
-    lotes: false
+    lotes: false,
+    calculando: false
   };
 
   editingRow: NoConformidadesData | null = null;
@@ -58,6 +59,9 @@ export class NoConformidadesTableComponent implements OnInit {
   filtroFecha: FiltroFecha | null = null;
 
   opcionesLotes: LoteOption[] = [];
+
+  // Guardar el lote seleccionado temporalmente para el POST
+  private loteSeleccionadoTemp: LoteOption | null = null;
 
   headersNoConformidades: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '100px', tipo: 'date' },
@@ -75,8 +79,8 @@ export class NoConformidadesTableComponent implements OnInit {
         { header: 'ACIDEZ', field: 'acidez', width: '80px', tipo: 'number' }
       ]
     },
-    { header: 'NÚMERO\nDE MUESTRAS\nTESTADAS', field: 'numero_muestras_testadas', width: '120px', tipo: 'number' },
-    { header: 'NÚMERO\nDE MUESTRAS\nREPROBADAS', field: 'numero_muestras_reprobadas', width: '120px', tipo: 'number' },
+    { header: 'NÚMERO<br>DE MUESTRAS<br>TESTADAS', field: 'muestrasTesteadas', width: '120px', tipo: 'number' },
+    { header: 'NÚMERO<br>DE MUESTRAS<br>REPROBADAS', field: 'muestrasReprobadas', width: '120px', tipo: 'number' },
     { header: 'ACCIONES', field: 'acciones', width: '100px', tipo: 'actions' }
   ];
 
@@ -93,6 +97,10 @@ export class NoConformidadesTableComponent implements OnInit {
     return this.loading.lotes;
   }
 
+  get loadingCalculando(): boolean {
+    return this.loading.calculando;
+  }
+
   constructor(
     private readonly noConformidadesService: NoConformidadesService,
     private readonly messageService: MessageService
@@ -106,6 +114,13 @@ export class NoConformidadesTableComponent implements OnInit {
 
   private async inicializarComponente(): Promise<void> {
     try {
+      // Establecer filtro inicial al mes y año actual
+      const fechaActual = new Date();
+      this.filtroFecha = {
+        month: fechaActual.getMonth() + 1,
+        year: fechaActual.getFullYear()
+      };
+
       await Promise.all([
         this.cargarLotes(),
         this.cargarDatosNoConformidades()
@@ -122,7 +137,7 @@ export class NoConformidadesTableComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.loading.lotes = true;
 
-      this.noConformidadesService.getLotes().subscribe({
+      this.noConformidadesService.getLotesDisponibles().subscribe({
         next: (lotes) => {
           this.opcionesLotes = lotes;
           this.loading.lotes = false;
@@ -131,8 +146,7 @@ export class NoConformidadesTableComponent implements OnInit {
         error: (error) => {
           this.loading.lotes = false;
           console.error('Error al cargar lotes:', error);
-          this.cargarLotesFallback();
-          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los lotes');
+          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los lotes disponibles');
           reject(error);
         }
       });
@@ -141,9 +155,19 @@ export class NoConformidadesTableComponent implements OnInit {
 
   private cargarDatosNoConformidades(): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.filtroFecha) {
+        this.dataOriginal = [];
+        this.dataFiltered = [];
+        resolve();
+        return;
+      }
+
       this.loading.main = true;
 
-      this.noConformidadesService.getAllNoConformidades().subscribe({
+      this.noConformidadesService.getNoConformidadesPorMesAnio(
+        this.filtroFecha.month,
+        this.filtroFecha.year
+      ).subscribe({
         next: (registros) => {
           this.dataOriginal = this.transformarDatosBackend(registros);
           this.dataFiltered = [...this.dataOriginal];
@@ -161,39 +185,25 @@ export class NoConformidadesTableComponent implements OnInit {
     });
   }
 
-  // ============= FALLBACKS =============
-
-  private cargarLotesFallback(): void {
-    this.opcionesLotes = [
-      { label: 'Lote 1', value: '1', numero_lote: 1 },
-      { label: 'Lote 2', value: '2', numero_lote: 2 },
-      { label: 'Lote 3', value: '3', numero_lote: 3 },
-      { label: 'Lote 4', value: '4', numero_lote: 4 },
-      { label: 'Lote 5', value: '5', numero_lote: 5 }
-    ];
-  }
-
   // ============= TRANSFORMACIÓN DE DATOS =============
 
-  private transformarDatosBackend(registros: any[]): NoConformidadesData[] {
-    return registros.map((registro: any) => {
-      return {
-        id: registro.id,
-        fecha: this.parsearFechaDesdeBackend(registro.fecha),
-        lote: registro.lote?.numeroLote?.toString() || '',
-        lote_id: registro.lote?.id || null,
-        envase: registro.envase || 0,
-        suciedad: registro.suciedad || 0,
-        color: registro.color || 0,
-        flavor: registro.flavor || 0,
-        acidez: registro.acidez || 0,
-        numero_muestras_testadas: registro.numero_muestras_testadas || 0,
-        numero_muestras_reprobadas: registro.numero_muestras_reprobadas || 0
-      };
-    });
+  private transformarDatosBackend(registros: NoConformidadesBackendResponse[]): NoConformidadesData[] {
+    return registros.map((registro) => ({
+      id: registro.id,
+      fecha: this.parsearFechaDesdeBackend(registro.fecha),
+      lote: registro.lote?.numeroLote?.toString() || '',
+      lote_id: registro.lote?.id || null,
+      envase: registro.envase || 0,
+      suciedad: registro.suciedad || 0,
+      color: registro.color || 0,
+      flavor: registro.flavor || 0,
+      acidez: registro.acidez || 0,
+      muestrasTesteadas: registro.muestrasTesteadas || 0,
+      muestrasReprobadas: registro.muestrasReprobadas || 0
+    }));
   }
 
-  // ============= UTILIDADES =============
+  // ============= UTILIDADES DE FECHA =============
 
   private parsearFechaSegura(fechaString: string | Date | null): Date | null {
     if (!fechaString) return null;
@@ -241,10 +251,53 @@ export class NoConformidadesTableComponent implements OnInit {
 
     rowData.lote = loteValue;
 
+    // Buscar el lote seleccionado para obtener el loteId
     const loteSeleccionado = this.opcionesLotes.find(l => l.value === loteValue);
-    if (loteSeleccionado?.numero_lote) {
-      rowData.lote_id = loteSeleccionado.numero_lote;
+    if (loteSeleccionado) {
+      rowData.lote_id = loteSeleccionado.loteId;
+      this.loteSeleccionadoTemp = loteSeleccionado;
+
+      // Si ya hay fecha seleccionada, calcular automáticamente los datos
+      if (rowData.fecha && rowData.isNew) {
+        this.calcularDatosAutomaticos(rowData, loteSeleccionado.numeroLote);
+      }
     }
+  }
+
+  onFechaSeleccionada(event: any, rowData: NoConformidadesData): void {
+    // Si ya hay lote seleccionado, calcular automáticamente los datos
+    if (rowData.lote && rowData.lote_id && rowData.isNew && this.loteSeleccionadoTemp) {
+      this.calcularDatosAutomaticos(rowData, this.loteSeleccionadoTemp.numeroLote);
+    }
+  }
+
+  private calcularDatosAutomaticos(rowData: NoConformidadesData, numeroLote: number): void {
+    if (!rowData.fecha) return;
+
+    const fechaFormateada = this.formatearFechaParaAPI(rowData.fecha as Date);
+    if (!fechaFormateada) return;
+
+    this.loading.calculando = true;
+
+    this.noConformidadesService.getDatosCalculadosPorLote(numeroLote, fechaFormateada).subscribe({
+      next: (datos) => {
+        rowData.envase = datos.envase;
+        rowData.suciedad = datos.suciedad;
+        rowData.color = datos.color;
+        rowData.flavor = datos.flavor;
+        rowData.acidez = datos.acidez;
+        rowData.muestrasTesteadas = datos.muestrasTesteadas;
+        rowData.muestrasReprobadas = datos.muestrasReprobadas;
+
+        this.loading.calculando = false;
+        this.mostrarMensaje('info', 'Datos calculados', 'Los valores se han calculado automáticamente');
+      },
+      error: (error) => {
+        this.loading.calculando = false;
+        console.error('Error al calcular datos:', error);
+        this.mostrarMensaje('warn', 'Advertencia', 'No se pudieron calcular los datos automáticamente');
+      }
+    });
   }
 
   private extraerValorEvento(event: any): string {
@@ -282,8 +335,8 @@ export class NoConformidadesTableComponent implements OnInit {
       color: 0,
       flavor: 0,
       acidez: 0,
-      numero_muestras_testadas: 0,
-      numero_muestras_reprobadas: 0,
+      muestrasTesteadas: 0,
+      muestrasReprobadas: 0,
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
@@ -298,8 +351,9 @@ export class NoConformidadesTableComponent implements OnInit {
   private iniciarEdicionRegistro(registro: NoConformidadesData): void {
     this.hasNewRowInEditing = true;
     this.editingRow = registro;
+    this.loteSeleccionadoTemp = null;
     setTimeout(() => this.table.initRowEdit(registro), 100);
-    this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
+    this.mostrarMensaje('info', 'Información', 'Seleccione fecha y lote. Los demás campos se calcularán automáticamente.');
   }
 
   onRowEditInit(dataRow: NoConformidadesData): void {
@@ -310,27 +364,29 @@ export class NoConformidadesTableComponent implements OnInit {
 
     this.guardarEstadoOriginal(dataRow);
     this.editingRow = dataRow;
+    this.loteSeleccionadoTemp = null;
 
-    if (!dataRow.isNew) {
-      this.hasNewRowInEditing = false;
+    // Si es edición de registro existente, buscar el lote en las opciones
+    if (!dataRow.isNew && dataRow.lote) {
+      this.loteSeleccionadoTemp = this.opcionesLotes.find(l => l.value === dataRow.lote?.toString()) || null;
     }
   }
 
   onRowEditSave(dataRow: NoConformidadesData, index: number, event: MouseEvent): void {
     if (!this.validarCamposRequeridos(dataRow)) {
-      this.mostrarMensaje('error', 'Error', 'Por favor complete todos los campos requeridos');
+      this.mostrarMensaje('error', 'Error', 'Por favor seleccione fecha y lote');
       return;
     }
-
-    // Calcular automáticamente el número de muestras reprobadas
-    this.calcularMuestrasReprobadas(dataRow);
 
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
 
     if (dataRow.isNew) {
       this.guardarNuevoRegistro(dataRow, rowElement);
     } else {
-      this.actualizarRegistroExistente(dataRow, rowElement);
+      // Los registros existentes no se pueden editar según el flujo actual
+      // Solo se crean nuevos registros
+      this.mostrarMensaje('info', 'Información', 'Los registros existentes son de solo lectura');
+      this.onRowEditCancel(dataRow, index);
     }
   }
 
@@ -342,86 +398,52 @@ export class NoConformidadesTableComponent implements OnInit {
       this.restaurarEstadoOriginal(dataRow, index);
     }
     this.editingRow = null;
-  }
-
-  calcularMuestrasReprobadas(dataRow: NoConformidadesData): void {
-    const totalReprobadas = (dataRow.envase || 0) +
-      (dataRow.suciedad || 0) +
-      (dataRow.color || 0) +
-      (dataRow.flavor || 0) +
-      (dataRow.acidez || 0);
-    dataRow.numero_muestras_reprobadas = totalReprobadas;
+    this.loteSeleccionadoTemp = null;
   }
 
   private guardarNuevoRegistro(dataRow: NoConformidadesData, rowElement: HTMLTableRowElement): void {
+    if (!this.loteSeleccionadoTemp) {
+      this.mostrarMensaje('error', 'Error', 'Debe seleccionar un lote válido');
+      return;
+    }
+
     const datosBackend = this.prepararDatosParaCreacion(dataRow);
     if (!datosBackend) return;
+
+    this.loading.main = true;
 
     this.noConformidadesService.postNoConformidades(datosBackend).subscribe({
       next: (response) => {
         this.procesarRespuestaCreacion(response, dataRow, rowElement);
+        this.loading.main = false;
       },
       error: (error) => {
+        this.loading.main = false;
         console.error('Error al guardar:', error);
         this.mostrarMensaje('error', 'Error', 'Error al guardar el registro');
       }
     });
   }
 
-  private actualizarRegistroExistente(dataRow: NoConformidadesData, rowElement: HTMLTableRowElement): void {
-    const datosBackend = this.prepararDatosParaActualizacion(dataRow);
-    if (!datosBackend) return;
-
-    this.noConformidadesService.putNoConformidades(datosBackend).subscribe({
-      next: (response) => {
-        this.procesarRespuestaActualizacion(dataRow, rowElement);
-      },
-      error: (error) => {
-        console.error('Error al actualizar:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al actualizar el registro');
-      }
-    });
-  }
-
   private prepararDatosParaCreacion(dataRow: NoConformidadesData): DatosBackendParaCreacion | null {
-    if (!this.validarDatosBasicos(dataRow)) return null;
+    if (!this.validarCamposRequeridos(dataRow)) return null;
 
     const loteId = dataRow.lote_id;
-    if (!loteId) return null;
+    if (!loteId) {
+      this.mostrarMensaje('error', 'Error', 'No se pudo obtener el ID del lote');
+      return null;
+    }
 
     return {
       fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-      lote: { id: loteId },
       envase: dataRow.envase || 0,
-      suciedad: dataRow.suciedad || 0,
       color: dataRow.color || 0,
       flavor: dataRow.flavor || 0,
-      acidez: dataRow.acidez || 0,
-      numero_muestras_testadas: dataRow.numero_muestras_testadas || 0,
-      numero_muestras_reprobadas: dataRow.numero_muestras_reprobadas || 0
-    };
-  }
-
-  private prepararDatosParaActualizacion(dataRow: NoConformidadesData): DatosBackendParaActualizacion | null {
-    if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
-
-    const loteId = dataRow.lote_id;
-    if (!loteId) return null;
-
-    return {
-      id: dataRow.id,
-      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-      lote: {
-        id: loteId,
-        numeroLote: parseInt(dataRow.lote as string) || loteId
-      },
-      envase: dataRow.envase || 0,
       suciedad: dataRow.suciedad || 0,
-      color: dataRow.color || 0,
-      flavor: dataRow.flavor || 0,
       acidez: dataRow.acidez || 0,
-      numero_muestras_testadas: dataRow.numero_muestras_testadas || 0,
-      numero_muestras_reprobadas: dataRow.numero_muestras_reprobadas || 0
+      muestrasTesteadas: dataRow.muestrasTesteadas || 0,
+      muestrasReprobadas: dataRow.muestrasReprobadas || 0,
+      lote: loteId
     };
   }
 
@@ -430,29 +452,9 @@ export class NoConformidadesTableComponent implements OnInit {
   private validarCamposRequeridos(dataRow: NoConformidadesData): boolean {
     return !!(
       dataRow.fecha &&
-      dataRow.lote?.toString().trim()
+      dataRow.lote?.toString().trim() &&
+      dataRow.lote_id
     );
-  }
-
-  private validarDatosBasicos(dataRow: NoConformidadesData): boolean {
-    if (!this.validarCamposRequeridos(dataRow)) {
-      return false;
-    }
-
-    // Validar que los números sean válidos
-    const numeros = [
-      dataRow.envase, dataRow.suciedad, dataRow.color,
-      dataRow.flavor, dataRow.acidez, dataRow.numero_muestras_testadas
-    ];
-
-    for (const num of numeros) {
-      if (num < 0 || !Number.isInteger(num)) {
-        this.mostrarMensaje('error', 'Error', 'Los valores deben ser números enteros mayores o iguales a 0');
-        return false;
-      }
-    }
-
-    return true;
   }
 
   // ============= ESTADOS DE EDICIÓN =============
@@ -500,20 +502,13 @@ export class NoConformidadesTableComponent implements OnInit {
 
     this.resetearEstadoEdicion();
     this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Registro guardado exitosamente');
-  }
-
-  private procesarRespuestaActualizacion(dataRow: NoConformidadesData, rowElement: HTMLTableRowElement): void {
-    const rowId = this.getRowId(dataRow);
-    delete this.clonedData[rowId];
-    this.editingRow = null;
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+    this.mostrarMensaje('success', 'Éxito', 'Registro de no conformidad guardado exitosamente');
   }
 
   private resetearEstadoEdicion(): void {
     this.hasNewRowInEditing = false;
     this.editingRow = null;
+    this.loteSeleccionadoTemp = null;
   }
 
   // ============= UTILIDADES DE ESTADO =============
@@ -541,8 +536,7 @@ export class NoConformidadesTableComponent implements OnInit {
 
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
-    this.aplicarFiltros();
-    this.mostrarNotificacionFiltro();
+    this.cargarDatosNoConformidades();
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
@@ -551,70 +545,36 @@ export class NoConformidadesTableComponent implements OnInit {
 
   aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
     this.filtrosBusqueda = filtros;
-    this.aplicarFiltros();
+    this.aplicarFiltrosBusquedaTexto();
   }
 
-  private aplicarFiltros(): void {
+  private aplicarFiltrosBusquedaTexto(): void {
     let datosFiltrados = [...this.dataOriginal];
 
-    if (this.filtroFecha) {
-      datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
-    }
-
-    datosFiltrados = this.aplicarFiltrosBusquedaTexto(datosFiltrados);
-
-    this.dataFiltered = datosFiltrados;
-  }
-
-  private aplicarFiltrosBusquedaTexto(datos: NoConformidadesData[]): NoConformidadesData[] {
-    return datos.filter(item => {
+    datosFiltrados = datosFiltrados.filter(item => {
       const loteStr = typeof item.lote === 'number' ? item.lote.toString() : item.lote || '';
       const cumpleLote = !this.filtrosBusqueda.lote ||
         loteStr.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
 
       return cumpleLote;
     });
-  }
 
-  private filtrarPorMesYAno(datos: NoConformidadesData[], filtro: FiltroFecha): NoConformidadesData[] {
-    return datos.filter(item => {
-      if (!item.fecha) return false;
-
-      const fechaParseada = this.parsearFechaSegura(item.fecha);
-      if (!fechaParseada || isNaN(fechaParseada.getTime())) return false;
-
-      const mesItem = fechaParseada.getMonth() + 1;
-      const añoItem = fechaParseada.getFullYear();
-
-      return mesItem === filtro.month && añoItem === filtro.year;
-    });
-  }
-
-  private mostrarNotificacionFiltro(): void {
-    const cantidad = this.dataFiltered.length;
-    const totalOriginal = this.dataOriginal.length;
-
-    if (this.filtroFecha) {
-      const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
-      const mensaje = cantidad > 0
-        ? `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`
-        : `No se encontraron registros para ${nombreMes} ${this.filtroFecha.year}`;
-
-      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', cantidad > 0 ? 'Filtro aplicado' : 'Sin resultados', mensaje);
-    } else {
-      this.mostrarMensaje('info', 'Filtro removido', `Mostrando todos los registros (${totalOriginal})`);
-    }
+    this.dataFiltered = datosFiltrados;
   }
 
   // ============= MENSAJES =============
 
   private mostrarMensajeExitosoCarga(): void {
     const cantidad = this.dataOriginal.length;
-    const mensaje = cantidad > 0
-      ? `${cantidad} registro${cantidad > 1 ? 's' : ''} de no conformidades cargado${cantidad > 1 ? 's' : ''}`
-      : 'No se encontraron registros de no conformidades en la base de datos';
 
-    this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
+    if (this.filtroFecha) {
+      const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+      const mensaje = cantidad > 0
+        ? `${cantidad} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`
+        : `No se encontraron registros para ${nombreMes} ${this.filtroFecha.year}`;
+
+      this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
+    }
   }
 
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {

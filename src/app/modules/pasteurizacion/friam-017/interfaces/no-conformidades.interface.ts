@@ -8,8 +8,8 @@ export interface NoConformidadesData {
   color: number;
   flavor: number;
   acidez: number;
-  numero_muestras_testadas: number;
-  numero_muestras_reprobadas: number;
+  muestrasTesteadas: number;
+  muestrasReprobadas: number;
   isNew?: boolean;
   _uid?: string;
 }
@@ -17,6 +17,7 @@ export interface NoConformidadesData {
 export interface LoadingState {
   main: boolean;
   lotes: boolean;
+  calculando: boolean;
 }
 
 export interface TableColumn {
@@ -37,7 +38,9 @@ export interface SubColumn {
 export interface LoteOption {
   label: string;
   value: string;
-  numero_lote?: number;
+  numeroLote: number;
+  loteId: number;
+  cicloId?: number;
 }
 
 export interface FiltroFecha {
@@ -46,8 +49,9 @@ export interface FiltroFecha {
 }
 
 export interface BackendResponse<T> {
+  status: number;
+  statusmsg: string;
   data: T;
-  message?: string;
 }
 
 export interface ApiError {
@@ -58,32 +62,53 @@ export interface ApiError {
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
 
-export interface DatosBackendParaCreacion {
+// ============= INTERFACES PARA RESPUESTAS DEL BACKEND =============
+
+export interface NoConformidadesBackendResponse {
+  id: number;
   fecha: string;
-  lote: { id: number };
   envase: number;
   suciedad: number;
   color: number;
   flavor: number;
+  muestrasTesteadas: number;
+  muestrasReprobadas: number;
   acidez: number;
-  numero_muestras_testadas: number;
-  numero_muestras_reprobadas: number;
-}
-
-export interface DatosBackendParaActualizacion {
-  id: number;
-  fecha: string;
   lote: {
     id: number;
     numeroLote: number;
   };
+}
+
+export interface LoteBackendResponse {
+  numeroLote: number;
+  numeroCiclo: number;
+  loteId: number;
+  cicloId: number;
+}
+
+export interface DatosCalculadosResponse {
   envase: number;
-  suciedad: number;
   color: number;
   flavor: number;
+  suciedad: number;
   acidez: number;
-  numero_muestras_testadas: number;
-  numero_muestras_reprobadas: number;
+  muestrasTesteadas: number;
+  muestrasReprobadas: number;
+}
+
+// ============= INTERFACES PARA ENVÍO AL BACKEND =============
+
+export interface DatosBackendParaCreacion {
+  fecha: string;
+  envase: number;
+  color: number;
+  flavor: number;
+  suciedad: number;
+  acidez: number;
+  muestrasTesteadas: number;
+  muestrasReprobadas: number;
+  lote: number;
 }
 
 export interface FiltrosBusqueda {

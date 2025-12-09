@@ -24,7 +24,8 @@ import type {
   FrascoPasteurizadoData,
   TipoMensaje,
   DatosFormulario,
-  EmpleadoOption
+  EmpleadoOption,
+  PayloadControlMicrobiologico
 } from '../../interfaces/control-microbiologico-liberacion.interface';
 
 @Component({
@@ -56,13 +57,12 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   readonly loading: LoadingState = {
     main: false,
     search: false,
-    empleados: false
+    empleados: false,
+    saving: false
   };
 
-  // Estados de edición - usar identificación única más específica
   editingRowId: string | null = null;
   clonedData: Record<string, ControlMicrobiologicoLiberacionData> = {};
-  tempIdCounter = -1;
 
   dataControlMicrobiologico: ControlMicrobiologicoLiberacionData[] = [];
   fechaPasteurizacion: Date | null = null;
@@ -75,8 +75,10 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   datosFormulario: DatosFormulario = {
     fechaSiembra: null,
     horaSiembra: '',
+    horaSiembraAux: null,
     fechaPrimeraLectura: null,
     horaPrimeraLectura: '',
+    horaPrimeraLecturaAux: null,
     responsableSiembra: '',
     responsableLectura: '',
     responsableProcesamiento: '',
@@ -93,7 +95,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     { header: 'C=CONFORMIDAD\nNC=NO CONFORMIDAD', field: 'conformidad', width: '180px', tipo: 'radio' },
     { header: 'PC=PRUEBA CONFIRMATORIA', field: 'prueba_confirmatoria', width: '180px', tipo: 'radio' },
     { header: 'LIBERACIÓN DE\nPRODUCTO', field: 'liberacion_producto', width: '150px', tipo: 'radio' },
-    { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
+    { header: 'ESTADO', field: 'estado', width: '120px', tipo: 'status' }
   ];
 
   constructor(
@@ -188,10 +190,10 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
     this.fechaPasteurizacion = new Date(frascos[0].fechaPasteurizacion);
 
-    // Limpiar estados de edición anteriores COMPLETAMENTE
+    // Limpiar estados de edición anteriores
     this.resetearEstadoEdicion();
 
-    // Crear registros con UID únicos y secuenciales
+    // Crear registros con UID únicos
     const nuevosRegistros = frascos.map((frasco, index) => this.crearRegistroDesdeFramco(frasco, ciclo, lote, index));
 
     // Reemplazar completamente los datos
@@ -201,7 +203,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   private crearRegistroDesdeFramco(frasco: FrascoPasteurizadoData, ciclo: number, lote: number, index: number): ControlMicrobiologicoLiberacionData {
-    // Crear UID único basado en timestamp, ciclo, lote e índice para garantizar unicidad
     const timestamp = Date.now();
     const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
 
@@ -242,7 +243,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
   }
 
   limpiarBusqueda(): void {
-    // Cancelar cualquier edición activa antes de limpiar
     if (this.isAnyRowEditing()) {
       this.cancelarEdicionActual();
     }
@@ -259,7 +259,7 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
   }
 
-  // ============= MANEJO DEL FORMULARIO =============
+  // ============= MANEJO DEL FORMULARIO Y GUARDADO COMPLETO =============
 
   limpiarFormulario(): void {
     this.datosFormulario = {
@@ -280,14 +280,34 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     // Procesar las horas antes de validar
     this.procesarHorasFormulario();
 
+    // Validar que el formulario esté completo
     if (!this.validarFormulario()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos requeridos del formulario');
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos del formulario');
       return;
     }
 
-    // Aquí puedes implementar la lógica para guardar el formulario
-    console.log('Datos del formulario:', this.datosFormulario);
-    this.mostrarMensaje('success', 'Éxito', 'Formulario guardado exitosamente');
+    // Validar que todos los registros de la tabla estén completos
+    if (!this.validarTodosLosRegistros()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los registros de la tabla antes de guardar');
+      return;
+    }
+
+    // Cancelar cualquier edición activa
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de guardar todo');
+      return;
+    }
+
+    // Preparar payload completo
+    const payload = this.prepararPayloadCompleto();
+
+    if (!payload) {
+      this.mostrarMensaje('error', 'Error', 'Error al preparar los datos para guardar');
+      return;
+    }
+
+    // Enviar al backend
+    this.enviarDatosCompletos(payload);
   }
 
   private procesarHorasFormulario(): void {
@@ -308,17 +328,6 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     return `${horas}:${minutos}`;
   }
 
-  private convertHoursToDate(hora: string): Date | null {
-    if (!hora) return null;
-
-    const [horas, minutos] = hora.split(':').map(Number);
-    if (isNaN(horas) || isNaN(minutos)) return null;
-
-    const fecha = new Date();
-    fecha.setHours(horas, minutos, 0, 0);
-    return fecha;
-  }
-
   private validarFormulario(): boolean {
     return !!(
       this.datosFormulario.fechaSiembra &&
@@ -332,13 +341,92 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
     );
   }
 
-  // ============= CRUD OPERATIONS (Mantengo los existentes) =============
+  private validarTodosLosRegistros(): boolean {
+    if (this.dataControlMicrobiologico.length === 0) {
+      return false;
+    }
+
+    return this.dataControlMicrobiologico.every(registro =>
+      this.validarCamposRequeridos(registro)
+    );
+  }
+
+  private validarCamposRequeridos(dataRow: ControlMicrobiologicoLiberacionData): boolean {
+    return !!(
+      dataRow.numero_frasco_pasteurizado?.trim() &&
+      (dataRow.coliformes_totales === 0 || dataRow.coliformes_totales === 1) &&
+      (dataRow.conformidad === 0 || dataRow.conformidad === 1) &&
+      (dataRow.liberacion_producto === 0 || dataRow.liberacion_producto === 1)
+    );
+  }
+
+  private prepararPayloadCompleto(): PayloadControlMicrobiologico | null {
+    try {
+      const payload: PayloadControlMicrobiologico = {
+        datosFormulario: {
+          fechaSiembra: this.datosFormulario.fechaSiembra!,
+          horaSiembra: this.datosFormulario.horaSiembra!,
+          fechaPrimeraLectura: this.datosFormulario.fechaPrimeraLectura!,
+          horaPrimeraLectura: this.datosFormulario.horaPrimeraLectura!,
+          responsableSiembra: this.datosFormulario.responsableSiembra!,
+          responsableLectura: this.datosFormulario.responsableLectura!,
+          responsableProcesamiento: this.datosFormulario.responsableProcesamiento!,
+          coordinadorMedico: this.datosFormulario.coordinadorMedico!
+        },
+        registrosControl: this.dataControlMicrobiologico.map(registro => ({
+          numero_frasco_pasteurizado: registro.numero_frasco_pasteurizado,
+          id_frasco_pasteurizado: registro.id_frasco_pasteurizado!,
+          coliformes_totales: registro.coliformes_totales!,
+          conformidad: registro.conformidad!,
+          prueba_confirmatoria: registro.prueba_confirmatoria ?? null,
+          liberacion_producto: registro.liberacion_producto!,
+          fecha_pasteurizacion: registro.fecha_pasteurizacion!,
+          ciclo: Number(registro.ciclo),
+          lote: Number(registro.lote)
+        }))
+      };
+
+      return payload;
+    } catch (error) {
+      console.error('Error al preparar payload:', error);
+      return null;
+    }
+  }
+
+  private enviarDatosCompletos(payload: PayloadControlMicrobiologico): void {
+    this.loading.saving = true;
+
+    this.controlMicrobiologicoService.guardarControlMicrobiologicoCompleto(payload).subscribe({
+      next: (response) => {
+        this.loading.saving = false;
+        this.mostrarMensaje('success', 'Éxito', 'Todos los datos han sido guardados exitosamente');
+
+        // Limpiar todo después de guardar exitosamente
+        this.limpiarTodosDatos();
+      },
+      error: (error) => {
+        this.loading.saving = false;
+        console.error('Error al guardar:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al guardar los datos. Por favor intente nuevamente');
+      }
+    });
+  }
+
+  private limpiarTodosDatos(): void {
+    this.dataControlMicrobiologico = [];
+    this.fechaPasteurizacion = null;
+    this.busquedaCicloLote = { ciclo: '', lote: '' };
+    this.limpiarFormulario();
+    this.resetearEstadoEdicion();
+  }
+
+  // ============= EDICIÓN DE REGISTROS (Solo para completar, NO para guardar) =============
 
   onRowEditInit(dataRow: ControlMicrobiologicoLiberacionData): void {
     const currentRowId = this.getRowId(dataRow);
 
     if (this.isAnyRowEditing() && this.editingRowId !== currentRowId) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de editar otra fila.');
       return;
     }
 
@@ -352,86 +440,17 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
       return;
     }
 
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
+    // Solo confirmamos los cambios localmente, NO guardamos en el backend
+    const rowId = this.getRowId(dataRow);
+    delete this.clonedData[rowId];
+    this.resetearEstadoEdicion();
 
-    if (dataRow.isNew) {
-      this.guardarNuevoRegistro(dataRow, rowElement);
-    } else {
-      this.actualizarRegistroExistente(dataRow, rowElement);
-    }
+    this.mostrarMensaje('success', 'Confirmado', 'Registro completado. Recuerde guardar todos los datos al finalizar');
   }
 
   onRowEditCancel(dataRow: ControlMicrobiologicoLiberacionData, index: number): void {
     this.restaurarEstadoOriginal(dataRow);
     this.resetearEstadoEdicion();
-  }
-
-  private guardarNuevoRegistro(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    const datosBackend = this.prepararDatosParaCreacion(dataRow);
-
-    this.controlMicrobiologicoService.postControlMicrobiologico(datosBackend).subscribe({
-      next: (response) => {
-        this.procesarRespuestaCreacion(response, dataRow, rowElement);
-      },
-      error: (error) => {
-        this.mostrarMensaje('error', 'Error', 'Error al guardar el control microbiológico');
-      }
-    });
-  }
-
-  private actualizarRegistroExistente(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    this.controlMicrobiologicoService.putControlMicrobiologico(dataRow.id!, dataRow).subscribe({
-      next: (response) => {
-        this.procesarRespuestaActualizacion(dataRow, rowElement);
-      },
-      error: (error) => {
-        this.mostrarMensaje('error', 'Error', 'Error al actualizar el control microbiológico');
-      }
-    });
-  }
-
-  private procesarRespuestaCreacion(response: any, dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    dataRow.isNew = false;
-    dataRow.id = response.data.id;
-    delete dataRow._uid;
-
-    this.resetearEstadoEdicion();
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico guardado exitosamente');
-  }
-
-  private procesarRespuestaActualizacion(dataRow: ControlMicrobiologicoLiberacionData, rowElement: HTMLTableRowElement): void {
-    const rowId = this.getRowId(dataRow);
-    delete this.clonedData[rowId];
-
-    this.resetearEstadoEdicion();
-    this.table.saveRowEdit(dataRow, rowElement);
-    this.mostrarMensaje('success', 'Éxito', 'Control microbiológico actualizado exitosamente');
-  }
-
-  private prepararDatosParaCreacion(dataRow: ControlMicrobiologicoLiberacionData): Omit<ControlMicrobiologicoLiberacionData, 'id'> {
-    return {
-      numero_frasco_pasteurizado: dataRow.numero_frasco_pasteurizado,
-      id_frasco_pasteurizado: dataRow.id_frasco_pasteurizado,
-      coliformes_totales: dataRow.coliformes_totales,
-      conformidad: dataRow.conformidad,
-      prueba_confirmatoria: dataRow.prueba_confirmatoria,
-      liberacion_producto: dataRow.liberacion_producto,
-      fecha_pasteurizacion: dataRow.fecha_pasteurizacion,
-      ciclo: dataRow.ciclo,
-      lote: dataRow.lote
-    };
-  }
-
-  // ============= VALIDACIONES =============
-
-  private validarCamposRequeridos(dataRow: ControlMicrobiologicoLiberacionData): boolean {
-    return !!(
-      dataRow.numero_frasco_pasteurizado?.trim() &&
-      (dataRow.coliformes_totales === 0 || dataRow.coliformes_totales === 1) &&
-      (dataRow.conformidad === 0 || dataRow.conformidad === 1) &&
-      (dataRow.liberacion_producto === 0 || dataRow.liberacion_producto === 1)
-    );
   }
 
   // ============= ESTADOS DE EDICIÓN =============
@@ -498,6 +517,25 @@ export class ControlMicrobiologicoLiberacionTableComponent implements OnInit {
 
     const currentRowId = this.getRowId(rowData);
     return this.isAnyRowEditing() && this.editingRowId !== currentRowId;
+  }
+
+  // Nuevo método para verificar si un registro está completo
+  isRegistroCompleto(rowData: ControlMicrobiologicoLiberacionData): boolean {
+    return this.validarCamposRequeridos(rowData);
+  }
+
+  // Nuevo método para contar registros completos
+  contarRegistrosCompletos(): number {
+    return this.dataControlMicrobiologico.filter(registro =>
+      this.isRegistroCompleto(registro)
+    ).length;
+  }
+
+  // Nuevo método para verificar si se puede guardar
+  puedeGuardar(): boolean {
+    return this.dataControlMicrobiologico.length > 0 &&
+           this.validarTodosLosRegistros() &&
+           !this.isAnyRowEditing();
   }
 
   // ============= MÉTODOS HELPER PARA MOSTRAR VALORES =============

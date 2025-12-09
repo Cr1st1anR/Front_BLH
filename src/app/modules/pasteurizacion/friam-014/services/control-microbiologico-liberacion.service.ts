@@ -4,7 +4,8 @@ import type {
   FrascoPasteurizadoData,
   ControlMicrobiologicoLiberacionData,
   BackendResponse,
-  EmpleadoOption
+  EmpleadoOption,
+  PayloadControlMicrobiologico
 } from '../interfaces/control-microbiologico-liberacion.interface';
 
 @Injectable({
@@ -79,35 +80,6 @@ export class ControlMicrobiologicoLiberacionService {
     }
   ];
 
-  // Datos mock de controles microbiológicos existentes
-  private controlesMock: ControlMicrobiologicoLiberacionData[] = [
-    {
-      id: 1,
-      numero_frasco_pasteurizado: 'LHP 24 1',
-      id_frasco_pasteurizado: 1,
-      coliformes_totales: 0,
-      conformidad: 1,
-      prueba_confirmatoria: null,
-      liberacion_producto: 0,
-      fecha_pasteurizacion: new Date('2024-11-20'),
-      ciclo: 1,
-      lote: 1
-    },
-    {
-      id: 2,
-      numero_frasco_pasteurizado: 'LHP 24 2',
-      id_frasco_pasteurizado: 2,
-      coliformes_totales: 1,
-      conformidad: 0,
-      prueba_confirmatoria: null,
-      liberacion_producto: 0,
-      fecha_pasteurizacion: new Date('2024-11-20'),
-      ciclo: 1,
-      lote: 1
-    }
-  ];
-
-  // Datos mock de empleados
   private empleadosMock: EmpleadoOption[] = [
     { id: 1, nombre: 'Dr. Ana García Martínez', cargo: 'Médico Pediatra' },
     { id: 2, nombre: 'Dra. Carmen López Silva', cargo: 'Coordinador Médico' },
@@ -128,47 +100,30 @@ export class ControlMicrobiologicoLiberacionService {
     return of(frascosFiltrados).pipe(delay(800));
   }
 
-  getAllControlesMicrobiologicos(): Observable<ControlMicrobiologicoLiberacionData[]> {
-    return of([...this.controlesMock]).pipe(delay(500));
-  }
-
   getEmpleados(): Observable<EmpleadoOption[]> {
     return of([...this.empleadosMock]).pipe(delay(400));
   }
 
-  postControlMicrobiologico(data: Omit<ControlMicrobiologicoLiberacionData, 'id'>): Observable<BackendResponse<ControlMicrobiologicoLiberacionData>> {
-    const newId = Math.max(...this.controlesMock.map(c => c.id || 0)) + 1;
-    const newControl: ControlMicrobiologicoLiberacionData = {
-      ...data,
-      id: newId
-    };
+  /**
+   * Nuevo método para guardar todo el control microbiológico de una vez
+   * Incluye los datos del formulario y todos los registros de la tabla
+   */
+  guardarControlMicrobiologicoCompleto(payload: PayloadControlMicrobiologico): Observable<BackendResponse<any>> {
+    console.log('📦 Payload completo recibido en el servicio:', payload);
+    console.log('📋 Datos del formulario:', payload.datosFormulario);
+    console.log('📊 Registros de control:', payload.registrosControl);
+    console.log(`✅ Total de registros: ${payload.registrosControl.length}`);
 
-    this.controlesMock.push(newControl);
-
+    // Simulación de guardado exitoso
     return of({
-      data: newControl,
-      message: 'Control microbiológico creado exitosamente',
+      data: {
+        id: Math.floor(Math.random() * 10000),
+        datosFormulario: payload.datosFormulario,
+        registrosGuardados: payload.registrosControl.length,
+        mensaje: 'Control microbiológico guardado exitosamente'
+      },
+      message: `Se guardaron ${payload.registrosControl.length} registros de control microbiológico`,
       status: 201
-    }).pipe(delay(600));
-  }
-
-  putControlMicrobiologico(id: number, data: ControlMicrobiologicoLiberacionData): Observable<BackendResponse<ControlMicrobiologicoLiberacionData>> {
-    const index = this.controlesMock.findIndex(c => c.id === id);
-
-    if (index !== -1) {
-      this.controlesMock[index] = { ...data, id };
-
-      return of({
-        data: this.controlesMock[index],
-        message: 'Control microbiológico actualizado exitosamente',
-        status: 200
-      }).pipe(delay(600));
-    }
-
-    return of({
-      data: data,
-      message: 'Control microbiológico no encontrado',
-      status: 404
-    }).pipe(delay(600));
+    }).pipe(delay(1500));
   }
 }

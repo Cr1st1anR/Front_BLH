@@ -2,10 +2,10 @@ export interface ControlMicrobiologicoLiberacionData {
   id?: number | null;
   numero_frasco_pasteurizado: string;
   id_frasco_pasteurizado?: number | null;
-  coliformes_totales?: 0 | 1 | null; // 0 = P, 1 = A
-  conformidad?: 0 | 1 | null; // 0 = NC, 1 = C
+  coliformes_totales?: 0 | 1 | null;
+  conformidad?: 0 | 1 | null;
   prueba_confirmatoria?: 'PC' | null;
-  liberacion_producto?: 0 | 1 | null; // 0 = No, 1 = Si
+  liberacion_producto?: 0 | 1 | null;
   fecha_pasteurizacion?: Date | string | null;
   ciclo?: number | string;
   lote?: number | string;
@@ -26,6 +26,30 @@ export interface DatosFormulario {
   coordinadorMedico?: string;
 }
 
+export interface PayloadControlMicrobiologico {
+  datosFormulario: {
+    fechaSiembra: Date;
+    horaSiembra: string;
+    fechaPrimeraLectura: Date;
+    horaPrimeraLectura: string;
+    responsableSiembra: string;
+    responsableLectura: string;
+    responsableProcesamiento: string;
+    coordinadorMedico: string;
+  };
+  registrosControl: Array<{
+    numero_frasco_pasteurizado: string;
+    id_frasco_pasteurizado: number;
+    coliformes_totales: 0 | 1;
+    conformidad: 0 | 1;
+    prueba_confirmatoria: 'PC' | null;
+    liberacion_producto: 0 | 1;
+    fecha_pasteurizacion: Date | string;
+    ciclo: number;
+    lote: number;
+  }>;
+}
+
 export interface EmpleadoOption {
   id: number;
   nombre: string;
@@ -36,6 +60,7 @@ export interface LoadingState {
   main: boolean;
   search: boolean;
   empleados: boolean;
+  saving: boolean;
 }
 
 export interface TableColumn {

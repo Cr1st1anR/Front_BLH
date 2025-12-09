@@ -43,7 +43,38 @@ export class NoConformidadesService {
     ).pipe(
       catchError((error: HttpErrorResponse) => {
         console.error('Error en postNoConformidades:', error);
-        return throwError(() => error);
+
+        const errorMejorado = {
+          status: error.status,
+          statusText: error.statusText,
+          message: '',
+          isLoteDuplicado: false
+        };
+
+        const mensajeError =
+          error.error?.error?.message ||
+          error.error?.message ||
+          error.error?.error ||
+          error.message ||
+          'Error desconocido al guardar el registro';
+
+        errorMejorado.message = mensajeError;
+
+        const textoError = JSON.stringify(error.error || {}).toLowerCase();
+
+        if (textoError.includes('lote ya tiene un registro') ||
+          textoError.includes('duplicate entry') ||
+          textoError.includes('no es posible crear un duplicado')) {
+          errorMejorado.isLoteDuplicado = true;
+          if (mensajeError.includes('lote ya tiene un registro') ||
+            mensajeError.includes('no es posible crear un duplicado')) {
+            errorMejorado.message = mensajeError;
+          } else {
+            errorMejorado.message = 'Este lote ya tiene un registro de no conformidades. Por favor, seleccione un lote diferente.';
+          }
+        }
+
+        return throwError(() => errorMejorado);
       })
     );
   }

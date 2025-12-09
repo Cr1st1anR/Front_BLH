@@ -115,7 +115,6 @@
         @else if (col.tipo === 'group' && col.subColumns) {
         @for (subCol of col.subColumns; track subCol.field) {
         <td [style.width]="subCol.width" [style.min-width]="subCol.width" class="text-center grouped-cell">
-          <!-- Solo lectura - Los valores se calculan automáticamente -->
           <span>{{ rowData[subCol.field] || 0 }}</span>
         </td>
         }
@@ -123,14 +122,12 @@
 
         @else if (col.field === 'muestrasTesteadas') {
         <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
-          <!-- Solo lectura - Se calcula automáticamente -->
           <span>{{ rowData.muestrasTesteadas || 0 }}</span>
         </td>
         }
 
         @else if (col.field === 'muestrasReprobadas') {
         <td [style.width]="col.width" [style.min-width]="col.width" class="text-center">
-          <!-- Solo lectura - Se calcula automáticamente -->
           <span class="font-medium text-red-600">{{ rowData.muestrasReprobadas || 0 }}</span>
         </td>
         }
@@ -138,7 +135,6 @@
         @else if (col.field === 'acciones') {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
           <div class="flex items-center justify-center gap-2">
-            <!-- Solo mostrar botón de editar para registros nuevos en edición -->
             @if (rowData.isNew) {
             <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
               (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top"
@@ -149,7 +145,6 @@
               severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
             </button>
             } @else {
-            <!-- Los registros existentes son de solo lectura -->
             <span class="text-gray-400 text-sm italic">Solo lectura</span>
             }
           </div>

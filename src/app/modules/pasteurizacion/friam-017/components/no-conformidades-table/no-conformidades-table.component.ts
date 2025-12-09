@@ -60,9 +60,8 @@ export class NoConformidadesTableComponent implements OnInit {
 
   opcionesLotes: LoteOption[] = [];
 
-  // Guardar el lote seleccionado temporalmente para el POST
   private loteSeleccionadoTemp: LoteOption | null = null;
-  private isLoadingData = false; // Bandera para evitar dobles llamadas
+  private isLoadingData = false;
 
 
   headersNoConformidades: TableColumn[] = [
@@ -115,22 +114,19 @@ export class NoConformidadesTableComponent implements OnInit {
   // ============= INICIALIZACIÓN =============
 
   private async inicializarComponente(): Promise<void> {
-    if (this.isLoadingData) return; // Evitar dobles llamadas
+    if (this.isLoadingData) return;
 
     try {
       this.isLoadingData = true;
 
-      // Establecer filtro inicial al mes y año actual
       const fechaActual = new Date();
       this.filtroFecha = {
         month: fechaActual.getMonth() + 1,
         year: fechaActual.getFullYear()
       };
 
-      // Cargar lotes primero
       await this.cargarLotes();
 
-      // Luego cargar datos
       await this.cargarDatosNoConformidades();
 
     } catch (error) {
@@ -146,8 +142,7 @@ export class NoConformidadesTableComponent implements OnInit {
   private cargarLotes(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.loading.lotes) {
-        resolve(); // Si ya está cargando, no hacer nada
-        return;
+        resolve();
       }
 
       this.loading.lotes = true;
@@ -178,7 +173,7 @@ export class NoConformidadesTableComponent implements OnInit {
       }
 
       if (this.loading.main) {
-        resolve(); // Si ya está cargando, no hacer nada
+        resolve();
         return;
       }
 
@@ -271,13 +266,11 @@ export class NoConformidadesTableComponent implements OnInit {
 
     rowData.lote = loteValue;
 
-    // Buscar el lote seleccionado para obtener el loteId
     const loteSeleccionado = this.opcionesLotes.find(l => l.value === loteValue);
     if (loteSeleccionado) {
       rowData.lote_id = loteSeleccionado.loteId;
       this.loteSeleccionadoTemp = loteSeleccionado;
 
-      // Si ya hay fecha seleccionada, calcular automáticamente los datos
       if (rowData.fecha && rowData.isNew) {
         this.calcularDatosAutomaticos(rowData, loteSeleccionado.numeroLote);
       }
@@ -285,7 +278,6 @@ export class NoConformidadesTableComponent implements OnInit {
   }
 
   onFechaSeleccionada(event: any, rowData: NoConformidadesData): void {
-    // Si ya hay lote seleccionado, calcular automáticamente los datos
     if (rowData.lote && rowData.lote_id && rowData.isNew && this.loteSeleccionadoTemp) {
       this.calcularDatosAutomaticos(rowData, this.loteSeleccionadoTemp.numeroLote);
     }
@@ -386,7 +378,6 @@ export class NoConformidadesTableComponent implements OnInit {
     this.editingRow = dataRow;
     this.loteSeleccionadoTemp = null;
 
-    // Si es edición de registro existente, buscar el lote en las opciones
     if (!dataRow.isNew && dataRow.lote) {
       this.loteSeleccionadoTemp = this.opcionesLotes.find(l => l.value === dataRow.lote?.toString()) || null;
     }
@@ -403,8 +394,6 @@ export class NoConformidadesTableComponent implements OnInit {
     if (dataRow.isNew) {
       this.guardarNuevoRegistro(dataRow, rowElement);
     } else {
-      // Los registros existentes no se pueden editar según el flujo actual
-      // Solo se crean nuevos registros
       this.mostrarMensaje('info', 'Información', 'Los registros existentes son de solo lectura');
       this.onRowEditCancel(dataRow, index);
     }
@@ -440,7 +429,13 @@ export class NoConformidadesTableComponent implements OnInit {
       error: (error) => {
         this.loading.main = false;
         console.error('Error al guardar:', error);
-        this.mostrarMensaje('error', 'Error', 'Error al guardar el registro');
+
+        if (error.isLoteDuplicado) {
+          this.mostrarMensaje('error', 'Lote Duplicado', error.message, 5000);
+        } else {
+          const mensajeError = error.message || 'Error al guardar el registro';
+          this.mostrarMensaje('error', 'Error', mensajeError);
+        }
       }
     });
   }
@@ -555,14 +550,14 @@ export class NoConformidadesTableComponent implements OnInit {
   // ============= FILTROS =============
 
   filtrarPorFecha(filtro: FiltroFecha | null): void {
-    if (this.isLoadingData) return; // Evitar llamadas mientras se está cargando
+    if (this.isLoadingData) return;
 
     this.filtroFecha = filtro;
     this.cargarDatosNoConformidades();
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
-    if (this.isLoadingData) return; // Evitar llamadas mientras se está cargando
+    if (this.isLoadingData) return;
 
     this.filtrarPorFecha(filtro);
   }

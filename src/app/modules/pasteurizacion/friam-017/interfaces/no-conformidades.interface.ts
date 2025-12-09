@@ -62,8 +62,6 @@ export interface ApiError {
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
 
-// ============= INTERFACES PARA RESPUESTAS DEL BACKEND =============
-
 export interface NoConformidadesBackendResponse {
   id: number;
   fecha: string;
@@ -96,8 +94,6 @@ export interface DatosCalculadosResponse {
   muestrasTesteadas: number;
   muestrasReprobadas: number;
 }
-
-// ============= INTERFACES PARA ENVÍO AL BACKEND =============
 
 export interface DatosBackendParaCreacion {
   fecha: string;

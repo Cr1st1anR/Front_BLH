@@ -62,6 +62,8 @@ export class NoConformidadesTableComponent implements OnInit {
 
   // Guardar el lote seleccionado temporalmente para el POST
   private loteSeleccionadoTemp: LoteOption | null = null;
+  private isLoadingData = false; // Bandera para evitar dobles llamadas
+
 
   headersNoConformidades: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '100px', tipo: 'date' },
@@ -113,7 +115,11 @@ export class NoConformidadesTableComponent implements OnInit {
   // ============= INICIALIZACIÓN =============
 
   private async inicializarComponente(): Promise<void> {
+    if (this.isLoadingData) return; // Evitar dobles llamadas
+
     try {
+      this.isLoadingData = true;
+
       // Establecer filtro inicial al mes y año actual
       const fechaActual = new Date();
       this.filtroFecha = {
@@ -121,13 +127,17 @@ export class NoConformidadesTableComponent implements OnInit {
         year: fechaActual.getFullYear()
       };
 
-      await Promise.all([
-        this.cargarLotes(),
-        this.cargarDatosNoConformidades()
-      ]);
+      // Cargar lotes primero
+      await this.cargarLotes();
+
+      // Luego cargar datos
+      await this.cargarDatosNoConformidades();
+
     } catch (error) {
       console.error('Error al inicializar componente:', error);
       this.mostrarMensaje('error', 'Error de inicialización', 'Error al cargar datos iniciales');
+    } finally {
+      this.isLoadingData = false;
     }
   }
 
@@ -135,6 +145,11 @@ export class NoConformidadesTableComponent implements OnInit {
 
   private cargarLotes(): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (this.loading.lotes) {
+        resolve(); // Si ya está cargando, no hacer nada
+        return;
+      }
+
       this.loading.lotes = true;
 
       this.noConformidadesService.getLotesDisponibles().subscribe({
@@ -159,6 +174,11 @@ export class NoConformidadesTableComponent implements OnInit {
         this.dataOriginal = [];
         this.dataFiltered = [];
         resolve();
+        return;
+      }
+
+      if (this.loading.main) {
+        resolve(); // Si ya está cargando, no hacer nada
         return;
       }
 
@@ -535,11 +555,15 @@ export class NoConformidadesTableComponent implements OnInit {
   // ============= FILTROS =============
 
   filtrarPorFecha(filtro: FiltroFecha | null): void {
+    if (this.isLoadingData) return; // Evitar llamadas mientras se está cargando
+
     this.filtroFecha = filtro;
     this.cargarDatosNoConformidades();
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
+    if (this.isLoadingData) return; // Evitar llamadas mientras se está cargando
+
     this.filtrarPorFecha(filtro);
   }
 

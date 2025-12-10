@@ -1,0 +1,63 @@
+.container-table-scroll {
+  margin: 1.5rem;
+  overflow-x: auto;
+}
+
+.container-table {
+  min-width: 100%;
+}
+
+::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+      border: 1px solid #dee2e6;
+      padding: 0.75rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .p-datatable-tbody > tr > td {
+      border: 1px solid #dee2e6;
+      padding: 0.5rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+  }
+
+  // Estilos para las filas de agrupación (ENTRADA y SALIDA)
+  .group-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.5rem !important;
+    height: 45px;
+    border: 1px solid #dee2e6;
+  }
+
+  // Estilos para los headers de columnas individuales
+  .column-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 0.5rem !important;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  // Colores de fondo para los grupos
+  .bg-blue-100 {
+    background-color: #dbeafe !important;
+    border-top-left-radius: 8px;
+  }
+
+  .bg-green-100 {
+    background-color: #dcfce7 !important;
+    border-top-right-radius: 8px;
+  }
+
+  // Eliminar bordes redondeados en las columnas individuales
+  .p-datatable-thead > tr:nth-child(2) > th {
+    border-radius: 0 !important;
+  }
+}

@@ -173,12 +173,14 @@
           <!-- Indicador de estado del registro -->
           <div class="flex items-center justify-center">
             @if (isRegistroCompleto(rowData)) {
-            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            <span
+              class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
               <i class="pi pi-check-circle"></i>
               Completo
             </span>
             } @else {
-            <span class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+            <span
+              class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
               <i class="pi pi-clock"></i>
               Pendiente
             </span>
@@ -188,27 +190,25 @@
           <!-- Botones de acción (Solo cuando está editando) -->
           @if (isEditing(rowData)) {
           <div class="flex items-center justify-center gap-2 mt-2">
-            <button pButton pRipple type="button" icon="pi pi-check" text rounded
-              severity="success" (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Confirmar"
-              tooltipPosition="top">
+            <button pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Confirmar" tooltipPosition="top">
             </button>
 
-            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text
-              rounded severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar"
-              tooltipPosition="top">
+            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
+              (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
             </button>
           </div>
           } @else if (!isRegistroCompleto(rowData)) {
           <!-- Mostrar botón editar solo si no está completo -->
-          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text
-            rounded severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
-            pTooltip="Completar registro" tooltipPosition="top" class="mt-2">
+          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+            (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Completar registro"
+            tooltipPosition="top" class="mt-2">
           </button>
           } @else {
           <!-- Si está completo, mostrar botón para editar de nuevo -->
-          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text
-            rounded severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
-            pTooltip="Modificar" tooltipPosition="top" class="mt-2">
+          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+            (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Modificar"
+            tooltipPosition="top" class="mt-2">
           </button>
           }
           }
@@ -353,12 +353,8 @@
         class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" [disabled]="loading.saving">
       </button>
 
-      <button pButton pRipple type="button" label="Guardar Todos los Datos" icon="pi pi-save"
-        class="save-form-button"
-        (click)="guardarFormulario()"
-        [disabled]="!puedeGuardar() || loading.saving"
-        [pTooltip]="!puedeGuardar() ? 'Complete todos los registros y el formulario para guardar' : 'Guardar todos los datos'"
-        tooltipPosition="top">
+      <button pButton pRipple type="button" label="Guardar Todos los Datos" icon="pi pi-save" class="save-form-button"
+        (click)="guardarFormulario()" [disabled]="!puedeGuardar() || loading.saving">
       </button>
     </div>
   </div>

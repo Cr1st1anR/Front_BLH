@@ -14,6 +14,10 @@ export const HOMEROUTES: Routes = [
         {
             path:'pasteurizacion',
             loadChildren: () => import('../pasteurizacion/pasteurizacion.routes').then((c) => c.PASTEURIZACION_ROUTES)
+        },
+        {
+            path:'liberacion',
+            loadChildren: () => import('../liberacion/liberacion.routes').then((c) => c.LIBERACION_ROUTES)
         }
       ]
     }

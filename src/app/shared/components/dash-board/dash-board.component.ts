@@ -106,6 +106,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-036)',
           route: '/blh/pasteurizacion/control-temperatura-pasteurizador',
         },
+        {
+          label: 'Registro diario de no conformidades',
+          subLabel: '(FRIAM-017)',
+          route: '/blh/pasteurizacion/registro-no-conformidades',
+        },
       ],
     },
     {

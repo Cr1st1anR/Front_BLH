@@ -202,21 +202,21 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   private determinarOrigenDatos(controlReenvase: any): any {
-  const frascoIdCorrecto = controlReenvase?.frascoCrudo;
+  const frascoIdCorrecto = controlReenvase?.frascoCrudo?.id;
 
-  if (!controlReenvase?.madreDonante?.entradasSalidas) {
+  if (!controlReenvase?.frascoCrudo) {
     return {
       gaveta: null,
       fechaExtraccion: null,
       volumen: null,
-      frascoId: frascoIdCorrecto || null
+      frascoId: null
     };
   }
 
-  const entradasSalidas = controlReenvase.madreDonante.entradasSalidas[0];
+  const frascoCrudo = controlReenvase.frascoCrudo;
 
-  if (entradasSalidas?.extraccion) {
-    const extraccion = entradasSalidas.extraccion;
+  if (frascoCrudo.extraccion) {
+    const extraccion = frascoCrudo.extraccion;
 
     return {
       gaveta: extraccion.gaveta,
@@ -226,8 +226,8 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     };
   }
 
-  else if (entradasSalidas?.frascoRecolectado) {
-    const frascoRecolectado = entradasSalidas.frascoRecolectado;
+  else if (frascoCrudo.frascoRecolectado) {
+    const frascoRecolectado = frascoCrudo.frascoRecolectado;
 
     return {
       gaveta: frascoRecolectado.gaveta,

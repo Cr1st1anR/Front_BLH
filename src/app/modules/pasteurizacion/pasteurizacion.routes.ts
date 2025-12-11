@@ -22,4 +22,11 @@ export const PASTEURIZACION_ROUTES: Routes = [
         './friam-036/pages/control-temperatura-page/control-temperatura-page.component'
       ).then((c) => c.ControlTemperaturaPageComponent),
   },
+  {
+    path: 'registro-no-conformidades',
+    loadComponent: () =>
+      import(
+        './friam-017/pages/no-conformidades-page/no-conformidades-page.component'
+      ).then((c) => c.NoConformidadesPageComponent),
+  },
 ];

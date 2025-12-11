@@ -1,362 +1,146 @@
-<p-toast position="top-right" key="tr" />
+<p-table #tableControlMicrobiologico [value]="dataControlMicrobiologico" [scrollable]="true" scrollHeight="400px"
+  [columns]="headersControlMicrobiologico" [tableStyle]="{ 'min-width': '103rem' }" dataKey="_uid" editMode="row">
 
-@if (loading.main || loading.saving) {
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
-  <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-lg shadow-xl">
-    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
-      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
-    @if (loading.saving) {
-    <span class="text-lg font-semibold text-gray-700">Guardando datos...</span>
-    }
-  </div>
-</div>
-}
-
-<div class="container-table">
-  <!-- Sección de búsqueda por ciclo y lote -->
-  <div class="search-section">
-    <div class="search-row">
-      <span class="font-semibold text-gray-700 search-label">CICLO DE PASTEURIZACIÓN:</span>
-
-      <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-600">Ciclo:</label>
-        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.ciclo" class="w-20 p-2" min="1" step="1" />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-600">Lote:</label>
-        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.lote" class="w-20 p-2" min="1" step="1" />
-      </div>
-
-      <button pButton pRipple type="button" icon="pi pi-search" label="Buscar" class="search-button p-button-sm"
-        (click)="buscarFrascosPorCicloLote()" [disabled]="loading.search">
-      </button>
-
-      <button pButton pRipple type="button" icon="pi pi-times" label="Limpiar" class="clear-button p-button-sm"
-        (click)="limpiarBusqueda()">
-      </button>
-
-      @if (loading.search) {
-      <div class="flex items-center gap-2 ml-4">
-        <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
-        <span class="text-sm text-gray-500">Buscando...</span>
-      </div>
+  <ng-template #header let-columns>
+    <tr>
+      @for (col of columns; track $index) {
+      <th [style.width]="col.width" [style.min-width]="col.width" class="text-center table-header">
+        <div [innerHTML]="col.header" class="whitespace-pre-line header-text"></div>
+      </th>
       }
-    </div>
+    </tr>
+  </ng-template>
 
-    @if (fechaPasteurizacion) {
-    <div class="date-info">
-      <span class="text-sm font-medium text-blue-700">FECHA DE PASTEURIZACIÓN: </span>
-      <span class="text-sm text-blue-600">{{ fechaPasteurizacion | date:'dd/MM/yyyy' }}</span>
-    </div>
-    }
+  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+    <tr [pEditableRow]="rowData" [style.cursor]="'default'">
+      @for (col of columns; track $index) {
+      <td [style.width]="col.width" [style.min-width]="col.width" class="text-center table-cell">
 
-    <!-- Indicador de progreso de registros completados -->
-    @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
-    <div class="flex items-center gap-3 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-      <i class="pi pi-info-circle text-blue-600"></i>
-      <span class="text-sm font-medium text-blue-700">
-        Registros completados: {{ contarRegistrosCompletos() }} de {{ dataControlMicrobiologico.length }}
-      </span>
-      @if (contarRegistrosCompletos() === dataControlMicrobiologico.length) {
-      <i class="pi pi-check-circle text-green-600 ml-2"></i>
+        @if (col.field === 'numero_frasco_pasteurizado') {
+        <!-- Campo número de frasco - siempre de solo lectura -->
+        @if (isEditing(rowData)) {
+        <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado"
+          class="w-full text-center table-input" [disabled]="true" [readonly]="true">
+        } @else {
+        <span class="table-text">{{ rowData.numero_frasco_pasteurizado || 'Sin número' }}</span>
+        }
+        }
+
+        @else if (col.field === 'coliformes_totales') {
+        <!-- Radio buttons para Coliformes Totales -->
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
+              inputId="coliformes_a_{{rowData._uid}}" />
+            <label for="coliformes_a_{{rowData._uid}}" class="radio-label">A</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
+              inputId="coliformes_p_{{rowData._uid}}" />
+            <label for="coliformes_p_{{rowData._uid}}" class="radio-label">P</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueColiformes(rowData.coliformes_totales) }}</span>
+        }
+        }
+
+        @else if (col.field === 'conformidad') {
+        <!-- Radio buttons para Conformidad -->
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.conformidad"
+              inputId="conformidad_c_{{rowData._uid}}" />
+            <label for="conformidad_c_{{rowData._uid}}" class="radio-label">C</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.conformidad"
+              inputId="conformidad_nc_{{rowData._uid}}" />
+            <label for="conformidad_nc_{{rowData._uid}}" class="radio-label">NC</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueConformidad(rowData.conformidad) }}</span>
+        }
+        }
+
+        @else if (col.field === 'prueba_confirmatoria') {
+        <!-- Radio button para Prueba Confirmatoria -->
+        @if (isEditing(rowData)) {
+        <div class="radio-container-centered">
+          <div class="radio-option">
+            <p-radiobutton name="prueba_{{rowData._uid}}" value="PC" [(ngModel)]="rowData.prueba_confirmatoria"
+              inputId="prueba_pc_{{rowData._uid}}" />
+            <label for="prueba_pc_{{rowData._uid}}" class="radio-label">PC</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ rowData.prueba_confirmatoria || '-' }}</span>
+        }
+        }
+
+        @else if (col.field === 'liberacion_producto') {
+        <!-- Radio buttons para Liberación de Producto -->
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.liberacion_producto"
+              inputId="liberacion_si_{{rowData._uid}}" />
+            <label for="liberacion_si_{{rowData._uid}}" class="radio-label">Sí</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.liberacion_producto"
+              inputId="liberacion_no_{{rowData._uid}}" />
+            <label for="liberacion_no_{{rowData._uid}}" class="radio-label">No</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueLiberacion(rowData.liberacion_producto) }}</span>
+        }
+        }
+
+        @else if (col.field === 'estado') {
+        <!-- Indicador de estado del registro -->
+        <div class="flex items-center justify-center">
+          @if (validarRegistroCompleto(rowData)) {
+          <span
+            class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            <i class="pi pi-check-circle"></i>
+            Completo
+          </span>
+          } @else {
+          <span
+            class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+            <i class="pi pi-clock"></i>
+            Pendiente
+          </span>
+          }
+        </div>
+
+        <!-- Botones de acción -->
+        @if (isEditing(rowData)) {
+        <div class="flex items-center justify-center gap-2 mt-2">
+          <button pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData)" pTooltip="Confirmar" tooltipPosition="top">
+          </button>
+
+          <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
+            (click)="onRowEditCancel(rowData)" pTooltip="Cancelar" tooltipPosition="top">
+          </button>
+        </div>
+        } @else {
+        <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+          (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+          [pTooltip]="validarRegistroCompleto(rowData) ? 'Modificar' : 'Completar registro'" tooltipPosition="top"
+          class="mt-2">
+        </button>
+        }
+        }
+
+      </td>
       }
-    </div>
-    }
-  </div>
-
-  <!-- Tabla -->
-  <p-table #tableControlMicrobiologico [value]="dataControlMicrobiologico" [scrollable]="true" scrollHeight="400px"
-    [columns]="headersControlMicrobiologico" [tableStyle]="{ 'min-width': '70rem' }" dataKey="_uid" editMode="row">
-
-    <ng-template #header let-columns>
-      <tr>
-        @for (col of columns; track $index) {
-        <th [style.width]="col.width" [style.min-width]="col.width" class="text-center table-header">
-          <div [innerHTML]="col.header" class="whitespace-pre-line header-text"></div>
-        </th>
-        }
-      </tr>
-    </ng-template>
-
-    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
-      <tr [pEditableRow]="rowData" [style.cursor]="'default'">
-        @for (col of columns; track $index) {
-        <td [style.width]="col.width" [style.min-width]="col.width" class="text-center table-cell">
-
-          @if (col.field === 'numero_frasco_pasteurizado') {
-          <!-- Campo número de frasco - siempre de solo lectura -->
-          @if (isEditing(rowData)) {
-          <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado"
-            class="w-full text-center table-input" [disabled]="true" [readonly]="true">
-          } @else {
-          <span class="table-text">{{ rowData.numero_frasco_pasteurizado || 'Sin número' }}</span>
-          }
-          }
-
-          @else if (col.field === 'coliformes_totales') {
-          <!-- Radio buttons para Coliformes Totales -->
-          @if (isEditing(rowData)) {
-          <div class="radio-container-horizontal">
-            <div class="radio-option">
-              <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
-                inputId="coliformes_a_{{rowData._uid}}" />
-              <label for="coliformes_a_{{rowData._uid}}" class="radio-label">A</label>
-            </div>
-            <div class="radio-option">
-              <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
-                inputId="coliformes_p_{{rowData._uid}}" />
-              <label for="coliformes_p_{{rowData._uid}}" class="radio-label">P</label>
-            </div>
-          </div>
-          } @else {
-          <span class="table-text">{{ getDisplayValueColiformes(rowData.coliformes_totales) }}</span>
-          }
-          }
-
-          @else if (col.field === 'conformidad') {
-          <!-- Radio buttons para Conformidad -->
-          @if (isEditing(rowData)) {
-          <div class="radio-container-horizontal">
-            <div class="radio-option">
-              <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.conformidad"
-                inputId="conformidad_c_{{rowData._uid}}" />
-              <label for="conformidad_c_{{rowData._uid}}" class="radio-label">C</label>
-            </div>
-            <div class="radio-option">
-              <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.conformidad"
-                inputId="conformidad_nc_{{rowData._uid}}" />
-              <label for="conformidad_nc_{{rowData._uid}}" class="radio-label">NC</label>
-            </div>
-          </div>
-          } @else {
-          <span class="table-text">{{ getDisplayValueConformidad(rowData.conformidad) }}</span>
-          }
-          }
-
-          @else if (col.field === 'prueba_confirmatoria') {
-          <!-- Radio button para Prueba Confirmatoria -->
-          @if (isEditing(rowData)) {
-          <div class="radio-container-centered">
-            <div class="radio-option">
-              <p-radiobutton name="prueba_{{rowData._uid}}" value="PC" [(ngModel)]="rowData.prueba_confirmatoria"
-                inputId="prueba_pc_{{rowData._uid}}" />
-              <label for="prueba_pc_{{rowData._uid}}" class="radio-label">PC</label>
-            </div>
-          </div>
-          } @else {
-          <span class="table-text">{{ rowData.prueba_confirmatoria || '-' }}</span>
-          }
-          }
-
-          @else if (col.field === 'liberacion_producto') {
-          <!-- Radio buttons para Liberación de Producto -->
-          @if (isEditing(rowData)) {
-          <div class="radio-container-horizontal">
-            <div class="radio-option">
-              <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.liberacion_producto"
-                inputId="liberacion_si_{{rowData._uid}}" />
-              <label for="liberacion_si_{{rowData._uid}}" class="radio-label">Sí</label>
-            </div>
-            <div class="radio-option">
-              <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.liberacion_producto"
-                inputId="liberacion_no_{{rowData._uid}}" />
-              <label for="liberacion_no_{{rowData._uid}}" class="radio-label">No</label>
-            </div>
-          </div>
-          } @else {
-          <span class="table-text">{{ getDisplayValueLiberacion(rowData.liberacion_producto) }}</span>
-          }
-          }
-
-          @else if (col.field === 'estado') {
-          <!-- Indicador de estado del registro -->
-          <div class="flex items-center justify-center">
-            @if (isRegistroCompleto(rowData)) {
-            <span
-              class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-              <i class="pi pi-check-circle"></i>
-              Completo
-            </span>
-            } @else {
-            <span
-              class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
-              <i class="pi pi-clock"></i>
-              Pendiente
-            </span>
-            }
-          </div>
-
-          <!-- Botones de acción (Solo cuando está editando) -->
-          @if (isEditing(rowData)) {
-          <div class="flex items-center justify-center gap-2 mt-2">
-            <button pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
-              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Confirmar" tooltipPosition="top">
-            </button>
-
-            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
-              (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
-            </button>
-          </div>
-          } @else if (!isRegistroCompleto(rowData)) {
-          <!-- Mostrar botón editar solo si no está completo -->
-          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
-            (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Completar registro"
-            tooltipPosition="top" class="mt-2">
-          </button>
-          } @else {
-          <!-- Si está completo, mostrar botón para editar de nuevo -->
-          <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
-            (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)" pTooltip="Modificar"
-            tooltipPosition="top" class="mt-2">
-          </button>
-          }
-          }
-
-        </td>
-        }
-      </tr>
-    </ng-template>
-  </p-table>
-
-  @if (!dataControlMicrobiologico || dataControlMicrobiologico.length === 0) {
-  <p class="text-gray-400 text-center italic mt-4">
-    Utilice la búsqueda por ciclo y lote para cargar los frascos pasteurizados
-  </p>
-  }
-
-  <!-- Formulario de datos adicionales -->
-  @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
-  <div class="form-section">
-    <p-divider align="center" type="solid">
-      <div class="inline-flex items-center">
-        <i class="pi pi-file-edit mr-2" style="color: #224186;"></i>
-        <b style="color: #224186;">DATOS DEL PROCESO MICROBIOLÓGICO</b>
-      </div>
-    </p-divider>
-
-    <div class="form-grid">
-      <!-- Card de Fechas y Horas -->
-      <div class="form-card dates-card">
-        <div class="card-header-custom">
-          <i class="pi pi-calendar" style="color: #224186;"></i>
-          <span class="card-title">Fechas y Horarios</span>
-        </div>
-
-        <div class="form-fields-grid">
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-calendar-plus text-green-600"></i>
-              Fecha de Siembra
-            </label>
-            <p-datepicker [(ngModel)]="datosFormulario.fechaSiembra" [iconDisplay]="'input'" [showIcon]="true"
-              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
-            </p-datepicker>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-clock text-orange-600"></i>
-              Hora de Siembra
-            </label>
-            <p-datepicker [(ngModel)]="datosFormulario.horaSiembraAux" [timeOnly]="true" [showIcon]="true"
-              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
-              <ng-template pTemplate="inputicon">
-                <i class="pi pi-clock"></i>
-              </ng-template>
-            </p-datepicker>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-calendar-times text-purple-600"></i>
-              Fecha Primera Lectura
-            </label>
-            <p-datepicker [(ngModel)]="datosFormulario.fechaPrimeraLectura" [iconDisplay]="'input'" [showIcon]="true"
-              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
-            </p-datepicker>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-clock text-red-600"></i>
-              Hora Primera Lectura
-            </label>
-            <p-datepicker [(ngModel)]="datosFormulario.horaPrimeraLecturaAux" [timeOnly]="true" [showIcon]="true"
-              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
-              <ng-template pTemplate="inputicon">
-                <i class="pi pi-clock"></i>
-              </ng-template>
-            </p-datepicker>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card de Responsables -->
-      <div class="form-card staff-card">
-        <div class="card-header-custom">
-          <i class="pi pi-users" style="color: #224186;"></i>
-          <span class="card-title">Personal Responsable</span>
-        </div>
-
-        <div class="form-fields-grid">
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-user-edit text-green-600"></i>
-              Responsable de Siembra
-            </label>
-            <p-select [(ngModel)]="datosFormulario.responsableSiembra" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
-              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
-            </p-select>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-eye" style="color: #224186;"></i>
-              Responsable de Lectura
-            </label>
-            <p-select [(ngModel)]="datosFormulario.responsableLectura" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
-              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
-            </p-select>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-cog text-orange-600"></i>
-              Responsable del Procesamiento
-            </label>
-            <p-select [(ngModel)]="datosFormulario.responsableProcesamiento" [options]="opcionesResponsables"
-              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
-              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
-            </p-select>
-          </div>
-
-          <div class="form-field-group">
-            <label class="field-label">
-              <i class="pi pi-verified text-purple-600"></i>
-              Coordinador Médico
-            </label>
-            <p-select [(ngModel)]="datosFormulario.coordinadorMedico" [options]="opcionesCoordinadores"
-              optionLabel="label" optionValue="value" placeholder="Seleccione coordinador" appendTo="body"
-              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
-            </p-select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Botones de acción del formulario -->
-    <div class="form-actions">
-      <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
-        class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" [disabled]="loading.saving">
-      </button>
-
-      <button pButton pRipple type="button" label="Guardar Todos los Datos" icon="pi pi-save" class="save-form-button"
-        (click)="guardarFormulario()" [disabled]="!puedeGuardar() || loading.saving">
-      </button>
-    </div>
-  </div>
-  }
-</div>
+    </tr>
+  </ng-template>
+</p-table>

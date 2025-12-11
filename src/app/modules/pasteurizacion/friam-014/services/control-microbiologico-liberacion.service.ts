@@ -126,4 +126,46 @@ export class ControlMicrobiologicoLiberacionService {
       status: 201
     }).pipe(delay(1500));
   }
+
+  actualizarControlMicrobiologicoCompleto(payload: PayloadControlMicrobiologico): Observable<BackendResponse<any>> {
+  console.log('📦 Payload de actualización recibido en el servicio:', payload);
+  console.log('📋 Datos del formulario:', payload.datosFormulario);
+  console.log('📊 Registros de control:', payload.registrosControl);
+  console.log(`✅ Total de registros actualizados: ${payload.registrosControl.length}`);
+
+  // Simulación de actualización exitosa
+  return of({
+    data: {
+      id: Math.floor(Math.random() * 10000),
+      datosFormulario: payload.datosFormulario,
+      registrosActualizados: payload.registrosControl.length,
+      mensaje: 'Control microbiológico actualizado exitosamente'
+    },
+    message: `Se actualizaron ${payload.registrosControl.length} registros de control microbiológico`,
+    status: 200
+  }).pipe(delay(1500));
+}
+
+// Agregar este método para crear registros
+crearRegistroDesdeFramco(frasco: FrascoPasteurizadoData, ciclo: number, lote: number, index: number): ControlMicrobiologicoLiberacionData {
+  const timestamp = Date.now();
+  const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
+  const añoActual = new Date().getFullYear().toString().slice(-2);
+
+  return {
+    id: null,
+    numero_frasco_pasteurizado: `LHP ${añoActual} ${frasco.numeroFrasco}`,
+    id_frasco_pasteurizado: frasco.numeroFrasco,
+    coliformes_totales: null,
+    conformidad: null,
+    prueba_confirmatoria: null,
+    liberacion_producto: null,
+    fecha_pasteurizacion: new Date(frasco.fechaPasteurizacion),
+    ciclo: ciclo,
+    lote: lote,
+    _uid: uniqueId,
+    isNew: true
+  };
+}
+
 }

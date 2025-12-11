@@ -1,3 +1,218 @@
 <app-header [title]="'RELACIÓN DE CONTROL DE CALIDAD MICROBIOLOGICO Y LIBERACION DE PRODUCTO (FRIAM-014)'" />
 
-<control-microbiologico-liberacion-table />
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main || loading.saving) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-lg shadow-xl">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+    @if (loading.saving) {
+    <span class="text-lg font-semibold text-gray-700">{{ esActualizacion ? 'Actualizando datos...' : 'Guardando datos...' }}</span>
+    }
+  </div>
+</div>
+}
+
+<div class="container-page">
+  <!-- Sección de búsqueda por ciclo y lote -->
+  <div class="search-section">
+    <div class="search-row">
+      <span class="font-semibold text-gray-700 search-label">CICLO DE PASTEURIZACIÓN:</span>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-600">Ciclo:</label>
+        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.ciclo" class="w-20 p-2" min="1" step="1" />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-600">Lote:</label>
+        <input pInputText type="number" [(ngModel)]="busquedaCicloLote.lote" class="w-20 p-2" min="1" step="1" />
+      </div>
+
+      <button pButton pRipple type="button" icon="pi pi-search" label="Buscar" class="search-button p-button-sm"
+        (click)="buscarFrascosPorCicloLote()" [disabled]="loading.search">
+      </button>
+
+      <button pButton pRipple type="button" icon="pi pi-times" label="Limpiar" class="clear-button p-button-sm"
+        (click)="limpiarBusqueda()">
+      </button>
+
+      @if (loading.search) {
+      <div class="flex items-center gap-2 ml-4">
+        <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+        <span class="text-sm text-gray-500">Buscando...</span>
+      </div>
+      }
+    </div>
+
+    @if (fechaPasteurizacion) {
+    <div class="date-info">
+      <span class="text-sm font-medium text-blue-700">FECHA DE PASTEURIZACIÓN: </span>
+      <span class="text-sm text-blue-600">{{ fechaPasteurizacion | date:'dd/MM/yyyy' }}</span>
+    </div>
+    }
+
+    <!-- Indicador de progreso de registros completados -->
+    @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
+    <div class="flex items-center gap-3 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <i class="pi pi-info-circle text-blue-600"></i>
+      <span class="text-sm font-medium text-blue-700">
+        Registros completados: {{ contarRegistrosCompletos() }} de {{ dataControlMicrobiologico.length }}
+      </span>
+      @if (contarRegistrosCompletos() === dataControlMicrobiologico.length) {
+      <i class="pi pi-check-circle text-green-600 ml-2"></i>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Tabla de Control Microbiológico -->
+  <control-microbiologico-liberacion-table
+    [dataControlMicrobiologico]="dataControlMicrobiologico">
+  </control-microbiologico-liberacion-table>
+
+  @if (!dataControlMicrobiologico || dataControlMicrobiologico.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">
+    Utilice la búsqueda por ciclo y lote para cargar los frascos pasteurizados
+  </p>
+  }
+
+  <!-- Formulario de datos adicionales -->
+  @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
+  <div class="form-section">
+    <p-divider align="center" type="solid">
+      <div class="inline-flex items-center">
+        <i class="pi pi-file-edit mr-2" style="color: #224186;"></i>
+        <b style="color: #224186;">DATOS DEL PROCESO MICROBIOLÓGICO</b>
+      </div>
+    </p-divider>
+
+    <div class="form-grid">
+      <!-- Card de Fechas y Horas -->
+      <div class="form-card dates-card">
+        <div class="card-header-custom">
+          <i class="pi pi-calendar" style="color: #224186;"></i>
+          <span class="card-title">Fechas y Horarios</span>
+        </div>
+
+        <div class="form-fields-grid">
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-calendar-plus text-green-600"></i>
+              Fecha de Siembra
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.fechaSiembra" [iconDisplay]="'input'" [showIcon]="true"
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+            </p-datepicker>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-clock text-orange-600"></i>
+              Hora de Siembra
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.horaSiembraAux" [timeOnly]="true" [showIcon]="true"
+              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
+              <ng-template pTemplate="inputicon">
+                <i class="pi pi-clock"></i>
+              </ng-template>
+            </p-datepicker>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-calendar-times text-purple-600"></i>
+              Fecha Primera Lectura
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.fechaPrimeraLectura" [iconDisplay]="'input'" [showIcon]="true"
+              dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+            </p-datepicker>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-clock text-red-600"></i>
+              Hora Primera Lectura
+            </label>
+            <p-datepicker [(ngModel)]="datosFormulario.horaPrimeraLecturaAux" [timeOnly]="true" [showIcon]="true"
+              [iconDisplay]="'input'" appendTo="body" class="w-full custom-time-picker">
+              <ng-template pTemplate="inputicon">
+                <i class="pi pi-clock"></i>
+              </ng-template>
+            </p-datepicker>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card de Responsables -->
+      <div class="form-card staff-card">
+        <div class="card-header-custom">
+          <i class="pi pi-users" style="color: #224186;"></i>
+          <span class="card-title">Personal Responsable</span>
+        </div>
+
+        <div class="form-fields-grid">
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-user-edit text-green-600"></i>
+              Responsable de Siembra
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableSiembra" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-eye" style="color: #224186;"></i>
+              Responsable de Lectura
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableLectura" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-cog text-orange-600"></i>
+              Responsable del Procesamiento
+            </label>
+            <p-select [(ngModel)]="datosFormulario.responsableProcesamiento" [options]="opcionesResponsables"
+              optionLabel="label" optionValue="value" placeholder="Seleccione responsable" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
+            </p-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-verified text-purple-600"></i>
+              Coordinador Médico
+            </label>
+            <p-select [(ngModel)]="datosFormulario.coordinadorMedico" [options]="opcionesCoordinadores"
+              optionLabel="label" optionValue="value" placeholder="Seleccione coordinador" appendTo="body"
+              class="w-full custom-select" [loading]="loading.empleados" [showClear]="true">
+            </p-select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción del formulario -->
+    <div class="form-actions">
+      <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
+        class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" [disabled]="loading.saving">
+      </button>
+
+      <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
+        [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'"
+        class="save-form-button"
+        (click)="guardarOActualizarDatos()"
+        [disabled]="!puedeGuardar() || loading.saving">
+      </button>
+    </div>
+  </div>
+  }
+</div>

@@ -87,10 +87,7 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
     // COLUMNAS DE SALIDA
     { header: 'FECHA', field: 'fecha_salida', width: '140px', tipo: 'date', grupo: 'salida', vertical: false },
-    { header: 'RESPONSABLE', field: 'responsable_salida', width: '200px', tipo: 'select', grupo: 'salida', vertical: false },
-
-    // ACCIONES (ahora parte del grupo SALIDA)
-    { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions', grupo: 'salida', vertical: false }
+    { header: 'RESPONSABLE', field: 'responsable_salida', width: '200px', tipo: 'select', grupo: 'salida', vertical: false }
   ];
 
   get dataEntradasSalidas(): EntradasSalidasPasteurizadaData[] {

@@ -27,16 +27,16 @@
         }
 
         @else if (col.field === 'coliformes_totales') {
-        <!-- Radio buttons para Coliformes Totales -->
+        <!-- Radio buttons para Coliformes Totales: 0=Ausencia, 1=Presencia -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">
-            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
               inputId="coliformes_a_{{rowData._uid}}" />
             <label for="coliformes_a_{{rowData._uid}}" class="radio-label">A</label>
           </div>
           <div class="radio-option">
-            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
               inputId="coliformes_p_{{rowData._uid}}" />
             <label for="coliformes_p_{{rowData._uid}}" class="radio-label">P</label>
           </div>
@@ -47,7 +47,7 @@
         }
 
         @else if (col.field === 'conformidad') {
-        <!-- Radio buttons para Conformidad -->
+        <!-- Radio buttons para Conformidad: 0=No Conformidad, 1=Conformidad -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">
@@ -67,22 +67,22 @@
         }
 
         @else if (col.field === 'prueba_confirmatoria') {
-        <!-- Radio button para Prueba Confirmatoria -->
+        <!-- Radio button para Prueba Confirmatoria: 0=Vacío, 1=PC -->
         @if (isEditing(rowData)) {
         <div class="radio-container-centered">
           <div class="radio-option">
-            <p-radiobutton name="prueba_{{rowData._uid}}" value="PC" [(ngModel)]="rowData.prueba_confirmatoria"
+            <p-radiobutton name="prueba_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.prueba_confirmatoria"
               inputId="prueba_pc_{{rowData._uid}}" />
             <label for="prueba_pc_{{rowData._uid}}" class="radio-label">PC</label>
           </div>
         </div>
         } @else {
-        <span class="table-text">{{ rowData.prueba_confirmatoria || '-' }}</span>
+        <span class="table-text">{{ getDisplayValuePruebaConfirmatoria(rowData.prueba_confirmatoria) }}</span>
         }
         }
 
         @else if (col.field === 'liberacion_producto') {
-        <!-- Radio buttons para Liberación de Producto -->
+        <!-- Radio buttons para Liberación de Producto: 0=No, 1=Sí -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">

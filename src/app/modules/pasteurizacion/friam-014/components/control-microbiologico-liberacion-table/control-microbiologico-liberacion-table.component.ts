@@ -128,21 +128,47 @@ export class ControlMicrobiologicoLiberacionTableComponent {
       (rowData.coliformes_totales === 0 || rowData.coliformes_totales === 1) &&
       (rowData.conformidad === 0 || rowData.conformidad === 1) &&
       (rowData.liberacion_producto === 0 || rowData.liberacion_producto === 1)
+      // Nota: prueba_confirmatoria no es obligatorio (puede ser 0 o 1)
     );
   }
 
   // ============= MÉTODOS HELPER PARA MOSTRAR VALORES =============
 
+  /**
+   * Coliformes Totales:
+   * 0 = Ausencia (A)
+   * 1 = Presencia (P)
+   */
   getDisplayValueColiformes(value: 0 | 1 | null): string {
     if (value === null || value === undefined) return 'No seleccionado';
-    return value === 1 ? 'A' : 'P';
+    return value === 0 ? 'A' : 'P';
   }
 
+  /**
+   * Conformidad:
+   * 0 = No Conformidad (NC)
+   * 1 = Conformidad (C)
+   */
   getDisplayValueConformidad(value: 0 | 1 | null): string {
     if (value === null || value === undefined) return 'No seleccionado';
     return value === 1 ? 'C' : 'NC';
   }
 
+  /**
+   * Prueba Confirmatoria:
+   * 0 = Vacía (sin marcar)
+   * 1 = PC
+   */
+  getDisplayValuePruebaConfirmatoria(value: 0 | 1 | null): string {
+    if (value === null || value === undefined) return '-';
+    return value === 1 ? 'PC' : '-';
+  }
+
+  /**
+   * Liberación de Producto:
+   * 0 = No
+   * 1 = Sí
+   */
   getDisplayValueLiberacion(value: 0 | 1 | null): string {
     if (value === null || value === undefined) return 'No seleccionado';
     return value === 1 ? 'Sí' : 'No';

@@ -2,10 +2,10 @@ export interface ControlMicrobiologicoLiberacionData {
   id?: number | null;
   numero_frasco_pasteurizado: string;
   id_frasco_pasteurizado?: number | null;
-  coliformes_totales?: 0 | 1 | null;
-  conformidad?: 0 | 1 | null;
-  prueba_confirmatoria?: 'PC' | null;
-  liberacion_producto?: 0 | 1 | null;
+  coliformes_totales?: 0 | 1 | null; // 0=Ausencia, 1=Presencia
+  conformidad?: 0 | 1 | null; // 0=No Conformidad, 1=Conformidad
+  prueba_confirmatoria?: 0 | 1 | null; // 0=Vacío, 1=PC
+  liberacion_producto?: 0 | 1 | null; // 0=No, 1=Sí
   fecha_pasteurizacion?: Date | string | null;
   ciclo?: number | string;
   lote?: number | string;
@@ -40,10 +40,10 @@ export interface PayloadControlMicrobiologico {
   registrosControl: Array<{
     numero_frasco_pasteurizado: string;
     id_frasco_pasteurizado: number;
-    coliformes_totales: 0 | 1;
-    conformidad: 0 | 1;
-    prueba_confirmatoria: 'PC' | null;
-    liberacion_producto: 0 | 1;
+    coliformes_totales: 0 | 1; // 0=Ausencia, 1=Presencia
+    conformidad: 0 | 1; // 0=No Conformidad, 1=Conformidad
+    prueba_confirmatoria: 0 | 1 | null; // 0=Vacío, 1=PC
+    liberacion_producto: 0 | 1; // 0=No, 1=Sí
     fecha_pasteurizacion: Date | string;
     ciclo: number;
     lote: number;

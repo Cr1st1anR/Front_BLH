@@ -162,66 +162,80 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   }
 
   private procesarResultadosBusquedaCompletos(
-    response: GetControlMicrobiologicoResponse,
-    ciclo: number,
-    lote: number
-  ): void {
-    const frascos = response.data.frascos;
-    const infoControl = response.data.infoControl;
+  response: GetControlMicrobiologicoResponse,
+  ciclo: number,
+  lote: number
+): void {
+  const frascos = response.data.frascos;
+  const infoControl = response.data.infoControl;
 
-    if (frascos.length === 0) {
-      this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
-      this.dataControlMicrobiologico = [];
-      this.fechaPasteurizacion = null;
-      this.esActualizacion = false;
-      this.idInfoControl = null;
-      this.infoControlOriginal = null;
-      this.limpiarFormulario();
-      return;
-    }
-
-    // Guardar datos originales
-    this.fechaPasteurizacion = new Date(frascos[0].controlReenvase.fecha);
-    this.fechaPasteurizacionOriginal = frascos[0].controlReenvase.fecha;
-    this.infoControlOriginal = infoControl;
-    this.idInfoControl = infoControl?.id || null;
-    this.esActualizacion = !!infoControl;
-
-    // Generar registros para la tabla
-    this.dataControlMicrobiologico = frascos.map((frasco, index) => {
-      const timestamp = Date.now();
-      const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
-      const añoActual = new Date().getFullYear().toString().slice(-2);
-
-      return {
-        id: frasco.controlMicrobiologico?.id || null,
-        numero_frasco_pasteurizado: `LHP ${añoActual} ${frasco.numeroFrasco}`,
-        id_frasco_pasteurizado: frasco.id,
-        coliformes_totales: this.convertirValorColiformes(frasco.controlMicrobiologico?.coliformes),
-        conformidad: this.convertirValorConformidad(frasco.controlMicrobiologico?.conformidad),
-        prueba_confirmatoria: this.convertirValorPruebaConfirmatoria(frasco.controlMicrobiologico?.pruebaConfirmatoria),
-        liberacion_producto: this.convertirValorLiberacion(frasco.controlMicrobiologico?.liberacion),
-        fecha_pasteurizacion: new Date(frascos[0].controlReenvase.fecha),
-        ciclo: ciclo,
-        lote: lote,
-        _uid: uniqueId,
-        isNew: !frasco.controlMicrobiologico
-      };
-    });
-
-    // Si hay infoControl, cargar datos del formulario
-    if (infoControl) {
-      this.cargarDatosFormularioDesdeBackend(infoControl);
-    } else {
-      this.limpiarFormulario();
-    }
-
-    const mensaje = this.esActualizacion
-      ? `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} con datos guardados`
-      : `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} sin datos guardados`;
-
-    this.mostrarMensaje('success', 'Búsqueda exitosa', mensaje);
+  if (frascos.length === 0) {
+    this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
+    this.dataControlMicrobiologico = [];
+    this.fechaPasteurizacion = null;
+    this.esActualizacion = false;
+    this.idInfoControl = null;
+    this.infoControlOriginal = null;
+    this.limpiarFormulario();
+    return;
   }
+
+  // Guardar datos originales
+  // CORRECCIÓN: Parsear fecha como local, no como UTC
+  this.fechaPasteurizacion = this.parsearFechaLocal(frascos[0].controlReenvase.fecha);
+  this.fechaPasteurizacionOriginal = frascos[0].controlReenvase.fecha;
+  this.infoControlOriginal = infoControl;
+  this.idInfoControl = infoControl?.id || null;
+  this.esActualizacion = !!infoControl;
+
+  // Generar registros para la tabla
+  this.dataControlMicrobiologico = frascos.map((frasco, index) => {
+    const timestamp = Date.now();
+    const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
+    const añoActual = new Date().getFullYear().toString().slice(-2);
+
+    return {
+      id: frasco.controlMicrobiologico?.id || null,
+      numero_frasco_pasteurizado: `LHP ${añoActual} ${frasco.numeroFrasco}`,
+      id_frasco_pasteurizado: frasco.id,
+      coliformes_totales: this.convertirValorColiformes(frasco.controlMicrobiologico?.coliformes),
+      conformidad: this.convertirValorConformidad(frasco.controlMicrobiologico?.conformidad),
+      prueba_confirmatoria: this.convertirValorPruebaConfirmatoria(frasco.controlMicrobiologico?.pruebaConfirmatoria),
+      liberacion_producto: this.convertirValorLiberacion(frasco.controlMicrobiologico?.liberacion),
+      fecha_pasteurizacion: this.parsearFechaLocal(frascos[0].controlReenvase.fecha), // CORRECCIÓN aquí también
+      ciclo: ciclo,
+      lote: lote,
+      _uid: uniqueId,
+      isNew: !frasco.controlMicrobiologico
+    };
+  });
+
+  // Si hay infoControl, cargar datos del formulario
+  if (infoControl) {
+    this.cargarDatosFormularioDesdeBackend(infoControl);
+  } else {
+    this.limpiarFormulario();
+  }
+
+  const mensaje = this.esActualizacion
+    ? `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} con datos guardados`
+    : `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} sin datos guardados`;
+
+  this.mostrarMensaje('success', 'Búsqueda exitosa', mensaje);
+}
+
+// Agregar este nuevo método helper al final de la sección de MÉTODOS DE CONVERSIÓN DE VALORES:
+
+/**
+ * Parsea una fecha en formato string (YYYY-MM-DD) como fecha local
+ * Evita problemas de zona horaria que pueden mostrar el día anterior
+ * @param fechaString - Fecha en formato "YYYY-MM-DD"
+ * @returns Date object en zona horaria local
+ */
+private parsearFechaLocal(fechaString: string): Date {
+  const [year, month, day] = fechaString.split('-').map(Number);
+  return new Date(year, month - 1, day); // month - 1 porque en JS los meses van de 0-11
+}
 
   private cargarDatosFormularioDesdeBackend(infoControl: InfoControlBackend): void {
     // Separar fecha y hora de fechaSiembre

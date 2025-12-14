@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
 
@@ -23,7 +23,25 @@ export class ControlMicrobiologicoLiberacionService {
   getControlMicrobiologicoCompleto(ciclo: number, lote: number): Observable<GetControlMicrobiologicoResponse> {
     const url = `${environment.ApiBLH}/getControlMicrobiologico/${lote}/${ciclo}`;
 
-    return this.http.get<GetControlMicrobiologicoResponse>(url).pipe(
+    return this.http.get<GetControlMicrobiologicoResponse>(url, {
+      observe: 'response' // Observar la respuesta completa incluyendo status
+    }).pipe(
+      map(response => {
+        // Si es 204 No Content, devolver estructura vacía
+        if (response.status === 204 || !response.body) {
+          return {
+            status: 204,
+            statusmsg: 'No Content',
+            data: {
+              infoControl: null,
+              frascos: []
+            }
+          } as GetControlMicrobiologicoResponse;
+        }
+
+        // Si hay datos, devolverlos normalmente
+        return response.body!;
+      }),
       catchError(this.handleError)
     );
   }
@@ -83,10 +101,19 @@ export class ControlMicrobiologicoLiberacionService {
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Error del cliente: ${error.error.message}`;
     } else {
-      errorMessage = `Error del servidor: ${error.status}\nMensaje: ${error.message}`;
+      // Manejar diferentes códigos de error
+      if (error.status === 404) {
+        errorMessage = 'No se encontraron registros para el ciclo y lote especificados';
+      } else if (error.status === 500) {
+        errorMessage = 'Error interno del servidor';
+      } else if (error.status === 0) {
+        errorMessage = 'No se pudo conectar con el servidor';
+      } else {
+        errorMessage = `Error del servidor (${error.status})`;
 
-      if (error.error && error.error.message) {
-        errorMessage = error.error.message;
+        if (error.error && error.error.message) {
+          errorMessage = error.error.message;
+        }
       }
     }
 

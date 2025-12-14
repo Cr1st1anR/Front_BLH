@@ -138,28 +138,45 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   // ============= BÚSQUEDA DE FRASCOS =============
 
   buscarFrascosPorCicloLote(): void {
-    if (!this.validarBusqueda()) return;
+  if (!this.validarBusqueda()) return;
 
-    if (this.tableComponent && this.tableComponent.isAnyRowEditing()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de buscar');
-      return;
-    }
-
-    this.loading.search = true;
-    const ciclo = parseInt(String(this.busquedaCicloLote.ciclo));
-    const lote = parseInt(String(this.busquedaCicloLote.lote));
-
-    this.controlMicrobiologicoService.getControlMicrobiologicoCompleto(ciclo, lote).subscribe({
-      next: (response: GetControlMicrobiologicoResponse) => {
-        this.procesarResultadosBusquedaCompletos(response, ciclo, lote);
-        this.loading.search = false;
-      },
-      error: (error) => {
-        this.loading.search = false;
-        this.mostrarMensaje('error', 'Error', error.message || 'Error al buscar frascos pasteurizados');
-      }
-    });
+  if (this.tableComponent && this.tableComponent.isAnyRowEditing()) {
+    this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de buscar');
+    return;
   }
+
+  this.loading.search = true;
+  const ciclo = parseInt(String(this.busquedaCicloLote.ciclo));
+  const lote = parseInt(String(this.busquedaCicloLote.lote));
+
+  this.controlMicrobiologicoService.getControlMicrobiologicoCompleto(ciclo, lote).subscribe({
+    next: (response: GetControlMicrobiologicoResponse) => {
+      this.procesarResultadosBusquedaCompletos(response, ciclo, lote);
+      this.loading.search = false; // ✅ Aseguramos que se desactive
+    },
+    error: (error) => {
+      this.loading.search = false; // ✅ Aseguramos que se desactive en caso de error
+      console.error('Error en búsqueda:', error);
+      this.mostrarMensaje(
+        'error',
+        'Error en búsqueda',
+        error.message || 'Error al buscar frascos pasteurizados'
+      );
+
+      // Limpiar datos en caso de error
+      this.dataControlMicrobiologico = [];
+      this.fechaPasteurizacion = null;
+      this.esActualizacion = false;
+      this.idInfoControl = null;
+      this.infoControlOriginal = null;
+      this.limpiarFormulario();
+    },
+    complete: () => {
+      // ✅ Por si acaso, aseguramos que siempre se desactive
+      this.loading.search = false;
+    }
+  });
+}
 
   private procesarResultadosBusquedaCompletos(
   response: GetControlMicrobiologicoResponse,
@@ -169,8 +186,13 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   const frascos = response.data.frascos;
   const infoControl = response.data.infoControl;
 
-  if (frascos.length === 0) {
-    this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
+  // Verificar si es una respuesta 204 (sin contenido) o sin frascos
+  if (response.status === 204 || frascos.length === 0) {
+    this.mostrarMensaje(
+      'info',
+      'Sin resultados',
+      `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}. Verifique que el ciclo y lote existan.`
+    );
     this.dataControlMicrobiologico = [];
     this.fechaPasteurizacion = null;
     this.esActualizacion = false;
@@ -181,7 +203,6 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   }
 
   // Guardar datos originales
-  // CORRECCIÓN: Parsear fecha como local, no como UTC
   this.fechaPasteurizacion = this.parsearFechaLocal(frascos[0].controlReenvase.fecha);
   this.fechaPasteurizacionOriginal = frascos[0].controlReenvase.fecha;
   this.infoControlOriginal = infoControl;
@@ -202,7 +223,7 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
       conformidad: this.convertirValorConformidad(frasco.controlMicrobiologico?.conformidad),
       prueba_confirmatoria: this.convertirValorPruebaConfirmatoria(frasco.controlMicrobiologico?.pruebaConfirmatoria),
       liberacion_producto: this.convertirValorLiberacion(frasco.controlMicrobiologico?.liberacion),
-      fecha_pasteurizacion: this.parsearFechaLocal(frascos[0].controlReenvase.fecha), // CORRECCIÓN aquí también
+      fecha_pasteurizacion: this.parsearFechaLocal(frascos[0].controlReenvase.fecha),
       ciclo: ciclo,
       lote: lote,
       _uid: uniqueId,

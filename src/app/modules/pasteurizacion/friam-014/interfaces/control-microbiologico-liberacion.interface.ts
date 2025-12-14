@@ -126,7 +126,6 @@ export interface DatosFormulario {
   responsableLectura?: string;
   responsableProcesamiento?: string;
   coordinadorMedico?: string;
-  // IDs para backend
   responsableSiembraId?: number;
   responsableLecturaId?: number;
   responsableProcesamientoId?: number;
@@ -190,7 +189,6 @@ export interface FrascoPasteurizadoData {
   fechaPasteurizacion: string;
   ciclo: number;
   lote: number;
-  // Campos adicionales del backend
   tieneRegistroGuardado?: boolean;
   idControlMicrobiologico?: number;
   idInfoControl?: number;

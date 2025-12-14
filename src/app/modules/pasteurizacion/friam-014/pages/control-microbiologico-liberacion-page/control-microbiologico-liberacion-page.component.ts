@@ -371,26 +371,39 @@ private parsearFechaLocal(fechaString: string): Date {
   }
 
   private validarFormulario(): boolean {
-    const valido = !!(
-      this.datosFormulario.fechaSiembra &&
-      this.datosFormulario.horaSiembra &&
-      this.datosFormulario.fechaPrimeraLectura &&
-      this.datosFormulario.horaPrimeraLectura &&
-      this.datosFormulario.responsableSiembra &&
-      this.datosFormulario.responsableLectura &&
-      this.datosFormulario.responsableProcesamiento &&
-      this.datosFormulario.coordinadorMedico
-    );
+  const valido = !!(
+    this.datosFormulario.fechaSiembra &&
+    this.datosFormulario.horaSiembra &&
+    this.datosFormulario.fechaPrimeraLectura &&
+    this.datosFormulario.horaPrimeraLectura &&
+    this.datosFormulario.responsableSiembra &&
+    this.datosFormulario.responsableLectura &&
+    this.datosFormulario.responsableProcesamiento &&
+    this.datosFormulario.coordinadorMedico
+  );
 
-    if (valido && !this.esActualizacion) {
-      this.datosFormulario.responsableSiembraId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableSiembra)?.id;
-      this.datosFormulario.responsableLecturaId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableLectura)?.id;
-      this.datosFormulario.responsableProcesamientoId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableProcesamiento)?.id;
-      this.datosFormulario.coordinadorMedicoId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.coordinadorMedico)?.id;
-    }
+  // CORRECCIÓN: Obtener IDs SIEMPRE que el formulario sea válido
+  // No solo cuando NO es actualización, porque el usuario puede cambiar los selectores
+  if (valido) {
+    this.datosFormulario.responsableSiembraId = this.opcionesEmpleados.find(
+      e => e.nombre === this.datosFormulario.responsableSiembra
+    )?.id;
 
-    return valido;
+    this.datosFormulario.responsableLecturaId = this.opcionesEmpleados.find(
+      e => e.nombre === this.datosFormulario.responsableLectura
+    )?.id;
+
+    this.datosFormulario.responsableProcesamientoId = this.opcionesEmpleados.find(
+      e => e.nombre === this.datosFormulario.responsableProcesamiento
+    )?.id;
+
+    this.datosFormulario.coordinadorMedicoId = this.opcionesEmpleados.find(
+      e => e.nombre === this.datosFormulario.coordinadorMedico
+    )?.id;
   }
+
+  return valido;
+}
 
   private validarTodosLosRegistros(): boolean {
     if (this.dataControlMicrobiologico.length === 0) {

@@ -22,7 +22,9 @@ import type {
   TipoMensaje,
   DatosFormulario,
   EmpleadoOption,
-  PayloadControlMicrobiologico
+  PostPutControlMicrobiologicoPayload,
+  GetControlMicrobiologicoResponse,
+  InfoControlBackend
 } from '../../interfaces/control-microbiologico-liberacion.interface';
 
 @Component({
@@ -59,7 +61,11 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
 
   dataControlMicrobiologico: ControlMicrobiologicoLiberacionData[] = [];
   fechaPasteurizacion: Date | null = null;
-  esActualizacion: boolean = false; // Indica si es actualización o guardado nuevo
+  esActualizacion: boolean = false;
+
+  private idInfoControl: number | null = null;
+  private fechaPasteurizacionOriginal: string = '';
+  private infoControlOriginal: InfoControlBackend | null = null;
 
   busquedaCicloLote: BusquedaCicloLote = {
     ciclo: '',
@@ -134,7 +140,6 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   buscarFrascosPorCicloLote(): void {
     if (!this.validarBusqueda()) return;
 
-    // Verificar si hay edición activa en la tabla
     if (this.tableComponent && this.tableComponent.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de buscar');
       return;
@@ -144,39 +149,104 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     const ciclo = parseInt(String(this.busquedaCicloLote.ciclo));
     const lote = parseInt(String(this.busquedaCicloLote.lote));
 
-    this.controlMicrobiologicoService.getFrascosPasteurizadosPorCicloLote(ciclo, lote).subscribe({
-      next: (frascos: FrascoPasteurizadoData[]) => {
-        this.procesarResultadosBusqueda(frascos, ciclo, lote);
+    this.controlMicrobiologicoService.getControlMicrobiologicoCompleto(ciclo, lote).subscribe({
+      next: (response: GetControlMicrobiologicoResponse) => {
+        this.procesarResultadosBusquedaCompletos(response, ciclo, lote);
         this.loading.search = false;
       },
       error: (error) => {
         this.loading.search = false;
-        this.mostrarMensaje('error', 'Error', 'Error al buscar frascos pasteurizados');
+        this.mostrarMensaje('error', 'Error', error.message || 'Error al buscar frascos pasteurizados');
       }
     });
   }
 
-  private procesarResultadosBusqueda(frascos: FrascoPasteurizadoData[], ciclo: number, lote: number): void {
+  private procesarResultadosBusquedaCompletos(
+    response: GetControlMicrobiologicoResponse,
+    ciclo: number,
+    lote: number
+  ): void {
+    const frascos = response.data.frascos;
+    const infoControl = response.data.infoControl;
+
     if (frascos.length === 0) {
       this.mostrarMensaje('info', 'Sin resultados', `No se encontraron frascos pasteurizados para el ciclo ${ciclo}, lote ${lote}`);
       this.dataControlMicrobiologico = [];
       this.fechaPasteurizacion = null;
       this.esActualizacion = false;
+      this.idInfoControl = null;
+      this.infoControlOriginal = null;
+      this.limpiarFormulario();
       return;
     }
 
-    this.fechaPasteurizacion = new Date(frascos[0].fechaPasteurizacion);
+    // Guardar datos originales
+    this.fechaPasteurizacion = new Date(frascos[0].controlReenvase.fecha);
+    this.fechaPasteurizacionOriginal = frascos[0].controlReenvase.fecha;
+    this.infoControlOriginal = infoControl;
+    this.idInfoControl = infoControl?.id || null;
+    this.esActualizacion = !!infoControl;
 
-    // Generar registros desde el servicio
-    this.dataControlMicrobiologico = frascos.map((frasco, index) =>
-      this.controlMicrobiologicoService.crearRegistroDesdeFramco(frasco, ciclo, lote, index)
-    );
+    // Generar registros para la tabla
+    this.dataControlMicrobiologico = frascos.map((frasco, index) => {
+      const timestamp = Date.now();
+      const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
+      const añoActual = new Date().getFullYear().toString().slice(-2);
 
-    // Determinar si es actualización (verificar si tiene datos guardados previamente)
-    // En producción, esto vendría del backend indicando si ya existe un registro
-    this.esActualizacion = frascos.some(frasco => (frasco as any).tieneRegistroGuardado);
+      return {
+        id: frasco.controlMicrobiologico?.id || null,
+        numero_frasco_pasteurizado: `LHP ${añoActual} ${frasco.numeroFrasco}`,
+        id_frasco_pasteurizado: frasco.id,
+        coliformes_totales: this.convertirValorColiformes(frasco.controlMicrobiologico?.coliformes),
+        conformidad: this.convertirValorConformidad(frasco.controlMicrobiologico?.conformidad),
+        prueba_confirmatoria: this.convertirValorPruebaConfirmatoria(frasco.controlMicrobiologico?.pruebaConfirmatoria),
+        liberacion_producto: this.convertirValorLiberacion(frasco.controlMicrobiologico?.liberacion),
+        fecha_pasteurizacion: new Date(frascos[0].controlReenvase.fecha),
+        ciclo: ciclo,
+        lote: lote,
+        _uid: uniqueId,
+        isNew: !frasco.controlMicrobiologico
+      };
+    });
 
-    this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} pasteurizado${frascos.length > 1 ? 's' : ''}`);
+    // Si hay infoControl, cargar datos del formulario
+    if (infoControl) {
+      this.cargarDatosFormularioDesdeBackend(infoControl);
+    } else {
+      this.limpiarFormulario();
+    }
+
+    const mensaje = this.esActualizacion
+      ? `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} con datos guardados`
+      : `Se encontraron ${frascos.length} frasco${frascos.length > 1 ? 's' : ''} sin datos guardados`;
+
+    this.mostrarMensaje('success', 'Búsqueda exitosa', mensaje);
+  }
+
+  private cargarDatosFormularioDesdeBackend(infoControl: InfoControlBackend): void {
+    // Separar fecha y hora de fechaSiembre
+    const fechaSiembre = new Date(infoControl.fechaSiembre);
+    this.datosFormulario.fechaSiembra = new Date(fechaSiembre.getFullYear(), fechaSiembre.getMonth(), fechaSiembre.getDate());
+    this.datosFormulario.horaSiembraAux = fechaSiembre;
+    this.datosFormulario.horaSiembra = this.convertDateToHours(fechaSiembre);
+
+    // Separar fecha y hora de primeraLectura
+    const primeraLectura = new Date(infoControl.primeraLectura);
+    this.datosFormulario.fechaPrimeraLectura = new Date(primeraLectura.getFullYear(), primeraLectura.getMonth(), primeraLectura.getDate());
+    this.datosFormulario.horaPrimeraLecturaAux = primeraLectura;
+    this.datosFormulario.horaPrimeraLectura = this.convertDateToHours(primeraLectura);
+
+    // Cargar responsables
+    this.datosFormulario.responsableSiembra = infoControl.responsableSiembre.nombre;
+    this.datosFormulario.responsableLectura = infoControl.responsableLectura.nombre;
+    this.datosFormulario.responsableProcesamiento = infoControl.responsableProcesamiento.nombre;
+    this.datosFormulario.coordinadorMedico = infoControl.coordinador.nombre;
+
+    // Guardar IDs
+    this.datosFormulario.responsableSiembraId = infoControl.responsableSiembre.id;
+    this.datosFormulario.responsableLecturaId = infoControl.responsableLectura.id;
+    this.datosFormulario.responsableProcesamientoId = infoControl.responsableProcesamiento.id;
+    this.datosFormulario.coordinadorMedicoId = infoControl.coordinador.id;
   }
 
   private validarBusqueda(): boolean {
@@ -200,7 +270,6 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   }
 
   limpiarBusqueda(): void {
-    // Verificar si hay edición activa en la tabla
     if (this.tableComponent && this.tableComponent.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de limpiar');
       return;
@@ -213,6 +282,8 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     this.fechaPasteurizacion = null;
     this.dataControlMicrobiologico = [];
     this.esActualizacion = false;
+    this.idInfoControl = null;
+    this.infoControlOriginal = null;
     this.limpiarFormulario();
 
     this.mostrarMensaje('info', 'Información', 'Búsqueda limpiada');
@@ -231,33 +302,32 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
       responsableSiembra: '',
       responsableLectura: '',
       responsableProcesamiento: '',
-      coordinadorMedico: ''
+      coordinadorMedico: '',
+      responsableSiembraId: undefined,
+      responsableLecturaId: undefined,
+      responsableProcesamientoId: undefined,
+      coordinadorMedicoId: undefined
     };
   }
 
   guardarOActualizarDatos(): void {
-    // Procesar las horas antes de validar
     this.procesarHorasFormulario();
 
-    // Validar que el formulario esté completo
     if (!this.validarFormulario()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos del formulario');
       return;
     }
 
-    // Validar que todos los registros de la tabla estén completos
     if (!this.validarTodosLosRegistros()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los registros de la tabla antes de guardar');
       return;
     }
 
-    // Verificar que no haya edición activa
     if (this.tableComponent && this.tableComponent.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de guardar');
       return;
     }
 
-    // Preparar payload completo
     const payload = this.prepararPayloadCompleto();
 
     if (!payload) {
@@ -265,7 +335,6 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
       return;
     }
 
-    // Enviar al backend
     this.enviarDatosCompletos(payload);
   }
 
@@ -288,7 +357,7 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
   }
 
   private validarFormulario(): boolean {
-    return !!(
+    const valido = !!(
       this.datosFormulario.fechaSiembra &&
       this.datosFormulario.horaSiembra &&
       this.datosFormulario.fechaPrimeraLectura &&
@@ -298,6 +367,15 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
       this.datosFormulario.responsableProcesamiento &&
       this.datosFormulario.coordinadorMedico
     );
+
+    if (valido && !this.esActualizacion) {
+      this.datosFormulario.responsableSiembraId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableSiembra)?.id;
+      this.datosFormulario.responsableLecturaId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableLectura)?.id;
+      this.datosFormulario.responsableProcesamientoId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.responsableProcesamiento)?.id;
+      this.datosFormulario.coordinadorMedicoId = this.opcionesEmpleados.find(e => e.nombre === this.datosFormulario.coordinadorMedico)?.id;
+    }
+
+    return valido;
   }
 
   private validarTodosLosRegistros(): boolean {
@@ -310,29 +388,35 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     );
   }
 
-  private prepararPayloadCompleto(): PayloadControlMicrobiologico | null {
+  private prepararPayloadCompleto(): PostPutControlMicrobiologicoPayload | null {
     try {
-      const payload: PayloadControlMicrobiologico = {
-        datosFormulario: {
-          fechaSiembra: this.datosFormulario.fechaSiembra!,
-          horaSiembra: this.datosFormulario.horaSiembra!,
-          fechaPrimeraLectura: this.datosFormulario.fechaPrimeraLectura!,
-          horaPrimeraLectura: this.datosFormulario.horaPrimeraLectura!,
-          responsableSiembra: this.datosFormulario.responsableSiembra!,
-          responsableLectura: this.datosFormulario.responsableLectura!,
-          responsableProcesamiento: this.datosFormulario.responsableProcesamiento!,
-          coordinadorMedico: this.datosFormulario.coordinadorMedico!
+      const fechaSiembre = new Date(this.datosFormulario.fechaSiembra!);
+      const [horasSiembra, minutosSiembra] = this.datosFormulario.horaSiembra!.split(':');
+      fechaSiembre.setHours(parseInt(horasSiembra), parseInt(minutosSiembra), 0, 0);
+
+      const primeraLectura = new Date(this.datosFormulario.fechaPrimeraLectura!);
+      const [horasLectura, minutosLectura] = this.datosFormulario.horaPrimeraLectura!.split(':');
+      primeraLectura.setHours(parseInt(horasLectura), parseInt(minutosLectura), 0, 0);
+
+      const payload: PostPutControlMicrobiologicoPayload = {
+        infoControl: {
+          ...(this.esActualizacion && this.idInfoControl ? { id: this.idInfoControl } : {}),
+          fechaSiembre: fechaSiembre.toISOString(),
+          primeraLectura: primeraLectura.toISOString(),
+          responsableSiembre: { id: this.datosFormulario.responsableSiembraId! },
+          responsableLectura: { id: this.datosFormulario.responsableLecturaId! },
+          responsableProcesamiento: { id: this.datosFormulario.responsableProcesamientoId! },
+          coordinador: { id: this.datosFormulario.coordinadorMedicoId! }
         },
-        registrosControl: this.dataControlMicrobiologico.map(registro => ({
-          numero_frasco_pasteurizado: registro.numero_frasco_pasteurizado,
-          id_frasco_pasteurizado: registro.id_frasco_pasteurizado!,
-          coliformes_totales: registro.coliformes_totales!,
+        controles: this.dataControlMicrobiologico.map(registro => ({
+          ...(this.esActualizacion && registro.id ? { id: registro.id } : {}),
+          idFrascoPasteurizado: registro.id_frasco_pasteurizado!,
+          fecha: this.fechaPasteurizacionOriginal,
+          coliformes: registro.coliformes_totales!,
           conformidad: registro.conformidad!,
-          prueba_confirmatoria: registro.prueba_confirmatoria ?? null,
-          liberacion_producto: registro.liberacion_producto!,
-          fecha_pasteurizacion: registro.fecha_pasteurizacion!,
-          ciclo: Number(registro.ciclo),
-          lote: Number(registro.lote)
+          pruebaConfirmatoria: registro.prueba_confirmatoria ?? 0,
+          liberacion: registro.liberacion_producto!,
+          observaciones: ''
         }))
       };
 
@@ -343,7 +427,7 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     }
   }
 
-  private enviarDatosCompletos(payload: PayloadControlMicrobiologico): void {
+  private enviarDatosCompletos(payload: PostPutControlMicrobiologicoPayload): void {
     this.loading.saving = true;
 
     const accion = this.esActualizacion ? 'actualizar' : 'guardar';
@@ -360,13 +444,16 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
 
         this.mostrarMensaje('success', 'Éxito', mensaje);
 
-        // NO limpiamos los datos, solo actualizamos el estado a "actualización"
         this.esActualizacion = true;
+
+        if (!this.idInfoControl && response.data) {
+          this.idInfoControl = response.data.infoControl?.id || null;
+        }
       },
       error: (error) => {
         this.loading.saving = false;
         console.error(`Error al ${accion}:`, error);
-        this.mostrarMensaje('error', 'Error', `Error al ${accion} los datos. Por favor intente nuevamente`);
+        this.mostrarMensaje('error', 'Error', error.message || `Error al ${accion} los datos. Por favor intente nuevamente`);
       }
     });
   }
@@ -383,12 +470,34 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
 
   puedeGuardar(): boolean {
     return this.dataControlMicrobiologico.length > 0 &&
-           this.validarTodosLosRegistros() &&
-           (!this.tableComponent || !this.tableComponent.isAnyRowEditing());
+      this.validarTodosLosRegistros() &&
+      (!this.tableComponent || !this.tableComponent.isAnyRowEditing());
   }
 
   obtenerTextoBotonGuardar(): string {
     return this.esActualizacion ? 'Actualizar Datos' : 'Guardar Todos los Datos';
+  }
+
+  // ============= MÉTODOS DE CONVERSIÓN DE VALORES =============
+
+  private convertirValorColiformes(valor: number | null | undefined): 0 | 1 | null {
+    if (valor === null || valor === undefined) return null;
+    return (valor === 0 || valor === 1) ? valor as (0 | 1) : null;
+  }
+
+  private convertirValorConformidad(valor: number | null | undefined): 0 | 1 | null {
+    if (valor === null || valor === undefined) return null;
+    return (valor === 0 || valor === 1) ? valor as (0 | 1) : null;
+  }
+
+  private convertirValorPruebaConfirmatoria(valor: number | null | undefined): 0 | 1 | null {
+    if (valor === null || valor === undefined) return null;
+    return (valor === 0 || valor === 1) ? valor as (0 | 1) : null;
+  }
+
+  private convertirValorLiberacion(valor: number | null | undefined): 0 | 1 | null {
+    if (valor === null || valor === undefined) return null;
+    return (valor === 0 || valor === 1) ? valor as (0 | 1) : null;
   }
 
   // ============= MENSAJES =============

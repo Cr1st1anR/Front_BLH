@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { EntradasSalidasPasteurizadaTableComponent } from '../../components/entradas-salidas-pasteurizada-table/entradas-salidas-pasteurizada-table.component';
-import type { FiltrosBusqueda } from '../../interfaces/entradas-salidas-pasteurizada.interface';
+import type { FiltrosBusqueda, BusquedaLote } from '../../interfaces/entradas-salidas-pasteurizada.interface';
 
 @Component({
   selector: 'entradas-salidas-pasteurizada-page',
@@ -18,6 +19,7 @@ import type { FiltrosBusqueda } from '../../interfaces/entradas-salidas-pasteuri
     InputTextModule,
     ButtonModule,
     TooltipModule,
+    ProgressSpinnerModule,
     HeaderComponent,
     MonthPickerComponent,
     EntradasSalidasPasteurizadaTableComponent
@@ -38,7 +40,12 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
 
   filtrosBusqueda: FiltrosBusqueda = {
     n_frasco_pasteurizado: '',
-    donante: ''
+    donante: '',
+    n_gaveta: ''
+  };
+
+  busquedaLote: BusquedaLote = {
+    lote: ''
   };
 
   ngOnInit(): void {
@@ -60,9 +67,25 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
   limpiarFiltros(): void {
     this.filtrosBusqueda = {
       n_frasco_pasteurizado: '',
-      donante: ''
+      donante: '',
+      n_gaveta: ''
     };
     this.aplicarFiltros();
+  }
+
+  buscarPorLote(): void {
+    const lote = parseInt(String(this.busquedaLote.lote || '').trim());
+
+    if (!lote || isNaN(lote) || lote <= 0) {
+      return;
+    }
+
+    this.tableComponent?.buscarPorLote(lote);
+  }
+
+  limpiarBusquedaLote(): void {
+    this.busquedaLote = { lote: '' };
+    this.tableComponent?.limpiarBusquedaLote();
   }
 
   private prepararFiltroMesActual(): void {
@@ -105,5 +128,9 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
     this.tableComponent.aplicarFiltroInicialConNotificacion(this.filtroMesActualPendiente);
     this.isInitialized = true;
     this.filtroMesActualPendiente = null;
+  }
+
+  get loadingSearch(): boolean {
+    return this.tableComponent?.loading.search || false;
   }
 }

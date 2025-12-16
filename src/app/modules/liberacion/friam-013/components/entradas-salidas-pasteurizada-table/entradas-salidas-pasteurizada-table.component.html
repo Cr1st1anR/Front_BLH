@@ -58,18 +58,26 @@
             (click)="editing ? $event.stopPropagation() : null">
 
             @if (col.field === 'fecha_procesamiento') {
+            <span>
+              @if (rowData[col.field]) {
+              {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </span>
+            }
+
+            @else if (col.field === 'congelador') {
+            <span>{{ rowData.congelador }}</span>
+            }
+
+            @else if (col.field === 'n_gaveta') {
             <p-cellEditor>
               <ng-template pTemplate="input">
-                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
-                </p-datepicker>
+                <input pInputText type="text" [(ngModel)]="rowData.n_gaveta" class="w-full text-center" />
               </ng-template>
               <ng-template pTemplate="output">
-                @if (rowData[col.field]) {
-                {{ rowData[col.field] | date:'dd/MM/yyyy' }}
-                } @else {
-                Sin fecha
-                }
+                {{ rowData.n_gaveta || 'Sin gaveta' }}
               </ng-template>
             </p-cellEditor>
             }

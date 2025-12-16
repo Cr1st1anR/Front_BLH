@@ -44,6 +44,38 @@ export class EntradasSalidasPasteurizadaService {
     );
   }
 
+  getEntradasSalidasPorLote(lote: number): Observable<ApiResponse<any[]>> {
+    return this.http.get<ApiResponse<any[]>>(
+      `${environment.ApiBLH}/getEntradasSalidasPasteurizadaPorLote`,
+      {
+        params: { lote: lote.toString() }
+      }
+    ).pipe(
+      map(response => {
+        if (response && response.data) {
+          return response;
+        }
+        return {
+          status: 200,
+          statusmsg: 'OK',
+          data: []
+        };
+      }),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 204) {
+          console.info(`No hay datos para el lote ${lote}`);
+          return of({
+            status: 204,
+            statusmsg: 'No Content',
+            data: []
+          });
+        }
+        console.error('Error en getEntradasSalidasPorLote:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getEmpleados(): Observable<ApiResponse<any[]>> {
     return this.http.get<ApiResponse<any[]>>(`${environment.ApiBLH}/GetEmpleados`)
       .pipe(

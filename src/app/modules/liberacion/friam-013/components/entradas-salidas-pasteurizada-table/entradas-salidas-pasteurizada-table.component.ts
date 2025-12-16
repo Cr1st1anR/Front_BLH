@@ -48,12 +48,14 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   @Input() filtrosBusqueda: FiltrosBusqueda = {
     n_frasco_pasteurizado: '',
-    donante: ''
+    donante: '',
+    n_gaveta: ''
   };
 
   readonly loading: LoadingState = {
     main: false,
-    empleados: false
+    empleados: false,
+    search: false
   };
 
   editingRow: EntradasSalidasPasteurizadaData | null = null;
@@ -72,16 +74,16 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   headersEntradasSalidas: TableColumn[] = [
     // COLUMNAS DE ENTRADA
-    { header: 'FECHA DE\nPROCESAMIENTO', field: 'fecha_procesamiento', width: '140px', tipo: 'date', grupo: 'entrada', vertical: false },
-    { header: 'CONGELADOR', field: 'congelador', width: '120px', tipo: 'text', grupo: 'entrada', vertical: false },
+    { header: 'FECHA DE\nPROCESAMIENTO', field: 'fecha_procesamiento', width: '140px', tipo: 'readonly_date', grupo: 'entrada', vertical: false },
+    { header: 'CONGELADOR', field: 'congelador', width: '120px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
     { header: 'N°\nGAVETA', field: 'n_gaveta', width: '80px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'N° FRASCO\nPASTEURIZADO', field: 'n_frasco_pasteurizado', width: '100px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'VOLUMEN EN\nCC', field: 'volumen_cc', width: '100px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: '° DORNIC', field: 'dornic', width: '90px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'KCAL/L', field: 'kcal_l', width: '80px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'DÍAS\nPOSPARTO', field: 'dias_posparto', width: '90px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'DONANTE', field: 'donante', width: '100px', tipo: 'text', grupo: 'entrada', vertical: false },
-    { header: 'EDAD\nGESTACIONAL', field: 'edad_gestacional', width: '100px', tipo: 'number', grupo: 'entrada', vertical: false },
+    { header: 'N° FRASCO\nPASTEURIZADO', field: 'n_frasco_pasteurizado', width: '100px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: 'VOLUMEN EN\nCC', field: 'volumen_cc', width: '100px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: '° DORNIC', field: 'dornic', width: '90px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: 'KCAL/L', field: 'kcal_l', width: '80px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: 'DÍAS\nPOSPARTO', field: 'dias_posparto', width: '90px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: 'DONANTE', field: 'donante', width: '100px', tipo: 'readonly_text', grupo: 'entrada', vertical: false },
+    { header: 'EDAD\nGESTACIONAL', field: 'edad_gestacional', width: '100px', tipo: 'readonly_number', grupo: 'entrada', vertical: false },
     { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '140px', tipo: 'readonly_date', grupo: 'entrada', vertical: false },
     { header: 'RESPONSABLE', field: 'responsable_entrada', width: '200px', tipo: 'select', grupo: 'entrada', vertical: false },
 
@@ -100,10 +102,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   get headersSalida(): TableColumn[] {
     return this.headersEntradasSalidas.filter(h => h.grupo === 'salida');
-  }
-
-  get headersAcciones(): TableColumn[] {
-    return this.headersEntradasSalidas.filter(h => h.tipo === 'actions');
   }
 
   constructor(
@@ -130,7 +128,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
     return new Promise((resolve) => {
       this.loading.empleados = true;
 
-      // Por ahora usamos datos mock para empleados
       this.opcionesResponsables = [
         { label: 'Dra. María González', value: 'Dra. María González', id_empleado: 1, cargo: 'Médico' },
         { label: 'Lic. Ana Martínez', value: 'Lic. Ana Martínez', id_empleado: 2, cargo: 'Auxiliar' },
@@ -148,7 +145,7 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       {
         id: 1,
         fecha_procesamiento: new Date(2025, 11, 5),
-        congelador: 'C-1',
+        congelador: '3',
         n_gaveta: '12',
         n_frasco_pasteurizado: 'LHP 25\n1234',
         volumen_cc: '150',
@@ -157,17 +154,18 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
         dias_posparto: '15D',
         donante: '1001',
         edad_gestacional: 38,
-        fecha_vencimiento: new Date(2025, 11, 20),
+        fecha_vencimiento: this.calcularFechaVencimiento(new Date(2025, 11, 5)),
         responsable_entrada: 'Dra. María González',
         fecha_salida: null,
         responsable_salida: '',
         id_empleado_entrada: 1,
-        id_empleado_salida: null
+        id_empleado_salida: null,
+        lote: 106
       },
       {
         id: 2,
         fecha_procesamiento: new Date(2025, 11, 6),
-        congelador: 'C-2',
+        congelador: '3',
         n_gaveta: '8',
         n_frasco_pasteurizado: 'LHP 25\n1235',
         volumen_cc: '200',
@@ -176,17 +174,72 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
         dias_posparto: '1M 5D',
         donante: '1002',
         edad_gestacional: 40,
-        fecha_vencimiento: new Date(2025, 11, 21),
+        fecha_vencimiento: this.calcularFechaVencimiento(new Date(2025, 11, 6)),
         responsable_entrada: 'Lic. Ana Martínez',
         fecha_salida: new Date(2025, 11, 8),
         responsable_salida: 'Dr. Carlos López',
         id_empleado_entrada: 2,
-        id_empleado_salida: 3
+        id_empleado_salida: 3,
+        lote: 101
       }
     ];
 
     this.dataOriginal = mockData;
     this.aplicarFiltros();
+  }
+
+  // ============= CÁLCULO DE FECHA DE VENCIMIENTO =============
+  private calcularFechaVencimiento(fechaProcesamiento: Date | null): Date | null {
+    if (!fechaProcesamiento) return null;
+
+    const fecha = fechaProcesamiento instanceof Date ? fechaProcesamiento : new Date(fechaProcesamiento);
+    if (isNaN(fecha.getTime())) return null;
+
+    const fechaVencimiento = new Date(fecha);
+    fechaVencimiento.setMonth(fechaVencimiento.getMonth() + 6);
+
+    return fechaVencimiento;
+  }
+
+  // ============= BÚSQUEDA POR LOTE =============
+  buscarPorLote(lote: number): void {
+    if (!lote || lote <= 0) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor ingrese un lote válido');
+      return;
+    }
+
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de buscar');
+      return;
+    }
+
+    this.loading.search = true;
+
+    // Simulación de búsqueda por lote
+    setTimeout(() => {
+      const registrosPorLote = this.dataOriginal.filter(item => item.lote === lote);
+
+      if (registrosPorLote.length === 0) {
+        this.mostrarMensaje('info', 'Sin resultados', `No se encontraron registros para el lote ${lote}`);
+        this.dataFiltered = [];
+      } else {
+        this.dataFiltered = registrosPorLote;
+        this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${registrosPorLote.length} registro${registrosPorLote.length > 1 ? 's' : ''} para el lote ${lote}`);
+      }
+
+      this.loading.search = false;
+      this.filtroFecha = null; // Limpiar filtro de fecha cuando se busca por lote
+    }, 500);
+  }
+
+  limpiarBusquedaLote(): void {
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de limpiar');
+      return;
+    }
+
+    this.aplicarFiltros();
+    this.mostrarMensaje('info', 'Información', 'Búsqueda por lote limpiada');
   }
 
   // ============= EVENTOS DE UI =============
@@ -249,7 +302,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   private actualizarRegistroExistente(dataRow: EntradasSalidasPasteurizadaData, rowElement: HTMLTableRowElement): void {
     this.loading.main = true;
 
-    // Simulación de actualización
     setTimeout(() => {
       this.procesarRespuestaActualizacion(dataRow, rowElement);
     }, 500);
@@ -258,6 +310,7 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   private validarCamposRequeridos(dataRow: EntradasSalidasPasteurizadaData): boolean {
     return !!(
       dataRow.fecha_procesamiento &&
+      dataRow.n_gaveta?.trim() &&
       dataRow.responsable_entrada?.trim()
     );
   }
@@ -361,7 +414,10 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       const cumpleDonante = !this.filtrosBusqueda.donante ||
         item.donante?.toLowerCase().includes(this.filtrosBusqueda.donante.toLowerCase());
 
-      return cumpleFrasco && cumpleDonante;
+      const cumpleGaveta = !this.filtrosBusqueda.n_gaveta ||
+        item.n_gaveta?.toLowerCase().includes(this.filtrosBusqueda.n_gaveta.toLowerCase());
+
+      return cumpleFrasco && cumpleDonante && cumpleGaveta;
     });
   }
 

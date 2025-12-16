@@ -16,11 +16,13 @@ export interface EntradasSalidasPasteurizadaData {
   responsable_salida: string;
   id_empleado_entrada?: number | null;
   id_empleado_salida?: number | null;
+  lote?: number | null;
 }
 
 export interface LoadingState {
   main: boolean;
   empleados: boolean;
+  search: boolean;
 }
 
 export interface TableColumn {
@@ -49,6 +51,11 @@ export interface FiltroFecha {
 export interface FiltrosBusqueda {
   n_frasco_pasteurizado: string;
   donante: string;
+  n_gaveta: string;
+}
+
+export interface BusquedaLote {
+  lote: number | string;
 }
 
 export interface ApiResponse<T> {

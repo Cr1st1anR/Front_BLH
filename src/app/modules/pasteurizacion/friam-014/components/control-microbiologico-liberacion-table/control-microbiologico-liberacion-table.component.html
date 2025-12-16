@@ -1,5 +1,5 @@
 <p-table #tableControlMicrobiologico [value]="dataControlMicrobiologico" [scrollable]="true" scrollHeight="400px"
-  [columns]="headersControlMicrobiologico" [tableStyle]="{ 'min-width': '103rem' }" dataKey="_uid" editMode="row">
+  [columns]="headersControlMicrobiologico" [tableStyle]="{ 'min-width': '100rem' }" dataKey="_uid" editMode="row">
 
   <ng-template #header let-columns>
     <tr>
@@ -17,7 +17,6 @@
       <td [style.width]="col.width" [style.min-width]="col.width" class="text-center table-cell">
 
         @if (col.field === 'numero_frasco_pasteurizado') {
-        <!-- Campo número de frasco - siempre de solo lectura -->
         @if (isEditing(rowData)) {
         <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado"
           class="w-full text-center table-input" [disabled]="true" [readonly]="true">
@@ -27,7 +26,6 @@
         }
 
         @else if (col.field === 'coliformes_totales') {
-        <!-- Radio buttons para Coliformes Totales: 0=Ausencia, 1=Presencia -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">
@@ -47,7 +45,6 @@
         }
 
         @else if (col.field === 'conformidad') {
-        <!-- Radio buttons para Conformidad: 0=No Conformidad, 1=Conformidad -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">
@@ -67,7 +64,6 @@
         }
 
         @else if (col.field === 'prueba_confirmatoria') {
-        <!-- Radio button para Prueba Confirmatoria: 0=Vacío, 1=PC -->
         @if (isEditing(rowData)) {
         <div class="radio-container-centered">
           <div class="radio-option">
@@ -82,7 +78,6 @@
         }
 
         @else if (col.field === 'liberacion_producto') {
-        <!-- Radio buttons para Liberación de Producto: 0=No, 1=Sí -->
         @if (isEditing(rowData)) {
         <div class="radio-container-horizontal">
           <div class="radio-option">
@@ -102,7 +97,6 @@
         }
 
         @else if (col.field === 'estado') {
-        <!-- Indicador de estado del registro -->
         <div class="flex items-center justify-center">
           @if (validarRegistroCompleto(rowData)) {
           <span
@@ -119,7 +113,6 @@
           }
         </div>
 
-        <!-- Botones de acción -->
         @if (isEditing(rowData)) {
         <div class="flex items-center justify-center gap-2 mt-2">
           <button pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"

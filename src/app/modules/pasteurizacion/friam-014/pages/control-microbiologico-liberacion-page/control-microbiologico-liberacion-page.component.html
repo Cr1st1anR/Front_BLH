@@ -8,14 +8,14 @@
     <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
       [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
     @if (loading.saving) {
-    <span class="text-lg font-semibold text-gray-700">{{ esActualizacion ? 'Actualizando datos...' : 'Guardando datos...' }}</span>
+    <span class="text-lg font-semibold text-gray-700">{{ esActualizacion ? 'Actualizando datos...' : 'Guardando
+      datos...' }}</span>
     }
   </div>
 </div>
 }
 
 <div class="container-page">
-  <!-- Sección de búsqueda por ciclo y lote -->
   <div class="search-section">
     <div class="search-row">
       <span class="font-semibold text-gray-700 search-label">CICLO DE PASTEURIZACIÓN:</span>
@@ -53,7 +53,6 @@
     </div>
     }
 
-    <!-- Indicador de progreso de registros completados -->
     @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
     <div class="flex items-center gap-3 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
       <i class="pi pi-info-circle text-blue-600"></i>
@@ -67,9 +66,7 @@
     }
   </div>
 
-  <!-- Tabla de Control Microbiológico -->
-  <control-microbiologico-liberacion-table
-    [dataControlMicrobiologico]="dataControlMicrobiologico">
+  <control-microbiologico-liberacion-table [dataControlMicrobiologico]="dataControlMicrobiologico">
   </control-microbiologico-liberacion-table>
 
   @if (!dataControlMicrobiologico || dataControlMicrobiologico.length === 0) {
@@ -78,7 +75,6 @@
   </p>
   }
 
-  <!-- Formulario de datos adicionales -->
   @if (dataControlMicrobiologico && dataControlMicrobiologico.length > 0) {
   <div class="form-section">
     <p-divider align="center" type="solid">
@@ -89,7 +85,6 @@
     </p-divider>
 
     <div class="form-grid">
-      <!-- Card de Fechas y Horas -->
       <div class="form-card dates-card">
         <div class="card-header-custom">
           <i class="pi pi-calendar" style="color: #224186;"></i>
@@ -145,7 +140,6 @@
         </div>
       </div>
 
-      <!-- Card de Responsables -->
       <div class="form-card staff-card">
         <div class="card-header-custom">
           <i class="pi pi-users" style="color: #224186;"></i>
@@ -200,17 +194,14 @@
       </div>
     </div>
 
-    <!-- Botones de acción del formulario -->
     <div class="form-actions">
       <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
         class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" [disabled]="loading.saving">
       </button>
 
       <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
-        [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'"
-        class="save-form-button"
-        (click)="guardarOActualizarDatos()"
-        [disabled]="!puedeGuardar() || loading.saving">
+        [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button"
+        (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
       </button>
     </div>
   </div>

@@ -27,40 +27,113 @@
           @if (col.field === 'embalaje') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.embalaje" class="w-full"
-                placeholder="Ej: Íntegro, roto">
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radioButton [name]="'embalaje_' + rowIndex" [value]="1" [(ngModel)]="rowData.embalaje"
+                    [inputId]="'embalaje_c_' + rowIndex" />
+                  <label [for]="'embalaje_c_' + rowIndex" class="ml-2">C</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radioButton [name]="'embalaje_' + rowIndex" [value]="0" [(ngModel)]="rowData.embalaje"
+                    [inputId]="'embalaje_nc_' + rowIndex" />
+                  <label [for]="'embalaje_nc_' + rowIndex" class="ml-2">NC</label>
+                </div>
+              </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.embalaje || 'Sin dato' }}
+              <div class="flex justify-center">
+                <span class="font-semibold" [ngClass]="{
+        'text-green-600': rowData.embalaje === 1,
+        'text-red-600': rowData.embalaje === 0,
+        'text-gray-400': rowData.embalaje === null
+      }">
+                  {{ getDisplayValue(rowData.embalaje) }}
+                </span>
+              </div>
             </ng-template>
           </p-cellEditor>
           } @else if (col.field === 'suciedad') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.suciedad" class="w-full"
-                placeholder="Ej: Presente, ausente">
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radioButton [name]="'suciedad_' + rowIndex" [value]="1" [(ngModel)]="rowData.suciedad"
+                    [inputId]="'suciedad_c_' + rowIndex" />
+                  <label [for]="'suciedad_c_' + rowIndex" class="ml-2">C</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radioButton [name]="'suciedad_' + rowIndex" [value]="0" [(ngModel)]="rowData.suciedad"
+                    [inputId]="'suciedad_nc_' + rowIndex" />
+                  <label [for]="'suciedad_nc_' + rowIndex" class="ml-2">NC</label>
+                </div>
+              </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.suciedad || 'Sin dato' }}
+              <div class="flex justify-center">
+                <span class="font-semibold" [ngClass]="{
+        'text-green-600': rowData.suciedad === 1,
+        'text-red-600': rowData.suciedad === 0,
+        'text-gray-400': rowData.suciedad === null
+      }">
+                  {{ getDisplayValue(rowData.suciedad) }}
+                </span>
+              </div>
             </ng-template>
           </p-cellEditor>
           } @else if (col.field === 'color') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.color" class="w-full"
-                placeholder="Ej: Blanco, amarillo">
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radioButton [name]="'color_' + rowIndex" [value]="1" [(ngModel)]="rowData.color"
+                    [inputId]="'color_c_' + rowIndex" />
+                  <label [for]="'color_c_' + rowIndex" class="ml-2">C</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radioButton [name]="'color_' + rowIndex" [value]="0" [(ngModel)]="rowData.color"
+                    [inputId]="'color_nc_' + rowIndex" />
+                  <label [for]="'color_nc_' + rowIndex" class="ml-2">NC</label>
+                </div>
+              </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.color || 'Sin dato' }}
+              <div class="flex justify-center">
+                <span class="font-semibold" [ngClass]="{
+        'text-green-600': rowData.color === 1,
+        'text-red-600': rowData.color === 0,
+        'text-gray-400': rowData.color === null
+      }">
+                  {{ getDisplayValue(rowData.color) }}
+                </span>
+              </div>
             </ng-template>
           </p-cellEditor>
           } @else if (col.field === 'flavor') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input pInputText type="text" [(ngModel)]="rowData.flavor" class="w-full" placeholder="Ej: Dulce, rancio">
+              <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center">
+                  <p-radioButton [name]="'flavor_' + rowIndex" [value]="1" [(ngModel)]="rowData.flavor"
+                    [inputId]="'flavor_c_' + rowIndex" />
+                  <label [for]="'flavor_c_' + rowIndex" class="ml-2">C</label>
+                </div>
+                <div class="flex items-center">
+                  <p-radioButton [name]="'flavor_' + rowIndex" [value]="0" [(ngModel)]="rowData.flavor"
+                    [inputId]="'flavor_nc_' + rowIndex" />
+                  <label [for]="'flavor_nc_' + rowIndex" class="ml-2">NC</label>
+                </div>
+              </div>
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.flavor || 'Sin dato' }}
+              <div class="flex justify-center">
+                <span class="font-semibold" [ngClass]="{
+        'text-green-600': rowData.flavor === 1,
+        'text-red-600': rowData.flavor === 0,
+        'text-gray-400': rowData.flavor === null
+      }">
+                  {{ getDisplayValue(rowData.flavor) }}
+                </span>
+              </div>
             </ng-template>
           </p-cellEditor>
           } @else if (col.field === 'acciones') {
@@ -89,4 +162,9 @@
   @if (!dataAnalisisSensorial || dataAnalisisSensorial.length === 0) {
   <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
   }
+  <!-- Nota informativa -->
+  <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
+    <i class="pi pi-info-circle mr-2"></i>
+    <strong>Opciones:</strong> C = Conforme | NC = No Conforme
+  </div>
 </div>

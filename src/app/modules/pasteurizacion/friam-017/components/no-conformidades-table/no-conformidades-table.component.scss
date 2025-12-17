@@ -1,0 +1,176 @@
+.container-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px;
+}
+
+.grid-lines {
+  border: 1px solid white;
+}
+
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      border: 1px solid #e5e7eb;
+      font-weight: 600;
+      text-align: center;
+      white-space: pre-line !important;
+      vertical-align: middle;
+
+      &:first-child {
+        border-left: 1px solid #e5e7eb;
+      }
+
+      &:last-child {
+        border-right: 1px solid #e5e7eb;
+      }
+    }
+
+    .p-datatable-tbody > tr > td {
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem;
+      vertical-align: middle;
+
+      &:first-child {
+        border-left: 1px solid #e5e7eb;
+      }
+
+      &:last-child {
+        border-right: 1px solid #e5e7eb;
+      }
+    }
+
+    .p-datatable-thead > tr:first-child > th {
+      background-color: #224186 !important;
+      color: white !important;
+      font-weight: bold !important;
+      padding: 0.5rem 0.75rem !important;
+      height: 50px !important;
+      font-size: 0.875rem !important;
+      line-height: 1.3 !important;
+    }
+
+    // Sub-headers - altura moderada
+    .p-datatable-thead > tr:nth-child(2) > th {
+      background-color: #dbeafe !important;
+      color: #224186 !important;
+      font-weight: 600 !important;
+      font-size: 0.85rem !important;
+      padding: 0.4rem 0.5rem !important;
+      height: 40px !important;
+      line-height: 1.2 !important;
+    }
+
+    // Headers normales con rowspan=2 - altura total moderada
+    .p-datatable-thead > tr:first-child > th[rowspan="2"] {
+      background-color: #224186 !important;
+      color: white !important;
+      font-weight: bold !important;
+      padding: 0.5rem 0.75rem !important;
+      height: 90px !important;
+      vertical-align: middle !important;
+      font-size: 0.875rem !important;
+      line-height: 1.3 !important;
+    }
+
+    // Altura de las filas del cuerpo de la tabla - moderada
+    .p-datatable-tbody > tr {
+      height: 55px !important;
+      min-height: 55px !important;
+    }
+
+    // Celdas del cuerpo - altura moderada
+    .p-datatable-tbody > tr > td {
+      padding: 0.5rem !important;
+      vertical-align: middle !important;
+      text-align: center !important;
+      font-size: 0.9rem !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+      height: 55px !important;
+      min-height: 55px !important;
+    }
+  }
+
+  // CONTROL del ancho de la fecha - evitar expansión en edición
+  .p-datatable-tbody > tr > td:first-child {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    overflow: hidden !important;
+
+    .p-cellEditor,
+    .p-cellEditor > div,
+    .p-cellEditor .p-cellEditor-input,
+    .p-cellEditor .p-cellEditor-output {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+  }
+
+  // Date picker con ancho controlado para 110px
+  .fecha-picker {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+
+    .p-datepicker {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .p-datepicker-input {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      font-size: 0.85rem !important;
+    }
+
+    .p-inputtext {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      font-size: 0.85rem !important;
+    }
+
+    * {
+      max-width: 100% !important;
+    }
+  }
+
+  // Estilos para inputs y selects
+  .p-inputtext {
+    &:focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+  }
+
+  .p-select {
+    &.p-focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+  }
+
+  .p-datepicker {
+    &.p-focus {
+      border-color: #224186 !important;
+      box-shadow: 0 0 0 1px #224186 !important;
+    }
+  }
+
+  // Filas de datos sin cursor pointer
+  .data-row {
+    cursor: default !important;
+
+    &:hover {
+      background-color: transparent !important;
+    }
+  }
+}

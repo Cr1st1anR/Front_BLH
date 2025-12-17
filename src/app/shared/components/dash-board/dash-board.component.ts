@@ -102,6 +102,16 @@ export class DashBoardComponent {
           route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
         },
         {
+          label: 'Control de temperatura del pasteurizador blh',
+          subLabel: '(FRIAM-036)',
+          route: '/blh/pasteurizacion/control-temperatura-pasteurizador',
+        },
+        {
+          label: 'Registro diario de no conformidades',
+          subLabel: '(FRIAM-017)',
+          route: '/blh/pasteurizacion/registro-no-conformidades',
+        },
+        {
           label: 'Relación de control de calidad microbiologico y liberacion de producto',
           subLabel: '(FRIAM-014)',
           route: '/blh/pasteurizacion/control-calidad-microbiologico-liberacion',

@@ -17,6 +17,7 @@ import type {
   AnalisisSensorialBackendResponse,
   TableColumn
 } from '../../interfaces/analisis-sensorial.interface';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @Component({
   selector: 'analisis-sensorial-table',
@@ -30,7 +31,8 @@ import type {
     FormsModule,
     ButtonModule,
     InputTextModule,
-    TooltipModule
+    TooltipModule,
+    RadioButtonModule
   ],
   templateUrl: './analisis-sensorial-table.component.html',
   styleUrl: './analisis-sensorial-table.component.scss',
@@ -63,72 +65,64 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    if (this.idSeleccionClasificacion) {
-      this.loadDataAnalisisSensorial();
-      this.isInitialLoad = false;
-    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['idSeleccionClasificacion']?.currentValue && !this.isInitialLoad) {
-      this.loadDataAnalisisSensorial();
-    } else if (changes['idSeleccionClasificacion']?.currentValue && this.isInitialLoad) {
-      this.loadDataAnalisisSensorial();
-      this.isInitialLoad = false;
-    }
+  if (changes['idSeleccionClasificacion']?.currentValue) {
+    this.loadDataAnalisisSensorial();
   }
+}
 
   loadDataAnalisisSensorial(): void {
-    if (!this.idSeleccionClasificacion) {
-      return;
-    }
+  if (!this.idSeleccionClasificacion || this.loading) {
+    return;
+  }
 
-    if (this.loading) {
-      return;
-    }
+  this.loading = true;
 
-    this.loading = true;
-
-    this.analisisSensorialService.getAnalisisSensorialBySeleccionClasificacion(this.idSeleccionClasificacion)
-      .subscribe({
-        next: (analisisBackend: AnalisisSensorialBackendResponse | null) => {
-          if (analisisBackend) {
-            // Si hay datos, transformarlos
-            this.dataAnalisisSensorial = [this.transformarDatoBackendAFrontend(analisisBackend)];
-            this.mostrarExito('Análisis sensorial cargado correctamente');
-          } else {
-            // Si no hay datos, crear fila vacía por defecto
-            this.dataAnalisisSensorial = [this.construirRegistroVacio()];
-            this.mostrarInfo('No hay análisis sensorial registrado. Complete los campos.');
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.loading = false;
-          this.manejarErrorCarga(error);
+  this.analisisSensorialService.getAnalisisSensorialBySeleccionClasificacion(this.idSeleccionClasificacion)
+    .subscribe({
+      next: (analisisBackend: AnalisisSensorialBackendResponse | null) => {
+        if (analisisBackend) {
+          this.dataAnalisisSensorial = [this.transformarDatoBackendAFrontend(analisisBackend)];
+          this.mostrarExito('Análisis sensorial cargado correctamente');
+        } else {
+          this.dataAnalisisSensorial = [this.construirRegistroVacio()];
+          this.mostrarInfo('No hay análisis sensorial registrado. Complete los campos para crear uno nuevo.');
         }
-      });
+        this.loading = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        this.manejarErrorCarga(error);
+      }
+    });
+}
+
+  getDisplayValue(value: number | null): string {
+    if (value === null) return 'Sin selección';
+    return value === 1 ? 'C' : 'NC';
   }
 
   private transformarDatoBackendAFrontend(analisis: AnalisisSensorialBackendResponse): AnalisisSensorialData {
-    return {
-      id: analisis.id,
-      embalaje: analisis.embalaje,
-      suciedad: analisis.suciedad,
-      color: analisis.color,
-      flavor: analisis.flavor,
-      id_seleccion_clasificacion: analisis.seleccionClasificacion.id,
-      isNew: false
-    };
-  }
+  return {
+    id: analisis.id,
+    embalaje: analisis.embalaje,
+    suciedad: analisis.suciedad,
+    color: analisis.color,
+    flavor: analisis.flavor,
+    id_seleccion_clasificacion: this.idSeleccionClasificacion!,
+    isNew: false
+  };
+}
 
   private construirRegistroVacio(): AnalisisSensorialData {
     return {
       id: null,
-      embalaje: '',
-      suciedad: '',
-      color: '',
-      flavor: '',
+      embalaje: null,
+      suciedad: null,
+      color: null,
+      flavor: null,
       id_seleccion_clasificacion: this.idSeleccionClasificacion!,
       isNew: true
     };
@@ -155,7 +149,6 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   onRowEditCancel(dataRow: AnalisisSensorialData, index: number): void {
     if (dataRow.isNew) {
-      // Si es nuevo y se cancela, restaurar la fila vacía
       this.dataAnalisisSensorial[index] = this.construirRegistroVacio();
       this.dataAnalisisSensorial = [...this.dataAnalisisSensorial];
     } else {
@@ -171,37 +164,37 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
   }
 
   private procesarCreacionAnalisis(dataRow: AnalisisSensorialData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.analisisSensorialService.postAnalisisSensorial(datosParaBackend).subscribe({
-      next: (response: AnalisisSensorialBackendResponse) => {
-        this.manejarExitoCreacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorCreacion(error);
-      }
-    });
-  }
+  this.analisisSensorialService.postAnalisisSensorial(datosParaBackend).subscribe({
+    next: (response: AnalisisSensorialBackendResponse) => {
+      this.manejarExitoCreacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorCreacion(error);
+    }
+  });
+}
 
   private procesarActualizacionAnalisis(dataRow: AnalisisSensorialData, rowElement: HTMLTableRowElement): void {
-    const datosParaBackend = this.prepararDatosParaBackend(dataRow);
+  const datosParaBackend = this.prepararDatosParaBackend(dataRow);
 
-    this.analisisSensorialService.putAnalisisSensorial(dataRow.id!, datosParaBackend).subscribe({
-      next: (response) => {
-        this.manejarExitoActualizacion(dataRow, response, rowElement);
-      },
-      error: (error) => {
-        this.manejarErrorActualizacion(error);
-      }
-    });
-  }
+  this.analisisSensorialService.putAnalisisSensorial(dataRow.id!, datosParaBackend).subscribe({
+    next: (response) => {
+      this.manejarExitoActualizacion(dataRow, response, rowElement);
+    },
+    error: (error) => {
+      this.manejarErrorActualizacion(error);
+    }
+  });
+}
 
   private prepararDatosParaBackend(dataRow: AnalisisSensorialData): AnalisisSensorialBackendRequest {
     return {
-      embalaje: dataRow.embalaje.trim(),
-      suciedad: dataRow.suciedad.trim(),
-      color: dataRow.color.trim(),
-      flavor: dataRow.flavor.trim(),
+      embalaje: dataRow.embalaje!,
+      suciedad: dataRow.suciedad!,
+      color: dataRow.color!,
+      flavor: dataRow.flavor!,
       seleccionClasificacion: { id: this.idSeleccionClasificacion! }
     };
   }
@@ -246,10 +239,10 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   private validarCamposRequeridos(dataRow: AnalisisSensorialData): boolean {
     return !!(
-      dataRow.embalaje?.trim() &&
-      dataRow.suciedad?.trim() &&
-      dataRow.color?.trim() &&
-      dataRow.flavor?.trim()
+      dataRow.embalaje !== null &&
+      dataRow.suciedad !== null &&
+      dataRow.color !== null &&
+      dataRow.flavor !== null
     );
   }
 
@@ -263,7 +256,6 @@ export class AnalisisSensorialTableComponent implements OnInit, OnChanges {
 
   private manejarErrorCarga(error: any): void {
     if (error.status === 204 || !error.status) {
-      // Si no hay datos, crear fila vacía
       this.dataAnalisisSensorial = [this.construirRegistroVacio()];
       this.mostrarInfo('No hay análisis sensorial registrado. Complete los campos.');
     } else {

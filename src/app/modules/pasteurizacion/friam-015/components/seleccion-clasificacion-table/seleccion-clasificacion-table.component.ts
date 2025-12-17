@@ -11,17 +11,17 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
-import {
+import { SeleccionClasificacionService } from '../../services/seleccion-clasificacion.service';
+import type {
   SeleccionClasificacionData,
   LoadingState,
   TableColumn,
   ResponsableOption,
   FiltroFecha,
   FiltrosBusqueda,
-  TipoMensaje,
-  TipoDialog
+  TipoDialog,
+  TipoMensaje
 } from '../../interfaces/seleccion-clasificacion.interface';
-import { SeleccionClasificacionService } from '../../services/seleccion-clasificacion.service';
 
 @Component({
   selector: 'seleccion-clasificacion-table',
@@ -51,7 +51,9 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   @Input() filtrosBusqueda: FiltrosBusqueda = {
     no_frasco_procesado: '',
     donante: '',
-    frasco_leche_cruda: ''
+    frasco_leche_cruda: '',
+    ciclo: '',
+    lote: ''
   };
 
   readonly loading: LoadingState = {
@@ -92,7 +94,7 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     { header: 'NOMBRE DE\nAUXILIAR', field: 'nombre_auxiliar', width: '200px', tipo: 'select', vertical: false },
     { header: 'N. FRASCOS\nPASTEURIZADOS', field: 'n_frascos_pasteurizados', width: '150px', tipo: 'number', vertical: false },
     { header: 'VOLUMEN', field: 'volumen_pasteurizado', width: '120px', tipo: 'text', vertical: false },
-    { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'date', vertical: false },
+    { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'readonly_date', vertical: false },
     { header: 'OBSERVACIONES', field: 'observaciones', width: '200px', tipo: 'text', vertical: false },
     { header: 'CICLO', field: 'ciclo', width: '100px', tipo: 'text', vertical: false },
     { header: 'N LOTE DE LOS MEDIOS\nDE CULTIVO', field: 'n_lote_medios_cultivo', width: '220px', tipo: 'text', vertical: false },
@@ -117,10 +119,7 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   // ============= INICIALIZACIÓN =============
   private async inicializarComponente(): Promise<void> {
     try {
-      await Promise.all([
-        this.cargarEmpleados(),
-        this.cargarDatosSeleccionClasificacion()
-      ]);
+      await this.cargarEmpleados();
     } catch (error) {
       console.error('Error al inicializar componente:', error);
       this.mostrarMensaje('error', 'Error', 'Error al cargar datos iniciales');
@@ -128,125 +127,223 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   private cargarEmpleados(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.loading.empleados = true;
 
       this.seleccionClasificacionService.getEmpleados().subscribe({
-        next: (empleados) => {
-          this.opcionesProfesionales = empleados.filter(e =>
-            e.cargo?.toLowerCase().includes('médico') ||
-            e.cargo?.toLowerCase().includes('profesional')
-          );
-          this.opcionesAuxiliares = empleados.filter(e =>
-            e.cargo?.toLowerCase().includes('auxiliar')
-          );
-
-          if (this.opcionesProfesionales.length === 0) {
-            this.opcionesProfesionales = empleados;
-          }
-          if (this.opcionesAuxiliares.length === 0) {
-            this.opcionesAuxiliares = empleados;
+        next: (response: any) => {
+          if (response && response.data && Array.isArray(response.data)) {
+            if (response.data.length > 0) {
+              const empleados = this.transformarEmpleadosDesdeAPI(response.data);
+              this.procesarEmpleadosTransformados(empleados);
+            } else {
+              this.opcionesProfesionales = [];
+              this.opcionesAuxiliares = [];
+              console.warn('No hay empleados registrados en el sistema');
+            }
+          } else {
+            this.opcionesProfesionales = [];
+            this.opcionesAuxiliares = [];
+            console.warn('Respuesta de empleados inválida');
           }
 
           this.loading.empleados = false;
           resolve();
         },
-        error: (error) => {
-          this.loading.empleados = false;
+        error: (error: any) => {
           console.error('Error al cargar empleados:', error);
-          this.cargarEmpleadosFallback();
-          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los empleados');
-          reject(error);
-        }
-      });
-    });
-  }
+          this.opcionesProfesionales = [];
+          this.opcionesAuxiliares = [];
+          this.loading.empleados = false;
 
-  private cargarDatosSeleccionClasificacion(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.loading.main = true;
+          const mensajeError = this.extraerMensajeError(error);
+          this.mostrarMensaje('warn', 'Advertencia', `No se pudieron cargar los empleados: ${mensajeError}`);
 
-      this.seleccionClasificacionService.getAllSeleccionClasificacion().subscribe({
-        next: (registros) => {
-          this.dataOriginal = this.transformarDatosBackend(registros);
-          this.dataFiltered = [...this.dataOriginal];
-          this.mostrarMensajeExitosoCarga();
-          this.loading.main = false;
           resolve();
-        },
-        error: (error) => {
-          this.loading.main = false;
-          console.error('Error al cargar datos del backend:', error);
-          this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los datos del backend');
-          reject(error);
         }
       });
     });
   }
 
-  private cargarEmpleadosFallback(): void {
-    this.opcionesProfesionales = [
-      { label: 'Dr. Juan López', value: 'Dr. Juan López', id_empleado: 1 },
-      { label: 'Dra. María Fernández', value: 'Dra. María Fernández', id_empleado: 2 }
-    ];
-    this.opcionesAuxiliares = [
-      { label: 'Ana García', value: 'Ana García', id_empleado: 3 },
-      { label: 'Pedro Sánchez', value: 'Pedro Sánchez', id_empleado: 4 }
-    ];
+  // ============= TRANSFORMACIÓN DE DATOS DESDE API =============
+  private transformarDatosDesdeAPI(registros: any[]): SeleccionClasificacionData[] {
+    return registros.map((registro: any) => {
+      const origen = this.determinarOrigenDatos(registro.controlReenvase);
+      const fechaParseda = this.parsearFechaDesdeBackend(registro.fecha);
+
+      return {
+        id: registro.id,
+        fecha: fechaParseda,
+        gaveta_cruda: origen.gaveta?.toString() || '',
+        dias_produccion: this.calcularDiasProduccion(
+          registro.controlReenvase?.madreDonante?.gestacion?.fechaParto,
+          origen.fechaExtraccion
+        ),
+        no_frasco_procesado: this.generarCodigoFrascosProcesados(registro.controlReenvase?.frascosPasteurizados || []),
+        donante: registro.controlReenvase?.madreDonante?.id?.toString() || '',
+        frasco_leche_cruda: this.generarCodigoFrascoCrudo(origen.frascoId),
+        edad_gestacional: registro.controlReenvase?.madreDonante?.gestacion?.semanas || 0,
+        volumen: origen.volumen?.toString() || '',
+        nombre_profesional: registro.infoSeleccionClasificacion?.profesional?.nombre || '',
+        nombre_auxiliar: registro.infoSeleccionClasificacion?.auxiliar?.nombre || '',
+        n_frascos_pasteurizados: registro.infoSeleccionClasificacion?.numeroFrascosPasteurizados || 0,
+        volumen_pasteurizado: registro.infoSeleccionClasificacion?.volumen?.toString() || '',
+        fecha_vencimiento: this.calcularFechaVencimiento(fechaParseda),
+        observaciones: registro.infoSeleccionClasificacion?.observaciones || '',
+        ciclo: registro.controlReenvase?.lote?.ciclo?.numeroCiclo?.toString() || '',
+        n_lote_medios_cultivo: registro.infoSeleccionClasificacion?.loteCultivos || '',
+        fecha_vencimiento_cultivos: this.parsearFechaDesdeBackend(registro.infoSeleccionClasificacion?.fechaVencimientoCultivos) || null,
+        lote: registro.controlReenvase?.lote?.numeroLote?.toString() || '',
+        id_empleado_profesional: registro.infoSeleccionClasificacion?.profesional?.id || null,
+        id_empleado_auxiliar: registro.infoSeleccionClasificacion?.auxiliar?.id || null,
+        id_info_seleccion_clasificacion: registro.infoSeleccionClasificacion?.id || null
+      };
+    });
   }
 
-  // ============= TRANSFORMACIÓN DE DATOS =============
-  private transformarDatosBackend(registros: any[]): SeleccionClasificacionData[] {
-    return registros.map((registro: any) => ({
-      id: registro.id,
-      fecha: this.parsearFechaDesdeBackend(registro.fecha),
-      gaveta_cruda: registro.gaveta_cruda || registro.gavetaCruda,
-      dias_produccion: registro.dias_produccion || registro.diasProduccion,
-      no_frasco_procesado: registro.no_frasco_procesado || registro.noFrascoProcesado,
-      donante: registro.donante,
-      frasco_leche_cruda: registro.frasco_leche_cruda || registro.frascoLecheCruda,
-      edad_gestacional: registro.edad_gestacional || registro.edadGestacional,
-      volumen: registro.volumen,
-      nombre_profesional: registro.nombre_profesional || registro.nombreProfesional,
-      nombre_auxiliar: registro.nombre_auxiliar || registro.nombreAuxiliar,
-      n_frascos_pasteurizados: registro.n_frascos_pasteurizados || registro.nFrascosPasteurizados,
-      volumen_pasteurizado: registro.volumen_pasteurizado || registro.volumenPasteurizado,
-      fecha_vencimiento: this.parsearFechaDesdeBackend(registro.fecha_vencimiento || registro.fechaVencimiento),
-      observaciones: registro.observaciones,
-      ciclo: registro.ciclo,
-      n_lote_medios_cultivo: registro.n_lote_medios_cultivo || registro.nLoteMediosCultivo,
-      fecha_vencimiento_cultivos: this.parsearFechaDesdeBackend(registro.fecha_vencimiento_cultivos || registro.fechaVencimientoCultivos),
-      lote: registro.lote,
-      id_empleado_profesional: registro.id_empleado_profesional || registro.idEmpleadoProfesional,
-      id_empleado_auxiliar: registro.id_empleado_auxiliar || registro.idEmpleadoAuxiliar
+  private determinarOrigenDatos(controlReenvase: any): any {
+  const frascoIdCorrecto = controlReenvase?.frascoCrudo?.id;
+
+  if (!controlReenvase?.frascoCrudo) {
+    return {
+      gaveta: null,
+      fechaExtraccion: null,
+      volumen: null,
+      frascoId: null
+    };
+  }
+
+  const frascoCrudo = controlReenvase.frascoCrudo;
+
+  if (frascoCrudo.extraccion) {
+    const extraccion = frascoCrudo.extraccion;
+
+    return {
+      gaveta: extraccion.gaveta,
+      fechaExtraccion: extraccion.fechaExtraccion,
+      volumen: extraccion.cantidad,
+      frascoId: frascoIdCorrecto
+    };
+  }
+
+  else if (frascoCrudo.frascoRecolectado) {
+    const frascoRecolectado = frascoCrudo.frascoRecolectado;
+
+    return {
+      gaveta: frascoRecolectado.gaveta,
+      fechaExtraccion: frascoRecolectado.fechaDeExtraccion,
+      volumen: frascoRecolectado.volumen,
+      frascoId: frascoIdCorrecto
+    };
+  }
+
+  return {
+    gaveta: null,
+    fechaExtraccion: null,
+    volumen: null,
+    frascoId: frascoIdCorrecto || null
+  };
+}
+
+  private calcularDiasProduccion(fechaParto: string, fechaExtraccion: string): string {
+    if (!fechaParto || !fechaExtraccion) return '';
+
+    const parto = new Date(fechaParto);
+    const extraccion = new Date(fechaExtraccion);
+
+    const diferenciaMilisegundos = extraccion.getTime() - parto.getTime();
+    const diasTranscurridos = Math.floor(diferenciaMilisegundos / (1000 * 3600 * 24));
+
+    if (diasTranscurridos < 0) return '';
+
+    if (diasTranscurridos === 0) return '0D';
+    if (diasTranscurridos < 30) return `${diasTranscurridos}D`;
+
+    const meses = Math.floor(diasTranscurridos / 30);
+    const diasRestantes = diasTranscurridos % 30;
+
+    if (diasRestantes === 0) return `${meses}M`;
+    return `${meses}M ${diasRestantes}D`;
+  }
+
+  private transformarEmpleadosDesdeAPI(empleados: any[]): ResponsableOption[] {
+    return empleados.map((empleado: any) => ({
+      label: empleado.nombre,
+      value: empleado.nombre,
+      id_empleado: empleado.id,
+      cargo: empleado.cargo,
+      telefono: empleado.telefono,
+      correo: empleado.correo
     }));
   }
 
-  private parsearFechaDesdeBackend(fechaString: string | Date | null): Date | null {
-    if (!fechaString) return null;
+  private procesarEmpleadosTransformados(empleados: ResponsableOption[]): void {
+    this.opcionesProfesionales = empleados.filter(e =>
+      e.cargo?.toLowerCase().includes('médico') ||
+      e.cargo?.toLowerCase().includes('profesional')
+    );
+    this.opcionesAuxiliares = empleados.filter(e =>
+      e.cargo?.toLowerCase().includes('auxiliar')
+    );
 
-    // Si ya es un Date, retornarlo
-    if (fechaString instanceof Date) return fechaString;
+    if (this.opcionesProfesionales.length === 0) {
+      this.opcionesProfesionales = empleados;
+    }
+    if (this.opcionesAuxiliares.length === 0) {
+      this.opcionesAuxiliares = empleados;
+    }
+  }
 
-    // Si tiene hora (ISO 8601), quitarla
-    let fechaSoloDate = fechaString;
-    if (fechaString.includes('T')) {
-      fechaSoloDate = fechaString.split('T')[0];
+  // ============= CÁLCULOS DE FECHAS =============
+  private calcularFechaVencimiento(fechaBase: Date | null): Date | null {
+    if (!fechaBase || !(fechaBase instanceof Date) || isNaN(fechaBase.getTime())) {
+      return null;
     }
 
-    // Parsear YYYY-MM-DD
-    const partes = fechaSoloDate.split('-');
-    if (partes.length !== 3) return null;
+    const fechaVencimiento = new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate());
+    fechaVencimiento.setDate(fechaVencimiento.getDate() + 15);
+    fechaVencimiento.setHours(12, 0, 0, 0);
 
-    const year = parseInt(partes[0], 10);
-    const month = parseInt(partes[1], 10) - 1; // Los meses en JS van de 0-11
-    const day = parseInt(partes[2], 10);
+    return fechaVencimiento;
+  }
 
-    // Crear fecha con hora fija a las 12:00 para evitar problemas de zona horaria
-    return new Date(year, month, day, 12, 0, 0, 0);
+  private actualizarFechaVencimiento(rowData: SeleccionClasificacionData): void {
+    if (rowData.fecha) {
+      rowData.fecha_vencimiento = this.calcularFechaVencimiento(rowData.fecha as Date);
+    } else {
+      rowData.fecha_vencimiento = null;
+    }
+  }
+
+  private parsearFechaDesdeBackend(fecha: string | Date | null): Date | null {
+    if (!fecha) return null;
+
+    if (fecha instanceof Date) {
+      return fecha;
+    }
+
+    if (typeof fecha === 'string') {
+      if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const partes = fecha.split('-');
+        const year = parseInt(partes[0], 10);
+        const month = parseInt(partes[1], 10) - 1;
+        const day = parseInt(partes[2], 10);
+
+        return new Date(year, month, day, 12, 0, 0, 0);
+      }
+
+      const fechaParseada = new Date(fecha);
+      return isNaN(fechaParseada.getTime()) ? null : fechaParseada;
+    }
+
+    return null;
   }
 
   // ============= EVENTOS DE UI =============
+  onFechaChanged(rowData: SeleccionClasificacionData): void {
+    this.actualizarFechaVencimiento(rowData);
+  }
+
   onProfesionalSeleccionado(event: any, rowData: SeleccionClasificacionData): void {
     const responsable = this.extraerValorEvento(event);
     if (!responsable) return;
@@ -317,19 +414,25 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     this.loading.main = true;
 
     const datosBackend = this.prepararDatosParaActualizacion(dataRow);
-    if (!datosBackend) {
+    if (!datosBackend || !dataRow.id) {
       this.loading.main = false;
       return;
     }
 
-    this.seleccionClasificacionService.putSeleccionClasificacion(datosBackend).subscribe({
-      next: () => {
-        this.procesarRespuestaActualizacion(dataRow, rowElement);
+    const esRegistroCompleto = this.verificarSiEsRegistroCompleto(dataRow);
+    const tieneIdInfo = !!dataRow.id_info_seleccion_clasificacion;
+
+    const tipoOperacion = (esRegistroCompleto && tieneIdInfo) ? 'actualización' : 'registro inicial';
+
+    this.seleccionClasificacionService.putSeleccionClasificacion(dataRow.id, datosBackend).subscribe({
+      next: (response) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement, tipoOperacion);
       },
-      error: (error) => {
-        console.error('Error al actualizar:', error);
+      error: (error: any) => {
+        console.error('Error al procesar:', error);
         this.loading.main = false;
-        this.mostrarMensaje('error', 'Error', 'Error al actualizar el registro');
+        const mensajeError = this.extraerMensajeError(error);
+        this.mostrarMensaje('error', 'Error', `Error en ${tipoOperacion}: ${mensajeError}`);
       }
     });
   }
@@ -337,37 +440,118 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   private prepararDatosParaActualizacion(dataRow: SeleccionClasificacionData): any {
     if (!dataRow.id) return null;
 
+    const esRegistroCompleto = this.verificarSiEsRegistroCompleto(dataRow);
+
     return {
       id: dataRow.id,
       fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-      gavetaCruda: dataRow.gaveta_cruda,
-      diasProduccion: dataRow.dias_produccion,
-      noFrascoProcesado: dataRow.no_frasco_procesado,
-      donante: dataRow.donante,
-      frascoLecheCruda: dataRow.frasco_leche_cruda,
-      edadGestacional: dataRow.edad_gestacional,
-      volumen: dataRow.volumen,
-      idEmpleadoProfesional: dataRow.id_empleado_profesional,
-      idEmpleadoAuxiliar: dataRow.id_empleado_auxiliar,
-      nFrascosPasteurizados: dataRow.n_frascos_pasteurizados,
-      volumenPasteurizado: dataRow.volumen_pasteurizado,
-      fechaVencimiento: this.formatearFechaParaAPI(dataRow.fecha_vencimiento as Date),
-      observaciones: dataRow.observaciones,
-      ciclo: dataRow.ciclo,
-      nLoteMediosCultivo: dataRow.n_lote_medios_cultivo,
-      fechaVencimientoCultivos: this.formatearFechaParaAPI(dataRow.fecha_vencimiento_cultivos as Date),
-      lote: dataRow.lote
+      infoSeleccionClasificacion: this.prepararInfoSeleccionClasificacion(dataRow, esRegistroCompleto)
     };
   }
 
-  private formatearFechaParaAPI(fecha: Date | null): string {
-    if (!fecha || !(fecha instanceof Date)) return '';
+  private prepararInfoSeleccionClasificacion(dataRow: SeleccionClasificacionData, esRegistroCompleto: boolean): any {
+    const infoData: any = {
+      numeroFrascosPasteurizados: dataRow.n_frascos_pasteurizados || null,
+      volumen: dataRow.volumen_pasteurizado ? parseFloat(dataRow.volumen_pasteurizado) : null,
+      fechaVencimiento: this.formatearFechaParaAPI(dataRow.fecha_vencimiento as Date),
+      observaciones: dataRow.observaciones || null,
+      loteCultivos: dataRow.n_lote_medios_cultivo || null,
+      fechaVencimientoCultivos: this.formatearFechaParaAPI(dataRow.fecha_vencimiento_cultivos as Date),
+      profesional: dataRow.id_empleado_profesional ? { id: dataRow.id_empleado_profesional } : null,
+      auxiliar: dataRow.id_empleado_auxiliar ? { id: dataRow.id_empleado_auxiliar } : null
+    };
 
-    const year = fecha.getFullYear();
-    const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const day = fecha.getDate().toString().padStart(2, '0');
+    if (esRegistroCompleto && dataRow.id_info_seleccion_clasificacion) {
+      infoData.id = dataRow.id_info_seleccion_clasificacion;
+    }
+
+    return infoData;
+  }
+
+  private verificarSiEsRegistroCompleto(dataRow: SeleccionClasificacionData): boolean {
+    const tieneIdInfo = !!dataRow.id_info_seleccion_clasificacion;
+    const tieneDatos = !!(
+      dataRow.nombre_profesional ||
+      dataRow.nombre_auxiliar ||
+      dataRow.n_frascos_pasteurizados ||
+      dataRow.volumen_pasteurizado ||
+      dataRow.observaciones ||
+      dataRow.n_lote_medios_cultivo ||
+      dataRow.fecha_vencimiento_cultivos
+    );
+
+    return tieneIdInfo && tieneDatos;
+  }
+
+  private formatearFechaParaAPI(fecha: Date | string | null): string | undefined {
+    if (!fecha) return undefined;
+
+    let fechaObj: Date;
+
+    if (typeof fecha === 'string') {
+      fechaObj = new Date(fecha);
+    } else {
+      fechaObj = fecha;
+    }
+
+    if (!(fechaObj instanceof Date) || isNaN(fechaObj.getTime())) {
+      return undefined;
+    }
+
+    const year = fechaObj.getFullYear();
+    const month = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = fechaObj.getDate().toString().padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  }
+
+  // ============= FUNCIONES PARA GENERAR CÓDIGOS DE FRASCOS =============
+
+  private obtenerAñoActualCorto(): string {
+    const añoCompleto = new Date().getFullYear();
+    return añoCompleto.toString().slice(-2);
+  }
+
+  private generarCodigoFrascosProcesados(frascosPasteurizados: any[]): string {
+    if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
+      return 'Sin frascos\nprocesados';
+    }
+
+    const añoActual = this.obtenerAñoActualCorto();
+
+    const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
+      const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
+      const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
+
+      return tieneNumero && sinObservaciones;
+    });
+
+    if (frascosSinObservaciones.length === 0) {
+      return 'Frascos con\nobservaciones';
+    }
+
+    const numerosFrascos = frascosSinObservaciones
+      .map(frasco => frasco.numeroFrasco)
+      .sort((a, b) => a - b);
+
+    if (numerosFrascos.length === 1) {
+      const resultado = `LHP ${añoActual}\n${numerosFrascos[0]}`;
+      return resultado;
+    } else {
+      const frascoInicial = numerosFrascos[0];
+      const frascoFinal = numerosFrascos[numerosFrascos.length - 1];
+      const resultado = `LHP ${añoActual}\n${frascoInicial} -\n${frascoFinal}`;
+      return resultado;
+    }
+  }
+
+  private generarCodigoFrascoCrudo(idFrasco: number | null): string {
+    if (!idFrasco) {
+      return '';
+    }
+
+    const añoActual = this.obtenerAñoActualCorto();
+    return `LHC ${añoActual}\n${idFrasco}`;
   }
 
   // ============= VALIDACIONES =============
@@ -393,17 +577,61 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     }
   }
 
-  private procesarRespuestaActualizacion(dataRow: SeleccionClasificacionData, rowElement: HTMLTableRowElement): void {
+  private procesarRespuestaActualizacion(dataRow: SeleccionClasificacionData, rowElement: HTMLTableRowElement, tipoOperacion: string): void {
     const rowId = this.getRowId(dataRow);
     delete this.clonedData[rowId];
     this.editingRow = null;
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
-    this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+
+    const mensaje = tipoOperacion === 'registro inicial'
+      ? 'Registro guardado exitosamente (primera vez)'
+      : 'Registro actualizado exitosamente';
+
+    this.mostrarMensaje('success', 'Éxito', mensaje);
+  }
+
+  private extraerMensajeError(error: any): string {
+    if (error?.error?.message) {
+      return error.error.message;
+    }
+    if (error?.message) {
+      return error.message;
+    }
+    if (error?.error && typeof error.error === 'string') {
+      return error.error;
+    }
+    return 'Error desconocido del servidor';
   }
 
   private getRowId(dataRow: SeleccionClasificacionData): string {
     return dataRow.id?.toString() || 'unknown';
+  }
+
+  // ============= UTILIDADES PARA FORMATEO =============
+
+  formatearCodigoFrasco(codigo: string): string {
+    if (!codigo) {
+      return '<span class="text-gray-400 italic text-xs">Sin datos</span>';
+    }
+
+    if (codigo.includes('Sin frascos')) {
+      return `<span class="text-gray-500 italic text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.includes('observaciones')) {
+      return `<span class="text-orange-500 italic text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.startsWith('LHP')) {
+      return `<span class="text-blue-600 font-medium text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    if (codigo.startsWith('LHC')) {
+      return `<span class="text-green-600 font-medium text-xs">${codigo.replace(/\n/g, '<br>')}</span>`;
+    }
+
+    return codigo.replace(/\n/g, '<br>');
   }
 
   // ============= UTILIDADES DE ESTADO =============
@@ -420,16 +648,62 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   isColumnEditable(field: string): boolean {
-    // Solo las columnas horizontales son editables
-    const header = this.headersSeleccionClasificacion.find(h => h.field === field);
-    return header ? !header.vertical : false;
+    const editableColumns = [
+      'fecha',
+      'nombre_profesional',
+      'nombre_auxiliar',
+      'observaciones',
+      'n_lote_medios_cultivo',
+      'fecha_vencimiento_cultivos'
+    ];
+    return editableColumns.includes(field);
   }
 
   // ============= FILTROS =============
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
-    this.aplicarFiltros();
-    this.mostrarNotificacionFiltro();
+
+    if (filtro) {
+      this.loading.main = true;
+      this.seleccionClasificacionService
+        .getSeleccionClasificacionPorMesYAnio(filtro.month, filtro.year)
+        .subscribe({
+          next: (response: any) => {
+            if (response && response.data && Array.isArray(response.data)) {
+              if (response.data.length > 0) {
+                this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
+                this.mostrarMensajeExitosoCarga(true);
+              } else {
+                this.dataOriginal = [];
+                this.mostrarMensajeExitosoCarga(false);
+              }
+            } else {
+              this.dataOriginal = [];
+              this.mostrarMensajeExitosoCarga(false);
+            }
+
+            this.aplicarFiltros();
+            this.loading.main = false;
+            this.mostrarNotificacionFiltro();
+          },
+          error: (error: any) => {
+            console.error('Error al filtrar por fecha:', error);
+            this.dataOriginal = [];
+            this.aplicarFiltros();
+            this.loading.main = false;
+
+            const mensajeError = this.extraerMensajeError(error);
+            this.mostrarMensaje('error', 'Error', `Error al cargar datos: ${mensajeError}`);
+          }
+        });
+    } else {
+      this.dataOriginal = [];
+      this.aplicarFiltros();
+    }
+  }
+
+  isTableInitialized(): boolean {
+    return !this.loading.empleados;
   }
 
   aplicarFiltrosBusqueda(filtros: FiltrosBusqueda): void {
@@ -464,7 +738,13 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       const cumpleFrascoCrudo = !this.filtrosBusqueda.frasco_leche_cruda ||
         item.frasco_leche_cruda?.toLowerCase().includes(this.filtrosBusqueda.frasco_leche_cruda.toLowerCase());
 
-      return cumpleFrascoProcesado && cumpleDonante && cumpleFrascoCrudo;
+      const cumpleCiclo = !this.filtrosBusqueda.ciclo ||
+        item.ciclo?.toLowerCase().includes(this.filtrosBusqueda.ciclo.toLowerCase());
+
+      const cumpleLote = !this.filtrosBusqueda.lote ||
+        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+
+      return cumpleFrascoProcesado && cumpleDonante && cumpleFrascoCrudo && cumpleCiclo && cumpleLote;
     });
   }
 
@@ -484,28 +764,36 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   private mostrarNotificacionFiltro(): void {
     const cantidad = this.dataFiltered.length;
-    const totalOriginal = this.dataOriginal.length;
 
     if (this.filtroFecha) {
       const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
-      const mensaje = cantidad > 0
-        ? `${cantidad} de ${totalOriginal} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`
-        : `No se encontraron registros para ${nombreMes} ${this.filtroFecha.year}`;
 
-      this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', cantidad > 0 ? 'Filtro aplicado' : 'Sin resultados', mensaje);
-    } else {
-      this.mostrarMensaje('info', 'Filtro removido', `Mostrando todos los registros (${totalOriginal})`);
+      const hayFiltrosBusqueda = Object.values(this.filtrosBusqueda).some(filtro => filtro.trim() !== '');
+
+      if (hayFiltrosBusqueda) {
+        const mensaje = cantidad > 0
+          ? `${cantidad} registro${cantidad > 1 ? 's' : ''} encontrado${cantidad > 1 ? 's' : ''} después de aplicar filtros`
+          : `No se encontraron registros que coincidan con los filtros aplicados`;
+
+        this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', 'Filtros aplicados', mensaje);
+      }
     }
   }
 
   // ============= MENSAJES =============
-  private mostrarMensajeExitosoCarga(): void {
-    const cantidad = this.dataOriginal.length;
-    const mensaje = cantidad > 0
-      ? `${cantidad} registro${cantidad > 1 ? 's' : ''} de selección y clasificación cargado${cantidad > 1 ? 's' : ''}`
-      : 'No se encontraron registros de selección y clasificación en la base de datos';
+  private mostrarMensajeExitosoCarga(hayDatos: boolean): void {
+    if (!this.filtroFecha) return;
 
-    this.mostrarMensaje(cantidad > 0 ? 'success' : 'info', cantidad > 0 ? 'Éxito' : 'Sin registros', mensaje);
+    const nombreMes = this.mesesDelAno[this.filtroFecha.month - 1];
+    const cantidad = this.dataOriginal.length;
+
+    if (hayDatos) {
+      const mensaje = `${cantidad} registro${cantidad > 1 ? 's' : ''} cargado${cantidad > 1 ? 's' : ''} para ${nombreMes} ${this.filtroFecha.year}`;
+      this.mostrarMensaje('success', 'Datos cargados', mensaje);
+    } else {
+      const mensaje = `No hay registros de selección y clasificación para ${nombreMes} ${this.filtroFecha.year}`;
+      this.mostrarMensaje('info', 'Sin datos', mensaje);
+    }
   }
 
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {

@@ -111,6 +111,11 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-017)',
           route: '/blh/pasteurizacion/registro-no-conformidades',
         },
+        {
+          label: 'Relación de control de calidad microbiologico y liberacion de producto',
+          subLabel: '(FRIAM-014)',
+          route: '/blh/pasteurizacion/control-calidad-microbiologico-liberacion',
+        },
       ],
     },
     {

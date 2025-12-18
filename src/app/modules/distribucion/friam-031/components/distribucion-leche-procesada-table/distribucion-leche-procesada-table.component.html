@@ -1,1 +1,134 @@
-<p>distribucion-leche-procesada-table works!</p>
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table-scroll">
+  <div class="container-table">
+    <p-table #tableDistribucion [value]="dataDistribucion" [scrollable]="true" scrollHeight="600px"
+      [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id" editMode="row">
+
+      <ng-template #header>
+        <!-- FILA 1: GRUPOS INFORMACIÓN RECEPTORES E INFORMACIÓN LECHE PASTEURIZADA -->
+        <tr>
+          <th [attr.colspan]="headersReceptores.length" class="text-center bg-blue-100 group-header">INFORMACIÓN RECEPTORES</th>
+          <th [attr.colspan]="headersLechePasteurizada.length + 1" class="text-center bg-green-100 group-header">INFORMACIÓN LECHE PASTEURIZADA</th>
+        </tr>
+
+        <!-- FILA 2: HEADERS INDIVIDUALES -->
+        <tr>
+          @for (col of headersReceptores; track $index) {
+          <th [style.width]="col.width" [style.min-width]="col.width" class="column-header">
+            @if (col.header.includes('\n')) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span style="display: block;">{{ linea }}</span>
+            }
+            } @else {
+            {{ col.header }}
+            }
+          </th>
+          }
+
+          @for (col of headersLechePasteurizada; track $index) {
+          <th [style.width]="col.width" [style.min-width]="col.width" class="column-header">
+            @if (col.header.includes('\n')) {
+            @for (linea of col.header.split('\n'); track $index) {
+            <span style="display: block;">{{ linea }}</span>
+            }
+            } @else {
+            {{ col.header }}
+            }
+          </th>
+          }
+
+          <!-- COLUMNA ACCIONES -->
+          <th style="width: 120px; min-width: 120px;" class="column-header">ACCIONES</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-rowData let-editing="editing" let-rowIndex="rowIndex">
+        <tr [pEditableRow]="rowData">
+          <!-- COLUMNAS DE INFORMACIÓN RECEPTORES -->
+          @for (col of headersReceptores; track $index) {
+          <td [style.width]="col.width" [style.min-width]="col.width"
+            (click)="editing ? $event.stopPropagation() : null">
+
+            @if (col.field === 'fecha') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                  dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full">
+                </p-datepicker>
+              </ng-template>
+              <ng-template pTemplate="output">
+                @if (rowData[col.field]) {
+                {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+                } @else {
+                Sin fecha
+                }
+              </ng-template>
+            </p-cellEditor>
+            }
+
+            @else if (col.field === 'vol_distribuido') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <input pInputText type="text" [(ngModel)]="rowData.vol_distribuido" class="w-full text-center" />
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ rowData.vol_distribuido ? rowData.vol_distribuido + ' ML' : 'Sin volumen' }}
+              </ng-template>
+            </p-cellEditor>
+            }
+
+          </td>
+          }
+
+          <!-- COLUMNAS DE INFORMACIÓN LECHE PASTEURIZADA -->
+          @for (col of headersLechePasteurizada; track $index) {
+          <td [style.width]="col.width" [style.min-width]="col.width"
+            (click)="editing ? $event.stopPropagation() : null">
+
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full text-center" />
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ rowData[col.field] || 'Sin datos' }}
+              </ng-template>
+            </p-cellEditor>
+
+          </td>
+          }
+
+          <!-- ACCIONES -->
+          <td style="width: 120px; min-width: 120px;">
+            <div class="flex items-center justify-center gap-2">
+              <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+                severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+                pTooltip="Editar" tooltipPosition="top">
+              </button>
+
+              <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+                (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+              </button>
+
+              <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+                severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar"
+                tooltipPosition="top">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    @if (!dataDistribucion || dataDistribucion.length === 0) {
+    <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+    }
+  </div>
+</div>

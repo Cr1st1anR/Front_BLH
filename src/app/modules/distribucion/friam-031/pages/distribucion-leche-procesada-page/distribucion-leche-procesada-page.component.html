@@ -1,1 +1,8 @@
-<p>distribucion-leche-procesada-page works!</p>
+<app-header [title]="'DISTRIBUCIÓN DE LECHE HUMANA PROCESADA BLH (FRIAM-031)'" />
+
+<div class="flex justify-between items-center mx-4 mt-8">
+  <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+
+<distribucion-leche-procesada-table />

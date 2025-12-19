@@ -93,6 +93,82 @@
           <td [style.width]="col.width" [style.min-width]="col.width"
             (click)="editing ? $event.stopPropagation() : null">
 
+            <!-- SELECT DE FRASCO -->
+            @if (col.field === 'n_frasco_leche_procesada') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-select
+                  [(ngModel)]="rowData.n_frasco_leche_procesada"
+                  [options]="opcionesFrascos"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccione frasco"
+                  (onChange)="onFrascoSeleccionado($event, rowData)"
+                  appendTo="body"
+                  class="w-full"
+                  [showClear]="true"
+                  [filter]="true"
+                  filterBy="label"
+                  [filterPlaceholder]="'Buscar frasco...'">
+                </p-select>
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ rowData.n_frasco_leche_procesada || 'Sin frasco' }}
+              </ng-template>
+            </p-cellEditor>
+            }
+
+            <!-- SELECT DE TIPO/EDAD -->
+            @else if (col.field === 'tipo_edad') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-select
+                  [(ngModel)]="rowData.tipo_edad"
+                  [options]="opcionesTipoEdad"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccione tipo"
+                  (onChange)="onTipoEdadSeleccionado($event, rowData)"
+                  appendTo="body"
+                  class="w-full"
+                  [showClear]="true">
+                </p-select>
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ rowData.tipo_edad || 'Sin tipo' }}
+              </ng-template>
+            </p-cellEditor>
+            }
+
+            <!-- CHECKBOX DE EXCLUSIVA -->
+            @else if (col.field === 'exclusiva') {
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <div class="flex justify-center">
+                  <p-checkbox
+                    [(ngModel)]="rowData.exclusiva"
+                    [binary]="true"
+                    [trueValue]="1"
+                    [falseValue]="0"
+                    (onChange)="onExclusivaChange($event, rowData)">
+                  </p-checkbox>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="output">
+                <div class="flex justify-center">
+                  <i [class]="rowData.exclusiva === 1 ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'"></i>
+                </div>
+              </ng-template>
+            </p-cellEditor>
+            }
+
+            <!-- COLUMNAS DE SOLO LECTURA -->
+            @else if (col.tipo === 'readonly') {
+            <span>{{ rowData[col.field] || 'Sin datos' }}</span>
+            }
+
+            <!-- OTRAS COLUMNAS EDITABLES -->
+            @else {
             <p-cellEditor>
               <ng-template pTemplate="input">
                 <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full text-center" />
@@ -101,6 +177,7 @@
                 {{ rowData[col.field] || 'Sin datos' }}
               </ng-template>
             </p-cellEditor>
+            }
 
           </td>
           }

@@ -3,10 +3,11 @@ export interface DistribucionLecheProcesadaData {
   fecha: string | Date | null;
   vol_distribuido: string;
   n_frasco_leche_procesada: string;
+  id_frasco_leche_procesada?: number | null;
   calorias: string;
   acidez_dornic: string;
   tipo_edad: string;
-  exclusiva: string;
+  exclusiva: number;
   freezer: string;
   gaveta: string;
 }
@@ -14,6 +15,7 @@ export interface DistribucionLecheProcesadaData {
 export interface LoadingState {
   main: boolean;
   empleados: boolean;
+  frascos: boolean;
 }
 
 export interface TableColumn {
@@ -28,6 +30,19 @@ export interface TableColumn {
 export interface FiltroFecha {
   year: number;
   month: number;
+}
+
+export interface FrascoOption {
+  label: string;
+  value: string;
+  id_frasco: number;
+  numeroFrasco: number;
+  año: number;
+}
+
+export interface TipoEdadOption {
+  label: string;
+  value: string;
 }
 
 export interface ApiResponse<T> {

@@ -51,7 +51,9 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
   readonly loading: LoadingState = {
     main: false,
     empleados: false,
-    frascos: false
+    frascos: false,
+    saving: false,
+    fechas: false
   };
 
   editingRow: DistribucionLecheProcesadaData | null = null;
@@ -425,6 +427,44 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
 
       this.mostrarMensaje(cantidad > 0 ? 'info' : 'warn', 'Filtro aplicado', mensaje);
     }
+  }
+
+  // ============= MÉTODOS PÚBLICOS PARA EL COMPONENTE PADRE =============
+
+  /**
+   * Carga datos externos en la tabla (cuando se selecciona una fecha existente)
+   */
+  cargarDatosExternos(datos: DistribucionLecheProcesadaData[]): void {
+    this.dataOriginal = datos;
+    this.aplicarFiltros();
+  }
+
+  /**
+   * Limpia todos los datos de la tabla
+   */
+  limpiarDatos(): void {
+    this.dataOriginal = [];
+    this.dataFiltered = [];
+    this.editingRow = null;
+    this.clonedData = {};
+    this.hasNewRowInEditing = false;
+  }
+
+  /**
+   * Valida si un registro está completo
+   */
+  validarRegistroCompleto(registro: DistribucionLecheProcesadaData): boolean {
+    return !!(
+      registro.fecha &&
+      registro.vol_distribuido?.trim() &&
+      registro.n_frasco_leche_procesada?.trim() &&
+      registro.tipo_edad?.trim() &&
+      (registro.exclusiva === 0 || registro.exclusiva === 1) &&
+      registro.calorias?.trim() &&
+      registro.acidez_dornic?.trim() &&
+      registro.freezer?.trim() &&
+      registro.gaveta?.trim()
+    );
   }
 
   // ============= MENSAJES =============

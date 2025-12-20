@@ -12,10 +12,37 @@ export interface DistribucionLecheProcesadaData {
   gaveta: string;
 }
 
+// ✅ NUEVO: Interface para datos del bebé (receptor)
+export interface DatosReceptor {
+  id?: number | null;
+  responsable_prescripcion: string;
+  nombre_bebe: string;
+  identificacion_bebe: string;
+  semanas_gestacion: string;
+  eps: string;
+}
+
+// ✅ NUEVO: Interface para el payload completo
+export interface PayloadDistribucionCompleta {
+  datosReceptor: DatosReceptor;
+  registrosDistribucion: DistribucionLecheProcesadaData[];
+}
+
+// ✅ NUEVO: Interface para las opciones del selector de fechas
+export interface OpcionFechaDistribucion {
+  label: string;
+  value: string;
+  fecha: Date;
+  id_registro?: number;
+  nombreBebe?: string;
+}
+
 export interface LoadingState {
   main: boolean;
   empleados: boolean;
   frascos: boolean;
+  saving: boolean; // ✅ NUEVO: para el guardado global
+  fechas: boolean; // ✅ NUEVO: para cargar fechas
 }
 
 export interface TableColumn {
@@ -41,6 +68,12 @@ export interface FrascoOption {
 }
 
 export interface TipoEdadOption {
+  label: string;
+  value: string;
+}
+
+// ✅ NUEVO: Opciones de EPS
+export interface EpsOption {
   label: string;
   value: string;
 }

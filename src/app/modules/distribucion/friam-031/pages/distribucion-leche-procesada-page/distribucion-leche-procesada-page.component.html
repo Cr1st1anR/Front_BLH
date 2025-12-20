@@ -125,47 +125,33 @@
       </div>
     </div>
   </div>
-  }
 
-  <!-- SECCIÓN DE NUEVO REGISTRO -->
-  @if (mostrarFormulario) {
-  <div class="flex justify-between items-center mx-4 mt-4 mb-2">
+  <!-- BOTÓN NUEVO REGISTRO - POSICIÓN ORIGINAL -->
+  <div class="nuevo-registro-container">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
-
-    @if (dataDistribucion && dataDistribucion.length > 0) {
-    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-      <i class="pi pi-info-circle text-blue-600"></i>
-      <span class="text-sm font-medium text-blue-700">
-        Registros completados: {{ contarRegistrosCompletos() }} de {{ dataDistribucion.length }}
-      </span>
-      @if (contarRegistrosCompletos() === dataDistribucion.length && dataDistribucion.length > 0) {
-      <i class="pi pi-check-circle text-green-600 ml-2"></i>
-      }
-    </div>
-    }
   </div>
-  }
 
   <!-- TABLA DE DISTRIBUCIÓN -->
-  @if (mostrarFormulario) {
   <distribucion-leche-procesada-table />
-  } @else {
-  <p class="text-gray-400 text-center italic mt-8">
-    Seleccione un mes y una fecha de distribución, o cree una nueva distribución para comenzar
-  </p>
-  }
 
-  <!-- BOTÓN DE GUARDADO GLOBAL -->
-  @if (mostrarFormulario && dataDistribucion && dataDistribucion.length > 0) {
-  <div class="form-actions">
+  <!-- BOTONES DE GUARDADO GLOBAL -->
+  @if (dataDistribucion && dataDistribucion.length > 0) {
+  <div class="form-actions-bottom">
     <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
-      class="clear-form-button p-button-outlined" (click)="limpiarFormulario()" [disabled]="loading.saving">
+      class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()" [disabled]="loading.saving">
     </button>
 
     <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
-      [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button"
+      [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button-small p-button-sm"
       (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
     </button>
   </div>
+  }
+  }
+
+  @if (!mostrarFormulario) {
+  <p class="text-gray-400 text-center italic mt-8">
+    Seleccione un mes y una fecha de distribución, o cree una nueva distribución para comenzar
+  </p>
   }
 </div>

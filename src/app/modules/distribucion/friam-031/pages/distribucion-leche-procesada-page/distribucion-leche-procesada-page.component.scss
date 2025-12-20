@@ -41,6 +41,7 @@
 .form-section {
   width: 100%;
   margin-top: 1rem;
+  margin-bottom: 1.5rem;
   padding: 1.5rem;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 12px;
@@ -113,29 +114,39 @@
   }
 }
 
-.form-actions {
+// ✅ Contenedor para el botón de nuevo registro (alineado con la tabla)
+.nuevo-registro-container {
+  width: 100%;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+// ✅ Botones más pequeños alineados a la derecha (con la tabla)
+.form-actions-bottom {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 1.5rem 0 1.5rem;
-  margin-top: 1.5rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  gap: 0.75rem;
+  padding: 0;
+  margin-top: 2rem; // ✅ AUMENTADO de 1rem a 1.5rem
+  width: 100%;
   flex-wrap: wrap;
 }
 
-.save-form-button {
+.save-form-button-small {
   background: linear-gradient(135deg, #224186 0%, #224186 100%) !important;
   border: none !important;
-  padding: 0.75rem 1.5rem !important;
+  padding: 0.5rem 1rem !important;
   font-weight: 600 !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   transition: all 0.3s ease !important;
-  font-size: 1rem !important;
+  font-size: 0.875rem !important;
 
   &:hover:not(:disabled) {
     background: linear-gradient(135deg, #576fa1 0%, #576fa1 100%) !important;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(34, 65, 134, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(34, 65, 134, 0.3) !important;
   }
 
   &:disabled {
@@ -144,14 +155,14 @@
   }
 }
 
-.clear-form-button {
+.clear-form-button-small {
   color: #6b7280 !important;
   border: 2px solid #d1d5db !important;
-  padding: 0.75rem 1.5rem !important;
+  padding: 0.5rem 1rem !important;
   font-weight: 600 !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   transition: all 0.3s ease !important;
-  font-size: 1rem !important;
+  font-size: 0.875rem !important;
 
   &:hover:not(:disabled) {
     background: #f9fafb !important;
@@ -161,15 +172,15 @@
 }
 
 ::ng-deep .new-distribution-button {
-  background-color: #10b981 !important;
-  border-color: #10b981 !important;
+  background-color: #224186 !important;
+  border-color: #224186 !important;
   color: white !important;
   padding: 0.5rem 0.75rem !important;
   font-size: 0.875rem !important;
 
   &:hover:not(:disabled) {
-    background-color: #059669 !important;
-    border-color: #059669 !important;
+    background-color: #1a3670 !important;
+    border-color: #1a3670 !important;
   }
 
   &:disabled {
@@ -197,6 +208,15 @@
       width: 100%;
     }
   }
+
+  .form-actions-bottom {
+    justify-content: center;
+
+    button {
+      flex: 1;
+      min-width: 140px;
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -211,11 +231,16 @@
     padding: 1rem;
   }
 
-  .form-actions {
+  .form-actions-bottom {
     flex-direction: column;
+    padding: 0;
 
     button {
       width: 100%;
     }
+  }
+
+  .nuevo-registro-container {
+    padding: 0;
   }
 }

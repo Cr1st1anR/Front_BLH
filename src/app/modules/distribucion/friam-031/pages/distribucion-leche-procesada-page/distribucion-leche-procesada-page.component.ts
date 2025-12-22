@@ -87,6 +87,8 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private idDistribucionActual: number | null = null;
   private mesAnoActual: { year: number; month: number } | null = null;
+  // ✅ NUEVO: Flag para saber si ya se inicializó el ViewChild
+  private viewChildInitialized = false;
 
   // ✅ MOCK: Base de datos simulada
   private mockDatabase = {
@@ -215,19 +217,27 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   ) { }
 
   ngOnInit(): void {
-    // ✅ Cargar automáticamente el mes actual
+    // ✅ Solo inicializar el mes actual, NO cargar fechas aún
     const hoy = new Date();
     this.mesAnoActual = {
       year: hoy.getFullYear(),
       month: hoy.getMonth() + 1
     };
 
-    this.cargarFechasDistribucionPorMes(this.mesAnoActual);
     this.mostrarMensaje('info', 'Información', 'Seleccione una distribución existente o cree una nueva');
   }
 
   ngAfterViewInit(): void {
-    // Inicialización adicional si es necesaria
+    // ✅ AQUÍ es cuando el ViewChild está disponible
+    this.viewChildInitialized = true;
+
+    // ✅ Ahora sí cargamos las fechas después de que la tabla esté inicializada
+    if (this.mesAnoActual) {
+      // Pequeño delay para asegurar que todo esté renderizado
+      setTimeout(() => {
+        this.cargarFechasDistribucionPorMes(this.mesAnoActual!);
+      }, 100);
+    }
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
@@ -239,7 +249,11 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   private limpiarSeleccion(): void {
     this.fechaDistribucionSeleccionada = '';
     this.mostrarFormulario = false;
-    this.tableComponent?.limpiarDatos();
+
+    // ✅ Verificar que tableComponent existe antes de usarlo
+    if (this.tableComponent) {
+      this.tableComponent.limpiarDatos();
+    }
   }
 
   private cargarFechasDistribucionPorMes(filtro: { year: number; month: number }): void {
@@ -292,6 +306,12 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   }
 
   private cargarDatosDistribucion(idDistribucion: number): void {
+    // ✅ Verificar que tableComponent existe
+    if (!this.tableComponent) {
+      this.mostrarMensaje('error', 'Error', 'La tabla no está inicializada');
+      return;
+    }
+
     this.loading.main = true;
 
     // ✅ Buscar la distribución específica
@@ -307,7 +327,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       // Cargar datos del receptor
       this.datosReceptor = { ...distribucion.receptor };
 
-      // Cargar registros específicos de ese bebé
+      // ✅ Cargar registros específicos de ese bebé
       this.tableComponent.cargarDatosExternos([...distribucion.registros]);
 
       this.fechaDistribucionActual = new Date(distribucion.fecha);
@@ -326,15 +346,19 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       return;
     }
 
+    // ✅ Limpiar PRIMERO la tabla
+    if (this.tableComponent) {
+      this.tableComponent.limpiarDatos();
+    }
+
+    // ✅ Luego limpiar el formulario
     this.limpiarFormulario();
+
     this.fechaDistribucionActual = new Date();
     this.fechaDistribucionSeleccionada = '';
     this.esActualizacion = false;
     this.mostrarFormulario = true;
     this.idDistribucionActual = null;
-
-    // ✅ Limpiar la tabla para nueva distribución
-    this.tableComponent?.limpiarDatos();
 
     this.mostrarMensaje('info', 'Nueva distribución', 'Complete los datos del receptor y agregue registros de distribución');
   }
@@ -460,7 +484,10 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       eps: ''
     };
 
-    this.tableComponent?.limpiarDatos();
+    if (this.tableComponent) {
+      this.tableComponent.limpiarDatos();
+    }
+
     this.fechaDistribucionActual = null;
     this.mostrarFormulario = false;
     this.esActualizacion = false;

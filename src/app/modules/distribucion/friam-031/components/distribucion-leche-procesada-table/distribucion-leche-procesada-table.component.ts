@@ -111,7 +111,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarFrascosMock();
-    this.cargarDatosMock();
   }
 
   // ============= CARGAR FRASCOS MOCK =============
@@ -130,7 +129,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.opcionesFrascos = mockFrascos;
   }
 
-  // ============= DATOS MOCK =============
   private cargarDatosMock(): void {
     const mockData: DistribucionLecheProcesadaData[] = [
       {

@@ -226,7 +226,8 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     }
 
     const nuevoRegistro = this.createNewRecord();
-    this.dataFiltered = [nuevoRegistro, ...this.dataFiltered];
+
+    this.dataFiltered = [...this.dataFiltered, nuevoRegistro];
     this.hasNewRowInEditing = true;
 
     setTimeout(() => this.table.initRowEdit(nuevoRegistro), 100);

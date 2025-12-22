@@ -87,8 +87,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private idDistribucionActual: number | null = null;
   private mesAnoActual: { year: number; month: number } | null = null;
-  // ✅ NUEVO: Flag para saber si ya se inicializó el ViewChild
-  private viewChildInitialized = false;
 
   // ✅ MOCK: Base de datos simulada
   private mockDatabase = {
@@ -120,7 +118,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           },
           {
             id: 2,
-            fecha: new Date(2025, 11, 5),
+            fecha: new Date(2025, 11, 7),
             vol_distribuido: '200',
             n_frasco_leche_procesada: 'LHP 25 2',
             id_frasco_leche_procesada: 2,
@@ -187,7 +185,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           },
           {
             id: 5,
-            fecha: new Date(2025, 11, 15),
+            fecha: new Date(2025, 11, 18),
             vol_distribuido: '150',
             n_frasco_leche_procesada: 'LHP 25 5',
             id_frasco_leche_procesada: 5,
@@ -217,7 +215,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   ) { }
 
   ngOnInit(): void {
-    // ✅ Solo inicializar el mes actual, NO cargar fechas aún
     const hoy = new Date();
     this.mesAnoActual = {
       year: hoy.getFullYear(),
@@ -228,15 +225,11 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   }
 
   ngAfterViewInit(): void {
-    // ✅ AQUÍ es cuando el ViewChild está disponible
-    this.viewChildInitialized = true;
-
-    // ✅ Ahora sí cargamos las fechas después de que la tabla esté inicializada
     if (this.mesAnoActual) {
-      // Pequeño delay para asegurar que todo esté renderizado
+      // ✅ Delay más largo para garantizar inicialización completa
       setTimeout(() => {
         this.cargarFechasDistribucionPorMes(this.mesAnoActual!);
-      }, 100);
+      }, 500); // Aumentado de 300ms a 500ms
     }
   }
 
@@ -250,7 +243,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     this.fechaDistribucionSeleccionada = '';
     this.mostrarFormulario = false;
 
-    // ✅ Verificar que tableComponent existe antes de usarlo
     if (this.tableComponent) {
       this.tableComponent.limpiarDatos();
     }
@@ -259,12 +251,14 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   private cargarFechasDistribucionPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
 
-    // ✅ Filtrar distribuciones del mes seleccionado
     setTimeout(() => {
       const distribucionesFiltradas = this.mockDatabase.distribuciones.filter(dist => {
         const fecha = new Date(dist.fecha);
         return fecha.getMonth() + 1 === filtro.month && fecha.getFullYear() === filtro.year;
       });
+
+      // ✅ CAMBIO: Ordenar por fecha ASCENDENTE (más antiguos primero)
+      distribucionesFiltradas.sort((a, b) => a.fecha.getTime() - b.fecha.getTime()); // Cambiado de b-a a a-b
 
       this.opcionesFechasDistribucion = distribucionesFiltradas.map(dist => ({
         label: `${this.formatearFecha(dist.fecha)} - ${dist.receptor.nombre_bebe}`,
@@ -305,16 +299,24 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     this.cargarDatosDistribucion(opcionSeleccionada.id_registro!);
   }
 
-  private cargarDatosDistribucion(idDistribucion: number): void {
-    // ✅ Verificar que tableComponent existe
+  private cargarDatosDistribucion(idDistribucion: number, intentosRestantes: number = 3): void {
+    // ✅ Verificar que tableComponent existe antes de continuar
     if (!this.tableComponent) {
-      this.mostrarMensaje('error', 'Error', 'La tabla no está inicializada');
-      return;
+      if (intentosRestantes > 0) {
+        // Reintentar después de un delay
+        setTimeout(() => {
+          this.cargarDatosDistribucion(idDistribucion, intentosRestantes - 1);
+        }, 300);
+        return;
+      } else {
+        // Si después de 3 intentos no está listo, mostrar error
+        this.mostrarMensaje('error', 'Error', 'La tabla no está lista. Por favor, intente nuevamente.');
+        return;
+      }
     }
 
     this.loading.main = true;
 
-    // ✅ Buscar la distribución específica
     setTimeout(() => {
       const distribucion = this.mockDatabase.distribuciones.find(d => d.id === idDistribucion);
 
@@ -327,17 +329,31 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       // Cargar datos del receptor
       this.datosReceptor = { ...distribucion.receptor };
 
-      // ✅ Cargar registros específicos de ese bebé
-      this.tableComponent.cargarDatosExternos([...distribucion.registros]);
+      // ✅ Ordenar registros por fecha (más antiguos primero - orden cronológico)
+      const registrosOrdenados = [...distribucion.registros].sort((a, b) => {
+        const fechaA = new Date(a.fecha).getTime();
+        const fechaB = new Date(b.fecha).getTime();
+        return fechaA - fechaB;
+      });
 
-      this.fechaDistribucionActual = new Date(distribucion.fecha);
+      // ✅ Verificar nuevamente antes de cargar
+      if (this.tableComponent && this.tableComponent.cargarDatosExternos) {
+        this.tableComponent.cargarDatosExternos(registrosOrdenados);
+      } else {
+        this.loading.main = false;
+        this.mostrarMensaje('error', 'Error', 'Error al cargar los datos en la tabla');
+        return;
+      }
+
+      // ✅ La fecha de distribución es la del PRIMER registro (el más antiguo)
+      this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha);
       this.idDistribucionActual = idDistribucion;
       this.esActualizacion = true;
       this.mostrarFormulario = true;
       this.loading.main = false;
 
-      this.mostrarMensaje('success', 'Datos cargados', `Se han cargado los datos de ${distribucion.receptor.nombre_bebe}`);
-    }, 500);
+      this.mostrarMensaje('success', 'Datos cargados', `Se han cargado ${registrosOrdenados.length} registro${registrosOrdenados.length > 1 ? 's' : ''} de ${distribucion.receptor.nombre_bebe}`);
+    }, 300);
   }
 
   crearNuevaDistribucion(): void {
@@ -346,14 +362,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       return;
     }
 
-    // ✅ Limpiar PRIMERO la tabla
     if (this.tableComponent) {
       this.tableComponent.limpiarDatos();
     }
 
-    // ✅ Luego limpiar el formulario
     this.limpiarFormulario();
 
+    // ✅ Para nuevo bebé, la fecha de distribución será la fecha del primer registro que se cree
     this.fechaDistribucionActual = new Date();
     this.fechaDistribucionSeleccionada = '';
     this.esActualizacion = false;
@@ -409,6 +424,18 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private prepararPayloadCompleto(): PayloadDistribucionCompleta | null {
     try {
+      // ✅ Ordenar registros por fecha antes de enviar (más antiguos primero)
+      const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
+        const fechaA = new Date(a.fecha!).getTime();
+        const fechaB = new Date(b.fecha!).getTime();
+        return fechaA - fechaB; // Ascendente
+      });
+
+      // ✅ Si es una nueva distribución, la fecha será la del primer registro
+      if (!this.esActualizacion && registrosOrdenados.length > 0) {
+        this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha!);
+      }
+
       const payload: PayloadDistribucionCompleta = {
         datosReceptor: {
           ...(this.esActualizacion && this.datosReceptor.id ? { id: this.datosReceptor.id } : {}),
@@ -418,7 +445,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           semanas_gestacion: this.datosReceptor.semanas_gestacion,
           eps: this.datosReceptor.eps
         },
-        registrosDistribucion: this.dataDistribucion.map(registro => ({
+        registrosDistribucion: registrosOrdenados.map(registro => ({
           ...(this.esActualizacion && registro.id ? { id: registro.id } : {}),
           fecha: registro.fecha,
           vol_distribuido: registro.vol_distribuido,
@@ -442,7 +469,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   private enviarDatosCompletos(payload: PayloadDistribucionCompleta): void {
     this.loading.saving = true;
 
-    // ✅ MOCK: Simular guardado en el backend
     setTimeout(() => {
       this.loading.saving = false;
       const mensaje = this.esActualizacion

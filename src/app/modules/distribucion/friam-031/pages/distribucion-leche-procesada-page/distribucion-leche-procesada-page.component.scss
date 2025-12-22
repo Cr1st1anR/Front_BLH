@@ -114,6 +114,17 @@
   }
 }
 
+// ✅ NUEVO: Wrapper para la tabla que mantiene el ancho completo
+.table-wrapper {
+  width: 100%;
+  margin-bottom: 1rem;
+  display: block; // Importante: siempre visible en el DOM
+
+  &[hidden] {
+    display: none !important; // Solo oculta visualmente
+  }
+}
+
 // ✅ Contenedor para el botón de nuevo registro (alineado con la tabla)
 .nuevo-registro-container {
   width: 100%;

@@ -126,16 +126,19 @@
     </div>
   </div>
 
-  <!-- BOTÓN NUEVO REGISTRO - POSICIÓN ORIGINAL -->
+  <!-- BOTÓN NUEVO REGISTRO -->
   <div class="nuevo-registro-container">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
   </div>
+  }
 
-  <!-- TABLA DE DISTRIBUCIÓN -->
-  <distribucion-leche-procesada-table />
+  <!-- ✅ TABLA SIEMPRE EN EL DOM - WRAPPER CON ANCHO COMPLETO -->
+  <div class="table-wrapper" [hidden]="!mostrarFormulario">
+    <distribucion-leche-procesada-table />
+  </div>
 
   <!-- BOTONES DE GUARDADO GLOBAL -->
-  @if (dataDistribucion && dataDistribucion.length > 0) {
+  @if (mostrarFormulario && dataDistribucion && dataDistribucion.length > 0) {
   <div class="form-actions-bottom">
     <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
       class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()" [disabled]="loading.saving">
@@ -146,7 +149,6 @@
       (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
     </button>
   </div>
-  }
   }
 
   @if (!mostrarFormulario) {

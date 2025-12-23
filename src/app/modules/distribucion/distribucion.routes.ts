@@ -8,4 +8,11 @@ export const DISTRIBUCION_ROUTES: Routes = [
         './friam-031/pages/distribucion-leche-procesada-page/distribucion-leche-procesada-page.component'
       ).then((c) => c.DistribucionLecheProcesadaPageComponent),
   },
+  {
+    path: 'ingreso-leche-pasteurizada',
+    loadComponent: () =>
+      import(
+        './frnut-013/pages/ingreso-leche-pasteurizada-page/ingreso-leche-pasteurizada-page.component'
+      ).then((c) => c.IngresoLechePasteurizadaPageComponent),
+  },
 ];

@@ -1,1 +1,28 @@
 <app-header [title]="'REGISTRO DE INGRESO DE LECHE HUMANA PASTEURIZADA (FRNUT-013)'" />
+
+<div class="flex justify-between items-center mx-4 mt-10">
+  <div class="flex gap-1 items-center">
+    <span class="font-semibold text-gray-700">Filtros:</span>
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_frasco" (input)="aplicarFiltros()"
+      placeholder="N° Frasco" style="width: 150px; font-size: 16px;" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_donante" (input)="aplicarFiltros()"
+      placeholder="N° Donante" style="width: 150px; font-size: 16px;" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()"
+      placeholder="Lote" style="width: 120px; font-size: 16px;" />
+
+    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+      (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+  </div>
+
+  <div class="flex gap-2 items-center">
+    <button pButton pRipple type="button" label="Nuevo Registro" icon="pi pi-plus"
+      class="p-button-success" (click)="crearNuevoRegistro()"></button>
+
+    <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+  </div>
+</div>
+
+<ingreso-leche-pasteurizada-table [filtrosBusqueda]="filtrosBusqueda" />

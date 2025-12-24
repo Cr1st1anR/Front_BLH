@@ -258,9 +258,12 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   private crearRegistroVacio(): IngresoLechePasteurizadaData {
+    const fechaActual = new Date();
+    const fechaVencimiento = this.calcularFechaVencimiento(fechaActual);
+
     return {
       id: null,
-      fecha_dispensacion: new Date(),
+      fecha_dispensacion: fechaActual,
       n_frasco: '',
       id_frasco: null,
       n_donante: '',
@@ -269,8 +272,8 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       calorias: '',
       tipo_leche: '',
       lote: '',
-      fecha_vencimiento: null,
-      fecha_hora_deshiele: new Date(),
+      fecha_vencimiento: fechaVencimiento,
+      fecha_hora_deshiele: new Date(fechaActual),
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };

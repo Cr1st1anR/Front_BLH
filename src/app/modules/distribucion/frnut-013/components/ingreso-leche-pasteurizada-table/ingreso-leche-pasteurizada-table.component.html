@@ -110,11 +110,11 @@
           </span>
           }
 
-          <!-- FECHA/HORA DESHIELE - SOLO LECTURA -->
+          <!-- FECHA/HORA DESHIELE - SOLO LECTURA (SOLO FECHA) -->
           @else if (col.field === 'fecha_hora_deshiele') {
           <span>
             @if (rowData.fecha_hora_deshiele) {
-            {{ rowData.fecha_hora_deshiele | date:'dd/MM/yyyy HH:mm' }}
+            {{ rowData.fecha_hora_deshiele | date:'dd/MM/yyyy' }}
             } @else {
             Sin fecha
             }

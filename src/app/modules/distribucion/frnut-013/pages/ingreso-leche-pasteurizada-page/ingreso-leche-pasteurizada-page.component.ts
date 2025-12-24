@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { IngresoLechePasteurizadaTableComponent } from "../../components/ingreso-leche-pasteurizada-table/ingreso-leche-pasteurizada-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
+import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import type { FiltrosBusqueda } from '../../interfaces/ingreso-leche-pasteurizada.interface';
 
 @Component({
@@ -18,12 +19,13 @@ import type { FiltrosBusqueda } from '../../interfaces/ingreso-leche-pasteurizad
     ButtonModule,
     HeaderComponent,
     IngresoLechePasteurizadaTableComponent,
-    MonthPickerComponent
+    MonthPickerComponent,
+    NewRegisterButtonComponent
   ],
   templateUrl: './ingreso-leche-pasteurizada-page.component.html',
   styleUrl: './ingreso-leche-pasteurizada-page.component.scss'
 })
-export class IngresoLechePasteurizadaPageComponent implements AfterViewInit {
+export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewInit {
 
   @ViewChild(IngresoLechePasteurizadaTableComponent)
   private readonly tableComponent!: IngresoLechePasteurizadaTableComponent;
@@ -40,9 +42,16 @@ export class IngresoLechePasteurizadaPageComponent implements AfterViewInit {
     lote: ''
   };
 
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.prepararFiltroMesActual();
+  }
+
+  ngAfterViewInit(): void {
     this.esperarInicializacionTabla();
+  }
+
+  get hasNewRowInEditing(): boolean {
+    return this.tableComponent?.isAnyRowEditing() ?? false;
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {

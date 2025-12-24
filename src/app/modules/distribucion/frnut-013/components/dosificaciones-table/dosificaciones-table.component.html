@@ -8,38 +8,6 @@
 }
 
 <div class="dosificaciones-container">
-  <!-- Información del frasco -->
-  @if (ingresoLechePasteurizadaData) {
-  <div class="info-frasco mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <span class="font-semibold text-blue-800">Frasco:</span>
-        <span class="ml-2">{{ ingresoLechePasteurizadaData.n_frasco }}</span>
-      </div>
-      <div>
-        <span class="font-semibold text-blue-800">Volumen Total:</span>
-        <span class="ml-2">{{ ingresoLechePasteurizadaData.volumen }} ML</span>
-      </div>
-      <div>
-        <span class="font-semibold text-green-800">Volumen Dosificado:</span>
-        <span class="ml-2">{{ calcularVolumenTotal() }} ML</span>
-      </div>
-      <div>
-        <span class="font-semibold" [ngClass]="{
-          'text-orange-800': obtenerVolumenRestante() > 0,
-          'text-green-800': obtenerVolumenRestante() === 0,
-          'text-red-800': obtenerVolumenRestante() < 0
-        }">Volumen Restante:</span>
-        <span class="ml-2" [ngClass]="{
-          'text-orange-600': obtenerVolumenRestante() > 0,
-          'text-green-600': obtenerVolumenRestante() === 0,
-          'text-red-600': obtenerVolumenRestante() < 0
-        }">{{ obtenerVolumenRestante() }} ML</span>
-      </div>
-    </div>
-  </div>
-  }
-
   <p-table #tableDosificaciones [value]="dataDosificaciones" [scrollable]="true" scrollHeight="400px"
     [columns]="headersDosificaciones" [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id"
     editMode="row">

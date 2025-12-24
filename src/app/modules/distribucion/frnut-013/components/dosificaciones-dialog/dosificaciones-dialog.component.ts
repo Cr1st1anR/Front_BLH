@@ -1,7 +1,9 @@
 import { Component, Input, Output, EventEmitter, ViewChild, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import { DosificacionesTableComponent } from "../dosificaciones-table/dosificaciones-table.component";
 import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-leche-pasteurizada.interface';
@@ -14,12 +16,14 @@ import { SeleccionClasificacionService } from 'src/app/modules/pasteurizacion/fr
   imports: [
     CommonModule,
     DialogModule,
-    ButtonModule,
+    ProgressSpinnerModule,
+    ToastModule,
     NewRegisterButtonComponent,
     DosificacionesTableComponent
   ],
   templateUrl: './dosificaciones-dialog.component.html',
-  styleUrl: './dosificaciones-dialog.component.scss'
+  styleUrl: './dosificaciones-dialog.component.scss',
+  providers: [MessageService]
 })
 export class DosificacionesDialogComponent implements OnInit, OnChanges {
 
@@ -30,11 +34,13 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
   @ViewChild(DosificacionesTableComponent)
   private readonly tableComponent!: DosificacionesTableComponent;
 
+  loading: boolean = false;
   opcionesEmpleados: EmpleadoOption[] = [];
   loadingEmpleados: boolean = false;
 
   constructor(
-    private readonly seleccionClasificacionService: SeleccionClasificacionService
+    private readonly seleccionClasificacionService: SeleccionClasificacionService,
+    private readonly messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -42,9 +48,8 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible'] && changes['visible'].currentValue) {
-      // Dialog se abrió
-      console.log('Dialog abierto con data:', this.ingresoLechePasteurizadaData);
+    if (changes['visible'] && changes['visible'].currentValue && this.ingresoLechePasteurizadaData) {
+      this.mostrarMensajeCarga();
     }
   }
 
@@ -82,14 +87,28 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
     this.tableComponent?.crearNuevoRegistro();
   }
 
-  onClose(): void {
+  closeDialog(): void {
+    this.visible = false;
     this.dialogClosed.emit();
   }
 
-  getDialogHeader(): string {
-    if (!this.ingresoLechePasteurizadaData) {
-      return 'DOSIFICACIONES';
+  calcularVolumenTotal(): number {
+    return this.tableComponent?.calcularVolumenTotal() ?? 0;
+  }
+
+  obtenerVolumenRestante(): number {
+    return this.tableComponent?.obtenerVolumenRestante() ?? 0;
+  }
+
+  private mostrarMensajeCarga(): void {
+    if (this.ingresoLechePasteurizadaData) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Información',
+        detail: `Cargando dosificaciones para frasco: ${this.ingresoLechePasteurizadaData.n_frasco}`,
+        key: 'tr',
+        life: 2000,
+      });
     }
-    return `DOSIFICACIONES - ${this.ingresoLechePasteurizadaData.n_frasco || 'Frasco'}`;
   }
 }

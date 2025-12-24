@@ -1,20 +1,50 @@
 .dialog-content {
-  padding: 0.5rem 0;
+  padding: 0;
+}
+
+.info-frasco {
+  margin-bottom: 1rem;
 }
 
 :host ::ng-deep {
+  // Estilos del header del dialog - SIN FONDO Y SIN LÍNEA
   .p-dialog .p-dialog-header {
-    background-color: #224186;
-    color: white;
-    padding: 1.25rem;
+    background-color: transparent !important;
+    color: #1f2937 !important;
+    padding: 1.25rem 1.5rem !important;
+    border-bottom: none !important; // Eliminar la línea
   }
 
+  .p-dialog .p-dialog-title {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+  }
+
+  .p-dialog .p-dialog-header-icons {
+    .p-dialog-header-icon {
+      color: #6b7280 !important;
+
+      &:hover {
+        color: #1f2937 !important;
+        background-color: #f3f4f6 !important;
+      }
+    }
+  }
+
+  // Contenido del dialog
   .p-dialog .p-dialog-content {
-    padding: 1.5rem;
+    padding: 1.5rem !important;
+    background-color: #ffffff !important;
   }
 
+  // Eliminar el footer completamente
   .p-dialog .p-dialog-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e5e7eb;
+    display: none !important;
+  }
+
+  // Ajustar el overlay
+  .p-dialog-mask {
+    background-color: rgba(0, 0, 0, 0.4) !important;
   }
 }

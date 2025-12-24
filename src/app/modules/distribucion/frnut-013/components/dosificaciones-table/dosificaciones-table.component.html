@@ -1,1 +1,162 @@
-<p>dosificaciones-table works!</p>
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main || loading.saving) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="dosificaciones-container">
+  <!-- Información del frasco -->
+  @if (ingresoLechePasteurizadaData) {
+  <div class="info-frasco mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <span class="font-semibold text-blue-800">Frasco:</span>
+        <span class="ml-2">{{ ingresoLechePasteurizadaData.n_frasco }}</span>
+      </div>
+      <div>
+        <span class="font-semibold text-blue-800">Volumen Total:</span>
+        <span class="ml-2">{{ ingresoLechePasteurizadaData.volumen }} ML</span>
+      </div>
+      <div>
+        <span class="font-semibold text-green-800">Volumen Dosificado:</span>
+        <span class="ml-2">{{ calcularVolumenTotal() }} ML</span>
+      </div>
+      <div>
+        <span class="font-semibold" [ngClass]="{
+          'text-orange-800': obtenerVolumenRestante() > 0,
+          'text-green-800': obtenerVolumenRestante() === 0,
+          'text-red-800': obtenerVolumenRestante() < 0
+        }">Volumen Restante:</span>
+        <span class="ml-2" [ngClass]="{
+          'text-orange-600': obtenerVolumenRestante() > 0,
+          'text-green-600': obtenerVolumenRestante() === 0,
+          'text-red-600': obtenerVolumenRestante() < 0
+        }">{{ obtenerVolumenRestante() }} ML</span>
+      </div>
+    </div>
+  </div>
+  }
+
+  <p-table #tableDosificaciones [value]="dataDosificaciones" [scrollable]="true" scrollHeight="400px"
+    [columns]="headersDosificaciones" [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width">
+          @if (col.header.includes('\n')) {
+          @for (linea of col.header.split('\n'); track $index) {
+          <span style="display: block;">{{ linea }}</span>
+          }
+          } @else {
+          {{ col.header }}
+          }
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+
+          <!-- NOMBRE DEL RECIÉN NACIDO -->
+          @if (col.field === 'nombre_recien_nacido') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full"
+                placeholder="Ingrese nombre completo" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || 'Sin nombre' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- CAMA -->
+          @else if (col.field === 'cama') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full text-center"
+                placeholder="Ej: 312" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || 'Sin cama' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- VOLUMEN DOSIFICADO -->
+          @else if (col.field === 'volumen_dosificado') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full text-center"
+                placeholder="Ingrese volumen" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] ? rowData[col.field] + ' ML' : 'Sin volumen' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- MÉDICO O NUTRICIONISTA QUE ORDENA -->
+          @else if (col.field === 'medico_nutricionista') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full"
+                placeholder="Ingrese nombre del médico" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || 'Sin médico' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- QUIEN DOSIFICÓ - SELECT -->
+          @else if (col.field === 'quien_dosificado') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.quien_dosificado" [options]="opcionesEmpleados" optionLabel="label"
+                optionValue="value" placeholder="Seleccione empleado"
+                (onChange)="onEmpleadoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.quien_dosificado || 'Sin empleado' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- ACCIONES -->
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataDosificaciones || dataDosificaciones.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay dosificaciones registradas</p>
+  }
+</div>

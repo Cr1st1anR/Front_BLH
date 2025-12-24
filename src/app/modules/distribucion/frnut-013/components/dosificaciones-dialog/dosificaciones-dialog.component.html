@@ -1,1 +1,17 @@
-<p>dosificaciones-dialog works!</p>
+<p-dialog [visible]="visible" [modal]="true" [closable]="true" [draggable]="false" [resizable]="false"
+  [style]="{ width: '90vw', maxWidth: '1400px' }" (onHide)="onClose()" [header]="getDialogHeader()">
+
+  <div class="dialog-content">
+    <div class="flex justify-between items-center mb-4">
+      <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+    </div>
+
+    <dosificaciones-table [ingresoLechePasteurizadaData]="ingresoLechePasteurizadaData"
+      [opcionesEmpleados]="opcionesEmpleados" />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cerrar" icon="pi pi-times" class="p-button-text"
+      (click)="onClose()"></button>
+  </ng-template>
+</p-dialog>

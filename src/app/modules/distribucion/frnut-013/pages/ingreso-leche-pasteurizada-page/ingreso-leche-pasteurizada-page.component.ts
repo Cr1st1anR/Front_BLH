@@ -7,7 +7,9 @@ import { HeaderComponent } from "src/app/shared/components/header/header.compone
 import { IngresoLechePasteurizadaTableComponent } from "../../components/ingreso-leche-pasteurizada-table/ingreso-leche-pasteurizada-table.component";
 import { MonthPickerComponent } from "src/app/shared/components/month-picker/month-picker.component";
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
+import { DosificacionesDialogComponent } from "../../components/dosificaciones-dialog/dosificaciones-dialog.component";
 import type { FiltrosBusqueda } from '../../interfaces/ingreso-leche-pasteurizada.interface';
+import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-leche-pasteurizada.interface';
 
 @Component({
   selector: 'ingreso-leche-pasteurizada-page',
@@ -20,7 +22,8 @@ import type { FiltrosBusqueda } from '../../interfaces/ingreso-leche-pasteurizad
     HeaderComponent,
     IngresoLechePasteurizadaTableComponent,
     MonthPickerComponent,
-    NewRegisterButtonComponent
+    NewRegisterButtonComponent,
+    DosificacionesDialogComponent
   ],
   templateUrl: './ingreso-leche-pasteurizada-page.component.html',
   styleUrl: './ingreso-leche-pasteurizada-page.component.scss'
@@ -35,6 +38,9 @@ export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewI
 
   private isInitialized = false;
   private filtroMesActualPendiente: { year: number; month: number } | null = null;
+
+  showDosificacionesDialog = false;
+  selectedData: IngresoLechePasteurizadaData | null = null;
 
   filtrosBusqueda: FiltrosBusqueda = {
     n_frasco: '',
@@ -116,4 +122,19 @@ export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewI
     this.isInitialized = true;
     this.filtroMesActualPendiente = null;
   }
+
+  onDosificacionesClick(data: IngresoLechePasteurizadaData): void {
+  if (this.tableComponent?.isAnyRowEditing()) {
+    return;
+  }
+
+  this.selectedData = data;
+  this.showDosificacionesDialog = true;
+}
+
+  onDosificacionesDialogClosed(): void {
+    this.showDosificacionesDialog = false;
+    this.selectedData = null;
+  }
+
 }

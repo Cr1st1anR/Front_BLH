@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -46,6 +46,8 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
   @ViewChild('tableIngresoLeche') table!: Table;
 
+  @Output() dosificacionesClick = new EventEmitter<IngresoLechePasteurizadaData>();
+
   @Input() filtrosBusqueda: FiltrosBusqueda = {
     n_frasco: '',
     n_donante: '',
@@ -83,7 +85,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     { header: 'FECHA\nDISPENSACIÓN', field: 'fecha_dispensacion', width: '150px', tipo: 'date' },
     { header: 'N° FRASCO', field: 'n_frasco', width: '150px', tipo: 'select' },
     { header: 'N°\nDONANTE', field: 'n_donante', width: '120px', tipo: 'readonly' },
-    { header: 'VOLUMEN', field: 'volumen', width: '120px', tipo: 'readonly' },
+    { header: 'VOLUMEN\n(ML)', field: 'volumen', width: '120px', tipo: 'readonly' },
     { header: 'ACIDEZ\n(°D)', field: 'acidez_dornic', width: '100px', tipo: 'readonly' },
     { header: 'CALORIAS', field: 'calorias', width: '120px', tipo: 'readonly' },
     { header: 'TIPO LECHE', field: 'tipo_leche', width: '150px', tipo: 'select' },
@@ -103,92 +105,162 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarFrascosMock();
-  }
+  this.cargarFrascosMock();
+  this.cargarDatosMock();
+}
 
   // ============= CARGAR FRASCOS MOCK =============
-  private cargarFrascosMock(): void {
-    const añoActual = new Date().getFullYear();
-    const añoCorto = añoActual.toString().slice(-2);
+  private cargarDatosMock(): void {
+  const fechaActual = new Date();
+  const fechaVencimiento1 = this.calcularFechaVencimiento(fechaActual);
 
-    const mockFrascos: FrascoOption[] = [
-      {
-        label: `LHP ${añoCorto} 1`,
-        value: `LHP ${añoCorto} 1`,
-        id_frasco: 1,
-        n_donante: '001',
-        volumen: '150',
-        acidez_dornic: '3.5',
-        calorias: '680',
-        lote: '101',
-        año: añoActual
-      },
-      {
-        label: `LHP ${añoCorto} 2`,
-        value: `LHP ${añoCorto} 2`,
-        id_frasco: 2,
-        n_donante: '002',
-        volumen: '200',
-        acidez_dornic: '3.8',
-        calorias: '720',
-        lote: '102',
-        año: añoActual
-      },
-      {
-        label: `LHP ${añoCorto} 3`,
-        value: `LHP ${añoCorto} 3`,
-        id_frasco: 3,
-        n_donante: '003',
-        volumen: '175',
-        acidez_dornic: '3.6',
-        calorias: '700',
-        lote: '103',
-        año: añoActual
-      },
-      {
-        label: `LHP ${añoCorto} 4`,
-        value: `LHP ${añoCorto} 4`,
-        id_frasco: 4,
-        n_donante: '004',
-        volumen: '180',
-        acidez_dornic: '3.4',
-        calorias: '690',
-        lote: '104',
-        año: añoActual
-      },
-      {
-        label: `LHP ${añoCorto} 5`,
-        value: `LHP ${añoCorto} 5`,
-        id_frasco: 5,
-        n_donante: '005',
-        volumen: '190',
-        acidez_dornic: '3.7',
-        calorias: '710',
-        lote: '105',
-        año: añoActual
-      }
-    ];
+  const fecha2 = new Date();
+  fecha2.setDate(fecha2.getDate() - 3);
+  const fechaVencimiento2 = this.calcularFechaVencimiento(fecha2);
 
-    this.opcionesFrascos = mockFrascos;
-  }
+  const añoCorto = fechaActual.getFullYear().toString().slice(-2);
+
+  this.dataOriginal = [
+    {
+      id: 1,
+      fecha_dispensacion: fechaActual,
+      n_frasco: `LHP ${añoCorto} 1`,
+      id_frasco: 1,
+      n_donante: '001',
+      volumen: '150',
+      acidez_dornic: '3.5',
+      calorias: '680',
+      tipo_leche: 'Madura',
+      lote: '101',
+      fecha_vencimiento: fechaVencimiento1,
+      fecha_hora_deshiele: new Date(fechaActual),
+      isNew: false
+    },
+    {
+      id: 2,
+      fecha_dispensacion: fecha2,
+      n_frasco: `LHP ${añoCorto} 2`,
+      id_frasco: 2,
+      n_donante: '002',
+      volumen: '200',
+      acidez_dornic: '3.8',
+      calorias: '720',
+      tipo_leche: 'Transición',
+      lote: '102',
+      fecha_vencimiento: fechaVencimiento2,
+      fecha_hora_deshiele: new Date(fecha2),
+      isNew: false
+    }
+  ];
+
+  this.dataFiltered = [...this.dataOriginal];
+}
+
+private cargarFrascosMock(): void {
+  const añoActual = new Date().getFullYear();
+  const añoCorto = añoActual.toString().slice(-2);
+
+  const mockFrascos: FrascoOption[] = [
+    {
+      label: `LHP ${añoCorto} 1`,
+      value: `LHP ${añoCorto} 1`,
+      id_frasco: 1,
+      n_donante: '001',
+      volumen: '150',
+      acidez_dornic: '3.5',
+      calorias: '680',
+      lote: '101',
+      año: añoActual
+    },
+    {
+      label: `LHP ${añoCorto} 2`,
+      value: `LHP ${añoCorto} 2`,
+      id_frasco: 2,
+      n_donante: '002',
+      volumen: '200',
+      acidez_dornic: '3.8',
+      calorias: '720',
+      lote: '102',
+      año: añoActual
+    },
+    {
+      label: `LHP ${añoCorto} 3`,
+      value: `LHP ${añoCorto} 3`,
+      id_frasco: 3,
+      n_donante: '003',
+      volumen: '175',
+      acidez_dornic: '3.6',
+      calorias: '700',
+      lote: '103',
+      año: añoActual
+    },
+    {
+      label: `LHP ${añoCorto} 4`,
+      value: `LHP ${añoCorto} 4`,
+      id_frasco: 4,
+      n_donante: '004',
+      volumen: '180',
+      acidez_dornic: '3.4',
+      calorias: '690',
+      lote: '104',
+      año: añoActual
+    },
+    {
+      label: `LHP ${añoCorto} 5`,
+      value: `LHP ${añoCorto} 5`,
+      id_frasco: 5,
+      n_donante: '005',
+      volumen: '190',
+      acidez_dornic: '3.7',
+      calorias: '710',
+      lote: '105',
+      año: añoActual
+    }
+  ];
+
+  this.opcionesFrascos = mockFrascos;
+}
 
   // ============= EVENTOS DE SELECCIÓN =============
   onFrascoSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
-    const frascoSeleccionado = this.extraerValorEvento(event);
-    if (!frascoSeleccionado) return;
+  const frascoSeleccionado = this.extraerValorEvento(event);
+  if (!frascoSeleccionado) return;
 
-    rowData.n_frasco = frascoSeleccionado;
+  // Validar que el frasco no esté ya registrado
+  const frascoYaRegistrado = this.dataOriginal.some(item =>
+    item.n_frasco === frascoSeleccionado &&
+    item.id !== rowData.id &&
+    !item.isNew
+  );
 
-    const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
-    if (frasco) {
-      rowData.id_frasco = frasco.id_frasco;
-      rowData.n_donante = frasco.n_donante;
-      rowData.volumen = frasco.volumen;
-      rowData.acidez_dornic = frasco.acidez_dornic;
-      rowData.calorias = frasco.calorias;
-      rowData.lote = frasco.lote;
-    }
+  if (frascoYaRegistrado) {
+    this.mostrarMensaje(
+      'error',
+      'Frasco No Disponible',
+      `El frasco ${frascoSeleccionado} ya ha sido utilizado en otro registro`
+    );
+    rowData.n_frasco = '';
+    rowData.id_frasco = null;
+    rowData.n_donante = '';
+    rowData.volumen = '';
+    rowData.acidez_dornic = '';
+    rowData.calorias = '';
+    rowData.lote = '';
+    return;
   }
+
+  rowData.n_frasco = frascoSeleccionado;
+
+  const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
+  if (frasco) {
+    rowData.id_frasco = frasco.id_frasco;
+    rowData.n_donante = frasco.n_donante;
+    rowData.volumen = frasco.volumen;
+    rowData.acidez_dornic = frasco.acidez_dornic;
+    rowData.calorias = frasco.calorias;
+    rowData.lote = frasco.lote;
+  }
+}
 
   onTipoLecheSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
     const tipoLeche = this.extraerValorEvento(event);
@@ -211,16 +283,14 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   onDosificacionesClick(rowData: IngresoLechePasteurizadaData, event: Event): void {
-    event.stopPropagation();
+  event.stopPropagation();
 
-    if (this.isAnyRowEditing()) {
-      return;
-    }
-
-    // TODO: Abrir dialog de dosificaciones
-    console.log('Abrir dialog de dosificaciones para:', rowData);
-    this.mostrarMensaje('info', 'Información', 'Dialog de dosificaciones pendiente de implementación');
+  if (this.isAnyRowEditing()) {
+    return;
   }
+
+  this.dosificacionesClick.emit(rowData);
+}
 
   private extraerValorEvento(event: any): string {
     if (event?.value) return event.value;

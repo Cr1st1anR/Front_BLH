@@ -15,12 +15,18 @@
     <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_donante" (input)="aplicarFiltros()"
       placeholder="N° Donante" class="w-40" />
 
-    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()"
-      placeholder="Lote" class="w-32" />
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      class="w-32" />
 
     <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
       (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
   </div>
 </div>
 
-<ingreso-leche-pasteurizada-table [filtrosBusqueda]="filtrosBusqueda" />
+<ingreso-leche-pasteurizada-table [filtrosBusqueda]="filtrosBusqueda"
+  (dosificacionesClick)="onDosificacionesClick($event)" />
+
+@if (showDosificacionesDialog && selectedData) {
+<dosificaciones-dialog [visible]="showDosificacionesDialog" [ingresoLechePasteurizadaData]="selectedData"
+  (dialogClosed)="onDosificacionesDialogClosed()" />
+}

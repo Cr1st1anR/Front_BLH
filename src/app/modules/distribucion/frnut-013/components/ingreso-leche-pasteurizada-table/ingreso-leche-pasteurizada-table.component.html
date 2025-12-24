@@ -56,18 +56,9 @@
           @else if (col.field === 'n_frasco') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select
-                [(ngModel)]="rowData.n_frasco"
-                [options]="opcionesFrascos"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleccione frasco"
-                (onChange)="onFrascoSeleccionado($event, rowData)"
-                appendTo="body"
-                class="w-full"
-                [showClear]="true"
-                [filter]="true"
-                filterBy="label"
+              <p-select [(ngModel)]="rowData.n_frasco" [options]="opcionesFrascos" optionLabel="label"
+                optionValue="value" placeholder="Seleccione frasco" (onChange)="onFrascoSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true" [filter]="true" filterBy="label"
                 [filterPlaceholder]="'Buscar frasco...'">
               </p-select>
             </ng-template>
@@ -81,16 +72,9 @@
           @else if (col.field === 'tipo_leche') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select
-                [(ngModel)]="rowData.tipo_leche"
-                [options]="opcionesTipoLeche"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleccione tipo"
-                (onChange)="onTipoLecheSeleccionado($event, rowData)"
-                appendTo="body"
-                class="w-full"
-                [showClear]="true">
+              <p-select [(ngModel)]="rowData.tipo_leche" [options]="opcionesTipoLeche" optionLabel="label"
+                optionValue="value" placeholder="Seleccione tipo" (onChange)="onTipoLecheSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
@@ -125,8 +109,7 @@
           @else if (col.field === 'dosificaciones') {
           <div class="flex justify-center">
             <button pButton pRipple type="button" icon="pi pi-eye"
-              class="p-button-rounded p-button-text p-button-secondary"
-              (click)="onDosificacionesClick(rowData, $event)"
+              class="p-button-rounded p-button-text p-button-secondary" (click)="onDosificacionesClick(rowData, $event)"
               pTooltip="Ver dosificaciones" tooltipPosition="top" [disabled]="isAnyRowEditing()">
             </button>
           </div>
@@ -134,7 +117,11 @@
 
           <!-- COLUMNAS READONLY -->
           @else if (col.tipo === 'readonly') {
+          @if (col.field === 'volumen') {
+          <span>{{ rowData[col.field] ? rowData[col.field] + ' ML' : 'Sin datos' }}</span>
+          } @else {
           <span>{{ rowData[col.field] || 'Sin datos' }}</span>
+          }
           }
 
           <!-- ACCIONES -->
@@ -150,8 +137,7 @@
             </button>
 
             <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
-              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar"
-              tooltipPosition="top">
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
             </button>
           </div>
           }

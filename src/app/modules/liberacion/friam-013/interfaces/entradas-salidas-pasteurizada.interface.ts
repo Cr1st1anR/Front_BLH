@@ -7,6 +7,7 @@ export interface EntradasSalidasPasteurizadaData {
   volumen_cc: string;
   dornic: string;
   kcal_l: string;
+  fecha_parto?: string | Date | null;
   dias_posparto: string;
   donante: string;
   edad_gestacional: number;

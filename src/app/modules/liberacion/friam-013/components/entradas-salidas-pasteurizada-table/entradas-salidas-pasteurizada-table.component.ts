@@ -44,6 +44,8 @@ import type {
 })
 export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
+  private readonly DIAS_POR_MES = 30;
+
   @ViewChild('tableEntradasSalidas') table!: Table;
 
   @Input() filtrosBusqueda: FiltrosBusqueda = {
@@ -141,20 +143,30 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   // ============= DATOS MOCK =============
   private cargarDatosMock(): void {
+    const fechaParto1 = new Date(2025, 10, 20); // 20 de noviembre de 2025
+    const fechaProcesamiento1 = new Date(2025, 11, 5); // 5 de diciembre de 2025
+
+    const fechaParto2 = new Date(2025, 9, 1); // 1 de octubre de 2025
+    const fechaProcesamiento2 = new Date(2025, 11, 6); // 6 de diciembre de 2025
+
     const mockData: EntradasSalidasPasteurizadaData[] = [
       {
         id: 1,
-        fecha_procesamiento: new Date(2025, 11, 5),
+        fecha_procesamiento: fechaProcesamiento1,
         congelador: '3',
         n_gaveta: '12',
         n_frasco_pasteurizado: 'LHP 25\n1234',
         volumen_cc: '150',
         dornic: '3.5',
         kcal_l: '680',
-        dias_posparto: '15D',
+        fecha_parto: fechaParto1,
+        dias_posparto: this.calcularDiasPosparto(
+          fechaParto1.toISOString().split('T')[0],
+          fechaProcesamiento1.toISOString().split('T')[0]
+        ),
         donante: '1001',
         edad_gestacional: 38,
-        fecha_vencimiento: this.calcularFechaVencimiento(new Date(2025, 11, 5)),
+        fecha_vencimiento: this.calcularFechaVencimiento(fechaProcesamiento1),
         responsable_entrada: 'Dra. María González',
         fecha_salida: null,
         responsable_salida: '',
@@ -164,17 +176,21 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       },
       {
         id: 2,
-        fecha_procesamiento: new Date(2025, 11, 6),
+        fecha_procesamiento: fechaProcesamiento2,
         congelador: '3',
         n_gaveta: '8',
         n_frasco_pasteurizado: 'LHP 25\n1235',
         volumen_cc: '200',
         dornic: '3.8',
         kcal_l: '720',
-        dias_posparto: '1M 5D',
+        fecha_parto: fechaParto2,
+        dias_posparto: this.calcularDiasPosparto(
+          fechaParto2.toISOString().split('T')[0],
+          fechaProcesamiento2.toISOString().split('T')[0]
+        ),
         donante: '1002',
         edad_gestacional: 40,
-        fecha_vencimiento: this.calcularFechaVencimiento(new Date(2025, 11, 6)),
+        fecha_vencimiento: this.calcularFechaVencimiento(fechaProcesamiento2),
         responsable_entrada: 'Lic. Ana Martínez',
         fecha_salida: new Date(2025, 11, 8),
         responsable_salida: 'Dr. Carlos López',
@@ -186,6 +202,31 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
     this.dataOriginal = mockData;
     this.aplicarFiltros();
+  }
+
+  // ============= CÁLCULO DE DÍAS POSPARTO =============
+  private calcularDiasPosparto(fechaParto: string, fechaExtraccion: string): string {
+    if (!fechaParto || !fechaExtraccion) return '';
+
+    const parto = new Date(fechaParto);
+    const extraccion = new Date(fechaExtraccion);
+    const diffTime = Math.abs(extraccion.getTime() - parto.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return this.formatearDiasPosparto(diffDays);
+  }
+
+  private formatearDiasPosparto(dias: number): string {
+    if (dias < this.DIAS_POR_MES) {
+      return `${dias}D`;
+    }
+
+    const meses = Math.floor(dias / this.DIAS_POR_MES);
+    const diasRestantes = dias % this.DIAS_POR_MES;
+
+    return diasRestantes > 0
+      ? `${meses}M ${diasRestantes}D`
+      : `${meses}M`;
   }
 
   // ============= CÁLCULO DE FECHA DE VENCIMIENTO =============

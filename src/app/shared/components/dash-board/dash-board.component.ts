@@ -139,6 +139,17 @@ export class DashBoardComponent {
         },
       ],
     },
+    {
+      label: 'Curvas',
+      icon: 'fa-solid fa-chart-area',
+      items: [
+        {
+          label: 'Construcción de curvas de penetración de calor y enfriamiento',
+          subLabel: '(FRIAM-019)',
+          route: '/blh/curvas/construccion-curvas',
+        },
+      ],
+    },
   ];
 
   constructor(private router: Router) { }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-enfriador-table',
+  selector: 'enfriador-table',
   imports: [],
   templateUrl: './enfriador-table.component.html',
   styleUrl: './enfriador-table.component.scss'

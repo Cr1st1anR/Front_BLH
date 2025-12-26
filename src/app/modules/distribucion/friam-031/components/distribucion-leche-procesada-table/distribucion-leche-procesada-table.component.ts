@@ -357,6 +357,30 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     return dataRow.id?.toString() || 'new';
   }
 
+  /**
+   * ✅ NUEVO: Calcula el volumen total distribuido
+   */
+  get volumenTotalDistribuido(): number {
+    if (!this.dataFiltered || this.dataFiltered.length === 0) return 0;
+
+    return this.dataFiltered.reduce((total, registro) => {
+      const volumen = parseFloat(registro.vol_distribuido || '0');
+      return total + (isNaN(volumen) ? 0 : volumen);
+    }, 0);
+  }
+
+  /**
+   * ✅ NUEVO: Cuenta registros válidos (que tienen volumen)
+   */
+  get cantidadRegistrosConVolumen(): number {
+    if (!this.dataFiltered || this.dataFiltered.length === 0) return 0;
+
+    return this.dataFiltered.filter(registro => {
+      const volumen = parseFloat(registro.vol_distribuido || '0');
+      return !isNaN(volumen) && volumen > 0;
+    }).length;
+  }
+
   // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: DistribucionLecheProcesadaData): boolean {
     return this.editingRow !== null && this.editingRow.id === rowData.id;

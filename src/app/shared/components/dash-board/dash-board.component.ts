@@ -123,6 +123,22 @@ export class DashBoardComponent {
       icon: 'fa-solid fa-clipboard-list',
       items: [],
     },
+    {
+      label: 'Distribucion',
+      icon: 'fa-solid fa-share',
+      items: [
+        {
+          label: 'Distribución de leche humana procesada blh',
+          subLabel: '(FRIAM-031)',
+          route: '/blh/distribucion/distribucion-leche-procesada',
+        },
+        {
+          label: 'Registro de ingreso de leche humana pasteurizada',
+          subLabel: '(FRNUT-013)',
+          route: '/blh/distribucion/ingreso-leche-pasteurizada',
+        },
+      ],
+    },
   ];
 
   constructor(private router: Router) { }

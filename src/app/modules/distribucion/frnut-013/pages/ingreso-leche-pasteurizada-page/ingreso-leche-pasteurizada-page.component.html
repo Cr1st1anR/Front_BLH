@@ -1,0 +1,32 @@
+<app-header [title]="'REGISTRO DE INGRESO DE LECHE HUMANA PASTEURIZADA (FRNUT-013)'" />
+
+<div class="flex justify-between items-center mx-4 mt-8">
+  <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+  <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+</div>
+
+<div class="flex justify-start items-center mx-4 mt-4">
+  <div class="flex gap-3 items-center">
+    <span class="font-semibold text-gray-700">Filtros:</span>
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_frasco" (input)="aplicarFiltros()"
+      placeholder="N° Frasco" class="w-40" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_donante" (input)="aplicarFiltros()"
+      placeholder="N° Donante" class="w-40" />
+
+    <input pInputText type="text" [(ngModel)]="filtrosBusqueda.lote" (input)="aplicarFiltros()" placeholder="Lote"
+      class="w-32" />
+
+    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+      (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+  </div>
+</div>
+
+<ingreso-leche-pasteurizada-table [filtrosBusqueda]="filtrosBusqueda"
+  (dosificacionesClick)="onDosificacionesClick($event)" />
+
+@if (showDosificacionesDialog && selectedData) {
+<dosificaciones-dialog [visible]="showDosificacionesDialog" [ingresoLechePasteurizadaData]="selectedData"
+  (dialogClosed)="onDosificacionesDialogClosed()" />
+}

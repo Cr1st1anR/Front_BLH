@@ -1,0 +1,159 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main || loading.saving) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<div class="container-table">
+  <p-table #tableIngresoLeche [value]="dataIngresoLeche" [scrollable]="true" scrollHeight="500px"
+    [columns]="headersIngresoLeche" [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id"
+    editMode="row">
+
+    <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track $index) {
+        <th [style.width]="col.width" [style.min-width]="col.width">
+          @if (col.header.includes('\n')) {
+          @for (linea of col.header.split('\n'); track $index) {
+          <span style="display: block;">{{ linea }}</span>
+          }
+          } @else {
+          {{ col.header }}
+          }
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+      <tr [pEditableRow]="rowData">
+        @for (col of columns; track $index) {
+        <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+
+          <!-- FECHA DISPENSACIÓN -->
+          @if (col.field === 'fecha_dispensacion') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-datepicker [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
+                dateFormat="dd/mm/yy" placeholder="Seleccione fecha" appendTo="body" class="w-full"
+                (onSelect)="onFechaDispensacionChanged(rowData)">
+              </p-datepicker>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (rowData[col.field]) {
+              {{ rowData[col.field] | date:'dd/MM/yyyy' }}
+              } @else {
+              Sin fecha
+              }
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- N° FRASCO - SELECT -->
+          @else if (col.field === 'n_frasco') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.n_frasco" [options]="opcionesFrascos" optionLabel="label"
+                optionValue="value" placeholder="Seleccione frasco" (onChange)="onFrascoSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true" [filter]="true" filterBy="label"
+                [filterPlaceholder]="'Buscar frasco...'">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.n_frasco || 'Sin frasco' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- TIPO LECHE - SELECT -->
+          @else if (col.field === 'tipo_leche') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-select [(ngModel)]="rowData.tipo_leche" [options]="opcionesTipoLeche" optionLabel="label"
+                optionValue="value" placeholder="Seleccione tipo" (onChange)="onTipoLecheSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true">
+              </p-select>
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData.tipo_leche || 'Sin tipo' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          <!-- FECHA VENCIMIENTO - SOLO LECTURA -->
+          @else if (col.field === 'fecha_vencimiento') {
+          <span>
+            @if (rowData.fecha_vencimiento) {
+            {{ rowData.fecha_vencimiento | date:'dd/MM/yyyy' }}
+            } @else {
+            Sin fecha
+            }
+          </span>
+          }
+
+          <!-- FECHA/HORA DESHIELE - SOLO LECTURA (SOLO FECHA) -->
+          @else if (col.field === 'fecha_hora_deshiele') {
+          <span>
+            @if (rowData.fecha_hora_deshiele) {
+            {{ rowData.fecha_hora_deshiele | date:'dd/MM/yyyy' }}
+            } @else {
+            Sin fecha
+            }
+          </span>
+          }
+
+          <!-- DOSIFICACIONES - ICONO OJO -->
+          @else if (col.field === 'dosificaciones') {
+          <div class="flex justify-center">
+            <button pButton pRipple type="button" icon="pi pi-eye"
+              class="p-button-rounded p-button-text p-button-secondary" (click)="onDosificacionesClick(rowData, $event)"
+              pTooltip="Ver dosificaciones" tooltipPosition="top" [disabled]="isAnyRowEditing()">
+            </button>
+          </div>
+          }
+
+          <!-- COLUMNAS READONLY -->
+          @else if (col.tipo === 'readonly') {
+          @if (col.field === 'volumen') {
+          <span>{{ rowData[col.field] ? rowData[col.field] + ' ML' : 'Sin datos' }}</span>
+          } @else {
+          <span>{{ rowData[col.field] || 'Sin datos' }}</span>
+          }
+          }
+
+          <!-- ACCIONES -->
+          @else if (col.field === 'acciones') {
+          <div class="flex items-center justify-center gap-2">
+            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+              severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+              pTooltip="Editar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+              (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+            </button>
+
+            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+              severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+            </button>
+          </div>
+          }
+
+          <!-- OTRAS COLUMNAS -->
+          @else {
+          <span>{{ rowData[col.field] }}</span>
+          }
+
+        </td>
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+
+  @if (!dataIngresoLeche || dataIngresoLeche.length === 0) {
+  <p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+  }
+</div>

@@ -513,37 +513,39 @@ export class SeleccionClasificacionTableComponent implements OnInit {
   }
 
   private generarCodigoFrascosProcesados(frascosPasteurizados: any[]): string {
-    if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
-      return 'Sin frascos\nprocesados';
-    }
-
-    const añoActual = this.obtenerAñoActualCorto();
-
-    const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
-      const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
-      const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
-
-      return tieneNumero && sinObservaciones;
-    });
-
-    if (frascosSinObservaciones.length === 0) {
-      return 'Frascos con\nobservaciones';
-    }
-
-    const numerosFrascos = frascosSinObservaciones
-      .map(frasco => frasco.numeroFrasco)
-      .sort((a, b) => a - b);
-
-    if (numerosFrascos.length === 1) {
-      const resultado = `LHP ${añoActual}\n${numerosFrascos[0]}`;
-      return resultado;
-    } else {
-      const frascoInicial = numerosFrascos[0];
-      const frascoFinal = numerosFrascos[numerosFrascos.length - 1];
-      const resultado = `LHP ${añoActual}\n${frascoInicial} -\n${frascoFinal}`;
-      return resultado;
-    }
+  if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
+    return 'Sin frascos\nprocesados';
   }
+
+  const añoActual = this.obtenerAñoActualCorto();
+
+  const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
+    const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
+    const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
+    return tieneNumero && sinObservaciones;
+  });
+
+  if (frascosSinObservaciones.length === 0) {
+    return 'Frascos con\nobservaciones';
+  }
+
+  const numerosFrascos = frascosSinObservaciones
+    .map(frasco => frasco.numeroFrasco)
+    .sort((a, b) => a - b);
+
+  if (numerosFrascos.length === 1) {
+    return `LHP ${añoActual}\n${numerosFrascos[0]}`;
+  }
+
+  else if (numerosFrascos.length === 2) {
+    return `LHP ${añoActual}\n${numerosFrascos[0]} -\n${numerosFrascos[1]}`;
+  }
+
+  else {
+    const frascosConcatenados = numerosFrascos.join(' -\n');
+    return `LHP ${añoActual}\n${frascosConcatenados}`;
+  }
+}
 
   private generarCodigoFrascoCrudo(idFrasco: number | null): string {
     if (!idFrasco) {

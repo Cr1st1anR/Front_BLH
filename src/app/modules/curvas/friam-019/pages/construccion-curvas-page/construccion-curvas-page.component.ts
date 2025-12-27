@@ -196,7 +196,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Componentes listos
+    // Las tablas siempre están en el DOM gracias a [hidden]
   }
 
   private cargarResponsables(): void {
@@ -214,22 +214,23 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   }
 
   onVolumenInput(): void {
-    // ✅ Limpiar el timer anterior si existe
     if (this.volumenDebounceTimer) {
       clearTimeout(this.volumenDebounceTimer);
     }
 
-    // ✅ Si el input está vacío, limpiar inmediatamente
     if (!this.volumenBusqueda.trim()) {
       this.opcionesVolumenes = [];
       this.limpiarSeleccion();
       return;
     }
 
-    // ✅ Esperar 800ms antes de buscar (aumentado de 500ms)
     this.volumenDebounceTimer = setTimeout(() => {
       this.buscarPorVolumen(this.volumenBusqueda.trim());
     }, 800);
+  }
+
+  private limpiarSeleccion(): void {
+    this.volumenSeleccionado = '';
   }
 
   private buscarPorVolumen(volumen: string): void {
@@ -252,11 +253,9 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
       this.loading.volumenes = false;
 
-      // ✅ CORREGIDO: Mostrar mensaje tanto si hay resultados como si no hay
       if (this.opcionesVolumenes.length > 0) {
         this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
       } else {
-        // ✅ AGREGADO: Mensaje cuando NO hay resultados
         this.mostrarMensaje('warn', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
       }
     }, 300);
@@ -282,30 +281,11 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     this.cargarDatosCurva(opcionSeleccionada.id_registro!);
   }
 
-  private limpiarSeleccion(): void {
-    this.volumenSeleccionado = '';
-    this.mostrarFormulario = false;
-
-    if (this.pasteurizadorTableComponent) {
-      this.pasteurizadorTableComponent.limpiarDatos();
-    }
-
-    if (this.enfriadorTableComponent) {
-      this.enfriadorTableComponent.limpiarDatos();
-    }
-  }
-
-  private cargarDatosCurva(idCurva: number, intentosRestantes: number = 5): void {
+  private cargarDatosCurva(idCurva: number): void {
+    // Verificar que las tablas existen
     if (!this.pasteurizadorTableComponent || !this.enfriadorTableComponent) {
-      if (intentosRestantes > 0) {
-        setTimeout(() => {
-          this.cargarDatosCurva(idCurva, intentosRestantes - 1);
-        }, 500); // ✅ Aumentado de 300ms a 500ms
-        return;
-      } else {
-        this.mostrarMensaje('error', 'Error', 'Las tablas no están listas. Por favor, intente nuevamente.');
-        return;
-      }
+      this.mostrarMensaje('error', 'Error', 'Las tablas no están listas. Por favor, recargue la página.');
+      return;
     }
 
     this.loading.main = true;
@@ -319,10 +299,12 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
         return;
       }
 
+      // Cargar datos
       this.datosCurva = { ...curva.datosCurva };
       this.resumenPasteurizador = { ...curva.resumenPasteurizador };
       this.resumenEnfriador = { ...curva.resumenEnfriador };
 
+      // Cargar datos en las tablas
       this.pasteurizadorTableComponent.cargarDatosExternos(curva.registrosPasteurizador);
       this.enfriadorTableComponent.cargarDatosExternos(curva.registrosEnfriador);
 
@@ -332,7 +314,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
       this.loading.main = false;
 
       this.mostrarMensaje('success', 'Datos cargados', `Se han cargado los datos de la curva con volumen ${curva.volumen} c.c.`);
-    }, 500); // ✅ Aumentado de 300ms a 500ms
+    }, 300);
   }
 
   crearNuevaCurva(): void {

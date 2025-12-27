@@ -46,8 +46,7 @@
   </div>
 
   <!-- CARD DE DATOS GENERALES DE LA CURVA -->
-  @if (mostrarFormulario) {
-  <div class="form-section">
+  <div class="form-section" [hidden]="!mostrarFormulario">
     <p-divider align="center" type="solid">
       <div class="inline-flex items-center">
         <i class="pi pi-info-circle mr-2" style="color: #224186;"></i>
@@ -109,7 +108,7 @@
 
         <div class="form-field-group">
           <label class="field-label">
-            <i class="pi pi-certificate text-indigo-600"></i>
+            <i class="pi pi-shield text-indigo-600"></i>
             CERTIFICADO DE CALIBRACIÓN
           </label>
           <input pInputText type="text" [(ngModel)]="datosCurva.certificado_calibracion"
@@ -177,25 +176,25 @@
   </div>
 
   <!-- ==================== SECCIÓN PASTEURIZADOR ==================== -->
-  <p-divider align="center" type="solid" class="mt-6">
+  <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
     <div class="inline-flex items-center">
       <b style="color: #224186;">PASTEURIZADOR</b>
     </div>
   </p-divider>
 
   <!-- BOTÓN NUEVO REGISTRO PASTEURIZADOR -->
-  <div class="nuevo-registro-container">
+  <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroPasteurizador()"
       [disabled]="hasNewRowInEditingPasteurizador" />
   </div>
 
-  <!-- TABLA PASTEURIZADOR -->
-  <div class="table-wrapper">
+  <!-- ✅ TABLA SIEMPRE EN EL DOM -->
+  <div class="table-wrapper" [hidden]="!mostrarFormulario">
     <pasteurizador-table />
   </div>
 
   <!-- CARD RESUMEN PASTEURIZADOR -->
-  <div class="resumen-card">
+  <div class="resumen-card" [hidden]="!mostrarFormulario">
     <div class="resumen-nota">
       SE INICIA CON 5°C EL FRASCO TESTIGO. SE MEZCLA CADA 5 MINUTOS
     </div>
@@ -221,25 +220,25 @@
   </div>
 
   <!-- ==================== SECCIÓN ENFRIADOR ==================== -->
-  <p-divider align="center" type="solid" class="mt-6">
+  <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
     <div class="inline-flex items-center">
       <b style="color: #224186;">ENFRIADOR</b>
     </div>
   </p-divider>
 
   <!-- BOTÓN NUEVO REGISTRO ENFRIADOR -->
-  <div class="nuevo-registro-container">
+  <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroEnfriador()"
       [disabled]="hasNewRowInEditingEnfriador" />
   </div>
 
-  <!-- TABLA ENFRIADOR -->
-  <div class="table-wrapper">
+  <!-- ✅ TABLA SIEMPRE EN EL DOM -->
+  <div class="table-wrapper" [hidden]="!mostrarFormulario">
     <enfriador-table />
   </div>
 
   <!-- CARD RESUMEN ENFRIADOR -->
-  <div class="resumen-card">
+  <div class="resumen-card" [hidden]="!mostrarFormulario">
     <div class="resumen-nota">
       ALCOHOL AL 96%: 80 PARTES DE AGUA DESIONIZADA Y 20 PARTES ALCOHOL
     </div>
@@ -265,8 +264,7 @@
   </div>
 
   <!-- BOTONES DE GUARDADO GLOBAL -->
-  @if (dataPasteurizador.length > 0 || dataEnfriador.length > 0) {
-  <div class="form-actions-bottom">
+  <div class="form-actions-bottom" [hidden]="!mostrarFormulario || (dataPasteurizador.length === 0 && dataEnfriador.length === 0)">
     <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
       class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()"
       [disabled]="loading.saving">
@@ -277,12 +275,8 @@
       (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
     </button>
   </div>
-  }
-  }
 
-  @if (!mostrarFormulario) {
-  <p class="text-gray-400 text-center italic mt-8">
+  <p class="text-gray-400 text-center italic mt-8" [hidden]="mostrarFormulario">
     Ingrese un volumen para buscar curvas existentes, o cree una nueva curva para comenzar
   </p>
-  }
 </div>

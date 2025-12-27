@@ -21,12 +21,40 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; // ✅ CAMBIADO: de wrap a nowrap para mantener en una línea
 }
 
 .search-label {
   font-size: 1rem !important;
   font-weight: 600;
+  white-space: nowrap; // ✅ AGREGADO: Evita que el texto se rompa
+  flex-shrink: 0; // ✅ AGREGADO: Evita que el label se comprima
+}
+
+// ✅ AGREGADO: Estilos específicos para los elementos de búsqueda
+::ng-deep {
+  .search-row {
+    input[type="text"] {
+      flex-shrink: 0; // No permite que el input se comprima
+      min-width: 192px; // Mantiene el ancho de w-48 (12rem = 192px)
+      max-width: 192px;
+    }
+
+    p-select {
+      flex-shrink: 0;
+      min-width: 320px; // Mantiene el ancho de w-80 (20rem = 320px)
+      max-width: 320px;
+    }
+
+    .new-distribution-button {
+      flex-shrink: 0; // No permite que el botón se comprima
+      white-space: nowrap; // Evita que el texto del botón se rompa
+    }
+
+    .flex.items-center.gap-2 {
+      flex-shrink: 0; // El spinner tampoco se comprime
+    }
+  }
 }
 
 .form-section {
@@ -236,12 +264,13 @@
     grid-template-columns: 1fr;
   }
 
+  // ✅ SOLO en tablets y móviles permitir wrap
   .search-row {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap !important;
 
     > * {
       width: 100%;
+      max-width: 100% !important;
     }
   }
 
@@ -265,6 +294,15 @@
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 1rem;
+  }
+
+  .search-row {
+    flex-direction: column;
+    align-items: flex-start;
+
+    > * {
+      width: 100%;
+    }
   }
 
   .form-actions-bottom {

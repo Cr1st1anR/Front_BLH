@@ -22,7 +22,7 @@
       <span class="font-semibold text-gray-700 search-label">BUSCAR CURVA POR VOLUMEN:</span>
 
       <input pInputText type="text" [(ngModel)]="volumenBusqueda" (input)="onVolumenInput()"
-        placeholder="Ingrese volumen (Ej: 100)" class="w-48" />
+        placeholder="Ingrese volumen" class="w-48" />
 
       @if (opcionesVolumenes.length > 0) {
       <p-select [(ngModel)]="volumenSeleccionado" [options]="opcionesVolumenes" optionLabel="label" optionValue="value"
@@ -86,8 +86,7 @@
             VOLUMEN
           </label>
           <div class="p-inputgroup">
-            <input pInputText type="text" [(ngModel)]="datosCurva.volumen" placeholder="Ej: 100" class="w-full" />
-            <span class="p-inputgroup-addon">c.c.</span>
+            <input pInputText type="text" [(ngModel)]="datosCurva.volumen" placeholder="c.c." class="w-full" />
           </div>
         </div>
 
@@ -180,8 +179,7 @@
   <!-- ==================== SECCIÓN PASTEURIZADOR ==================== -->
   <p-divider align="center" type="solid" class="mt-6">
     <div class="inline-flex items-center">
-      <i class="pi pi-fire mr-2" style="color: #dc3545;"></i>
-      <b style="color: #dc3545;">PASTEURIZADOR</b>
+      <b style="color: #224186;">PASTEURIZADOR</b>
     </div>
   </p-divider>
 
@@ -225,8 +223,7 @@
   <!-- ==================== SECCIÓN ENFRIADOR ==================== -->
   <p-divider align="center" type="solid" class="mt-6">
     <div class="inline-flex items-center">
-      <i class="pi pi-cloud mr-2" style="color: #0dcaf0;"></i>
-      <b style="color: #0dcaf0;">ENFRIADOR</b>
+      <b style="color: #224186;">ENFRIADOR</b>
     </div>
   </p-divider>
 

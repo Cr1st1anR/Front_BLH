@@ -70,6 +70,8 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   volumenBusqueda: string = '';
   volumenSeleccionado: string = '';
 
+  private volumenDebounceTimer: any = null;
+
   datosCurva: DatosCurva = {
     id: null,
     numero_frascos: '',
@@ -212,12 +214,22 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   }
 
   onVolumenInput(): void {
-    if (this.volumenBusqueda.trim()) {
-      this.buscarPorVolumen(this.volumenBusqueda.trim());
-    } else {
+    // ✅ Limpiar el timer anterior si existe
+    if (this.volumenDebounceTimer) {
+      clearTimeout(this.volumenDebounceTimer);
+    }
+
+    // ✅ Si el input está vacío, limpiar inmediatamente
+    if (!this.volumenBusqueda.trim()) {
       this.opcionesVolumenes = [];
       this.limpiarSeleccion();
+      return;
     }
+
+    // ✅ Esperar 800ms antes de buscar (aumentado de 500ms)
+    this.volumenDebounceTimer = setTimeout(() => {
+      this.buscarPorVolumen(this.volumenBusqueda.trim());
+    }, 800);
   }
 
   private buscarPorVolumen(volumen: string): void {
@@ -240,12 +252,14 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
       this.loading.volumenes = false;
 
+      // ✅ CORREGIDO: Mostrar mensaje tanto si hay resultados como si no hay
       if (this.opcionesVolumenes.length > 0) {
         this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
       } else {
-        this.mostrarMensaje('info', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
+        // ✅ AGREGADO: Mensaje cuando NO hay resultados
+        this.mostrarMensaje('warn', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
       }
-    }, 500);
+    }, 300);
   }
 
   private formatearFecha(fecha: Date): string {
@@ -281,12 +295,12 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private cargarDatosCurva(idCurva: number, intentosRestantes: number = 3): void {
+  private cargarDatosCurva(idCurva: number, intentosRestantes: number = 5): void {
     if (!this.pasteurizadorTableComponent || !this.enfriadorTableComponent) {
       if (intentosRestantes > 0) {
         setTimeout(() => {
           this.cargarDatosCurva(idCurva, intentosRestantes - 1);
-        }, 300);
+        }, 500); // ✅ Aumentado de 300ms a 500ms
         return;
       } else {
         this.mostrarMensaje('error', 'Error', 'Las tablas no están listas. Por favor, intente nuevamente.');
@@ -318,7 +332,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
       this.loading.main = false;
 
       this.mostrarMensaje('success', 'Datos cargados', `Se han cargado los datos de la curva con volumen ${curva.volumen} c.c.`);
-    }, 300);
+    }, 500); // ✅ Aumentado de 300ms a 500ms
   }
 
   crearNuevaCurva(): void {

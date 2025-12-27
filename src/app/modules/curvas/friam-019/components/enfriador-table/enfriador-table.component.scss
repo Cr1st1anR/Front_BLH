@@ -26,29 +26,32 @@
     }
 
     .p-datatable-thead > tr:first-child > th {
-      background-color: #0dcaf0;
+      background-color: #224186;
       color: white;
       font-weight: 700;
-      padding: 1rem;
+      padding: 0.5rem 1rem;
       border: 1px solid #e9ecef;
       text-align: center;
 
       &.group-header {
-        background-color: #0dcaf0;
-        font-size: 14px;
+        background-color: #224186;
+        font-size: 13px;
         text-transform: uppercase;
         letter-spacing: 0.4px;
         vertical-align: middle;
         height: auto !important;
+        min-height: 40px !important;
+        max-height: 50px !important;
         border-radius: 8px 8px 0 0;
+        line-height: 1.2;
       }
     }
 
     .header-text-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      line-height: 1.2;
+      gap: 0.15rem;
+      line-height: 1.1;
 
       .header-line {
         display: block;

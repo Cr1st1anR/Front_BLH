@@ -1,4 +1,3 @@
-<!-- ...existing code... -->
 <p-toast position="top-right" key="tr" />
 
 @if (loading) {
@@ -82,7 +81,7 @@
               @case ("date") {
               @if (col.field == 'fechaNacimiento') {
               <p-datepicker appendTo="body" [(ngModel)]="rowData['fechaNacAux']" [iconDisplay]="'input'"
-                [showIcon]="true" inputId="fechaNacAux-{{ri}}"
+                [showIcon]="true" inputId="fechaNacAux-{{ri}}" placeholder="fecha nacimiento"
                 dateFormat="dd/mm/yy"
                 [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
               }@else {

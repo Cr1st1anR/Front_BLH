@@ -36,7 +36,7 @@
       <tr>
         @for (col of columns; track $index) {
         <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
-          {{ col.header }}
+          <span [innerHTML]="col.header"></span>
         </th>
         }
       </tr>

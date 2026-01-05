@@ -82,7 +82,7 @@ export class TableListComponent implements OnInit {
     { header: 'POSIBLE DONANTE', field: "donanteEfectiva", colspan: 2, align: 'center', width: '320px', tipo: "checkbox", clase: "" },
     { header: 'FECHA VISITA', field: 'fechaVisita', rowspan: 2, width: '200px', tipo: "date", clase: "" },
     { header: 'OBSERVACIONES', field: 'observacion', rowspan: 2, width: '200px', tipo: "text", clase: "" },
-    { header: 'ACCIONES', field: 'acciones', rowspan: 2, width: '200px' }
+    { header: 'ACCIONES', field: 'acciones', rowspan: 2, width: '150px' }
   ];
 
   requiredFields: string[] = ['entidad', 'nombre', 'apellido', 'fechaParto', 'documento', 'fechaNacimiento', 'telefono', 'barrio', 'direccion', 'responsable'];

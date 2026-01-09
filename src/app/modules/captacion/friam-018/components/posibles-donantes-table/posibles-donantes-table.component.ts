@@ -177,11 +177,15 @@ export class PosiblesDonantesTableComponent implements OnInit {
 
       const labVencido = fechaVencimientoProxima ? this.isLabVencimientoCercano(fechaVencimientoProxima) : false;
 
+      const fechaRegistroFormateada = flat.fecha_registro
+        ? this.formatDateToDDMMYYYY(flat.fecha_registro as string)
+        : '';
+
       this.dataRegistroDonante[index] = {
         ...item,
         MadreDonante: flat.madreDonante || null,
         codDonante: flat.madreDonante ? flat.madreDonante.id : null,
-        fechaRegistro: flat.fecha_registro ? (flat.fecha_registro as string).toString().split('T')[0] : '',
+        fechaRegistro: fechaRegistroFormateada,
         nombre: flat.infoMadre.nombre,
         apellido: flat.infoMadre.apellido,
         documento: flat.infoMadre.documento,

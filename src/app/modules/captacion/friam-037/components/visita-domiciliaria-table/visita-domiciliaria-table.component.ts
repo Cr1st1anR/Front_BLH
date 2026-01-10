@@ -408,9 +408,40 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       direccion: item.infoMadre.direccion,
       celular: item.infoMadre.celular,
       ciudad: item.infoMadre.ciudad,
-      fecha_visita: item.fecha_visita,
+      fecha_visita: this.formatDateToDDMMYYYY(item.fecha_visita),
       edad: this.ageCalculate(item.infoMadre.fechaNacimiento),
     }));
+  }
+
+  private formatDateToDDMMYYYY(fecha: Date | string): string {
+    try {
+      if (!fecha) return '';
+
+      let fechaObj: Date;
+
+      if (typeof fecha === 'string') {
+        const fechaParts = fecha.split('-');
+        if (fechaParts.length === 3) {
+          const year = parseInt(fechaParts[0], 10);
+          const month = parseInt(fechaParts[1], 10) - 1;
+          const day = parseInt(fechaParts[2], 10);
+          fechaObj = new Date(year, month, day);
+        } else {
+          fechaObj = new Date(fecha);
+        }
+      } else {
+        fechaObj = new Date(fecha);
+      }
+
+      const day = fechaObj.getDate().toString().padStart(2, '0');
+      const month = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+      const year = fechaObj.getFullYear();
+
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error('Error al formatear fecha:', error);
+      return '';
+    }
   }
 
   ageCalculate(age: Date): number {

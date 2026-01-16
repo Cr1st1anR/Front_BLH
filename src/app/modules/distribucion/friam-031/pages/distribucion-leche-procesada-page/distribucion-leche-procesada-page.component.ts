@@ -61,8 +61,8 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   mostrarFormulario: boolean = false;
   esActualizacion: boolean = false;
-  fechaDistribucionActual: Date | null = null;
-  fechaDistribucionSeleccionada: string = '';
+  identificacionActual: string = ''; // ✅ CAMBIO: De fechaDistribucionActual a identificacionActual
+  distribucionSeleccionada: string = ''; // ✅ CAMBIO: De fechaDistribucionSeleccionada a distribucionSeleccionada
 
   datosReceptor: DatosReceptor = {
     id: null,
@@ -73,7 +73,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     eps: ''
   };
 
-  opcionesFechasDistribucion: OpcionFechaDistribucion[] = [];
+  opcionesDistribuciones: OpcionFechaDistribucion[] = []; // ✅ CAMBIO: Nombre más descriptivo
   opcionesEps: EpsOption[] = [
     { label: 'SURA', value: 'SURA' },
     { label: 'SANITAS', value: 'SANITAS' },
@@ -226,21 +226,20 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   ngAfterViewInit(): void {
     if (this.mesAnoActual) {
-      // ✅ Delay más largo para garantizar inicialización completa
       setTimeout(() => {
-        this.cargarFechasDistribucionPorMes(this.mesAnoActual!);
-      }, 500); // Aumentado de 300ms a 500ms
+        this.cargarDistribucionesPorMes(this.mesAnoActual!);
+      }, 500);
     }
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.mesAnoActual = filtro;
     this.limpiarSeleccion();
-    this.cargarFechasDistribucionPorMes(filtro);
+    this.cargarDistribucionesPorMes(filtro);
   }
 
   private limpiarSeleccion(): void {
-    this.fechaDistribucionSeleccionada = '';
+    this.distribucionSeleccionada = '';
     this.mostrarFormulario = false;
 
     if (this.tableComponent) {
@@ -248,7 +247,8 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
   }
 
-  private cargarFechasDistribucionPorMes(filtro: { year: number; month: number }): void {
+  // ✅ MODIFICADO: Ahora carga distribuciones ordenadas por identificación
+  private cargarDistribucionesPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
 
     setTimeout(() => {
@@ -257,59 +257,54 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
         return fecha.getMonth() + 1 === filtro.month && fecha.getFullYear() === filtro.year;
       });
 
-      // ✅ CAMBIO: Ordenar por fecha ASCENDENTE (más antiguos primero)
-      distribucionesFiltradas.sort((a, b) => a.fecha.getTime() - b.fecha.getTime()); // Cambiado de b-a a a-b
+      // ✅ Ordenar alfabéticamente por identificación
+      distribucionesFiltradas.sort((a, b) =>
+        a.receptor.identificacion_bebe.localeCompare(b.receptor.identificacion_bebe)
+      );
 
-      this.opcionesFechasDistribucion = distribucionesFiltradas.map(dist => ({
-        label: `${this.formatearFecha(dist.fecha)} - ${dist.receptor.nombre_bebe}`,
-        value: dist.fecha.toISOString(),
-        fecha: dist.fecha,
+      // ✅ CAMBIO: Formato "Identificación - Nombre"
+      this.opcionesDistribuciones = distribucionesFiltradas.map(dist => ({
+        label: `${dist.receptor.identificacion_bebe} - ${dist.receptor.nombre_bebe}`,
+        value: dist.id.toString(),
+        identificacion: dist.receptor.identificacion_bebe,
+        nombreBebe: dist.receptor.nombre_bebe,
         id_registro: dist.id,
-        nombreBebe: dist.receptor.nombre_bebe
+        fechaPrimerRegistro: dist.fecha
       }));
 
       this.loading.fechas = false;
 
-      const cantidad = this.opcionesFechasDistribucion.length;
+      const cantidad = this.opcionesDistribuciones.length;
       if (cantidad > 0) {
-        this.mostrarMensaje('success', 'Fechas cargadas', `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
+        this.mostrarMensaje('success', 'Distribuciones cargadas', `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
       } else {
         this.mostrarMensaje('info', 'Sin registros', 'No se encontraron distribuciones para este mes');
       }
     }, 500);
   }
 
-  private formatearFecha(fecha: Date): string {
-    const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const año = fecha.getFullYear();
-    return `${dia}/${mes}/${año}`;
-  }
-
-  onFechaDistribucionSeleccionada(event: any): void {
-    const fechaSeleccionada = event.value;
-    if (!fechaSeleccionada) {
+  // ✅ MODIFICADO: Ahora maneja selección por ID de distribución
+  onDistribucionSeleccionada(event: any): void {
+    const idSeleccionado = event.value;
+    if (!idSeleccionado) {
       this.limpiarFormulario();
       return;
     }
 
-    const opcionSeleccionada = this.opcionesFechasDistribucion.find(opt => opt.value === fechaSeleccionada);
+    const opcionSeleccionada = this.opcionesDistribuciones.find(opt => opt.value === idSeleccionado);
     if (!opcionSeleccionada) return;
 
-    this.cargarDatosDistribucion(opcionSeleccionada.id_registro!);
+    this.cargarDatosDistribucion(opcionSeleccionada.id_registro);
   }
 
   private cargarDatosDistribucion(idDistribucion: number, intentosRestantes: number = 3): void {
-    // ✅ Verificar que tableComponent existe antes de continuar
     if (!this.tableComponent) {
       if (intentosRestantes > 0) {
-        // Reintentar después de un delay
         setTimeout(() => {
           this.cargarDatosDistribucion(idDistribucion, intentosRestantes - 1);
         }, 300);
         return;
       } else {
-        // Si después de 3 intentos no está listo, mostrar error
         this.mostrarMensaje('error', 'Error', 'La tabla no está lista. Por favor, intente nuevamente.');
         return;
       }
@@ -329,14 +324,16 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       // Cargar datos del receptor
       this.datosReceptor = { ...distribucion.receptor };
 
-      // ✅ Ordenar registros por fecha (más antiguos primero - orden cronológico)
+      // ✅ Establecer identificación actual
+      this.identificacionActual = distribucion.receptor.identificacion_bebe;
+
+      // Ordenar registros por fecha (más antiguos primero)
       const registrosOrdenados = [...distribucion.registros].sort((a, b) => {
         const fechaA = new Date(a.fecha).getTime();
         const fechaB = new Date(b.fecha).getTime();
         return fechaA - fechaB;
       });
 
-      // ✅ Verificar nuevamente antes de cargar
       if (this.tableComponent && this.tableComponent.cargarDatosExternos) {
         this.tableComponent.cargarDatosExternos(registrosOrdenados);
       } else {
@@ -345,8 +342,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
         return;
       }
 
-      // ✅ La fecha de distribución es la del PRIMER registro (el más antiguo)
-      this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha);
       this.idDistribucionActual = idDistribucion;
       this.esActualizacion = true;
       this.mostrarFormulario = true;
@@ -367,10 +362,8 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
 
     this.limpiarFormulario();
-
-    // ✅ Para nuevo bebé, la fecha de distribución será la fecha del primer registro que se cree
-    this.fechaDistribucionActual = new Date();
-    this.fechaDistribucionSeleccionada = '';
+    this.identificacionActual = '';
+    this.distribucionSeleccionada = '';
     this.esActualizacion = false;
     this.mostrarFormulario = true;
     this.idDistribucionActual = null;
@@ -424,17 +417,11 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private prepararPayloadCompleto(): PayloadDistribucionCompleta | null {
     try {
-      // ✅ Ordenar registros por fecha antes de enviar (más antiguos primero)
       const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
         const fechaA = new Date(a.fecha!).getTime();
         const fechaB = new Date(b.fecha!).getTime();
-        return fechaA - fechaB; // Ascendente
+        return fechaA - fechaB;
       });
-
-      // ✅ Si es una nueva distribución, la fecha será la del primer registro
-      if (!this.esActualizacion && registrosOrdenados.length > 0) {
-        this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha!);
-      }
 
       const payload: PayloadDistribucionCompleta = {
         datosReceptor: {
@@ -471,6 +458,10 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
     setTimeout(() => {
       this.loading.saving = false;
+
+      // ✅ Actualizar identificación actual después de guardar
+      this.identificacionActual = payload.datosReceptor.identificacion_bebe;
+
       const mensaje = this.esActualizacion
         ? 'Todos los datos han sido actualizados exitosamente'
         : 'Todos los datos han sido guardados exitosamente';
@@ -514,7 +505,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       this.tableComponent.limpiarDatos();
     }
 
-    this.fechaDistribucionActual = null;
+    this.identificacionActual = '';
     this.mostrarFormulario = false;
     this.esActualizacion = false;
     this.idDistribucionActual = null;

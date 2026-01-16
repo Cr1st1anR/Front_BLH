@@ -23,17 +23,21 @@
 
       <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 
-      @if (opcionesFechasDistribucion.length > 0) {
+      <!-- ✅ MODIFICADO: Selector con búsqueda por identificación -->
+      @if (opcionesDistribuciones.length > 0) {
       <p-select
-        [(ngModel)]="fechaDistribucionSeleccionada"
-        [options]="opcionesFechasDistribucion"
+        [(ngModel)]="distribucionSeleccionada"
+        [options]="opcionesDistribuciones"
         optionLabel="label"
         optionValue="value"
-        placeholder="Seleccione una fecha"
-        (onChange)="onFechaDistribucionSeleccionada($event)"
+        placeholder="Buscar por identificación"
+        (onChange)="onDistribucionSeleccionada($event)"
         appendTo="body"
-        class="w-64"
+        class="w-80"
         [showClear]="true"
+        [filter]="true"
+        filterBy="identificacion,nombreBebe"
+        [filterPlaceholder]="'Buscar...'"
         [loading]="loading.fechas">
       </p-select>
       }
@@ -47,15 +51,16 @@
       @if (loading.fechas) {
       <div class="flex items-center gap-2 ml-4">
         <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
-        <span class="text-sm text-gray-500">Cargando fechas...</span>
+        <span class="text-sm text-gray-500">Cargando distribuciones...</span>
       </div>
       }
     </div>
 
-    @if (fechaDistribucionActual) {
+    <!-- ✅ MODIFICADO: Mostrar identificación en lugar de fecha -->
+    @if (identificacionActual) {
     <div class="date-info">
-      <span class="text-sm font-medium text-blue-700">FECHA DE DISTRIBUCIÓN ACTUAL: </span>
-      <span class="text-sm text-blue-600">{{ fechaDistribucionActual | date:'dd/MM/yyyy' }}</span>
+      <span class="text-sm font-medium text-blue-700">IDENTIFICACIÓN ACTUAL: </span>
+      <span class="text-sm text-blue-600 font-semibold">{{ identificacionActual }}</span>
     </div>
     }
   </div>
@@ -176,7 +181,7 @@
 
   @if (!mostrarFormulario) {
   <p class="text-gray-400 text-center italic mt-8">
-    Seleccione un mes y una fecha de distribución, o cree una nueva distribución para comenzar
+    Seleccione un mes y una distribución, o cree una nueva distribución para comenzar
   </p>
   }
 </div>

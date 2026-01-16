@@ -28,21 +28,22 @@ export interface PayloadDistribucionCompleta {
   registrosDistribucion: DistribucionLecheProcesadaData[];
 }
 
-// ✅ NUEVO: Interface para las opciones del selector de fechas
+// ✅ MODIFICADO: Interface para las opciones del selector - ahora por identificación
 export interface OpcionFechaDistribucion {
-  label: string;
-  value: string;
-  fecha: Date;
-  id_registro?: number;
-  nombreBebe?: string;
+  label: string; // Formato: "1234567890 - María Pérez"
+  value: string; // ID de la distribución
+  identificacion: string; // Identificación del bebé
+  nombreBebe: string; // Nombre del bebé
+  id_registro: number; // ID de la distribución
+  fechaPrimerRegistro?: Date; // Fecha del primer registro (para referencia interna)
 }
 
 export interface LoadingState {
   main: boolean;
   empleados: boolean;
   frascos: boolean;
-  saving: boolean; // ✅ NUEVO: para el guardado global
-  fechas: boolean; // ✅ NUEVO: para cargar fechas
+  saving: boolean;
+  fechas: boolean;
 }
 
 export interface TableColumn {

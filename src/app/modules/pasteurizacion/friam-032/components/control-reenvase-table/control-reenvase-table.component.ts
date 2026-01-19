@@ -226,15 +226,17 @@ export class ControlReenvaseTableComponent implements OnInit {
           ? (frascoData.cantidad?.toString() || '0')
           : (frascoData.volumen?.toString() || '0');
 
+        const fechaExtraccion = frascoData.fechaDeExtraccion || frascoData.fechaExtraccion || null;
+
         return {
-          label: this.generarCodigoLHC(entrada.id),
-          value: this.generarCodigoLHC(entrada.id),
+          label: this.generarCodigoLHC(entrada.id, fechaExtraccion),
+          value: this.generarCodigoLHC(entrada.id, fechaExtraccion),
           donante: idMadreDonante,
           volumen: volumenValue,
           id_frasco_principal: entrada.id,
           id_frasco_data: entrada.id,
           tipo: esExtraccion ? 'extraccion' : 'recolectado',
-          fechaExtraccion: frascoData.fechaDeExtraccion || frascoData.fechaExtraccion || null,
+          fechaExtraccion: fechaExtraccion,
           termo: frascoData.termo || null,
           gaveta: frascoData.gaveta || null,
           procedencia: entrada.procedencia || null,
@@ -254,7 +256,7 @@ export class ControlReenvaseTableComponent implements OnInit {
         id: registro.id,
         fecha: this.parsearFechaDesdeBackend(registro.fecha),
         no_donante: registro.madreDonante.id.toString(),
-        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo.id),
+        no_frasco_anterior: this.generarCodigoLHC(registro.frascoCrudo.id, registro.fecha),
         id_frasco_anterior: registro.frascoCrudo.id,
         volumen_frasco_anterior: volumen,
         ciclo: registro.lote?.ciclo?.numeroCiclo?.toString() || '',
@@ -314,9 +316,21 @@ export class ControlReenvaseTableComponent implements OnInit {
 
   // ============= UTILIDADES =============
 
-  private generarCodigoLHC(id: number): string {
-    const añoActual = new Date().getFullYear().toString().slice(-2);
-    return `LHC ${añoActual} ${id}`;
+  private generarCodigoLHC(id: number, fecha?: Date | string | null): string {
+    let año: string;
+
+    if (fecha) {
+      const fechaParseada = this.parsearFechaSegura(fecha);
+      if (fechaParseada) {
+        año = fechaParseada.getFullYear().toString().slice(-2);
+      } else {
+        año = new Date().getFullYear().toString().slice(-2);
+      }
+    } else {
+      año = new Date().getFullYear().toString().slice(-2);
+    }
+
+    return `LHC ${año} ${id}`;
   }
 
   private extraerIdDeCodigoLHC(codigo: string): number | null {

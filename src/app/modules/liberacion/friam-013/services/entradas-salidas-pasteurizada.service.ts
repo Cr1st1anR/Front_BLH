@@ -3,7 +3,12 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environments';
-import type { ApiResponse } from '../interfaces/entradas-salidas-pasteurizada.interface';
+import type {
+  ApiResponse,
+  BackendApiResponse,
+  PutEntradasSalidasRequest,
+  EmpleadoBackend
+} from '../interfaces/entradas-salidas-pasteurizada.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,44 +17,12 @@ export class EntradasSalidasPasteurizadaService {
 
   constructor(private readonly http: HttpClient) { }
 
-  getEntradasSalidasPorMesYAnio(mes: number, anio: number): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(
-      `${environment.ApiBLH}/getEntradasSalidasPasteurizada`,
-      {
-        params: { mes: mes.toString(), anio: anio.toString() }
-      }
-    ).pipe(
-      map(response => {
-        if (response && response.data) {
-          return response;
-        }
-        return {
-          status: 200,
-          statusmsg: 'OK',
-          data: []
-        };
-      }),
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 204) {
-          console.info(`No hay datos para ${mes}/${anio}`);
-          return of({
-            status: 204,
-            statusmsg: 'No Content',
-            data: []
-          });
-        }
-        console.error('Error en getEntradasSalidasPorMesYAnio:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  getEntradasSalidasPorLote(lote: number): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(
-      `${environment.ApiBLH}/getEntradasSalidasPasteurizadaPorLote`,
-      {
-        params: { lote: lote.toString() }
-      }
+  /**
+   * Obtiene las entradas y salidas de leche pasteurizada por lote
+   */
+  getEntradasSalidasPorLote(lote: number): Observable<ApiResponse<BackendApiResponse[]>> {
+    return this.http.get<ApiResponse<BackendApiResponse[]>>(
+      `${environment.ApiBLH}/getEntradasSalidaLechePasteurizada/${lote}`
     ).pipe(
       map(response => {
         if (response && response.data) {
@@ -76,8 +49,11 @@ export class EntradasSalidasPasteurizadaService {
     );
   }
 
-  getEmpleados(): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${environment.ApiBLH}/GetEmpleados`)
+  /**
+   * Obtiene la lista de empleados
+   */
+  getEmpleados(): Observable<ApiResponse<EmpleadoBackend[]>> {
+    return this.http.get<ApiResponse<EmpleadoBackend[]>>(`${environment.ApiBLH}/getEmpleados`)
       .pipe(
         map(response => {
           if (response && response.data) {
@@ -104,13 +80,18 @@ export class EntradasSalidasPasteurizadaService {
       );
   }
 
-  putEntradasSalidasPasteurizada(id: number, data: any): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${environment.ApiBLH}/putEntradasSalidasPasteurizada/${id}`, data)
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          console.error('Error en putEntradasSalidasPasteurizada:', error);
-          return throwError(() => error);
-        })
-      );
+  /**
+   * Actualiza una entrada/salida de leche pasteurizada
+   */
+  putEntradasSalidasPasteurizada(id: number, data: PutEntradasSalidasRequest): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(
+      `${environment.ApiBLH}/putEntradaSalidaLechePasteurizada/${id}`,
+      data
+    ).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error en putEntradasSalidasPasteurizada:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

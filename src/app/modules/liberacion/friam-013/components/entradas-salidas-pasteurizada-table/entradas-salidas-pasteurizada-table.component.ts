@@ -19,7 +19,9 @@ import type {
   ResponsableOption,
   FiltroFecha,
   FiltrosBusqueda,
-  TipoMensaje
+  TipoMensaje,
+  BackendApiResponse,
+  PutEntradasSalidasRequest
 } from '../../interfaces/entradas-salidas-pasteurizada.interface';
 
 @Component({
@@ -90,7 +92,7 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
     { header: 'RESPONSABLE', field: 'responsable_entrada', width: '200px', tipo: 'select', grupo: 'entrada', vertical: false },
 
     // COLUMNAS DE SALIDA
-    { header: 'FECHA', field: 'fecha_salida', width: '140px', tipo: 'date', grupo: 'salida', vertical: false },
+    { header: 'FECHA', field: 'fecha_salida', width: '155px', tipo: 'date', grupo: 'salida', vertical: false },
     { header: 'RESPONSABLE', field: 'responsable_salida', width: '200px', tipo: 'select', grupo: 'salida', vertical: false }
   ];
 
@@ -113,7 +115,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.inicializarComponente();
-    this.cargarDatosMock();
   }
 
   // ============= INICIALIZACIÓN =============
@@ -127,81 +128,142 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   }
 
   private cargarEmpleados(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.loading.empleados = true;
 
-      this.opcionesResponsables = [
-        { label: 'Dra. María González', value: 'Dra. María González', id_empleado: 1, cargo: 'Médico' },
-        { label: 'Lic. Ana Martínez', value: 'Lic. Ana Martínez', id_empleado: 2, cargo: 'Auxiliar' },
-        { label: 'Dr. Carlos López', value: 'Dr. Carlos López', id_empleado: 3, cargo: 'Médico' }
-      ];
+      this.entradasSalidasService.getEmpleados().subscribe({
+        next: (response) => {
+          this.opcionesResponsables = response.data.map(empleado => ({
+            label: empleado.nombre,
+            value: empleado.nombre,
+            id_empleado: empleado.id,
+            cargo: empleado.cargo,
+            telefono: empleado.telefono,
+            correo: empleado.correo || ''
+          }));
 
-      this.loading.empleados = false;
-      resolve();
+          this.loading.empleados = false;
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error al cargar empleados:', error);
+          this.loading.empleados = false;
+          reject(error);
+        }
+      });
     });
   }
 
-  // ============= DATOS MOCK =============
-  private cargarDatosMock(): void {
-    const fechaParto1 = new Date(2025, 10, 20); // 20 de noviembre de 2025
-    const fechaProcesamiento1 = new Date(2025, 11, 5); // 5 de diciembre de 2025
+  // ============= BÚSQUEDA POR LOTE (API REAL) =============
+  buscarPorLote(lote: number): void {
+    if (!lote || lote <= 0) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor ingrese un lote válido');
+      return;
+    }
 
-    const fechaParto2 = new Date(2025, 9, 1); // 1 de octubre de 2025
-    const fechaProcesamiento2 = new Date(2025, 11, 6); // 6 de diciembre de 2025
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de buscar');
+      return;
+    }
 
-    const mockData: EntradasSalidasPasteurizadaData[] = [
-      {
-        id: 1,
-        fecha_procesamiento: fechaProcesamiento1,
-        congelador: '3',
-        n_gaveta: '12',
-        n_frasco_pasteurizado: 'LHP 25\n1234',
-        volumen_cc: '150',
-        dornic: '3.5',
-        kcal_l: '680',
-        fecha_parto: fechaParto1,
-        dias_posparto: this.calcularDiasPosparto(
-          fechaParto1.toISOString().split('T')[0],
-          fechaProcesamiento1.toISOString().split('T')[0]
-        ),
-        donante: '1001',
-        edad_gestacional: 38,
-        fecha_vencimiento: this.calcularFechaVencimiento(fechaProcesamiento1),
-        responsable_entrada: 'Dra. María González',
-        fecha_salida: null,
-        responsable_salida: '',
-        id_empleado_entrada: 1,
-        id_empleado_salida: null,
-        lote: 106
+    this.loading.search = true;
+
+    this.entradasSalidasService.getEntradasSalidasPorLote(lote).subscribe({
+      next: (response) => {
+        if (response.status === 204 || !response.data || response.data.length === 0) {
+          this.mostrarMensaje('info', 'Sin resultados', `No se encontraron registros para el lote ${lote}`);
+          this.dataOriginal = [];
+          this.dataFiltered = [];
+        } else {
+          this.dataOriginal = this.mapearDatosBackendAFrontend(response.data);
+          this.aplicarFiltros();
+          this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${this.dataOriginal.length} registro${this.dataOriginal.length > 1 ? 's' : ''} para el lote ${lote}`);
+        }
+
+        this.loading.search = false;
+        this.filtroFecha = null;
       },
-      {
-        id: 2,
-        fecha_procesamiento: fechaProcesamiento2,
-        congelador: '3',
-        n_gaveta: '8',
-        n_frasco_pasteurizado: 'LHP 25\n1235',
-        volumen_cc: '200',
-        dornic: '3.8',
-        kcal_l: '720',
-        fecha_parto: fechaParto2,
-        dias_posparto: this.calcularDiasPosparto(
-          fechaParto2.toISOString().split('T')[0],
-          fechaProcesamiento2.toISOString().split('T')[0]
-        ),
-        donante: '1002',
-        edad_gestacional: 40,
-        fecha_vencimiento: this.calcularFechaVencimiento(fechaProcesamiento2),
-        responsable_entrada: 'Lic. Ana Martínez',
-        fecha_salida: new Date(2025, 11, 8),
-        responsable_salida: 'Dr. Carlos López',
-        id_empleado_entrada: 2,
-        id_empleado_salida: 3,
-        lote: 101
+      error: (error) => {
+        console.error('Error al buscar por lote:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al buscar datos del lote');
+        this.loading.search = false;
       }
-    ];
+    });
+  }
 
-    this.dataOriginal = mockData;
+  limpiarBusquedaLote(): void {
+    if (this.isAnyRowEditing()) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de limpiar');
+      return;
+    }
+
+    this.dataOriginal = [];
     this.aplicarFiltros();
+    this.mostrarMensaje('info', 'Información', 'Búsqueda por lote limpiada');
+  }
+
+  // ============= MAPEO DE DATOS BACKEND A FRONTEND =============
+  private mapearDatosBackendAFrontend(backendData: BackendApiResponse[]): EntradasSalidasPasteurizadaData[] {
+    return backendData.map(item => {
+      const fechaParto = item.frascoPasteurizado.controlReenvase.frascoCrudo.madreDonante.gestacion.fechaParto;
+      const fechaExtraccion = this.obtenerFechaExtraccion(item);
+      const fechaProcesamiento = this.parsearFecha(item.frascoPasteurizado.controlReenvase.frascoCrudo.fechaSalida);
+      const anioFrasco = fechaProcesamiento ? fechaProcesamiento.getFullYear().toString().slice(-2) : '00';
+
+      return {
+        id: item.id,
+        fecha_procesamiento: fechaProcesamiento,
+        congelador: '3',
+        n_gaveta: item.gaveta?.toString() || '',
+        n_frasco_pasteurizado: `LHP ${anioFrasco}\n${item.frascoPasteurizado.id}`,
+        volumen_cc: item.frascoPasteurizado.volumen?.toString() || '',
+        dornic: item.frascoPasteurizado.controlReenvase.seleccionClasificacion?.acidezDornic?.resultado?.toString() || '',
+        kcal_l: item.frascoPasteurizado.controlReenvase.seleccionClasificacion?.crematocrito?.kcal?.toString() || '',
+        fecha_parto: this.parsearFecha(fechaParto),
+        dias_posparto: this.calcularDiasPosparto(fechaParto, fechaExtraccion),
+        donante: item.frascoPasteurizado.controlReenvase.frascoCrudo.madreDonante.id?.toString() || '',
+        edad_gestacional: item.frascoPasteurizado.controlReenvase.frascoCrudo.madreDonante.gestacion?.semanas || 0,
+        fecha_vencimiento: this.calcularFechaVencimiento(fechaProcesamiento),
+        responsable_entrada: item.responsableEntrada?.nombre || '',
+        fecha_salida: item.fechaSalida ? this.parsearFecha(item.fechaSalida) : null,
+        responsable_salida: item.responsableSalida?.nombre || '',
+        id_empleado_entrada: item.responsableEntrada?.id || null,
+        id_empleado_salida: item.responsableSalida?.id || null,
+        lote: item.frascoPasteurizado.controlReenvase.lote?.numeroLote || null
+      };
+    });
+  }
+
+  /**
+   * Obtiene la fecha de extracción desde frascoRecolectado o extraccion
+   */
+  private obtenerFechaExtraccion(item: BackendApiResponse): string {
+    const frascoCrudo = item.frascoPasteurizado.controlReenvase.frascoCrudo;
+
+    if (frascoCrudo.frascoRecolectado?.fechaDeExtraccion) {
+      return frascoCrudo.frascoRecolectado.fechaDeExtraccion;
+    }
+
+    if (frascoCrudo.extraccion?.fechaDeExtraccion) {
+      return frascoCrudo.extraccion.fechaDeExtraccion;
+    }
+
+    return '';
+  }
+
+  /**
+   * Parsea una fecha desde formato YYYY-MM-DD a Date
+   */
+  private parsearFecha(fechaString: string | null | undefined): Date | null {
+    if (!fechaString) return null;
+
+    try {
+      const [year, month, day] = fechaString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    } catch (error) {
+      console.error('Error al parsear fecha:', fechaString, error);
+      return null;
+    }
   }
 
   // ============= CÁLCULO DE DÍAS POSPARTO =============
@@ -240,47 +302,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
     fechaVencimiento.setMonth(fechaVencimiento.getMonth() + 6);
 
     return fechaVencimiento;
-  }
-
-  // ============= BÚSQUEDA POR LOTE =============
-  buscarPorLote(lote: number): void {
-    if (!lote || lote <= 0) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Por favor ingrese un lote válido');
-      return;
-    }
-
-    if (this.isAnyRowEditing()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de buscar');
-      return;
-    }
-
-    this.loading.search = true;
-
-    // Simulación de búsqueda por lote
-    setTimeout(() => {
-      const registrosPorLote = this.dataOriginal.filter(item => item.lote === lote);
-
-      if (registrosPorLote.length === 0) {
-        this.mostrarMensaje('info', 'Sin resultados', `No se encontraron registros para el lote ${lote}`);
-        this.dataFiltered = [];
-      } else {
-        this.dataFiltered = registrosPorLote;
-        this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${registrosPorLote.length} registro${registrosPorLote.length > 1 ? 's' : ''} para el lote ${lote}`);
-      }
-
-      this.loading.search = false;
-      this.filtroFecha = null; // Limpiar filtro de fecha cuando se busca por lote
-    }, 500);
-  }
-
-  limpiarBusquedaLote(): void {
-    if (this.isAnyRowEditing()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de limpiar');
-      return;
-    }
-
-    this.aplicarFiltros();
-    this.mostrarMensaje('info', 'Información', 'Búsqueda por lote limpiada');
   }
 
   // ============= EVENTOS DE UI =============
@@ -341,19 +362,90 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   }
 
   private actualizarRegistroExistente(dataRow: EntradasSalidasPasteurizadaData, rowElement: HTMLTableRowElement): void {
+    if (!dataRow.id) {
+      this.mostrarMensaje('error', 'Error', 'No se puede actualizar un registro sin ID');
+      return;
+    }
+
     this.loading.main = true;
 
-    setTimeout(() => {
-      this.procesarRespuestaActualizacion(dataRow, rowElement);
-    }, 500);
+    const requestData = this.mapearDatosParaBackend(dataRow);
+
+    this.entradasSalidasService.putEntradasSalidasPasteurizada(dataRow.id, requestData).subscribe({
+      next: (response) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement);
+        this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+      },
+      error: (error) => {
+        console.error('Error al actualizar registro:', error);
+        this.mostrarMensaje('error', 'Error', 'Error al actualizar el registro');
+        this.loading.main = false;
+        this.restaurarEstadoOriginal(dataRow, this.dataFiltered.indexOf(dataRow));
+      }
+    });
+  }
+
+  /**
+   * Mapea los datos del frontend al formato requerido por el backend
+   */
+  private mapearDatosParaBackend(rowData: EntradasSalidasPasteurizadaData): PutEntradasSalidasRequest {
+    return {
+      gaveta: parseInt(rowData.n_gaveta) || 0,
+      fechaSalida: this.convertirFechaParaBackend(rowData.fecha_salida),
+      responsableEntrada: rowData.id_empleado_entrada || 0,
+      responsableSalida: rowData.id_empleado_salida || 0
+    };
+  }
+
+  /**
+   * Convierte fechas de diferentes formatos a YYYY-MM-DD
+   */
+  private convertirFechaParaBackend(fecha: string | Date | null): string {
+    if (!fecha) return '';
+
+    try {
+      const dateObj = fecha instanceof Date ? fecha : new Date(fecha);
+
+      if (isNaN(dateObj.getTime())) return '';
+
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Error al convertir fecha:', error);
+      return '';
+    }
   }
 
   private validarCamposRequeridos(dataRow: EntradasSalidasPasteurizadaData): boolean {
-    return !!(
-      dataRow.fecha_procesamiento &&
-      dataRow.n_gaveta?.trim() &&
-      dataRow.responsable_entrada?.trim()
-    );
+    const gavetaValida = !!(dataRow.n_gaveta?.trim() && !isNaN(parseInt(dataRow.n_gaveta)));
+    const responsableEntradaValido = !!(dataRow.responsable_entrada?.trim() && dataRow.id_empleado_entrada);
+    const responsableSalidaValido = !!(dataRow.responsable_salida?.trim() && dataRow.id_empleado_salida);
+    const fechaSalidaValida = !!dataRow.fecha_salida;
+
+    if (!gavetaValida) {
+      this.mostrarMensaje('error', 'Error', 'La gaveta debe ser un número válido');
+      return false;
+    }
+
+    if (!responsableEntradaValido) {
+      this.mostrarMensaje('error', 'Error', 'Debe seleccionar un responsable de entrada');
+      return false;
+    }
+
+    if (!fechaSalidaValida) {
+      this.mostrarMensaje('error', 'Error', 'Debe seleccionar una fecha de salida');
+      return false;
+    }
+
+    if (!responsableSalidaValido) {
+      this.mostrarMensaje('error', 'Error', 'Debe seleccionar un responsable de salida');
+      return false;
+    }
+
+    return true;
   }
 
   private guardarEstadoOriginal(dataRow: EntradasSalidasPasteurizadaData): void {
@@ -375,8 +467,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
     this.editingRow = null;
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
-
-    this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
   }
 
   private getRowId(dataRow: EntradasSalidasPasteurizadaData): string {

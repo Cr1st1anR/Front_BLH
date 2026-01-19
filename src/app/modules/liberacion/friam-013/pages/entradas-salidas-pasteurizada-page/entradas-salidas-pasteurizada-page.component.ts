@@ -36,7 +36,6 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
   private readonly monthPickerComponent!: MonthPickerComponent;
 
   private isInitialized = false;
-  private filtroMesActualPendiente: { year: number; month: number } | null = null;
 
   filtrosBusqueda: FiltrosBusqueda = {
     n_frasco_pasteurizado: '',
@@ -49,11 +48,12 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
   };
 
   ngOnInit(): void {
-    this.prepararFiltroMesActual();
+    // NO preparar filtro inicial automático
   }
 
   ngAfterViewInit(): void {
-    this.esperarInicializacionTabla();
+    // NO aplicar filtro automático al iniciar
+    this.isInitialized = true;
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
@@ -86,48 +86,6 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
   limpiarBusquedaLote(): void {
     this.busquedaLote = { lote: '' };
     this.tableComponent?.limpiarBusquedaLote();
-  }
-
-  private prepararFiltroMesActual(): void {
-    const fechaActual = new Date();
-    this.filtroMesActualPendiente = {
-      year: fechaActual.getFullYear(),
-      month: fechaActual.getMonth() + 1
-    };
-  }
-
-  private esperarInicializacionTabla(): void {
-    const interval = setInterval(() => {
-      if (this.isTableReadyForFilter()) {
-        this.aplicarFiltroMesActual();
-        clearInterval(interval);
-      }
-    }, 100);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      if (!this.isInitialized) {
-        console.warn('Timeout: No se pudo aplicar el filtro inicial del mes actual');
-      }
-    }, 5000);
-  }
-
-  private isTableReadyForFilter(): boolean {
-    return !!(
-      this.tableComponent &&
-      this.tableComponent.isTableInitialized &&
-      this.tableComponent.isTableInitialized()
-    );
-  }
-
-  private aplicarFiltroMesActual(): void {
-    if (this.isInitialized || !this.filtroMesActualPendiente) {
-      return;
-    }
-
-    this.tableComponent.aplicarFiltroInicialConNotificacion(this.filtroMesActualPendiente);
-    this.isInitialized = true;
-    this.filtroMesActualPendiente = null;
   }
 
   get loadingSearch(): boolean {

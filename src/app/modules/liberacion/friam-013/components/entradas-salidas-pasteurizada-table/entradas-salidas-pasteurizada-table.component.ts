@@ -71,6 +71,9 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   opcionesResponsables: ResponsableOption[] = [];
 
+  // Variable para controlar si se ha hecho una búsqueda por lote
+  private busquedaPorLoteActiva = false;
+
   private readonly mesesDelAno = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -167,6 +170,8 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
     }
 
     this.loading.search = true;
+    this.busquedaPorLoteActiva = true; // Marcar que hay búsqueda por lote activa
+    this.filtroFecha = null; // Limpiar filtro de fecha
 
     this.entradasSalidasService.getEntradasSalidasPorLote(lote).subscribe({
       next: (response) => {
@@ -176,17 +181,17 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
           this.dataFiltered = [];
         } else {
           this.dataOriginal = this.mapearDatosBackendAFrontend(response.data);
-          this.aplicarFiltros();
+          this.dataFiltered = [...this.dataOriginal]; // Asignar directamente sin aplicar filtros
           this.mostrarMensaje('success', 'Búsqueda exitosa', `Se encontraron ${this.dataOriginal.length} registro${this.dataOriginal.length > 1 ? 's' : ''} para el lote ${lote}`);
         }
 
         this.loading.search = false;
-        this.filtroFecha = null;
       },
       error: (error) => {
         console.error('Error al buscar por lote:', error);
         this.mostrarMensaje('error', 'Error', 'Error al buscar datos del lote');
         this.loading.search = false;
+        this.busquedaPorLoteActiva = false;
       }
     });
   }
@@ -197,8 +202,9 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       return;
     }
 
+    this.busquedaPorLoteActiva = false;
     this.dataOriginal = [];
-    this.aplicarFiltros();
+    this.dataFiltered = [];
     this.mostrarMensaje('info', 'Información', 'Búsqueda por lote limpiada');
   }
 
@@ -501,6 +507,12 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
 
   // ============= FILTROS =============
   filtrarPorFecha(filtro: FiltroFecha | null): void {
+    // Si hay una búsqueda por lote activa, no aplicar filtro por fecha
+    if (this.busquedaPorLoteActiva) {
+      this.mostrarMensaje('warn', 'Advertencia', 'Limpie la búsqueda por lote antes de filtrar por fecha');
+      return;
+    }
+
     this.filtroFecha = filtro;
 
     if (filtro) {
@@ -508,7 +520,7 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       this.mostrarNotificacionFiltro();
     } else {
       this.dataOriginal = [];
-      this.aplicarFiltros();
+      this.dataFiltered = [];
     }
   }
 
@@ -522,13 +534,17 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
-    this.filtrarPorFecha(filtro);
+    // Solo aplicar si no hay búsqueda por lote activa
+    if (!this.busquedaPorLoteActiva) {
+      this.filtrarPorFecha(filtro);
+    }
   }
 
   private aplicarFiltros(): void {
     let datosFiltrados = [...this.dataOriginal];
 
-    if (this.filtroFecha) {
+    // Solo aplicar filtro por fecha si NO hay búsqueda por lote activa
+    if (this.filtroFecha && !this.busquedaPorLoteActiva) {
       datosFiltrados = this.filtrarPorMesYAno(datosFiltrados, this.filtroFecha);
     }
 

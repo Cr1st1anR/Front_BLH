@@ -1,7 +1,6 @@
 <app-header [title]="'CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA PASTEURIZADA (FRIAM-013)'" />
 
 <div class="container-page">
-  <!-- BÚSQUEDA POR LOTE -->
   <div class="search-section">
     <div class="search-row">
       <span class="font-semibold text-gray-700 search-label">BUSCAR POR LOTE:</span>
@@ -28,7 +27,6 @@
     </div>
   </div>
 
-  <!-- FILTROS Y MONTH PICKER -->
   <div class="flex justify-between items-center filters-section">
     <div class="flex gap-3 items-center">
       <span class="font-semibold text-gray-700">Filtros:</span>
@@ -45,8 +43,7 @@
       <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
         (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
     </div>
-
-    <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
+    <shared-month-picker [autoSelectCurrent]="false" (dateChange)="onMonthPickerChange($event)" />
   </div>
 </div>
 

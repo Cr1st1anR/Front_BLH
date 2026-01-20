@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -27,15 +27,13 @@ import type { FiltrosBusqueda, BusquedaLote } from '../../interfaces/entradas-sa
   templateUrl: './entradas-salidas-pasteurizada-page.component.html',
   styleUrl: './entradas-salidas-pasteurizada-page.component.scss'
 })
-export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterViewInit {
+export class EntradasSalidasPasteurizadaPageComponent {
 
   @ViewChild(EntradasSalidasPasteurizadaTableComponent)
   private readonly tableComponent!: EntradasSalidasPasteurizadaTableComponent;
 
   @ViewChild(MonthPickerComponent)
   private readonly monthPickerComponent!: MonthPickerComponent;
-
-  private isInitialized = false;
 
   filtrosBusqueda: FiltrosBusqueda = {
     n_frasco_pasteurizado: '',
@@ -46,15 +44,6 @@ export class EntradasSalidasPasteurizadaPageComponent implements OnInit, AfterVi
   busquedaLote: BusquedaLote = {
     lote: ''
   };
-
-  ngOnInit(): void {
-    // NO preparar filtro inicial automático
-  }
-
-  ngAfterViewInit(): void {
-    // NO aplicar filtro automático al iniciar
-    this.isInitialized = true;
-  }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.tableComponent?.filtrarPorFecha(filtro);

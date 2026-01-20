@@ -13,13 +13,11 @@
       [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id" editMode="row">
 
       <ng-template #header>
-        <!-- FILA 1: GRUPOS ENTRADA Y SALIDA -->
         <tr>
           <th [attr.colspan]="headersEntrada.length" class="text-center bg-blue-100 group-header">ENTRADA</th>
           <th [attr.colspan]="headersSalida.length + 1" class="text-center bg-green-100 group-header">SALIDA</th>
         </tr>
 
-        <!-- FILA 2: HEADERS INDIVIDUALES -->
         <tr>
           @for (col of headersEntrada; track $index) {
           <th [style.width]="col.width" [style.min-width]="col.width" class="column-header">
@@ -45,14 +43,12 @@
           </th>
           }
 
-          <!-- COLUMNA ACCIONES -->
           <th style="width: 120px; min-width: 120px;" class="column-header">ACCIONES</th>
         </tr>
       </ng-template>
 
       <ng-template #body let-rowData let-editing="editing" let-rowIndex="rowIndex">
         <tr [pEditableRow]="rowData">
-          <!-- COLUMNAS DE ENTRADA -->
           @for (col of headersEntrada; track $index) {
           <td [style.width]="col.width" [style.min-width]="col.width"
             (click)="editing ? $event.stopPropagation() : null">
@@ -119,7 +115,6 @@
           </td>
           }
 
-          <!-- COLUMNAS DE SALIDA -->
           @for (col of headersSalida; track $index) {
           <td [style.width]="col.width" [style.min-width]="col.width"
             (click)="editing ? $event.stopPropagation() : null">
@@ -159,7 +154,6 @@
           </td>
           }
 
-          <!-- ACCIONES -->
           <td style="width: 120px; min-width: 120px;">
             <div class="flex items-center justify-center gap-2">
               <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded

@@ -12,7 +12,7 @@ export interface DistribucionLecheProcesadaData {
   gaveta: string;
 }
 
-// ✅ NUEVO: Interface para datos del bebé (receptor)
+// ✅ Interface para datos del bebé (receptor)
 export interface DatosReceptor {
   id?: number | null;
   responsable_prescripcion: string;
@@ -22,20 +22,20 @@ export interface DatosReceptor {
   eps: string;
 }
 
-// ✅ NUEVO: Interface para el payload completo
+// ✅ Interface para el payload completo
 export interface PayloadDistribucionCompleta {
   datosReceptor: DatosReceptor;
   registrosDistribucion: DistribucionLecheProcesadaData[];
 }
 
-// ✅ MODIFICADO: Interface para las opciones del selector - ahora por identificación
+// ✅ Interface para las opciones del selector
 export interface OpcionFechaDistribucion {
-  label: string; // Formato: "1234567890 - María Pérez"
-  value: string; // ID de la distribución
-  identificacion: string; // Identificación del bebé
-  nombreBebe: string; // Nombre del bebé
-  id_registro: number; // ID de la distribución
-  fechaPrimerRegistro?: Date; // Fecha del primer registro (para referencia interna)
+  label: string;
+  value: string;
+  identificacion: string;
+  nombreBebe: string;
+  id_registro: number;
+  fechaPrimerRegistro?: Date;
 }
 
 export interface LoadingState {
@@ -66,6 +66,10 @@ export interface FrascoOption {
   id_frasco: number;
   numeroFrasco: number;
   año: number;
+  // ✅ NUEVOS CAMPOS
+  calorias?: number;
+  acidezDornic?: number;
+  gaveta?: number;
 }
 
 export interface TipoEdadOption {
@@ -73,12 +77,118 @@ export interface TipoEdadOption {
   value: string;
 }
 
-// ✅ NUEVO: Opciones de EPS
 export interface EpsOption {
   label: string;
   value: string;
 }
 
+// ============= INTERFACES PARA BACKEND =============
+
+// ✅ Respuesta de getDistribucionPorMes
+export interface DistribucionResumenBackend {
+  id: number;
+  nombreBeneficiario: string;
+  identificacion: number;
+}
+
+// ✅ Respuesta completa de getDistribucionById
+export interface DistribucionCompletaBackend {
+  id: number;
+  nombreBeneficiario: string;
+  identificacion: number;
+  semanasGestacion: number;
+  eps: string;
+  responsable: string;
+  infoDistribucion: InfoDistribucionBackend[];
+}
+
+export interface InfoDistribucionBackend {
+  id: number;
+  fecha: string;
+  volumenDistribuido: number;
+  tipo: string;
+  exclusiva: number;
+  frascoPasteurizado: FrascoPasteurizadoBackend;
+}
+
+export interface FrascoPasteurizadoBackend {
+  id: number;
+  volumen: number;
+  numeroFrasco: number;
+  observaciones: string | null;
+  activo: boolean;
+  entradasSalidasPasteurizada: EntradasSalidasBackend;
+  controlReenvase: ControlReenvaseBackend;
+}
+
+export interface EntradasSalidasBackend {
+  id: number;
+  gaveta: number;
+  fechaSalida: string;
+}
+
+export interface ControlReenvaseBackend {
+  id: number;
+  fecha: string;
+  seleccionClasificacion: SeleccionClasificacionBackend;
+}
+
+export interface SeleccionClasificacionBackend {
+  id: number;
+  fecha: string;
+  acidezDornic: AcidezDornicBackend;
+  crematocrito: CrematocritoBackend;
+}
+
+export interface AcidezDornicBackend {
+  id: number;
+  primera: number;
+  segunda: number;
+  tercera: number;
+  resultado: number;
+}
+
+export interface CrematocritoBackend {
+  id: number;
+  ct1: number;
+  ct2: number;
+  ct3: number | null;
+  cc1: number;
+  cc2: number;
+  cc3: number | null;
+  kcal: number;
+}
+
+// ✅ Payload para PUT (actualizar)
+export interface PutDistribucionPayload {
+  idInfoDistribucion: number;
+  fecha: string;
+  volumenDistribuido: number;
+  frascoPasteurizado: { id: number };
+  tipo: string;
+  nombreBeneficiario: string;
+  identificacion: number;
+  semanasGestacion: number;
+  eps: string;
+  responsable: string;
+  exclusiva: number;
+}
+
+// ✅ Payload para POST (crear)
+export interface PostDistribucionPayload {
+  fecha: string;
+  volumenDistribuido: number;
+  frascoPasteurizado: { id: number };
+  tipo: string;
+  responsable: string;
+  nombreBeneficiario: string;
+  identificacion: number;
+  semanasGestacion: number;
+  eps: string;
+  exclusiva: number;
+}
+
+// ✅ Respuesta genérica del backend
 export interface ApiResponse<T> {
   status: number;
   statusmsg: string;

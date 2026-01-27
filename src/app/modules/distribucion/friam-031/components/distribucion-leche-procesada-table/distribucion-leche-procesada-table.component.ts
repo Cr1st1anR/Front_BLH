@@ -362,7 +362,9 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
 
-    this.mostrarMensaje('success', 'Éxito', 'Registro creado exitosamente');
+    // ✅ CORREGIDO: Mensaje más claro
+    this.mostrarMensaje('info', 'Guardado temporal',
+      'Registro guardado localmente. Presione el botón "Guardar" o "Actualizar" para confirmar los cambios en la base de datos.');
   }
 
   private procesarRespuestaActualizacion(dataRow: DistribucionLecheProcesadaData, rowElement: HTMLTableRowElement): void {
@@ -372,7 +374,9 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
 
-    this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+    // ✅ CORREGIDO: Mensaje más claro
+    this.mostrarMensaje('info', 'Guardado temporal',
+      'Cambios guardados localmente. Presione el botón "Guardar" o "Actualizar" para confirmar los cambios en la base de datos.');
   }
 
   private getRowId(dataRow: DistribucionLecheProcesadaData): string {

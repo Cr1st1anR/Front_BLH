@@ -267,14 +267,22 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   }
 
   /**
-   * Mapea un registro de infoDistribucion del backend al formato del frontend
+   * ✅ CORREGIDO: Mapea un registro de infoDistribucion del backend al formato del frontend
    */
   private mapearInfoDistribucionARegistro(info: InfoDistribucionBackend): DistribucionLecheProcesadaData {
     const frasco = info.frascoPasteurizado;
 
+    // ✅ FIX: Parsear fecha sin conversión de zona horaria
+    const fechaParts = info.fecha.split('-'); // "2026-01-26" -> ["2026", "01", "26"]
+    const fechaLocal = new Date(
+      parseInt(fechaParts[0]),
+      parseInt(fechaParts[1]) - 1,
+      parseInt(fechaParts[2])
+    );
+
     return {
       id: info.id,
-      fecha: new Date(info.fecha),
+      fecha: fechaLocal, // ✅ Ahora la fecha será correcta
       vol_distribuido: frasco.volumen.toString(),
       n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
       id_frasco_leche_procesada: frasco.id,

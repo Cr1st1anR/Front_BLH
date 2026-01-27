@@ -151,9 +151,12 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
   }
 
-  // ✅ INTEGRADO: Cargar distribuciones por mes desde el backend
+  // ✅ CORREGIDO: Cargar distribuciones por mes desde el backend
   private cargarDistribucionesPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
+
+    // ✅ Limpiar opciones anteriores
+    this.opcionesDistribuciones = [];
 
     this.distribucionService.getDistribucionesPorMes(filtro.month, filtro.year).subscribe({
       next: (distribuciones) => {
@@ -177,17 +180,37 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           this.mostrarMensaje('success', 'Distribuciones cargadas',
             `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
         } else {
-          this.mostrarMensaje('info', 'Sin registros',
-            'No se encontraron distribuciones para este mes');
+          // ✅ FIX: Mensaje cuando no hay distribuciones
+          this.mostrarMensaje('info', 'Sin distribuciones',
+            `No se encontraron distribuciones para ${this.obtenerNombreMes(filtro.month)} ${filtro.year}`);
         }
       },
       error: (error) => {
         this.loading.fechas = false;
-        this.mostrarMensaje('error', 'Error',
-          `Error al cargar distribuciones: ${error.message}`);
-        console.error('Error al cargar distribuciones:', error);
+
+        // ✅ FIX: Verificar si es un error 204 (No Content)
+        if (error.message.includes('204') || error.message.includes('No Content')) {
+          this.opcionesDistribuciones = [];
+          this.mostrarMensaje('info', 'Sin distribuciones',
+            `No se encontraron distribuciones para ${this.obtenerNombreMes(filtro.month)} ${filtro.year}`);
+        } else {
+          this.mostrarMensaje('error', 'Error',
+            `Error al cargar distribuciones: ${error.message}`);
+          console.error('Error al cargar distribuciones:', error);
+        }
       }
     });
+  }
+
+  /**
+   * ✅ NUEVO: Obtener nombre del mes
+   */
+  private obtenerNombreMes(mes: number): string {
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[mes - 1] || '';
   }
 
   onDistribucionSeleccionada(event: any): void {

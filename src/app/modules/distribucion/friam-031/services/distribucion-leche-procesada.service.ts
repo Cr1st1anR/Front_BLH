@@ -25,10 +25,23 @@ export class DistribucionLecheProcesadaService {
    */
   getDistribucionesPorMes(mes: number, anio: number): Observable<DistribucionResumenBackend[]> {
     return this.http.get<ApiResponse<DistribucionResumenBackend[]>>(
-      `${environment.ApiBLH}/distribucion/${mes}/${anio}`
+      `${environment.ApiBLH}/distribucion/${mes}/${anio}`,
+      { observe: 'response' } // ✅ Observar respuesta completa
     ).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
+      map(response => {
+        // ✅ Manejar 204 No Content
+        if (response.status === 204 || !response.body?.data) {
+          return [];
+        }
+        return response.body.data;
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // ✅ Si es 204, devolver array vacío sin error
+        if (error.status === 204) {
+          return of([]);
+        }
+        return this.handleError(error);
+      })
     );
   }
 

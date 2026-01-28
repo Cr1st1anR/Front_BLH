@@ -305,8 +305,8 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
     return {
       id: info.id,
-      fecha: fechaLocal, // ✅ Ahora la fecha será correcta
-      vol_distribuido: frasco.volumen.toString(),
+      fecha: fechaLocal,
+      vol_distribuido: info.volumenDistribuido.toString(), // ✅ CORREGIDO: Usar volumenDistribuido de la distribución
       n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
       id_frasco_leche_procesada: frasco.id,
       calorias: frasco.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
@@ -369,7 +369,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   }
 
   /**
-   * Actualizar distribución existente
+   * ✅ CORREGIDO: Actualizar distribución existente
    */
   private actualizarDistribucion(): void {
     this.loading.saving = true;
@@ -381,8 +381,14 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       return fechaA - fechaB;
     });
 
-    // ✅ Actualizar cada registro individualmente
-    const actualizaciones = registrosOrdenados.map(registro => {
+    // ✅ Separar registros nuevos de registros existentes
+    const registrosNuevos = registrosOrdenados.filter(reg => reg.id === null || typeof reg.id === 'number' && reg.id > 1000000000000);
+    const registrosExistentes = registrosOrdenados.filter(reg => reg.id !== null && !(typeof reg.id === 'number' && reg.id > 1000000000000));
+
+    const promesas: Promise<any>[] = [];
+
+    // ✅ ACTUALIZAR registros existentes con PUT
+    registrosExistentes.forEach(registro => {
       const payload: PutDistribucionPayload = {
         idInfoDistribucion: registro.id!,
         fecha: this.convertirFechaParaBackend(registro.fecha!),
@@ -397,20 +403,49 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
         exclusiva: registro.exclusiva
       };
 
-      return this.distribucionService.putDistribucion(this.idDistribucionActual!, payload).toPromise();
+      promesas.push(this.distribucionService.putDistribucion(this.idDistribucionActual!, payload).toPromise());
     });
 
-    Promise.all(actualizaciones)
+    // ✅ CREAR nuevos registros con POST
+    registrosNuevos.forEach(registro => {
+      const payload: PostDistribucionPayload = {
+        fecha: this.convertirFechaParaBackend(registro.fecha!),
+        volumenDistribuido: parseFloat(registro.vol_distribuido),
+        frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
+        tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
+        responsable: this.datosReceptor.responsable_prescripcion,
+        nombreBeneficiario: this.datosReceptor.nombre_bebe,
+        identificacion: parseInt(this.datosReceptor.identificacion_bebe),
+        semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
+        eps: this.datosReceptor.eps,
+        exclusiva: registro.exclusiva
+      };
+
+      promesas.push(this.distribucionService.postDistribucion(payload).toPromise());
+    });
+
+    Promise.all(promesas)
       .then(() => {
         this.loading.saving = false;
         this.identificacionActual = this.datosReceptor.identificacion_bebe;
-        this.mostrarMensaje('success', 'Éxito',
-          'Todos los datos han sido actualizados exitosamente');
+
+        const mensaje = registrosNuevos.length > 0 && registrosExistentes.length > 0
+          ? `Se actualizaron ${registrosExistentes.length} registro(s) y se crearon ${registrosNuevos.length} nuevo(s)`
+          : registrosNuevos.length > 0
+          ? `Se crearon ${registrosNuevos.length} nuevo(s) registro(s)`
+          : `Se actualizaron ${registrosExistentes.length} registro(s)`;
+
+        this.mostrarMensaje('success', 'Éxito', mensaje);
+
+        // ✅ Recargar datos para obtener IDs reales del backend
+        if (this.idDistribucionActual) {
+          this.cargarDatosDistribucion(this.idDistribucionActual);
+        }
       })
       .catch((error) => {
         this.loading.saving = false;
         this.mostrarMensaje('error', 'Error',
-          `Error al actualizar: ${error.message}`);
+          `Error al guardar cambios: ${error.message}`);
         console.error('Error al actualizar:', error);
       });
   }

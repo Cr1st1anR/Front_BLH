@@ -451,7 +451,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
   }
 
   /**
-   * Crear nueva distribución
+   * ✅ CORREGIDO: Crear nueva distribución con múltiples registros
    */
   private crearDistribucion(): void {
     this.loading.saving = true;
@@ -463,38 +463,57 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       return fechaA - fechaB;
     });
 
-    // ✅ Crear cada registro individualmente
-    const creaciones = registrosOrdenados.map(registro => {
-      const payload: PostDistribucionPayload = {
-        fecha: this.convertirFechaParaBackend(registro.fecha!),
-        volumenDistribuido: parseFloat(registro.vol_distribuido),
-        frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
-        tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
-        responsable: this.datosReceptor.responsable_prescripcion,
-        nombreBeneficiario: this.datosReceptor.nombre_bebe,
-        identificacion: parseInt(this.datosReceptor.identificacion_bebe),
-        semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
-        eps: this.datosReceptor.eps,
-        exclusiva: registro.exclusiva
-      };
+    // ✅ Variable para almacenar el ID de la distribución creada
+    let idDistribucionCreada: number | null = null;
 
-      return this.distribucionService.postDistribucion(payload).toPromise();
-    });
+    // ✅ Crear registros secuencialmente
+    const crearRegistrosSecuencialmente = async () => {
+      for (const registro of registrosOrdenados) {
+        const payload: PostDistribucionPayload = {
+          fecha: this.convertirFechaParaBackend(registro.fecha!),
+          volumenDistribuido: parseFloat(registro.vol_distribuido),
+          frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
+          tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
+          responsable: this.datosReceptor.responsable_prescripcion,
+          nombreBeneficiario: this.datosReceptor.nombre_bebe,
+          identificacion: parseInt(this.datosReceptor.identificacion_bebe),
+          semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
+          eps: this.datosReceptor.eps,
+          exclusiva: registro.exclusiva
+        };
 
-    Promise.all(creaciones)
-      .then((resultados) => {
+        try {
+          const resultado = await this.distribucionService.postDistribucion(payload).toPromise();
+
+          // ✅ Guardar el ID de la primera distribución creada
+          if (!idDistribucionCreada && resultado) {
+            idDistribucionCreada = resultado.id;
+          }
+        } catch (error) {
+          throw error;
+        }
+      }
+    };
+
+    crearRegistrosSecuencialmente()
+      .then(() => {
         this.loading.saving = false;
 
-        // Actualizar con el ID del primer registro creado
-        if (resultados.length > 0 && resultados[0]) {
-          this.idDistribucionActual = resultados[0].id;
+        // ✅ Usar el ID de la distribución creada
+        if (idDistribucionCreada) {
+          this.idDistribucionActual = idDistribucionCreada;
         }
 
         this.identificacionActual = this.datosReceptor.identificacion_bebe;
         this.esActualizacion = true;
 
         this.mostrarMensaje('success', 'Éxito',
-          'Todos los datos han sido guardados exitosamente');
+          `Se crearon ${registrosOrdenados.length} registro(s) exitosamente`);
+
+        // ✅ Recargar datos para mostrar los IDs reales
+        if (this.idDistribucionActual) {
+          this.cargarDatosDistribucion(this.idDistribucionActual);
+        }
       })
       .catch((error) => {
         this.loading.saving = false;

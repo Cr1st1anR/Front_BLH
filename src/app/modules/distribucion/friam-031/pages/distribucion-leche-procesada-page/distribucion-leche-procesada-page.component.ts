@@ -21,11 +21,10 @@ import type {
   LoadingState,
   OpcionFechaDistribucion,
   EpsOption,
+  EntidadOption,
   TipoMensaje,
-  PayloadDistribucionCompleta,
   PostDistribucionPayload,
   PutDistribucionPayload,
-  DistribucionCompletaBackend,
   InfoDistribucionBackend
 } from '../../interfaces/distribucion-leche-procesada.interface';
 
@@ -65,7 +64,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   mostrarFormulario: boolean = false;
   esActualizacion: boolean = false;
-  identificacionActual: string = '';
   distribucionSeleccionada: string = '';
 
   datosReceptor: DatosReceptor = {
@@ -74,25 +72,15 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     nombre_bebe: '',
     identificacion_bebe: '',
     semanas_gestacion: '',
-    eps: ''
+    eps: null
   };
 
   opcionesDistribuciones: OpcionFechaDistribucion[] = [];
-  opcionesEps: EpsOption[] = [
-    { label: 'SURA', value: 'SURA' },
-    { label: 'SANITAS', value: 'SANITAS' },
-    { label: 'COOMEVA', value: 'COOMEVA' },
-    { label: 'SALUD TOTAL', value: 'SALUD TOTAL' },
-    { label: 'NUEVA EPS', value: 'NUEVA EPS' },
-    { label: 'COMPENSAR', value: 'COMPENSAR' },
-    { label: 'FAMISANAR', value: 'FAMISANAR' },
-    { label: 'CAFESALUD', value: 'CAFESALUD' }
-  ];
+  opcionesEps: EpsOption[] = [];
 
   private idDistribucionActual: number | null = null;
   private mesAnoActual: { year: number; month: number } | null = null;
 
-  // ✅ Mapeo de tipos de edad frontend <-> backend
   private readonly tipoEdadMap: Record<string, string> = {
     'Madura': 'M',
     'Transición': 'T',
@@ -125,7 +113,22 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       month: hoy.getMonth() + 1
     };
 
+    this.cargarEntidades();
+
     this.mostrarMensaje('info', 'Información', 'Seleccione una distribución existente o cree una nueva');
+  }
+
+  private cargarEntidades(): void {
+    this.distribucionService.getAllEntidades().subscribe({
+      next: (entidades: EntidadOption[]) => {
+        this.opcionesEps = entidades;
+      },
+      error: (error: Error) => {
+        this.mostrarMensaje('error', 'Error',
+          `Error al cargar EPS: ${error.message}`);
+        console.error('Error al cargar EPS:', error);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -151,16 +154,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
   }
 
-  // ✅ CORREGIDO: Cargar distribuciones por mes desde el backend
   private cargarDistribucionesPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
 
-    // ✅ Limpiar opciones anteriores
     this.opcionesDistribuciones = [];
 
     this.distribucionService.getDistribucionesPorMes(filtro.month, filtro.year).subscribe({
       next: (distribuciones) => {
-        // Ordenar alfabéticamente por identificación
         distribuciones.sort((a, b) =>
           a.identificacion.toString().localeCompare(b.identificacion.toString())
         );
@@ -180,7 +180,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           this.mostrarMensaje('success', 'Distribuciones cargadas',
             `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
         } else {
-          // ✅ FIX: Mensaje cuando no hay distribuciones
           this.mostrarMensaje('info', 'Sin distribuciones',
             `No se encontraron distribuciones para ${this.obtenerNombreMes(filtro.month)} ${filtro.year}`);
         }
@@ -188,7 +187,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       error: (error) => {
         this.loading.fechas = false;
 
-        // ✅ FIX: Verificar si es un error 204 (No Content)
         if (error.message.includes('204') || error.message.includes('No Content')) {
           this.opcionesDistribuciones = [];
           this.mostrarMensaje('info', 'Sin distribuciones',
@@ -202,9 +200,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     });
   }
 
-  /**
-   * ✅ NUEVO: Obtener nombre del mes
-   */
   private obtenerNombreMes(mes: number): string {
     const meses = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -226,7 +221,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     this.cargarDatosDistribucion(opcionSeleccionada.id_registro);
   }
 
-  // ✅ INTEGRADO: Cargar datos completos de una distribución
   private cargarDatosDistribucion(idDistribucion: number, intentosRestantes: number = 3): void {
     if (!this.tableComponent) {
       if (intentosRestantes > 0) {
@@ -244,24 +238,19 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
     this.distribucionService.getDistribucionById(idDistribucion).subscribe({
       next: (distribucion) => {
-        // Mapear datos del receptor
         this.datosReceptor = {
           id: distribucion.id,
           responsable_prescripcion: distribucion.responsable,
           nombre_bebe: distribucion.nombreBeneficiario,
           identificacion_bebe: distribucion.identificacion.toString(),
           semanas_gestacion: distribucion.semanasGestacion.toString(),
-          eps: distribucion.eps
+          eps: distribucion.eps?.id || null
         };
 
-        this.identificacionActual = distribucion.identificacion.toString();
-
-        // Mapear registros de distribución
         const registros: DistribucionLecheProcesadaData[] = distribucion.infoDistribucion.map(info =>
           this.mapearInfoDistribucionARegistro(info)
         );
 
-        // Ordenar por fecha (más antiguos primero)
         const registrosOrdenados = registros.sort((a, b) => {
           const fechaA = new Date(a.fecha!).getTime();
           const fechaB = new Date(b.fecha!).getTime();
@@ -289,14 +278,10 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     });
   }
 
-  /**
-   * ✅ CORREGIDO: Mapea un registro de infoDistribucion del backend al formato del frontend
-   */
   private mapearInfoDistribucionARegistro(info: InfoDistribucionBackend): DistribucionLecheProcesadaData {
     const frasco = info.frascoPasteurizado;
 
-    // ✅ FIX: Parsear fecha sin conversión de zona horaria
-    const fechaParts = info.fecha.split('-'); // "2026-01-26" -> ["2026", "01", "26"]
+    const fechaParts = info.fecha.split('-');
     const fechaLocal = new Date(
       parseInt(fechaParts[0]),
       parseInt(fechaParts[1]) - 1,
@@ -306,14 +291,14 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     return {
       id: info.id,
       fecha: fechaLocal,
-      vol_distribuido: info.volumenDistribuido.toString(), // ✅ CORREGIDO: Usar volumenDistribuido de la distribución
+      vol_distribuido: info.volumenDistribuido.toString(),
       n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
       id_frasco_leche_procesada: frasco.id,
       calorias: frasco.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
       acidez_dornic: frasco.controlReenvase.seleccionClasificacion.acidezDornic.resultado.toString(),
       tipo_edad: this.tipoEdadReverseMap[info.tipo] || info.tipo,
       exclusiva: info.exclusiva,
-      freezer: '3', // ✅ Siempre es 3 según tus especificaciones
+      freezer: '3',
       gaveta: frasco.entradasSalidasPasteurizada.gaveta.toString()
     };
   }
@@ -329,7 +314,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
 
     this.limpiarFormulario();
-    this.identificacionActual = '';
     this.distribucionSeleccionada = '';
     this.esActualizacion = false;
     this.mostrarFormulario = true;
@@ -343,7 +327,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     this.tableComponent?.crearNuevoRegistro();
   }
 
-  // ✅ INTEGRADO: Guardar o actualizar con backend real
   guardarOActualizarDatos(): void {
     if (!this.validarFormulario()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos del receptor');
@@ -368,26 +351,20 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
   }
 
-  /**
-   * ✅ CORREGIDO: Actualizar distribución existente
-   */
   private actualizarDistribucion(): void {
     this.loading.saving = true;
 
-    // Ordenar registros por fecha
     const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
       const fechaA = new Date(a.fecha!).getTime();
       const fechaB = new Date(b.fecha!).getTime();
       return fechaA - fechaB;
     });
 
-    // ✅ Separar registros nuevos de registros existentes
     const registrosNuevos = registrosOrdenados.filter(reg => reg.id === null || typeof reg.id === 'number' && reg.id > 1000000000000);
     const registrosExistentes = registrosOrdenados.filter(reg => reg.id !== null && !(typeof reg.id === 'number' && reg.id > 1000000000000));
 
     const promesas: Promise<any>[] = [];
 
-    // ✅ ACTUALIZAR registros existentes con PUT
     registrosExistentes.forEach(registro => {
       const payload: PutDistribucionPayload = {
         idInfoDistribucion: registro.id!,
@@ -398,7 +375,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
         nombreBeneficiario: this.datosReceptor.nombre_bebe,
         identificacion: parseInt(this.datosReceptor.identificacion_bebe),
         semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
-        eps: this.datosReceptor.eps,
+        eps: { id: this.datosReceptor.eps! },
         responsable: this.datosReceptor.responsable_prescripcion,
         exclusiva: registro.exclusiva
       };
@@ -406,7 +383,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       promesas.push(this.distribucionService.putDistribucion(this.idDistribucionActual!, payload).toPromise());
     });
 
-    // ✅ CREAR nuevos registros con POST
     registrosNuevos.forEach(registro => {
       const payload: PostDistribucionPayload = {
         fecha: this.convertirFechaParaBackend(registro.fecha!),
@@ -417,7 +393,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
         nombreBeneficiario: this.datosReceptor.nombre_bebe,
         identificacion: parseInt(this.datosReceptor.identificacion_bebe),
         semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
-        eps: this.datosReceptor.eps,
+        eps: { id: this.datosReceptor.eps! },
         exclusiva: registro.exclusiva
       };
 
@@ -427,7 +403,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     Promise.all(promesas)
       .then(() => {
         this.loading.saving = false;
-        this.identificacionActual = this.datosReceptor.identificacion_bebe;
 
         const mensaje = registrosNuevos.length > 0 && registrosExistentes.length > 0
           ? `Se actualizaron ${registrosExistentes.length} registro(s) y se crearon ${registrosNuevos.length} nuevo(s)`
@@ -437,7 +412,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
         this.mostrarMensaje('success', 'Éxito', mensaje);
 
-        // ✅ Recargar datos para obtener IDs reales del backend
         if (this.idDistribucionActual) {
           this.cargarDatosDistribucion(this.idDistribucionActual);
         }
@@ -450,23 +424,17 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       });
   }
 
-  /**
-   * ✅ CORREGIDO: Crear nueva distribución con múltiples registros
-   */
   private crearDistribucion(): void {
     this.loading.saving = true;
 
-    // Ordenar registros por fecha
     const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
       const fechaA = new Date(a.fecha!).getTime();
       const fechaB = new Date(b.fecha!).getTime();
       return fechaA - fechaB;
     });
 
-    // ✅ Variable para almacenar el ID de la distribución creada
     let idDistribucionCreada: number | null = null;
 
-    // ✅ Crear registros secuencialmente
     const crearRegistrosSecuencialmente = async () => {
       for (const registro of registrosOrdenados) {
         const payload: PostDistribucionPayload = {
@@ -478,14 +446,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
           nombreBeneficiario: this.datosReceptor.nombre_bebe,
           identificacion: parseInt(this.datosReceptor.identificacion_bebe),
           semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
-          eps: this.datosReceptor.eps,
+          eps: { id: this.datosReceptor.eps! },
           exclusiva: registro.exclusiva
         };
 
         try {
           const resultado = await this.distribucionService.postDistribucion(payload).toPromise();
 
-          // ✅ Guardar el ID de la primera distribución creada
           if (!idDistribucionCreada && resultado) {
             idDistribucionCreada = resultado.id;
           }
@@ -499,18 +466,15 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       .then(() => {
         this.loading.saving = false;
 
-        // ✅ Usar el ID de la distribución creada
         if (idDistribucionCreada) {
           this.idDistribucionActual = idDistribucionCreada;
         }
 
-        this.identificacionActual = this.datosReceptor.identificacion_bebe;
         this.esActualizacion = true;
 
         this.mostrarMensaje('success', 'Éxito',
           `Se crearon ${registrosOrdenados.length} registro(s) exitosamente`);
 
-        // ✅ Recargar datos para mostrar los IDs reales
         if (this.idDistribucionActual) {
           this.cargarDatosDistribucion(this.idDistribucionActual);
         }
@@ -523,9 +487,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       });
   }
 
-  /**
-   * Convierte una fecha a formato YYYY-MM-DD para el backend
-   */
   private convertirFechaParaBackend(fecha: string | Date): string {
     const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
 
@@ -542,7 +503,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       this.datosReceptor.nombre_bebe?.trim() &&
       this.datosReceptor.identificacion_bebe?.trim() &&
       this.datosReceptor.semanas_gestacion?.trim() &&
-      this.datosReceptor.eps?.trim()
+      this.datosReceptor.eps !== null
     );
   }
 
@@ -578,14 +539,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       nombre_bebe: '',
       identificacion_bebe: '',
       semanas_gestacion: '',
-      eps: ''
+      eps: null
     };
 
     if (this.tableComponent) {
       this.tableComponent.limpiarDatos();
     }
 
-    this.identificacionActual = '';
     this.mostrarFormulario = false;
     this.esActualizacion = false;
     this.idDistribucionActual = null;

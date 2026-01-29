@@ -12,23 +12,20 @@ export interface DistribucionLecheProcesadaData {
   gaveta: string;
 }
 
-// ✅ Interface para datos del bebé (receptor)
 export interface DatosReceptor {
   id?: number | null;
   responsable_prescripcion: string;
   nombre_bebe: string;
   identificacion_bebe: string;
   semanas_gestacion: string;
-  eps: string;
+  eps: number | null;
 }
 
-// ✅ Interface para el payload completo
 export interface PayloadDistribucionCompleta {
   datosReceptor: DatosReceptor;
   registrosDistribucion: DistribucionLecheProcesadaData[];
 }
 
-// ✅ Interface para las opciones del selector
 export interface OpcionFechaDistribucion {
   label: string;
   value: string;
@@ -66,7 +63,6 @@ export interface FrascoOption {
   id_frasco: number;
   numeroFrasco: number;
   año: number;
-  // ✅ NUEVOS CAMPOS
   calorias?: number;
   acidezDornic?: number;
   gaveta?: number;
@@ -79,27 +75,30 @@ export interface TipoEdadOption {
 
 export interface EpsOption {
   label: string;
-  value: string;
+  value: number;
 }
 
-// ============= INTERFACES PARA BACKEND =============
 
-// ✅ Respuesta de getDistribucionPorMes
 export interface DistribucionResumenBackend {
   id: number;
   nombreBeneficiario: string;
   identificacion: number;
 }
 
-// ✅ Respuesta completa de getDistribucionById
 export interface DistribucionCompletaBackend {
   id: number;
   nombreBeneficiario: string;
   identificacion: number;
   semanasGestacion: number;
-  eps: string;
+  eps: EpsBackend;
   responsable: string;
   infoDistribucion: InfoDistribucionBackend[];
+}
+
+export interface EpsBackend {
+  id: number;
+  nombre: string;
+  activo: number;
 }
 
 export interface InfoDistribucionBackend {
@@ -159,7 +158,6 @@ export interface CrematocritoBackend {
   kcal: number;
 }
 
-// ✅ Payload para PUT (actualizar)
 export interface PutDistribucionPayload {
   idInfoDistribucion: number;
   fecha: string;
@@ -169,12 +167,11 @@ export interface PutDistribucionPayload {
   nombreBeneficiario: string;
   identificacion: number;
   semanasGestacion: number;
-  eps: string;
+  eps: { id: number };
   responsable: string;
   exclusiva: number;
 }
 
-// ✅ Payload para POST (crear)
 export interface PostDistribucionPayload {
   fecha: string;
   volumenDistribuido: number;
@@ -184,11 +181,21 @@ export interface PostDistribucionPayload {
   nombreBeneficiario: string;
   identificacion: number;
   semanasGestacion: number;
-  eps: string;
+  eps: { id: number };
   exclusiva: number;
 }
 
-// ✅ Respuesta genérica del backend
+export interface Entidad {
+  id: number;
+  nombre: string;
+  activo: number;
+}
+
+export interface EntidadOption {
+  label: string;
+  value: number;
+}
+
 export interface ApiResponse<T> {
   status: number;
   statusmsg: string;

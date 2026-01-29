@@ -16,35 +16,22 @@
 }
 
 <div class="container-page">
-  <!-- SECCIÓN DE BÚSQUEDA Y FILTROS -->
   <div class="search-section">
     <div class="search-row">
       <span class="font-semibold text-gray-700 search-label">SELECCIONAR DISTRIBUCIÓN:</span>
 
       <shared-month-picker (dateChange)="onMonthPickerChange($event)" />
 
-      <!-- ✅ MODIFICADO: Selector con búsqueda por identificación -->
       @if (opcionesDistribuciones.length > 0) {
-      <p-select
-        [(ngModel)]="distribucionSeleccionada"
-        [options]="opcionesDistribuciones"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Buscar por identificación"
-        (onChange)="onDistribucionSeleccionada($event)"
-        appendTo="body"
-        class="w-80"
-        [showClear]="true"
-        [filter]="true"
-        filterBy="identificacion,nombreBebe"
-        [filterPlaceholder]="'Buscar...'"
-        [loading]="loading.fechas">
+      <p-select [(ngModel)]="distribucionSeleccionada" [options]="opcionesDistribuciones" optionLabel="label"
+        optionValue="value" placeholder="Buscar por identificación" (onChange)="onDistribucionSeleccionada($event)"
+        appendTo="body" class="w-80" [showClear]="true" [filter]="true" filterBy="identificacion,nombreBebe"
+        [filterPlaceholder]="'Buscar...'" [loading]="loading.fechas">
       </p-select>
       }
 
       <button pButton pRipple type="button" icon="pi pi-refresh" label="Nueva Distribución"
-        class="new-distribution-button p-button-sm"
-        (click)="crearNuevaDistribucion()"
+        class="new-distribution-button p-button-sm" (click)="crearNuevaDistribucion()"
         [disabled]="loading.main || loading.saving">
       </button>
 
@@ -56,132 +43,120 @@
       }
     </div>
 
-    <!-- ✅ MODIFICADO: Mostrar identificación en lugar de fecha -->
-    @if (identificacionActual) {
-    <div class="date-info">
-      <span class="text-sm font-medium text-blue-700">IDENTIFICACIÓN ACTUAL: </span>
-      <span class="text-sm text-blue-600 font-semibold">{{ identificacionActual }}</span>
-    </div>
-    }
-  </div>
+    @if (mostrarFormulario) {
+    <div class="form-section">
+      <p-divider align="center" type="solid">
+        <div class="inline-flex items-center">
+          <i class="pi pi-user mr-2" style="color: #224186;"></i>
+          <b style="color: #224186;">DATOS DEL RECEPTOR</b>
+        </div>
+      </p-divider>
 
-  <!-- CARD DE DATOS DEL RECEPTOR -->
-  @if (mostrarFormulario) {
-  <div class="form-section">
-    <p-divider align="center" type="solid">
-      <div class="inline-flex items-center">
-        <i class="pi pi-user mr-2" style="color: #224186;"></i>
-        <b style="color: #224186;">DATOS DEL RECEPTOR</b>
-      </div>
-    </p-divider>
-
-    <div class="form-card receptor-card">
-      <div class="card-header-custom">
-        <i class="pi pi-id-card" style="color: #224186;"></i>
-        <span class="card-title">Información del Bebé</span>
-      </div>
-
-      <div class="form-fields-grid-five">
-        <div class="form-field-group">
-          <label class="field-label">
-            <i class="pi pi-user-edit text-blue-600"></i>
-            Responsable por la Prescripción
-          </label>
-          <input pInputText type="text" [(ngModel)]="datosReceptor.responsable_prescripcion"
-            placeholder="Ingrese responsable" class="w-full" />
+      <div class="form-card receptor-card">
+        <div class="card-header-custom">
+          <i class="pi pi-id-card" style="color: #224186;"></i>
+          <span class="card-title">Información del Bebé</span>
         </div>
 
-        <div class="form-field-group">
-          <label class="field-label">
-            <i class="pi pi-user text-green-600"></i>
-            Nombre
-          </label>
-          <input pInputText type="text" [(ngModel)]="datosReceptor.nombre_bebe" placeholder="Ingrese nombre del bebé"
-            class="w-full" />
-        </div>
-
-        <div class="form-field-group">
-          <label class="field-label">
-            <i class="pi pi-id-card text-orange-600"></i>
-            Identificación
-          </label>
-          <input pInputText type="text" [(ngModel)]="datosReceptor.identificacion_bebe"
-            placeholder="Ingrese identificación" class="w-full" />
-        </div>
-
-        <div class="form-field-group">
-          <label class="field-label">
-            <i class="pi pi-calendar text-purple-600"></i>
-            Semanas de Gestación
-          </label>
-          <input pInputText type="text" [(ngModel)]="datosReceptor.semanas_gestacion"
-            placeholder="Ej: 38" class="w-full" />
-        </div>
-
-        <div class="form-field-group">
-          <label class="field-label">
-            <i class="pi pi-building text-red-600"></i>
-            EPS
-          </label>
-          <p-select [(ngModel)]="datosReceptor.eps" [options]="opcionesEps" optionLabel="label" optionValue="value"
-            placeholder="Seleccione EPS" appendTo="body" class="w-full" [showClear]="true">
-          </p-select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ CONTENEDOR FLEX PARA BOTÓN Y INDICADOR EN LA MISMA FILA -->
-  <div class="registro-volumen-container">
-    <!-- BOTÓN NUEVO REGISTRO -->
-    <div class="nuevo-registro-wrapper">
-      <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
-    </div>
-
-    <!-- ✅ INDICADOR DE VOLUMEN TOTAL -->
-    @if (dataDistribucion && dataDistribucion.length > 0) {
-    <div class="volumen-total-wrapper">
-      <div class="volumen-total-badge">
-        <div class="volumen-total-content">
-          <i class="pi pi-chart-bar"></i>
-          <div class="volumen-info">
-            <span class="volumen-label">VOLUMEN TOTAL DISTRIBUIDO:</span>
-            <span class="volumen-valor">{{ tableComponent.volumenTotalDistribuido || 0 | number:'1.0-0' }} ML</span>
+        <div class="form-fields-grid-five">
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-user-edit text-blue-600"></i>
+              Responsable por la Prescripción
+            </label>
+            <input pInputText type="text" [(ngModel)]="datosReceptor.responsable_prescripcion"
+              placeholder="Ingrese responsable" class="w-full" />
           </div>
-          <div class="volumen-detalle">
-            <span class="text-xs text-gray-500">
-              ({{ tableComponent.cantidadRegistrosConVolumen || 0 }} registro{{ (tableComponent.cantidadRegistrosConVolumen || 0) > 1 ? 's' : '' }})
-            </span>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-user text-green-600"></i>
+              Nombre
+            </label>
+            <input pInputText type="text" [(ngModel)]="datosReceptor.nombre_bebe" placeholder="Ingrese nombre del bebé"
+              class="w-full" />
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-id-card text-orange-600"></i>
+              Identificación
+            </label>
+            <input pInputText type="text" [(ngModel)]="datosReceptor.identificacion_bebe"
+              placeholder="Ingrese identificación" class="w-full" />
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-calendar text-purple-600"></i>
+              Semanas de Gestación
+            </label>
+            <input pInputText type="text" [(ngModel)]="datosReceptor.semanas_gestacion" placeholder="Ej: 38"
+              class="w-full" />
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">
+              <i class="pi pi-building text-red-600"></i>
+              EPS
+            </label>
+            <p-select [(ngModel)]="datosReceptor.eps" [options]="opcionesEps" optionLabel="label" optionValue="value"
+              placeholder="Seleccione EPS" appendTo="body" class="w-full" [showClear]="true" [filter]="true"
+              [filterPlaceholder]="'Buscar EPS...'">
+            </p-select>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="registro-volumen-container">
+      <div class="nuevo-registro-wrapper">
+        <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+      </div>
+
+      @if (dataDistribucion && dataDistribucion.length > 0) {
+      <div class="volumen-total-wrapper">
+        <div class="volumen-total-badge">
+          <div class="volumen-total-content">
+            <i class="pi pi-chart-bar"></i>
+            <div class="volumen-info">
+              <span class="volumen-label">VOLUMEN TOTAL DISTRIBUIDO:</span>
+              <span class="volumen-valor">{{ tableComponent.volumenTotalDistribuido || 0 | number:'1.0-0' }} ML</span>
+            </div>
+            <div class="volumen-detalle">
+              <span class="text-xs text-gray-500">
+                ({{ tableComponent.cantidadRegistrosConVolumen || 0 }} registro{{
+                (tableComponent.cantidadRegistrosConVolumen || 0) > 1 ? 's' : '' }})
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="table-wrapper" [hidden]="!mostrarFormulario">
+      <distribucion-leche-procesada-table />
+    </div>
+
+    @if (mostrarFormulario && dataDistribucion && dataDistribucion.length > 0) {
+    <div class="form-actions-bottom">
+      <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
+        class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()"
+        [disabled]="loading.saving">
+      </button>
+
+      <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
+        [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button-small p-button-sm"
+        (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
+      </button>
+    </div>
+    }
+
+    @if (!mostrarFormulario) {
+    <p class="text-gray-400 text-center italic mt-8">
+      Seleccione un mes y una distribución, o cree una nueva distribución para comenzar
+    </p>
     }
   </div>
-  }
-
-  <!-- ✅ TABLA SIEMPRE EN EL DOM -->
-  <div class="table-wrapper" [hidden]="!mostrarFormulario">
-    <distribucion-leche-procesada-table />
-  </div>
-
-  <!-- BOTONES DE GUARDADO GLOBAL -->
-  @if (mostrarFormulario && dataDistribucion && dataDistribucion.length > 0) {
-  <div class="form-actions-bottom">
-    <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
-      class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()" [disabled]="loading.saving">
-    </button>
-
-    <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
-      [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button-small p-button-sm"
-      (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
-    </button>
-  </div>
-  }
-
-  @if (!mostrarFormulario) {
-  <p class="text-gray-400 text-center italic mt-8">
-    Seleccione un mes y una distribución, o cree una nueva distribución para comenzar
-  </p>
-  }
-</div>

@@ -64,7 +64,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
   dataFiltered: DistribucionLecheProcesadaData[] = [];
   filtroFecha: FiltroFecha | null = null;
 
-  // ✅ Opciones para los selects
   opcionesFrascos: FrascoOption[] = [];
   opcionesTipoEdad: TipoEdadOption[] = [
     { label: 'Madura', value: 'Madura' },
@@ -78,11 +77,9 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
   ] as const;
 
   headersDistribucion: TableColumn[] = [
-    // COLUMNAS DE INFORMACIÓN RECEPTORES
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date', grupo: 'receptores', vertical: false },
     { header: 'VOL.\nDISTRIBUIDO', field: 'vol_distribuido', width: '110px', tipo: 'text', grupo: 'receptores', vertical: false },
 
-    // COLUMNAS DE INFORMACIÓN LECHE PASTEURIZADA
     { header: 'Nº FRASCO LECHE\nPROCESADA', field: 'n_frasco_leche_procesada', width: '140px', tipo: 'select', grupo: 'leche_pasteurizada', vertical: false },
     { header: 'CALORÍAS', field: 'calorias', width: '100px', tipo: 'readonly', grupo: 'leche_pasteurizada', vertical: false },
     { header: 'ACIDEZ\nDORNIC', field: 'acidez_dornic', width: '100px', tipo: 'readonly', grupo: 'leche_pasteurizada', vertical: false },
@@ -113,7 +110,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.cargarFrascosDesdeBackend();
   }
 
-  // ✅ INTEGRADO: Cargar frascos desde el backend
   private cargarFrascosDesdeBackend(): void {
     this.loading.frascos = true;
 
@@ -133,72 +129,11 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
           `Error al cargar frascos: ${error.message}`);
         console.error('Error al cargar frascos:', error);
 
-        // Usar datos mock como fallback
-        this.cargarFrascosMock();
+        this.opcionesFrascos = [];
       }
     });
   }
 
-  // ✅ Método de respaldo con datos mock completos
-  private cargarFrascosMock(): void {
-    const mockFrascos: FrascoOption[] = [
-      {
-        label: 'LHP 25 1',
-        value: 'LHP 25 1',
-        id_frasco: 1,
-        numeroFrasco: 1,
-        año: 2025,
-        calorias: 680,
-        acidezDornic: 3.5,
-        gaveta: 12
-      },
-      {
-        label: 'LHP 25 2',
-        value: 'LHP 25 2',
-        id_frasco: 2,
-        numeroFrasco: 2,
-        año: 2025,
-        calorias: 720,
-        acidezDornic: 3.8,
-        gaveta: 8
-      },
-      {
-        label: 'LHP 25 3',
-        value: 'LHP 25 3',
-        id_frasco: 3,
-        numeroFrasco: 3,
-        año: 2025,
-        calorias: 700,
-        acidezDornic: 3.6,
-        gaveta: 5
-      },
-      {
-        label: 'LHP 25 4',
-        value: 'LHP 25 4',
-        id_frasco: 4,
-        numeroFrasco: 4,
-        año: 2025,
-        calorias: 690,
-        acidezDornic: 3.4,
-        gaveta: 10
-      },
-      {
-        label: 'LHP 25 5',
-        value: 'LHP 25 5',
-        id_frasco: 5,
-        numeroFrasco: 5,
-        año: 2025,
-        calorias: 710,
-        acidezDornic: 3.7,
-        gaveta: 15
-      }
-    ];
-
-    this.opcionesFrascos = mockFrascos;
-    this.mostrarMensaje('warn', 'Advertencia', 'Se han cargado frascos de prueba');
-  }
-
-  // ✅ ACTUALIZADO: Asignar valores automáticamente al seleccionar frasco
   onFrascoSeleccionado(event: any, rowData: DistribucionLecheProcesadaData): void {
     const frascoSeleccionado = this.extraerValorEvento(event);
     if (!frascoSeleccionado) return;
@@ -207,18 +142,14 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
 
     const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
     if (frasco) {
-      // ✅ Asignar ID del frasco
       rowData.id_frasco_leche_procesada = frasco.id_frasco;
 
-      // ✅ NUEVO: Asignar valores automáticamente
       rowData.calorias = frasco.calorias?.toString() || '0';
       rowData.acidez_dornic = frasco.acidezDornic?.toString() || '0';
       rowData.gaveta = frasco.gaveta?.toString() || '0';
-      rowData.freezer = '3'; // ✅ Siempre es 3
+      rowData.freezer = '3';
 
-      // ✅ Mostrar notificación informativa
-      this.mostrarMensaje('info', 'Datos cargados',
-        `Se han cargado los datos del frasco ${frasco.label}`);
+        `Se han cargado los datos del frasco ${frasco.label}`;
     }
   }
 
@@ -269,7 +200,7 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
       acidez_dornic: '',
       tipo_edad: '',
       exclusiva: 0,
-      freezer: '3', // ✅ Siempre es 3
+      freezer: '3',
       gaveta: ''
     };
   }
@@ -362,7 +293,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
 
-    // ✅ CORREGIDO: Mensaje más claro
     this.mostrarMensaje('info', 'Guardado temporal',
       'Registro guardado localmente. Presione el botón "Guardar" o "Actualizar" para confirmar los cambios en la base de datos.');
   }
@@ -374,7 +304,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.table.saveRowEdit(dataRow, rowElement);
     this.loading.main = false;
 
-    // ✅ CORREGIDO: Mensaje más claro
     this.mostrarMensaje('info', 'Guardado temporal',
       'Cambios guardados localmente. Presione el botón "Guardar" o "Actualizar" para confirmar los cambios en la base de datos.');
   }
@@ -383,9 +312,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     return dataRow.id?.toString() || 'new';
   }
 
-  /**
-   * ✅ Calcula el volumen total distribuido
-   */
   get volumenTotalDistribuido(): number {
     if (!this.dataFiltered || this.dataFiltered.length === 0) return 0;
 
@@ -395,9 +321,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     }, 0);
   }
 
-  /**
-   * ✅ Cuenta registros válidos (que tienen volumen)
-   */
   get cantidadRegistrosConVolumen(): number {
     if (!this.dataFiltered || this.dataFiltered.length === 0) return 0;
 
@@ -480,17 +403,11 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
 
   // ============= MÉTODOS PÚBLICOS PARA EL COMPONENTE PADRE =============
 
-  /**
-   * Carga datos externos en la tabla (cuando se selecciona una fecha existente)
-   */
   cargarDatosExternos(datos: DistribucionLecheProcesadaData[]): void {
     this.dataOriginal = datos;
     this.aplicarFiltros();
   }
 
-  /**
-   * Limpia todos los datos de la tabla
-   */
   limpiarDatos(): void {
     this.dataOriginal = [];
     this.dataFiltered = [];
@@ -499,9 +416,6 @@ export class DistribucionLecheProcesadaTableComponent implements OnInit {
     this.hasNewRowInEditing = false;
   }
 
-  /**
-   * Valida si un registro está completo
-   */
   validarRegistroCompleto(registro: DistribucionLecheProcesadaData): boolean {
     return !!(
       registro.fecha &&

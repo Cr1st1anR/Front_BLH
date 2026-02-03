@@ -24,7 +24,7 @@
             @switch (col.tipo) {
             @case ("date") {
             <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" />
+              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" dateFormat="dd/mm/yy" />
             }
             @case ("text") {
             <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"
@@ -44,7 +44,7 @@
           <ng-template #output>
             @if (col.tipo === "date") {
             <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-              [disabled]="true" inputId="icondisplay" />
+              [disabled]="true" inputId="icondisplay" dateFormat="dd/mm/yy" />
             }
             @else if (col.tipo == "select") {
             <p-select [checkmark]="true" [filter]="true" filterBy="id" appendTo="body" [options]="col.options"

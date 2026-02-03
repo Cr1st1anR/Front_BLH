@@ -21,8 +21,11 @@ import type {
   LoadingState,
   OpcionFechaDistribucion,
   EpsOption,
+  EntidadOption,
   TipoMensaje,
-  PayloadDistribucionCompleta
+  PostDistribucionPayload,
+  PutDistribucionPayload,
+  InfoDistribucionBackend
 } from '../../interfaces/distribucion-leche-procesada.interface';
 
 @Component({
@@ -61,8 +64,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   mostrarFormulario: boolean = false;
   esActualizacion: boolean = false;
-  fechaDistribucionActual: Date | null = null;
-  fechaDistribucionSeleccionada: string = '';
+  distribucionSeleccionada: string = '';
 
   datosReceptor: DatosReceptor = {
     id: null,
@@ -70,135 +72,25 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     nombre_bebe: '',
     identificacion_bebe: '',
     semanas_gestacion: '',
-    eps: ''
+    eps: null
   };
 
-  opcionesFechasDistribucion: OpcionFechaDistribucion[] = [];
-  opcionesEps: EpsOption[] = [
-    { label: 'SURA', value: 'SURA' },
-    { label: 'SANITAS', value: 'SANITAS' },
-    { label: 'COOMEVA', value: 'COOMEVA' },
-    { label: 'SALUD TOTAL', value: 'SALUD TOTAL' },
-    { label: 'NUEVA EPS', value: 'NUEVA EPS' },
-    { label: 'COMPENSAR', value: 'COMPENSAR' },
-    { label: 'FAMISANAR', value: 'FAMISANAR' },
-    { label: 'CAFESALUD', value: 'CAFESALUD' }
-  ];
+  opcionesDistribuciones: OpcionFechaDistribucion[] = [];
+  opcionesEps: EpsOption[] = [];
 
   private idDistribucionActual: number | null = null;
   private mesAnoActual: { year: number; month: number } | null = null;
 
-  // ✅ MOCK: Base de datos simulada
-  private mockDatabase = {
-    distribuciones: [
-      {
-        id: 1,
-        fecha: new Date(2025, 11, 5),
-        receptor: {
-          id: 1,
-          responsable_prescripcion: 'Dr. Carlos Ramírez',
-          nombre_bebe: 'María Pérez',
-          identificacion_bebe: '1234567890',
-          semanas_gestacion: '38',
-          eps: 'SURA'
-        },
-        registros: [
-          {
-            id: 1,
-            fecha: new Date(2025, 11, 5),
-            vol_distribuido: '150',
-            n_frasco_leche_procesada: 'LHP 25 1',
-            id_frasco_leche_procesada: 1,
-            calorias: '680',
-            acidez_dornic: '3.5',
-            tipo_edad: 'Madura',
-            exclusiva: 1,
-            freezer: '3',
-            gaveta: '12'
-          },
-          {
-            id: 2,
-            fecha: new Date(2025, 11, 7),
-            vol_distribuido: '200',
-            n_frasco_leche_procesada: 'LHP 25 2',
-            id_frasco_leche_procesada: 2,
-            calorias: '720',
-            acidez_dornic: '3.8',
-            tipo_edad: 'Transición',
-            exclusiva: 0,
-            freezer: '2',
-            gaveta: '8'
-          }
-        ]
-      },
-      {
-        id: 2,
-        fecha: new Date(2025, 11, 10),
-        receptor: {
-          id: 2,
-          responsable_prescripcion: 'Dra. Ana Martínez',
-          nombre_bebe: 'Juan García',
-          identificacion_bebe: '9876543210',
-          semanas_gestacion: '36',
-          eps: 'SANITAS'
-        },
-        registros: [
-          {
-            id: 3,
-            fecha: new Date(2025, 11, 10),
-            vol_distribuido: '180',
-            n_frasco_leche_procesada: 'LHP 25 3',
-            id_frasco_leche_procesada: 3,
-            calorias: '700',
-            acidez_dornic: '3.6',
-            tipo_edad: 'Calostro',
-            exclusiva: 1,
-            freezer: '1',
-            gaveta: '5'
-          }
-        ]
-      },
-      {
-        id: 3,
-        fecha: new Date(2025, 11, 15),
-        receptor: {
-          id: 3,
-          responsable_prescripcion: 'Dr. Luis Fernández',
-          nombre_bebe: 'Ana Rodríguez',
-          identificacion_bebe: '5555555555',
-          semanas_gestacion: '40',
-          eps: 'COOMEVA'
-        },
-        registros: [
-          {
-            id: 4,
-            fecha: new Date(2025, 11, 15),
-            vol_distribuido: '220',
-            n_frasco_leche_procesada: 'LHP 25 4',
-            id_frasco_leche_procesada: 4,
-            calorias: '690',
-            acidez_dornic: '3.4',
-            tipo_edad: 'Madura',
-            exclusiva: 0,
-            freezer: '2',
-            gaveta: '10'
-          },
-          {
-            id: 5,
-            fecha: new Date(2025, 11, 18),
-            vol_distribuido: '150',
-            n_frasco_leche_procesada: 'LHP 25 5',
-            id_frasco_leche_procesada: 5,
-            calorias: '710',
-            acidez_dornic: '3.7',
-            tipo_edad: 'Transición',
-            exclusiva: 1,
-            freezer: '3',
-            gaveta: '15'
-          }
-        ]
-      }
-    ]
+  private readonly tipoEdadMap: Record<string, string> = {
+    'Madura': 'M',
+    'Transición': 'T',
+    'Calostro': 'C'
+  };
+
+  private readonly tipoEdadReverseMap: Record<string, string> = {
+    'M': 'Madura',
+    'T': 'Transición',
+    'C': 'Calostro'
   };
 
   get hasNewRowInEditing(): boolean {
@@ -221,26 +113,40 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       month: hoy.getMonth() + 1
     };
 
+    this.cargarEntidades();
+
     this.mostrarMensaje('info', 'Información', 'Seleccione una distribución existente o cree una nueva');
+  }
+
+  private cargarEntidades(): void {
+    this.distribucionService.getAllEntidades().subscribe({
+      next: (entidades: EntidadOption[]) => {
+        this.opcionesEps = entidades;
+      },
+      error: (error: Error) => {
+        this.mostrarMensaje('error', 'Error',
+          `Error al cargar EPS: ${error.message}`);
+        console.error('Error al cargar EPS:', error);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     if (this.mesAnoActual) {
-      // ✅ Delay más largo para garantizar inicialización completa
       setTimeout(() => {
-        this.cargarFechasDistribucionPorMes(this.mesAnoActual!);
-      }, 500); // Aumentado de 300ms a 500ms
+        this.cargarDistribucionesPorMes(this.mesAnoActual!);
+      }, 500);
     }
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
     this.mesAnoActual = filtro;
     this.limpiarSeleccion();
-    this.cargarFechasDistribucionPorMes(filtro);
+    this.cargarDistribucionesPorMes(filtro);
   }
 
   private limpiarSeleccion(): void {
-    this.fechaDistribucionSeleccionada = '';
+    this.distribucionSeleccionada = '';
     this.mostrarFormulario = false;
 
     if (this.tableComponent) {
@@ -248,68 +154,81 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
   }
 
-  private cargarFechasDistribucionPorMes(filtro: { year: number; month: number }): void {
+  private cargarDistribucionesPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
 
-    setTimeout(() => {
-      const distribucionesFiltradas = this.mockDatabase.distribuciones.filter(dist => {
-        const fecha = new Date(dist.fecha);
-        return fecha.getMonth() + 1 === filtro.month && fecha.getFullYear() === filtro.year;
-      });
+    this.opcionesDistribuciones = [];
 
-      // ✅ CAMBIO: Ordenar por fecha ASCENDENTE (más antiguos primero)
-      distribucionesFiltradas.sort((a, b) => a.fecha.getTime() - b.fecha.getTime()); // Cambiado de b-a a a-b
+    this.distribucionService.getDistribucionesPorMes(filtro.month, filtro.year).subscribe({
+      next: (distribuciones) => {
+        distribuciones.sort((a, b) =>
+          a.identificacion.toString().localeCompare(b.identificacion.toString())
+        );
 
-      this.opcionesFechasDistribucion = distribucionesFiltradas.map(dist => ({
-        label: `${this.formatearFecha(dist.fecha)} - ${dist.receptor.nombre_bebe}`,
-        value: dist.fecha.toISOString(),
-        fecha: dist.fecha,
-        id_registro: dist.id,
-        nombreBebe: dist.receptor.nombre_bebe
-      }));
+        this.opcionesDistribuciones = distribuciones.map(dist => ({
+          label: `${dist.identificacion} - ${dist.nombreBeneficiario}`,
+          value: dist.id.toString(),
+          identificacion: dist.identificacion.toString(),
+          nombreBebe: dist.nombreBeneficiario,
+          id_registro: dist.id
+        }));
 
-      this.loading.fechas = false;
+        this.loading.fechas = false;
 
-      const cantidad = this.opcionesFechasDistribucion.length;
-      if (cantidad > 0) {
-        this.mostrarMensaje('success', 'Fechas cargadas', `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
-      } else {
-        this.mostrarMensaje('info', 'Sin registros', 'No se encontraron distribuciones para este mes');
+        const cantidad = this.opcionesDistribuciones.length;
+        if (cantidad > 0) {
+          this.mostrarMensaje('success', 'Distribuciones cargadas',
+            `Se encontraron ${cantidad} distribución${cantidad > 1 ? 'es' : ''}`);
+        } else {
+          this.mostrarMensaje('info', 'Sin distribuciones',
+            `No se encontraron distribuciones para ${this.obtenerNombreMes(filtro.month)} ${filtro.year}`);
+        }
+      },
+      error: (error) => {
+        this.loading.fechas = false;
+
+        if (error.message.includes('204') || error.message.includes('No Content')) {
+          this.opcionesDistribuciones = [];
+          this.mostrarMensaje('info', 'Sin distribuciones',
+            `No se encontraron distribuciones para ${this.obtenerNombreMes(filtro.month)} ${filtro.year}`);
+        } else {
+          this.mostrarMensaje('error', 'Error',
+            `Error al cargar distribuciones: ${error.message}`);
+          console.error('Error al cargar distribuciones:', error);
+        }
       }
-    }, 500);
+    });
   }
 
-  private formatearFecha(fecha: Date): string {
-    const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const año = fecha.getFullYear();
-    return `${dia}/${mes}/${año}`;
+  private obtenerNombreMes(mes: number): string {
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[mes - 1] || '';
   }
 
-  onFechaDistribucionSeleccionada(event: any): void {
-    const fechaSeleccionada = event.value;
-    if (!fechaSeleccionada) {
+  onDistribucionSeleccionada(event: any): void {
+    const idSeleccionado = event.value;
+    if (!idSeleccionado) {
       this.limpiarFormulario();
       return;
     }
 
-    const opcionSeleccionada = this.opcionesFechasDistribucion.find(opt => opt.value === fechaSeleccionada);
+    const opcionSeleccionada = this.opcionesDistribuciones.find(opt => opt.value === idSeleccionado);
     if (!opcionSeleccionada) return;
 
-    this.cargarDatosDistribucion(opcionSeleccionada.id_registro!);
+    this.cargarDatosDistribucion(opcionSeleccionada.id_registro);
   }
 
   private cargarDatosDistribucion(idDistribucion: number, intentosRestantes: number = 3): void {
-    // ✅ Verificar que tableComponent existe antes de continuar
     if (!this.tableComponent) {
       if (intentosRestantes > 0) {
-        // Reintentar después de un delay
         setTimeout(() => {
           this.cargarDatosDistribucion(idDistribucion, intentosRestantes - 1);
         }, 300);
         return;
       } else {
-        // Si después de 3 intentos no está listo, mostrar error
         this.mostrarMensaje('error', 'Error', 'La tabla no está lista. Por favor, intente nuevamente.');
         return;
       }
@@ -317,43 +236,71 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
     this.loading.main = true;
 
-    setTimeout(() => {
-      const distribucion = this.mockDatabase.distribuciones.find(d => d.id === idDistribucion);
+    this.distribucionService.getDistribucionById(idDistribucion).subscribe({
+      next: (distribucion) => {
+        this.datosReceptor = {
+          id: distribucion.id,
+          responsable_prescripcion: distribucion.responsable,
+          nombre_bebe: distribucion.nombreBeneficiario,
+          identificacion_bebe: distribucion.identificacion.toString(),
+          semanas_gestacion: distribucion.semanasGestacion.toString(),
+          eps: distribucion.eps?.id || null
+        };
 
-      if (!distribucion) {
+        const registros: DistribucionLecheProcesadaData[] = distribucion.infoDistribucion.map(info =>
+          this.mapearInfoDistribucionARegistro(info)
+        );
+
+        const registrosOrdenados = registros.sort((a, b) => {
+          const fechaA = new Date(a.fecha!).getTime();
+          const fechaB = new Date(b.fecha!).getTime();
+          return fechaA - fechaB;
+        });
+
+        if (this.tableComponent && this.tableComponent.cargarDatosExternos) {
+          this.tableComponent.cargarDatosExternos(registrosOrdenados);
+        }
+
+        this.idDistribucionActual = idDistribucion;
+        this.esActualizacion = true;
+        this.mostrarFormulario = true;
         this.loading.main = false;
-        this.mostrarMensaje('error', 'Error', 'No se encontró la distribución seleccionada');
-        return;
-      }
 
-      // Cargar datos del receptor
-      this.datosReceptor = { ...distribucion.receptor };
-
-      // ✅ Ordenar registros por fecha (más antiguos primero - orden cronológico)
-      const registrosOrdenados = [...distribucion.registros].sort((a, b) => {
-        const fechaA = new Date(a.fecha).getTime();
-        const fechaB = new Date(b.fecha).getTime();
-        return fechaA - fechaB;
-      });
-
-      // ✅ Verificar nuevamente antes de cargar
-      if (this.tableComponent && this.tableComponent.cargarDatosExternos) {
-        this.tableComponent.cargarDatosExternos(registrosOrdenados);
-      } else {
+        this.mostrarMensaje('success', 'Datos cargados',
+          `Se han cargado ${registrosOrdenados.length} registro${registrosOrdenados.length > 1 ? 's' : ''} de ${distribucion.nombreBeneficiario}`);
+      },
+      error: (error) => {
         this.loading.main = false;
-        this.mostrarMensaje('error', 'Error', 'Error al cargar los datos en la tabla');
-        return;
+        this.mostrarMensaje('error', 'Error',
+          `Error al cargar la distribución: ${error.message}`);
+        console.error('Error al cargar distribución:', error);
       }
+    });
+  }
 
-      // ✅ La fecha de distribución es la del PRIMER registro (el más antiguo)
-      this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha);
-      this.idDistribucionActual = idDistribucion;
-      this.esActualizacion = true;
-      this.mostrarFormulario = true;
-      this.loading.main = false;
+  private mapearInfoDistribucionARegistro(info: InfoDistribucionBackend): DistribucionLecheProcesadaData {
+    const frasco = info.frascoPasteurizado;
 
-      this.mostrarMensaje('success', 'Datos cargados', `Se han cargado ${registrosOrdenados.length} registro${registrosOrdenados.length > 1 ? 's' : ''} de ${distribucion.receptor.nombre_bebe}`);
-    }, 300);
+    const fechaParts = info.fecha.split('-');
+    const fechaLocal = new Date(
+      parseInt(fechaParts[0]),
+      parseInt(fechaParts[1]) - 1,
+      parseInt(fechaParts[2])
+    );
+
+    return {
+      id: info.id,
+      fecha: fechaLocal,
+      vol_distribuido: info.volumenDistribuido.toString(),
+      n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
+      id_frasco_leche_procesada: frasco.id,
+      calorias: frasco.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
+      acidez_dornic: frasco.controlReenvase.seleccionClasificacion.acidezDornic.resultado.toString(),
+      tipo_edad: this.tipoEdadReverseMap[info.tipo] || info.tipo,
+      exclusiva: info.exclusiva,
+      freezer: '3',
+      gaveta: frasco.entradasSalidasPasteurizada.gaveta.toString()
+    };
   }
 
   crearNuevaDistribucion(): void {
@@ -367,15 +314,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
 
     this.limpiarFormulario();
-
-    // ✅ Para nuevo bebé, la fecha de distribución será la fecha del primer registro que se cree
-    this.fechaDistribucionActual = new Date();
-    this.fechaDistribucionSeleccionada = '';
+    this.distribucionSeleccionada = '';
     this.esActualizacion = false;
     this.mostrarFormulario = true;
     this.idDistribucionActual = null;
 
-    this.mostrarMensaje('info', 'Nueva distribución', 'Complete los datos del receptor y agregue registros de distribución');
+    this.mostrarMensaje('info', 'Nueva distribución',
+      'Complete los datos del receptor y agregue registros de distribución');
   }
 
   crearNuevoRegistro(): void {
@@ -394,17 +339,162 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     }
 
     if (this.tableComponent?.isAnyRowEditing()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Debe confirmar o cancelar la edición actual antes de guardar');
+      this.mostrarMensaje('warn', 'Advertencia',
+        'Debe confirmar o cancelar la edición actual antes de guardar');
       return;
     }
 
-    const payload = this.prepararPayloadCompleto();
-    if (!payload) {
-      this.mostrarMensaje('error', 'Error', 'Error al preparar los datos');
-      return;
+    if (this.esActualizacion) {
+      this.actualizarDistribucion();
+    } else {
+      this.crearDistribucion();
     }
+  }
 
-    this.enviarDatosCompletos(payload);
+  private actualizarDistribucion(): void {
+    this.loading.saving = true;
+
+    const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
+      const fechaA = new Date(a.fecha!).getTime();
+      const fechaB = new Date(b.fecha!).getTime();
+      return fechaA - fechaB;
+    });
+
+    const registrosNuevos = registrosOrdenados.filter(reg => reg.id === null || typeof reg.id === 'number' && reg.id > 1000000000000);
+    const registrosExistentes = registrosOrdenados.filter(reg => reg.id !== null && !(typeof reg.id === 'number' && reg.id > 1000000000000));
+
+    const promesas: Promise<any>[] = [];
+
+    registrosExistentes.forEach(registro => {
+      const payload: PutDistribucionPayload = {
+        idInfoDistribucion: registro.id!,
+        fecha: this.convertirFechaParaBackend(registro.fecha!),
+        volumenDistribuido: parseFloat(registro.vol_distribuido),
+        frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
+        tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
+        nombreBeneficiario: this.datosReceptor.nombre_bebe,
+        identificacion: parseInt(this.datosReceptor.identificacion_bebe),
+        semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
+        eps: { id: this.datosReceptor.eps! },
+        responsable: this.datosReceptor.responsable_prescripcion,
+        exclusiva: registro.exclusiva
+      };
+
+      promesas.push(this.distribucionService.putDistribucion(this.idDistribucionActual!, payload).toPromise());
+    });
+
+    registrosNuevos.forEach(registro => {
+      const payload: PostDistribucionPayload = {
+        fecha: this.convertirFechaParaBackend(registro.fecha!),
+        volumenDistribuido: parseFloat(registro.vol_distribuido),
+        frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
+        tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
+        responsable: this.datosReceptor.responsable_prescripcion,
+        nombreBeneficiario: this.datosReceptor.nombre_bebe,
+        identificacion: parseInt(this.datosReceptor.identificacion_bebe),
+        semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
+        eps: { id: this.datosReceptor.eps! },
+        exclusiva: registro.exclusiva
+      };
+
+      promesas.push(this.distribucionService.postDistribucion(payload).toPromise());
+    });
+
+    Promise.all(promesas)
+      .then(() => {
+        this.loading.saving = false;
+
+        const mensaje = registrosNuevos.length > 0 && registrosExistentes.length > 0
+          ? `Se actualizaron ${registrosExistentes.length} registro(s) y se crearon ${registrosNuevos.length} nuevo(s)`
+          : registrosNuevos.length > 0
+          ? `Se crearon ${registrosNuevos.length} nuevo(s) registro(s)`
+          : `Se actualizaron ${registrosExistentes.length} registro(s)`;
+
+        this.mostrarMensaje('success', 'Éxito', mensaje);
+
+        if (this.idDistribucionActual) {
+          this.cargarDatosDistribucion(this.idDistribucionActual);
+        }
+      })
+      .catch((error) => {
+        this.loading.saving = false;
+        this.mostrarMensaje('error', 'Error',
+          `Error al guardar cambios: ${error.message}`);
+        console.error('Error al actualizar:', error);
+      });
+  }
+
+  private crearDistribucion(): void {
+    this.loading.saving = true;
+
+    const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
+      const fechaA = new Date(a.fecha!).getTime();
+      const fechaB = new Date(b.fecha!).getTime();
+      return fechaA - fechaB;
+    });
+
+    let idDistribucionCreada: number | null = null;
+
+    const crearRegistrosSecuencialmente = async () => {
+      for (const registro of registrosOrdenados) {
+        const payload: PostDistribucionPayload = {
+          fecha: this.convertirFechaParaBackend(registro.fecha!),
+          volumenDistribuido: parseFloat(registro.vol_distribuido),
+          frascoPasteurizado: { id: registro.id_frasco_leche_procesada! },
+          tipo: this.tipoEdadMap[registro.tipo_edad] || registro.tipo_edad,
+          responsable: this.datosReceptor.responsable_prescripcion,
+          nombreBeneficiario: this.datosReceptor.nombre_bebe,
+          identificacion: parseInt(this.datosReceptor.identificacion_bebe),
+          semanasGestacion: parseInt(this.datosReceptor.semanas_gestacion),
+          eps: { id: this.datosReceptor.eps! },
+          exclusiva: registro.exclusiva
+        };
+
+        try {
+          const resultado = await this.distribucionService.postDistribucion(payload).toPromise();
+
+          if (!idDistribucionCreada && resultado) {
+            idDistribucionCreada = resultado.id;
+          }
+        } catch (error) {
+          throw error;
+        }
+      }
+    };
+
+    crearRegistrosSecuencialmente()
+      .then(() => {
+        this.loading.saving = false;
+
+        if (idDistribucionCreada) {
+          this.idDistribucionActual = idDistribucionCreada;
+        }
+
+        this.esActualizacion = true;
+
+        this.mostrarMensaje('success', 'Éxito',
+          `Se crearon ${registrosOrdenados.length} registro(s) exitosamente`);
+
+        if (this.idDistribucionActual) {
+          this.cargarDatosDistribucion(this.idDistribucionActual);
+        }
+      })
+      .catch((error) => {
+        this.loading.saving = false;
+        this.mostrarMensaje('error', 'Error',
+          `Error al guardar: ${error.message}`);
+        console.error('Error al crear:', error);
+      });
+  }
+
+  private convertirFechaParaBackend(fecha: string | Date): string {
+    const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+
+    const year = fechaObj.getFullYear();
+    const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+    const day = String(fechaObj.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   private validarFormulario(): boolean {
@@ -413,80 +503,22 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       this.datosReceptor.nombre_bebe?.trim() &&
       this.datosReceptor.identificacion_bebe?.trim() &&
       this.datosReceptor.semanas_gestacion?.trim() &&
-      this.datosReceptor.eps?.trim()
+      this.datosReceptor.eps !== null
     );
   }
 
   private validarTodosLosRegistros(): boolean {
     if (!this.dataDistribucion || this.dataDistribucion.length === 0) return false;
-    return this.dataDistribucion.every(registro => this.tableComponent.validarRegistroCompleto(registro));
-  }
-
-  private prepararPayloadCompleto(): PayloadDistribucionCompleta | null {
-    try {
-      // ✅ Ordenar registros por fecha antes de enviar (más antiguos primero)
-      const registrosOrdenados = [...this.dataDistribucion].sort((a, b) => {
-        const fechaA = new Date(a.fecha!).getTime();
-        const fechaB = new Date(b.fecha!).getTime();
-        return fechaA - fechaB; // Ascendente
-      });
-
-      // ✅ Si es una nueva distribución, la fecha será la del primer registro
-      if (!this.esActualizacion && registrosOrdenados.length > 0) {
-        this.fechaDistribucionActual = new Date(registrosOrdenados[0].fecha!);
-      }
-
-      const payload: PayloadDistribucionCompleta = {
-        datosReceptor: {
-          ...(this.esActualizacion && this.datosReceptor.id ? { id: this.datosReceptor.id } : {}),
-          responsable_prescripcion: this.datosReceptor.responsable_prescripcion,
-          nombre_bebe: this.datosReceptor.nombre_bebe,
-          identificacion_bebe: this.datosReceptor.identificacion_bebe,
-          semanas_gestacion: this.datosReceptor.semanas_gestacion,
-          eps: this.datosReceptor.eps
-        },
-        registrosDistribucion: registrosOrdenados.map(registro => ({
-          ...(this.esActualizacion && registro.id ? { id: registro.id } : {}),
-          fecha: registro.fecha,
-          vol_distribuido: registro.vol_distribuido,
-          n_frasco_leche_procesada: registro.n_frasco_leche_procesada,
-          id_frasco_leche_procesada: registro.id_frasco_leche_procesada,
-          calorias: registro.calorias,
-          acidez_dornic: registro.acidez_dornic,
-          tipo_edad: registro.tipo_edad,
-          exclusiva: registro.exclusiva,
-          freezer: registro.freezer,
-          gaveta: registro.gaveta
-        }))
-      };
-
-      return payload;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  private enviarDatosCompletos(payload: PayloadDistribucionCompleta): void {
-    this.loading.saving = true;
-
-    setTimeout(() => {
-      this.loading.saving = false;
-      const mensaje = this.esActualizacion
-        ? 'Todos los datos han sido actualizados exitosamente'
-        : 'Todos los datos han sido guardados exitosamente';
-
-      this.mostrarMensaje('success', 'Éxito', mensaje);
-      this.esActualizacion = true;
-
-      if (!this.idDistribucionActual) {
-        this.idDistribucionActual = Date.now();
-      }
-    }, 1500);
+    return this.dataDistribucion.every(registro =>
+      this.tableComponent.validarRegistroCompleto(registro)
+    );
   }
 
   contarRegistrosCompletos(): number {
     if (!this.tableComponent || !this.dataDistribucion) return 0;
-    return this.dataDistribucion.filter(registro => this.tableComponent.validarRegistroCompleto(registro)).length;
+    return this.dataDistribucion.filter(registro =>
+      this.tableComponent.validarRegistroCompleto(registro)
+    ).length;
   }
 
   puedeGuardar(): boolean {
@@ -507,14 +539,13 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       nombre_bebe: '',
       identificacion_bebe: '',
       semanas_gestacion: '',
-      eps: ''
+      eps: null
     };
 
     if (this.tableComponent) {
       this.tableComponent.limpiarDatos();
     }
 
-    this.fechaDistribucionActual = null;
     this.mostrarFormulario = false;
     this.esActualizacion = false;
     this.idDistribucionActual = null;

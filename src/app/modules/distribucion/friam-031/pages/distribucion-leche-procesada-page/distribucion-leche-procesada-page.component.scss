@@ -114,33 +114,104 @@
   }
 }
 
-// ✅ NUEVO: Wrapper para la tabla que mantiene el ancho completo
+// ✅ Wrapper para la tabla
 .table-wrapper {
   width: 100%;
   margin-bottom: 1rem;
-  display: block; // Importante: siempre visible en el DOM
+  display: block;
 
   &[hidden] {
-    display: none !important; // Solo oculta visualmente
+    display: none !important;
   }
 }
 
-// ✅ Contenedor para el botón de nuevo registro (alineado con la tabla)
-.nuevo-registro-container {
+// ✅ NUEVO: Contenedor flex para botón y volumen en la misma fila
+.registro-volumen-container {
   width: 100%;
-  padding: 0;
-  margin-bottom: 0.5rem;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0;
 }
 
-// ✅ Botones más pequeños alineados a la derecha (con la tabla)
+// ✅ Wrapper para el botón de nuevo registro (lado izquierdo)
+.nuevo-registro-wrapper {
+  flex: 0 0 auto;
+}
+
+// ✅ Wrapper para el indicador de volumen (lado derecho)
+.volumen-total-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+// ✅ Badge del volumen total
+.volumen-total-badge {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #224186;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(34, 65, 134, 0.15);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 65, 134, 0.25);
+  }
+}
+
+// ✅ Contenido del badge
+.volumen-total-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  i {
+    font-size: 1.5rem;
+    color: #224186;
+  }
+}
+
+// ✅ Información del volumen
+.volumen-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+// ✅ Label del volumen
+.volumen-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #224186;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+// ✅ Valor del volumen
+.volumen-valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #224186;
+  line-height: 1;
+}
+
+// ✅ Detalle adicional
+.volumen-detalle {
+  display: flex;
+  align-items: center;
+}
+
+// ✅ Botones más pequeños alineados a la derecha
 .form-actions-bottom {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0;
-  margin-top: 2rem; // ✅ AUMENTADO de 1rem a 1.5rem
+  margin-top: 2rem;
   width: 100%;
   flex-wrap: wrap;
 }
@@ -228,6 +299,38 @@
       min-width: 140px;
     }
   }
+
+  // ✅ Responsive para contenedor de registro y volumen
+  .registro-volumen-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .nuevo-registro-wrapper {
+    width: 100%;
+  }
+
+  .volumen-total-wrapper {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .volumen-total-badge {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .volumen-total-content {
+    gap: 0.75rem;
+
+    i {
+      font-size: 1.25rem;
+    }
+  }
+
+  .volumen-valor {
+    font-size: 1.1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -251,7 +354,30 @@
     }
   }
 
-  .nuevo-registro-container {
-    padding: 0;
+  // ✅ Responsive móvil para indicador
+  .volumen-total-badge {
+    padding: 0.5rem 1rem;
+    width: 100%;
+  }
+
+  .volumen-total-content {
+    justify-content: center;
+    gap: 0.5rem;
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .volumen-label {
+    font-size: 0.7rem;
+  }
+
+  .volumen-valor {
+    font-size: 1rem;
+  }
+
+  .volumen-detalle {
+    font-size: 0.65rem;
   }
 }

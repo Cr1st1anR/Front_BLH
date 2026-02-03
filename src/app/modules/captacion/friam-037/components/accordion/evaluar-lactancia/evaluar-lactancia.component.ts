@@ -12,39 +12,141 @@ import { VisitaDomiciliariaService } from '../../visita-domiciliaria-table/servi
   templateUrl: './evaluar-lactancia.component.html',
   styleUrl: './evaluar-lactancia.component.scss',
 })
-export class EvaluarLactanciaComponent implements OnChanges, OnInit {
+export class EvaluarLactanciaComponent implements OnChanges {
 
   @Input() data: RespuestasVisita | null = null;
   @Input() readOnly: boolean = false;
   respuestasAux: RespuestasVisita | null = null;
   title: string = 'EVALUAR LACTANCIA MATERNA';
   subtitle: string = 'OBSERVACIÓN DEL AMAMANTAMIENTO';
-  formData: Array<any> = [];
+  formData: Array<any> = [
+    {
+      title: 'Madre',
+      questions: [
+        [
+          { question: 'Relajada y cómoda', answer: null },
+          { question: 'Signos de enfermedad y/o malestar', answer: null }
+        ],
+        [
+          { question: 'Cómoda', answer: null },
+          { question: 'Tensa e incómoda', answer: null }
+        ],
+        [
+          { question: 'Signos de vínculo madre-hijo', answer: null },
+          { question: 'Sin contacto visual', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Bebé',
+      questions: [
+        [
+          { question: 'Saludable', answer: null },
+          { question: 'Enfermo, somnoliento, irritable', answer: null }
+        ],
+        [
+          { question: 'Calmado y relajado', answer: null },
+          { question: 'Inquieto o llorando', answer: null }
+        ],
+        [
+          { question: 'Busca o hoza el pecho', answer: null },
+          { question: 'No busca ni hoza el pecho', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Pechos',
+      questions: [
+        [
+          { question: 'Sanos', answer: null },
+          { question: 'Enrojecidos, edematizados y/o dolorosos', answer: null }
+        ],
+        [
+          { question: 'Sin dolor ni malestar', answer: null },
+          { question: 'Con dolor o malestar', answer: null }
+        ],
+        [
+          { question: 'Protráctil', answer: null },
+          { question: 'Plano o invertido', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Posición del bebé',
+      questions: [
+        [
+          { question: 'Cabeza y cuerpo alineados', answer: null },
+          { question: 'Cabeza y cuerpo del bebé torcidos', answer: null }
+        ],
+        [
+          { question: 'Frente al pecho, nariz frente al pezón', answer: null },
+          { question: 'Sin contacto cuerpo a cuerpo', answer: null }
+        ],
+        [
+          { question: 'Todo el cuerpo sostenido', answer: null },
+          { question: 'Sostenido por la cabeza y el cuello', answer: null }
+        ],
+        [
+          { question: 'Se acerca con nariz al pezón', answer: null },
+          { question: 'Se acerca con labio inferior al pezón', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Agarre al pecho',
+      questions: [
+        [
+          { question: 'Boca bien abierta', answer: null },
+          { question: 'Boca poco abierta', answer: null }
+        ],
+        [
+          { question: 'Labio inferior volteado hacia afuera', answer: null },
+          { question: 'Labio inferior volteado hacia adentro', answer: null }
+        ],
+        [
+          { question: 'Mentón toca el pecho', answer: null },
+          { question: 'Mentón no toca el pecho', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Succión',
+      questions: [
+        [
+          { question: 'Lentas y profundas con pausas', answer: null },
+          { question: 'Rápidas y superficiales', answer: null }
+        ],
+        [
+          { question: 'Mejillas redondas', answer: null },
+          { question: 'Mejillas tensas y hacia adentro', answer: null }
+        ],
+        [
+          { question: 'Suelta el pecho al terminar', answer: null },
+          { question: 'El pecho sale fácilmente', answer: null }
+        ]
+      ]
+    },
+    {
+      title: 'Deglución',
+      questions: [
+        [
+          { question: 'Se ve y se escucha deglutir', answer: null },
+          { question: 'No se ve ni se escucha deglutir', answer: null }
+        ],
+        [
+          { question: 'Lengua acanalada alrededor del pecho', answer: null },
+          { question: 'Lengua plana o puntiaguda', answer: null }
+        ]
+      ]
+    }
+  ];
   aux: any = {};
-
-  constructor(
-    private _visitaDomiciliariaService: VisitaDomiciliariaService
-  ) {
-  }
-
-  ngOnInit(): void {
-    this.getQuestions();
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
       this.formatForm();
       this.formatQuestionsAnswers();
     }
-  }
-
-  getQuestions() {
-    this._visitaDomiciliariaService.loadQuestions().subscribe({
-      next: (questions) => {
-        this.formData = questions;
-        this.formatQuestionsAnswers();
-      }
-    });
   }
 
   formatForm() {

@@ -97,6 +97,25 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     this.cargarEmpleados();
   }
 
+  // ============= UTILIDADES PARA CÓDIGOS DE FRASCOS =============
+
+  private obtenerAñoDesdeOrActual(fecha?: Date | string | null): string {
+    if (fecha) {
+      const fechaParseada = fecha instanceof Date ? fecha : this.parsearFechaLocal(fecha as string);
+      if (fechaParseada && !isNaN(fechaParseada.getTime())) {
+        return fechaParseada.getFullYear().toString().slice(-2);
+      }
+    }
+    return new Date().getFullYear().toString().slice(-2);
+  }
+
+  private generarCodigoLHP(numeroFrasco: number, fechaPasteurizacion?: Date | string | null): string {
+    const año = this.obtenerAñoDesdeOrActual(fechaPasteurizacion);
+    return `LHP ${año} ${numeroFrasco}`;
+  }
+
+  // ============= CARGA DE DATOS =============
+
   private cargarEmpleados(): void {
     this.loading.empleados = true;
 
@@ -184,11 +203,12 @@ export class ControlMicrobiologicoLiberacionPageComponent implements OnInit {
     this.dataControlMicrobiologico = frascos.map((frasco, index) => {
       const timestamp = Date.now();
       const uniqueId = `search_${timestamp}_${ciclo}_${lote}_${index}_${frasco.numeroFrasco}`;
-      const añoActual = new Date().getFullYear().toString().slice(-2);
+      // Usar la fecha de pasteurización del frasco para generar el código
+      const fechaPasteurizacionFrasco = frascos[0].controlReenvase.fecha;
 
       return {
         id: frasco.controlMicrobiologico?.id || null,
-        numero_frasco_pasteurizado: `LHP ${añoActual} ${frasco.numeroFrasco}`,
+        numero_frasco_pasteurizado: this.generarCodigoLHP(frasco.numeroFrasco, fechaPasteurizacionFrasco),
         id_frasco_pasteurizado: frasco.id,
         coliformes_totales: this.convertirValor(frasco.controlMicrobiologico?.coliformes),
         conformidad: this.convertirValor(frasco.controlMicrobiologico?.conformidad),

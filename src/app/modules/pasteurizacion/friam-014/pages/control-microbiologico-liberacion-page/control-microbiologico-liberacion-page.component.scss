@@ -1,0 +1,502 @@
+.container-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px auto;
+  width: calc(100% - 50px);
+  max-width: 2000px;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.search-section {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  align-self: flex-start;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-label {
+  font-size: 1rem !important;
+  font-weight: 600;
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.text-gray-400.text-center.italic.mt-4 {
+  text-align: center !important;
+  width: 100%;
+  display: block;
+  margin: 2rem 0;
+}
+
+.form-section {
+  width: 100%;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.dates-card,
+.staff-card {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.card-header-custom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.025em;
+  }
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.form-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+
+  i {
+    font-size: 0.9rem;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  flex-wrap: wrap;
+}
+
+.save-form-button {
+  background: linear-gradient(135deg, #224186 0%, #224186 100%) !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #576fa1 0%, #576fa1 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(34, 65, 134, 0.3) !important;
+  }
+}
+
+.clear-form-button {
+  color: #6b7280 !important;
+  border: 2px solid #d1d5db !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+
+  &:hover:not(:disabled) {
+    background: #f9fafb !important;
+    border-color: #9ca3af !important;
+    color: #374151 !important;
+  }
+}
+
+::ng-deep .search-button {
+  background-color: #224186 !important;
+  border-color: #224186 !important;
+  color: white !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+
+  &:hover:not(:disabled) {
+    background-color: #1a3670 !important;
+    border-color: #1a3670 !important;
+  }
+
+  &:disabled {
+    opacity: 0.6 !important;
+  }
+}
+
+::ng-deep .clear-button {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+
+  &:hover:not(:disabled) {
+    background-color: #c82333 !important;
+    border-color: #c82333 !important;
+  }
+}
+
+
+@media (max-width: 1400px) {
+  .container-page {
+    width: calc(100% - 30px);
+    margin: 20px auto;
+  }
+
+  .form-grid {
+    gap: 1.25rem;
+  }
+
+  .form-fields-grid {
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container-page {
+    width: calc(100% - 20px);
+    padding: 0 0.75rem;
+  }
+
+  .search-row {
+    gap: 0.75rem;
+  }
+
+  .search-label {
+    font-size: 0.9rem !important;
+  }
+
+  .form-section {
+    padding: 1.25rem;
+  }
+
+  .card-header-custom {
+    padding: 0.875rem 1.25rem;
+
+    .card-title {
+      font-size: 1rem;
+    }
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .form-fields-grid {
+    padding: 1rem;
+  }
+
+  .field-label {
+    font-size: 0.8rem;
+
+    i {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .search-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    > * {
+      width: 100%;
+    }
+
+    .flex {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .form-actions {
+    justify-content: center;
+
+    button {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container-page {
+    margin: 15px auto;
+    width: calc(100% - 10px);
+    padding: 0 0.5rem;
+  }
+
+  .search-section {
+    margin-bottom: 1rem;
+  }
+
+  .search-label {
+    font-size: 0.85rem !important;
+  }
+
+  .date-info {
+    font-size: 0.85rem;
+    padding: 0.375rem 0;
+  }
+
+  .form-section {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .form-fields-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+    padding: 0.875rem;
+  }
+
+  .card-header-custom {
+    padding: 0.75rem 1rem;
+
+    .card-title {
+      font-size: 0.95rem;
+    }
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  .field-label {
+    font-size: 0.75rem;
+
+    i {
+      font-size: 0.8rem;
+    }
+  }
+
+  .form-actions {
+    padding-top: 1rem;
+    gap: 0.75rem;
+
+    button {
+      font-size: 0.875rem !important;
+      padding: 0.5rem 0.75rem !important;
+    }
+  }
+
+  ::ng-deep {
+    .search-button,
+    .clear-button {
+      font-size: 0.8rem !important;
+      padding: 0.5rem 0.625rem !important;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .container-page {
+    margin: 10px auto;
+    width: calc(100% - 5px);
+    padding: 0 0.25rem;
+  }
+
+  .search-label {
+    font-size: 0.8rem !important;
+    text-align: left;
+    width: 100%;
+  }
+
+  .date-info {
+    font-size: 0.8rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .form-section {
+    padding: 0.75rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+  }
+
+  .form-grid {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-card {
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .card-header-custom {
+    padding: 0.625rem 0.875rem;
+
+    .card-title {
+      font-size: 0.875rem;
+    }
+
+    i {
+      font-size: 0.95rem;
+    }
+  }
+
+  .form-fields-grid {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .field-label {
+    font-size: 0.7rem;
+    gap: 0.375rem;
+
+    i {
+      font-size: 0.75rem;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    button {
+      width: 100%;
+      font-size: 0.8rem !important;
+      padding: 0.625rem 0.5rem !important;
+    }
+  }
+
+  ::ng-deep {
+    .p-inputtext,
+    .p-select,
+    .p-datepicker {
+      font-size: 0.875rem !important;
+    }
+
+    .search-button,
+    .clear-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .text-gray-400.text-center.italic.mt-4 {
+    font-size: 0.875rem;
+    margin: 1.5rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-page {
+    margin: 5px auto;
+    width: 100%;
+    padding: 0;
+  }
+
+  .search-section,
+  .form-section {
+    padding: 0.5rem;
+  }
+
+  .form-fields-grid {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .card-header-custom {
+    padding: 0.5rem 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+
+    .card-title {
+      font-size: 0.8rem;
+    }
+
+    i {
+      font-size: 0.875rem;
+    }
+  }
+
+  .field-label {
+    font-size: 0.675rem;
+
+    i {
+      font-size: 0.7rem;
+    }
+  }
+
+  ::ng-deep {
+    .p-inputtext,
+    .p-select,
+    .p-datepicker {
+      font-size: 0.8rem !important;
+    }
+  }
+}

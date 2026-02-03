@@ -70,7 +70,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
 
   headersRutaRecoleccion: any[] = [
     { header: 'FECHA', field: 'fecha_registro', width: '200px', tipo: 'date' },
-    { header: 'RUTA', field: 'jornada', width: '300px', tipo: 'text' },
+    { header: 'RUTA', field: 'jornada', width: '200px', tipo: 'text' },
     {
       header: 'PLACA VEHICULO',
       field: 'placa_vehiculo',
@@ -118,12 +118,12 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       tipo: 'number',
     },
     {
-      header: 'VOLUMEN DE LECHE RECOLECTADA',
+      header: 'VOLUMEN DE LECHE<br>RECOLECTADA',
       field: 'volumen_total',
       width: '200px',
       tipo: 'number',
     },
-    { header: 'ACCIONES', field: 'acciones', width: '200px' },
+    { header: 'ACCIONES', field: 'acciones', width: '150px' },
   ];
 
   requiredFields: string[] = [

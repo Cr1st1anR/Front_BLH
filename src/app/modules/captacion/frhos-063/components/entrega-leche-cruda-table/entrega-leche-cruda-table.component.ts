@@ -64,11 +64,11 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   private responsableSeleccionado: ResponsableOption | null = null;
 
   readonly headersEntregaLecheCruda = [
-    { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
+    { header: 'FECHA', field: 'fecha', width: '170px', tipo: 'date' },
     { header: 'NOMBRE DE LA MADRE', field: 'nombre_madre', width: '200px', tipo: 'select' },
     { header: 'VOLUMEN LECHE MATERNA A.M', field: 'volumen_leche_materna_am', width: '180px', tipo: 'text' },
     { header: 'VOLUMEN LECHE MATERNA P.M', field: 'volumen_leche_materna_pm', width: '180px', tipo: 'text' },
-    { header: 'PERDIDAS', field: 'perdidas', width: '100px', tipo: 'number' },
+    { header: 'PÉRDIDAS', field: 'perdidas', width: '100px', tipo: 'number' },
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' },
   ];

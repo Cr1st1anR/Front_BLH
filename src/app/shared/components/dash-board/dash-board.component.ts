@@ -111,12 +111,23 @@ export class DashBoardComponent {
           subLabel: '(FRIAM-017)',
           route: '/blh/pasteurizacion/registro-no-conformidades',
         },
+        {
+          label: 'Relación de control de calidad microbiologico y liberacion de producto',
+          subLabel: '(FRIAM-014)',
+          route: '/blh/pasteurizacion/control-calidad-microbiologico-liberacion',
+        },
       ],
     },
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
-      items: [],
+      items: [
+        {
+          label: 'Control de entradas y salidas de leche humana extraida pasteurizada',
+          subLabel: '(FRIAM-013)',
+          route: '/blh/liberacion/entradas-salidas-pasteurizada',
+        },
+      ],
     },
     {
       label: 'Distribucion',

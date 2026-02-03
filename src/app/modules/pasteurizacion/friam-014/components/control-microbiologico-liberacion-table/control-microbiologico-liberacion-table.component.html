@@ -1,0 +1,139 @@
+<p-table #tableControlMicrobiologico [value]="dataControlMicrobiologico" [scrollable]="true" scrollHeight="400px"
+  [columns]="headersControlMicrobiologico" [tableStyle]="{ 'min-width': '100rem' }" dataKey="_uid" editMode="row">
+
+  <ng-template #header let-columns>
+    <tr>
+      @for (col of columns; track $index) {
+      <th [style.width]="col.width" [style.min-width]="col.width" class="text-center table-header">
+        <div [innerHTML]="col.header" class="whitespace-pre-line header-text"></div>
+      </th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-rowData let-columns="columns" let-editing="editing" let-rowIndex="rowIndex">
+    <tr [pEditableRow]="rowData" [style.cursor]="'default'">
+      @for (col of columns; track $index) {
+      <td [style.width]="col.width" [style.min-width]="col.width" class="text-center table-cell">
+
+        @if (col.field === 'numero_frasco_pasteurizado') {
+        @if (isEditing(rowData)) {
+        <input pInputText type="text" [(ngModel)]="rowData.numero_frasco_pasteurizado"
+          class="w-full text-center table-input" [disabled]="true" [readonly]="true">
+        } @else {
+        <span class="table-text">{{ rowData.numero_frasco_pasteurizado || 'Sin número' }}</span>
+        }
+        }
+
+        @else if (col.field === 'coliformes_totales') {
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.coliformes_totales"
+              inputId="coliformes_a_{{rowData._uid}}" />
+            <label for="coliformes_a_{{rowData._uid}}" class="radio-label">A</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="coliformes_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.coliformes_totales"
+              inputId="coliformes_p_{{rowData._uid}}" />
+            <label for="coliformes_p_{{rowData._uid}}" class="radio-label">P</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueColiformes(rowData.coliformes_totales) }}</span>
+        }
+        }
+
+        @else if (col.field === 'conformidad') {
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.conformidad"
+              inputId="conformidad_c_{{rowData._uid}}" />
+            <label for="conformidad_c_{{rowData._uid}}" class="radio-label">C</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="conformidad_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.conformidad"
+              inputId="conformidad_nc_{{rowData._uid}}" />
+            <label for="conformidad_nc_{{rowData._uid}}" class="radio-label">NC</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueConformidad(rowData.conformidad) }}</span>
+        }
+        }
+
+        @else if (col.field === 'prueba_confirmatoria') {
+        @if (isEditing(rowData)) {
+        <div class="radio-container-centered">
+          <div class="radio-option">
+            <p-radiobutton name="prueba_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.prueba_confirmatoria"
+              inputId="prueba_pc_{{rowData._uid}}" />
+            <label for="prueba_pc_{{rowData._uid}}" class="radio-label">PC</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValuePruebaConfirmatoria(rowData.prueba_confirmatoria) }}</span>
+        }
+        }
+
+        @else if (col.field === 'liberacion_producto') {
+        @if (isEditing(rowData)) {
+        <div class="radio-container-horizontal">
+          <div class="radio-option">
+            <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="1" [(ngModel)]="rowData.liberacion_producto"
+              inputId="liberacion_si_{{rowData._uid}}" />
+            <label for="liberacion_si_{{rowData._uid}}" class="radio-label">Sí</label>
+          </div>
+          <div class="radio-option">
+            <p-radiobutton name="liberacion_{{rowData._uid}}" [value]="0" [(ngModel)]="rowData.liberacion_producto"
+              inputId="liberacion_no_{{rowData._uid}}" />
+            <label for="liberacion_no_{{rowData._uid}}" class="radio-label">No</label>
+          </div>
+        </div>
+        } @else {
+        <span class="table-text">{{ getDisplayValueLiberacion(rowData.liberacion_producto) }}</span>
+        }
+        }
+
+        @else if (col.field === 'estado') {
+        <div class="flex items-center justify-center">
+          @if (validarRegistroCompleto(rowData)) {
+          <span
+            class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            <i class="pi pi-check-circle"></i>
+            Completo
+          </span>
+          } @else {
+          <span
+            class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+            <i class="pi pi-clock"></i>
+            Pendiente
+          </span>
+          }
+        </div>
+
+        @if (isEditing(rowData)) {
+        <div class="flex items-center justify-center gap-2 mt-2">
+          <button pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData)" pTooltip="Confirmar" tooltipPosition="top">
+          </button>
+
+          <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded severity="danger"
+            (click)="onRowEditCancel(rowData)" pTooltip="Cancelar" tooltipPosition="top">
+          </button>
+        </div>
+        } @else {
+        <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded severity="secondary"
+          (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+          [pTooltip]="validarRegistroCompleto(rowData) ? 'Modificar' : 'Completar registro'" tooltipPosition="top"
+          class="mt-2">
+        </button>
+        }
+        }
+
+      </td>
+      }
+    </tr>
+  </ng-template>
+</p-table>

@@ -129,6 +129,17 @@ export class DashBoardComponent {
         },
       ],
     },
+    {
+      label: 'Distribucion',
+      icon: 'fa-solid fa-share',
+      items: [
+        {
+          label: 'Distribución de leche humana procesada blh',
+          subLabel: '(FRIAM-031)',
+          route: '/blh/distribucion/distribucion-leche-procesada',
+        },
+      ],
+    },
   ];
 
   constructor(private router: Router) { }

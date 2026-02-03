@@ -70,7 +70,7 @@ export class DistribucionLecheProcesadaService {
 
   getAllFrascosPasteurizados(): Observable<FrascoOption[]> {
     return this.http.get<ApiResponse<any[]>>(
-      `${environment.ApiBLH}/getAllFrascosPasteurizados`,
+      `${environment.ApiBLH}/frascos-pasteurizados-distribucion`,
       { observe: 'response' }
     ).pipe(
       map(response => {

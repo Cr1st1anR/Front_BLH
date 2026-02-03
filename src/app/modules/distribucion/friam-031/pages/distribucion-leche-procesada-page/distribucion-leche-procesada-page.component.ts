@@ -295,11 +295,17 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       parseInt(fechaParts[2])
     );
 
+    const fechaPasteurizacion = frasco.controlReenvase?.fecha
+      ? new Date(frasco.controlReenvase.fecha)
+      : new Date();
+
+    const añoPasteurizacion = fechaPasteurizacion.getFullYear().toString().slice(-2);
+
     return {
       id: info.id,
       fecha: fechaLocal,
       vol_distribuido: info.volumenDistribuido.toString(),
-      n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
+      n_frasco_leche_procesada: `LHP ${añoPasteurizacion} ${frasco.numeroFrasco}`,
       id_frasco_leche_procesada: frasco.id,
       calorias: frasco.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
       acidez_dornic: frasco.controlReenvase.seleccionClasificacion.acidezDornic.resultado.toString(),

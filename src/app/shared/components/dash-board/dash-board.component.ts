@@ -121,7 +121,13 @@ export class DashBoardComponent {
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
-      items: [],
+      items: [
+        {
+          label: 'Control de entradas y salidas de leche humana extraida pasteurizada',
+          subLabel: '(FRIAM-013)',
+          route: '/blh/liberacion/entradas-salidas-pasteurizada',
+        },
+      ],
     },
   ];
 

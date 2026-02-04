@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, OnChanges, SimpleChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -21,6 +21,7 @@ import type {
   TipoMensajeDosificaciones
 } from '../../interfaces/dosificaciones.interface';
 import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-leche-pasteurizada.interface';
+import { EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'dosificaciones-table',
@@ -67,6 +68,8 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     { header: 'QUIEN DOSIFICÓ', field: 'quien_dosificado', width: '200px', tipo: 'text' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
+
+  @Output() editingStateChanged = new EventEmitter<boolean>();
 
   constructor(
     private readonly messageService: MessageService,
@@ -166,7 +169,10 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
   private iniciarEdicionRegistro(registro: DosificacionData): void {
     this.hasNewRowInEditing = true;
     this.editingRow = registro;
-    setTimeout(() => this.table.initRowEdit(registro), 100);
+    setTimeout(() => {
+      this.table.initRowEdit(registro);
+      this.editingStateChanged.emit(true); // Emitir evento
+    }, 100);
     this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
@@ -179,6 +185,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
 
     this.guardarEstadoOriginal(dataRow);
     this.editingRow = dataRow;
+    this.editingStateChanged.emit(true); // Emitir evento
   }
 
   onRowEditSave(dataRow: DosificacionData, index: number, event: MouseEvent): void {
@@ -209,6 +216,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       this.restaurarEstadoOriginal(dataRow, index);
     }
     this.editingRow = null;
+    this.editingStateChanged.emit(false); // Emitir evento
   }
 
   private guardarNuevoRegistro(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
@@ -343,6 +351,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Dosificación registrada exitosamente');
+    this.editingStateChanged.emit(false); // Emitir evento
   }
 
   private procesarRespuestaActualizacion(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
@@ -353,6 +362,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Dosificación actualizada exitosamente');
+    this.editingStateChanged.emit(false); // Emitir evento
   }
 
   private getRowId(dataRow: DosificacionData): string {

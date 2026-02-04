@@ -52,7 +52,9 @@
       </div>
 
       <!-- Tabla de dosificaciones -->
-      <dosificaciones-table [ingresoLechePasteurizadaData]="ingresoLechePasteurizadaData" />
+      <dosificaciones-table
+        [ingresoLechePasteurizadaData]="ingresoLechePasteurizadaData"
+        (editingStateChanged)="onEditingStateChanged($event)" />
     </div>
 
   </p-dialog>

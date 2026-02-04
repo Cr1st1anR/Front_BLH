@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -21,7 +21,8 @@ import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-lech
   ],
   templateUrl: './dosificaciones-dialog.component.html',
   styleUrl: './dosificaciones-dialog.component.scss',
-  providers: [MessageService]
+  providers: [MessageService],
+  changeDetection: ChangeDetectionStrategy.OnPush // Agregar esta línea
 })
 export class DosificacionesDialogComponent implements OnInit, OnChanges {
 
@@ -33,23 +34,29 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
   private readonly tableComponent!: DosificacionesTableComponent;
 
   loading: boolean = false;
+  hasNewRowInEditing: boolean = false;
 
   constructor(
     private readonly messageService: MessageService
   ) { }
 
   ngOnInit(): void {
-    // Sin necesidad de cargar empleados
+    // Inicialización
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && changes['visible'].currentValue && this.ingresoLechePasteurizadaData) {
-      this.mostrarMensajeCarga();
+      setTimeout(() => {
+        this.mostrarMensajeCarga();
+      }, 0);
     }
   }
 
-  get hasNewRowInEditing(): boolean {
-    return this.tableComponent?.isAnyRowEditing() ?? false;
+  // Método para manejar el evento del componente hijo usando setTimeout
+  onEditingStateChanged(isEditing: boolean): void {
+    setTimeout(() => {
+      this.hasNewRowInEditing = isEditing;
+    }, 0);
   }
 
   crearNuevoRegistro(): void {
@@ -59,6 +66,7 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
   closeDialog(): void {
     this.visible = false;
     this.dialogClosed.emit();
+    this.hasNewRowInEditing = false;
   }
 
   calcularVolumenTotal(): number {

@@ -179,9 +179,12 @@ export class SeleccionClasificacionTableComponent implements OnInit {
           registro.controlReenvase?.madreDonante?.gestacion?.fechaParto,
           origen.fechaExtraccion
         ),
-        no_frasco_procesado: this.generarCodigoFrascosProcesados(registro.controlReenvase?.frascosPasteurizados || []),
+        no_frasco_procesado: this.generarCodigoFrascosProcesados(
+          registro.controlReenvase?.frascosPasteurizados || [],
+          fechaParseda
+        ),
         donante: registro.controlReenvase?.madreDonante?.id?.toString() || '',
-        frasco_leche_cruda: this.generarCodigoFrascoCrudo(origen.frascoId),
+        frasco_leche_cruda: this.generarCodigoFrascoCrudo(origen.frascoId, fechaParseda),
         edad_gestacional: registro.controlReenvase?.madreDonante?.gestacion?.semanas || 0,
         volumen: origen.volumen?.toString() || '',
         nombre_profesional: registro.infoSeleccionClasificacion?.profesional?.nombre || '',
@@ -507,53 +510,55 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   // ============= FUNCIONES PARA GENERAR CÓDIGOS DE FRASCOS =============
 
-  private obtenerAñoActualCorto(): string {
-    const añoCompleto = new Date().getFullYear();
-    return añoCompleto.toString().slice(-2);
+  private obtenerAñoDesdeOrActual(fecha?: Date | null): string {
+    if (fecha && fecha instanceof Date && !isNaN(fecha.getTime())) {
+      return fecha.getFullYear().toString().slice(-2);
+    }
+    return new Date().getFullYear().toString().slice(-2);
   }
 
-  private generarCodigoFrascosProcesados(frascosPasteurizados: any[]): string {
-  if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
-    return 'Sin frascos\nprocesados';
+  private generarCodigoFrascosProcesados(frascosPasteurizados: any[], fechaBase?: Date | null): string {
+    if (!frascosPasteurizados || frascosPasteurizados.length === 0) {
+      return 'Sin frascos\nprocesados';
+    }
+
+    const año = this.obtenerAñoDesdeOrActual(fechaBase);
+
+    const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
+      const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
+      const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
+      return tieneNumero && sinObservaciones;
+    });
+
+    if (frascosSinObservaciones.length === 0) {
+      return 'Frascos con\nobservaciones';
+    }
+
+    const numerosFrascos = frascosSinObservaciones
+      .map(frasco => frasco.numeroFrasco)
+      .sort((a, b) => a - b);
+
+    if (numerosFrascos.length === 1) {
+      return `LHP ${año}\n${numerosFrascos[0]}`;
+    }
+
+    else if (numerosFrascos.length === 2) {
+      return `LHP ${año}\n${numerosFrascos[0]} -\n${numerosFrascos[1]}`;
+    }
+
+    else {
+      const frascosConcatenados = numerosFrascos.join(' -\n');
+      return `LHP ${año}\n${frascosConcatenados}`;
+    }
   }
 
-  const añoActual = this.obtenerAñoActualCorto();
-
-  const frascosSinObservaciones = frascosPasteurizados.filter(frasco => {
-    const tieneNumero = frasco.numeroFrasco !== null && frasco.numeroFrasco !== undefined;
-    const sinObservaciones = !frasco.observaciones || frasco.observaciones.trim() === '';
-    return tieneNumero && sinObservaciones;
-  });
-
-  if (frascosSinObservaciones.length === 0) {
-    return 'Frascos con\nobservaciones';
-  }
-
-  const numerosFrascos = frascosSinObservaciones
-    .map(frasco => frasco.numeroFrasco)
-    .sort((a, b) => a - b);
-
-  if (numerosFrascos.length === 1) {
-    return `LHP ${añoActual}\n${numerosFrascos[0]}`;
-  }
-
-  else if (numerosFrascos.length === 2) {
-    return `LHP ${añoActual}\n${numerosFrascos[0]} -\n${numerosFrascos[1]}`;
-  }
-
-  else {
-    const frascosConcatenados = numerosFrascos.join(' -\n');
-    return `LHP ${añoActual}\n${frascosConcatenados}`;
-  }
-}
-
-  private generarCodigoFrascoCrudo(idFrasco: number | null): string {
+  private generarCodigoFrascoCrudo(idFrasco: number | null, fechaBase?: Date | null): string {
     if (!idFrasco) {
       return '';
     }
 
-    const añoActual = this.obtenerAñoActualCorto();
-    return `LHC ${añoActual}\n${idFrasco}`;
+    const año = this.obtenerAñoDesdeOrActual(fechaBase);
+    return `LHC ${año}\n${idFrasco}`;
   }
 
   // ============= VALIDACIONES =============

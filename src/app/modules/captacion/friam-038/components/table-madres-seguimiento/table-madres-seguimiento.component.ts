@@ -20,11 +20,11 @@ export class TableMadresSeguimientoComponent implements OnInit {
   loading: boolean = false;
 
   readonly headersMadresSeguimiento = [
-    { header: 'CODIGO DONANTE', field: 'codigo_donante', width: '50px', tipo: 'number' },
-    { header: 'NOMBRES', field: 'nombres', width: '200px', tipo: 'text' },
-    { header: 'APELLIDOS', field: 'apellidos', width: '200px', tipo: 'text' },
-    { header: 'DONANTE', field: 'donante', width: '150px', tipo: 'text' },
-    { header: 'FECHA VISITA', field: 'fecha_visita', width: '80px', tipo: 'date' },
+    { header: 'CODIGO DONANTE', field: 'codigo_donante', width: '100px', tipo: 'number' },
+    { header: 'NOMBRES', field: 'nombres', width: '140px', tipo: 'text' },
+    { header: 'APELLIDOS', field: 'apellidos', width: '140px', tipo: 'text' },
+    { header: 'DONANTE', field: 'donante', width: '100px', tipo: 'text' },
+    { header: 'FECHA VISITA', field: 'fecha_visita', width: '120px', tipo: 'date' },
   ];
 
   dataMadresSeguimiento: MadreTabla[] = [];
@@ -99,7 +99,7 @@ export class TableMadresSeguimientoComponent implements OnInit {
         summary: 'Éxito',
         detail: `${cantidad} madre${cantidad > 1 ? 's' : ''} donante${cantidad > 1 ? 's' : ''} cargada${cantidad > 1 ? 's' : ''} con sus visitas`,
         key: 'tr',
-        life: 2000,
+        life: 1000,
       });
     } else {
       this.messageService.add({
@@ -107,7 +107,7 @@ export class TableMadresSeguimientoComponent implements OnInit {
         summary: 'Información',
         detail: 'No se encontraron madres donantes aptas',
         key: 'tr',
-        life: 2000,
+        life: 1000,
       });
     }
   }
@@ -118,7 +118,7 @@ export class TableMadresSeguimientoComponent implements OnInit {
       summary: 'Error',
       detail: 'No se pudieron cargar los datos de las madres donantes',
       key: 'tr',
-      life: 3000,
+      life: 2000,
     });
     this.loading = false;
   }
@@ -129,7 +129,7 @@ export class TableMadresSeguimientoComponent implements OnInit {
       summary: 'Error',
       detail,
       key: 'tr',
-      life: 3000,
+      life: 2000,
     });
   }
 

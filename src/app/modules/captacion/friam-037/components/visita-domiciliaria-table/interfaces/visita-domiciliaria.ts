@@ -5,10 +5,17 @@ export interface VisitaMadresResponse {
     llamada:              string;
     asesoria:             number;
     donante_efectiva:     number;
-    fecha_visita:         Date;
+    fecha_visita:         Date | string;
     observacion:          string;
     fecha_registro:       Date;
     infoMadre:            InfoMadre;
+    nombre?:              string;
+    apellido?:            string;
+    documento?:           string;
+    direccion?:           string;
+    celular?:             string;
+    ciudad?:              string;
+    edad?:                number;
 }
 
 export interface InfoMadre {

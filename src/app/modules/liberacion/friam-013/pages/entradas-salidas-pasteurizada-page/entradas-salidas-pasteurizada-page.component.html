@@ -1,0 +1,50 @@
+<app-header [title]="'CONTROL DE ENTRADAS Y SALIDAS DE LECHE HUMANA EXTRAIDA PASTEURIZADA (FRIAM-013)'" />
+
+<div class="container-page">
+  <div class="search-section">
+    <div class="search-row">
+      <span class="font-semibold text-gray-700 search-label">BUSCAR POR LOTE:</span>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-600">Lote:</label>
+        <input pInputText type="number" [(ngModel)]="busquedaLote.lote" class="w-20 p-2" min="1" step="1" />
+      </div>
+
+      <button pButton pRipple type="button" icon="pi pi-search" label="Buscar" class="search-button p-button-sm"
+        (click)="buscarPorLote()" [disabled]="loadingSearch">
+      </button>
+
+      <button pButton pRipple type="button" icon="pi pi-times" label="Limpiar" class="clear-button p-button-sm"
+        (click)="limpiarBusquedaLote()">
+      </button>
+
+      @if (loadingSearch) {
+      <div class="flex items-center gap-2 ml-4">
+        <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+        <span class="text-sm text-gray-500">Buscando...</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center filters-section">
+    <div class="flex gap-3 items-center">
+      <span class="font-semibold text-gray-700">Filtros:</span>
+
+      <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_frasco_pasteurizado" (input)="aplicarFiltros()"
+        placeholder="N° Frasco Pasteurizado" class="w-56" />
+
+      <input pInputText type="text" [(ngModel)]="filtrosBusqueda.donante" (input)="aplicarFiltros()"
+        placeholder="Donante" class="w-40" />
+
+      <input pInputText type="text" [(ngModel)]="filtrosBusqueda.n_gaveta" (input)="aplicarFiltros()"
+        placeholder="N° Gaveta" class="w-32" />
+
+      <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+        (click)="limpiarFiltros()" pTooltip="Limpiar filtros" tooltipPosition="top"></button>
+    </div>
+    <shared-month-picker [autoSelectCurrent]="false" (dateChange)="onMonthPickerChange($event)" />
+  </div>
+</div>
+
+<entradas-salidas-pasteurizada-table [filtrosBusqueda]="filtrosBusqueda" />

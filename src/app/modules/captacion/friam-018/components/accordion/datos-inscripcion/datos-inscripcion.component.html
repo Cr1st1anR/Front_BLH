@@ -1,366 +1,211 @@
 @if (visible) {
-  <p-accordion-panel value="0">
-    <p-accordion-header>DATOS DE INSCRIPCION</p-accordion-header>
-    <p-accordion-content>
-      <form class="datos-inscripcion-grid" #datosForm="ngForm">
-        <div>
-          <label>FECHA DILIGENCIAMIENTO <span class="required">*</span></label>
-          <p-datepicker
-            [(ngModel)]="fechaDiligenciamiento"
-            name="fechaDiligenciamiento"
-            [iconDisplay]="'input'"
-            [showIcon]="true"
-            inputId="icondisplay"
-            dateFormat="dd/mm/yy"
-            required
-            [disabled]="true"
-            (ngModelChange)="onFieldChange('fechaDiligenciamiento', $event)"
-            [class.ng-invalid]="formErrors['fechaDiligenciamiento']"
-          ></p-datepicker>
-          <small class="error-message" *ngIf="formErrors['fechaDiligenciamiento']">
-            {{ formErrors['fechaDiligenciamiento'] }}
-          </small>
+<p-accordion-panel value="0">
+  <p-accordion-header>DATOS DE INSCRIPCION</p-accordion-header>
+  <p-accordion-content>
+    <form class="datos-inscripcion-grid" #datosForm="ngForm">
+      <div>
+        <label>FECHA DILIGENCIAMIENTO <span class="required">*</span></label>
+        <p-datepicker [(ngModel)]="fechaDiligenciamiento" name="fechaDiligenciamiento" [iconDisplay]="'input'"
+          [showIcon]="true" inputId="icondisplay" dateFormat="dd/mm/yy" required [disabled]="true"
+          (ngModelChange)="onFieldChange('fechaDiligenciamiento', $event)"
+          [class.ng-invalid]="formErrors['fechaDiligenciamiento']"></p-datepicker>
+        <small class="error-message" *ngIf="formErrors['fechaDiligenciamiento']">
+          {{ formErrors['fechaDiligenciamiento'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Nombre <span class="required">*</span></label>
+        <input pInputText type="text" name="nombre" [(ngModel)]="nombre" required
+          (ngModelChange)="onFieldChange('nombre', $event)" [class.ng-invalid]="formErrors['nombre']" />
+        <small class="error-message" *ngIf="formErrors['nombre']">
+          {{ formErrors['nombre'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Celular <span class="required">*</span></label>
+        <input pInputText type="text" name="celular" [(ngModel)]="celular" required (input)="onDocumentInput($event)"
+          (ngModelChange)="onFieldChange('celular', $event)" [class.ng-invalid]="formErrors['celular']" />
+        <small class="error-message" *ngIf="formErrors['celular']">
+          {{ formErrors['celular'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Fecha de nacimiento <span class="required">*</span></label>
+        <p-datepicker [(ngModel)]="fechaNacimiento" name="fechaNacimiento" [iconDisplay]="'input'" [showIcon]="true"
+          dateFormat="dd/mm/yy" required (ngModelChange)="onFieldChange('fechaNacimiento', $event)"
+          [class.ng-invalid]="formErrors['fechaNacimiento']"></p-datepicker>
+        <small class="error-message" *ngIf="formErrors['fechaNacimiento']">
+          {{ formErrors['fechaNacimiento'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Profesión/Oficio <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="profesion" name="profesion" required
+          (ngModelChange)="onFieldChange('profesion', $event)" [class.ng-invalid]="formErrors['profesion']" />
+        <small class="error-message" *ngIf="formErrors['profesion']">
+          {{ formErrors['profesion'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Barrio/Vereda <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="barrio" name="barrio" required
+          (ngModelChange)="onFieldChange('barrio', $event)" [class.ng-invalid]="formErrors['barrio']" />
+        <small class="error-message" *ngIf="formErrors['barrio']">
+          {{ formErrors['barrio'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Teléfono <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="telefono" name="telefono" required
+          (ngModelChange)="onFieldChange('telefono', $event)" [class.ng-invalid]="formErrors['telefono']" />
+        <small class="error-message" *ngIf="formErrors['telefono']">
+          {{ formErrors['telefono'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>¿Donante exclusiva? <span class="required">*</span></label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="donanteExclusiva" [value]="1" [(ngModel)]="donanteExclusiva" inputId="donanteSi"
+            (ngModelChange)="onFieldChange('donanteExclusiva', $event)"></p-radioButton>
+          <label for="donanteSi" class="mr-4">Sí</label>
+          <p-radioButton name="donanteExclusiva" [value]="0" [(ngModel)]="donanteExclusiva" inputId="donanteNo"
+            (ngModelChange)="onFieldChange('donanteExclusiva', $event)"></p-radioButton>
+          <label for="donanteNo">No</label>
         </div>
-  
-        <div>
-          <label>Nombre <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            name="nombre"
-            [(ngModel)]="nombre"
-            required
-            (ngModelChange)="onFieldChange('nombre', $event)"
-            [class.ng-invalid]="formErrors['nombre']"
-          />
-          <small class="error-message" *ngIf="formErrors['nombre']">
-            {{ formErrors['nombre'] }}
-          </small>
+        <small class="error-message" *ngIf="formErrors['donanteExclusiva']">
+          {{ formErrors['donanteExclusiva'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Departamento <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="departamento" name="departamento" required
+          (ngModelChange)="onFieldChange('departamento', $event)" [class.ng-invalid]="formErrors['departamento']" />
+        <small class="error-message" *ngIf="formErrors['departamento']">
+          {{ formErrors['departamento'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Dirección <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="direccion" name="direccion" required
+          (ngModelChange)="onFieldChange('direccion', $event)" [class.ng-invalid]="formErrors['direccion']" />
+        <small class="error-message" *ngIf="formErrors['direccion']">
+          {{ formErrors['direccion'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Nombre del hijo <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="nombreHijo" name="nombreHijo" required
+          (ngModelChange)="onFieldChange('nombreHijo', $event)" [class.ng-invalid]="formErrors['nombreHijo']" />
+        <small class="error-message" *ngIf="formErrors['nombreHijo']">
+          {{ formErrors['nombreHijo'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>EPS <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="eps" name="eps" required
+          (ngModelChange)="onFieldChange('eps', $event)" [class.ng-invalid]="formErrors['eps']" />
+        <small class="error-message" *ngIf="formErrors['eps']">
+          {{ formErrors['eps'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Ciudad <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="ciudad" name="ciudad" required
+          (ngModelChange)="onFieldChange('ciudad', $event)" [class.ng-invalid]="formErrors['ciudad']" />
+        <small class="error-message" *ngIf="formErrors['ciudad']">
+          {{ formErrors['ciudad'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Recolección en el domicilio <span class="required">*</span></label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="recoleccionDomicilio" [value]="1" [(ngModel)]="recoleccionDomicilio"
+            inputId="recoleccionSi" (ngModelChange)="onFieldChange('recoleccionDomicilio', $event)"></p-radioButton>
+          <label for="recoleccionSi" class="mr-4">Sí</label>
+          <p-radioButton name="recoleccionDomicilio" [value]="0" [(ngModel)]="recoleccionDomicilio"
+            inputId="recoleccionNo" (ngModelChange)="onFieldChange('recoleccionDomicilio', $event)"></p-radioButton>
+          <label for="recoleccionNo">No</label>
         </div>
-  
-        <div>
-          <label>Celular <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            name="celular"
-            [(ngModel)]="celular"
-            required
-            maxlength="10"
-            (input)="onDocumentInput($event, 10)"
-            (ngModelChange)="onFieldChange('celular', $event)"
-            [class.ng-invalid]="formErrors['celular']"
-          />
-          <small class="error-message" *ngIf="formErrors['celular']">
-            {{ formErrors['celular'] }}
-          </small>
+        <small class="error-message" *ngIf="formErrors['recoleccionDomicilio']">
+          {{ formErrors['recoleccionDomicilio'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Peso del bebé (gramos) <span class="required">*</span></label>
+        <input pInputText type="number" [(ngModel)]="pesoBebe" name="pesoBebe" required min="0"
+          (ngModelChange)="onFieldChange('pesoBebe', $event)" [class.ng-invalid]="formErrors['pesoBebe']" />
+        <small class="error-message" *ngIf="formErrors['pesoBebe']">
+          {{ formErrors['pesoBebe'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Edad <span class="required">*</span></label>
+        <input pInputText type="number" [(ngModel)]="edad" name="edad" required min="1"
+          (ngModelChange)="onFieldChange('edad', $event)" [class.ng-invalid]="formErrors['edad']" />
+        <small class="error-message" *ngIf="formErrors['edad']">
+          {{ formErrors['edad'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Documento de identidad <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="documento" name="documento" required
+          (input)="onDocumentInput($event)" (ngModelChange)="onFieldChange('documento', $event)"
+          [class.ng-invalid]="formErrors['documento']" />
+        <small class="error-message" *ngIf="formErrors['documento']">
+          {{ formErrors['documento'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Código de donante</label>
+        <input pInputText type="text" [(ngModel)]="codDonante" name="codDonante" [disabled]="true"
+          (input)="onNumberInput($event)" (ngModelChange)="onFieldChange('codDonante', $event)"
+          [class.ng-invalid]="formErrors['codDonante']" />
+        <small class="error-message" *ngIf="formErrors['codDonante']">
+          {{ formErrors['codDonante'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Tipo de donante <span class="required">*</span></label>
+        <div class="flex items-center gap-4">
+          <p-radioButton name="donante_EoI" value="externa" [(ngModel)]="donante_EoI" inputId="donanteExterna"
+            (ngModelChange)="onFieldChange('donante_EoI', $event)"></p-radioButton>
+          <label for="donanteExterna" class="mr-4">Donante externa</label>
+          <p-radioButton name="donante_EoI" value="interna" [(ngModel)]="donante_EoI" inputId="donanteInterna"
+            (ngModelChange)="onFieldChange('donante_EoI', $event)"></p-radioButton>
+          <label for="donanteInterna">Donante interna</label>
         </div>
-  
-        <div>
-          <label>Fecha de nacimiento <span class="required">*</span></label>
-          <p-datepicker
-            [(ngModel)]="fechaNacimiento"
-            name="fechaNacimiento"
-            [iconDisplay]="'input'"
-            [showIcon]="true"
-            dateFormat="dd/mm/yy"
-            required
-            (ngModelChange)="onFieldChange('fechaNacimiento', $event)"
-            [class.ng-invalid]="formErrors['fechaNacimiento']"
-          ></p-datepicker>
-          <small class="error-message" *ngIf="formErrors['fechaNacimiento']">
-            {{ formErrors['fechaNacimiento'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Profesión/Oficio <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="profesion"
-            name="profesion"
-            required
-            (ngModelChange)="onFieldChange('profesion', $event)"
-            [class.ng-invalid]="formErrors['profesion']"
-          />
-          <small class="error-message" *ngIf="formErrors['profesion']">
-            {{ formErrors['profesion'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Barrio/Vereda <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="barrio"
-            name="barrio"
-            required
-            (ngModelChange)="onFieldChange('barrio', $event)"
-            [class.ng-invalid]="formErrors['barrio']"
-          />
-          <small class="error-message" *ngIf="formErrors['barrio']">
-            {{ formErrors['barrio'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Teléfono <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="telefono"
-            name="telefono"
-            required
-            (ngModelChange)="onFieldChange('telefono', $event)"
-            [class.ng-invalid]="formErrors['telefono']"
-          />
-          <small class="error-message" *ngIf="formErrors['telefono']">
-            {{ formErrors['telefono'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>¿Donante exclusiva? <span class="required">*</span></label>
-          <div class="flex items-center gap-4">
-            <p-radioButton
-              name="donanteExclusiva"
-              [value]="1"
-              [(ngModel)]="donanteExclusiva"
-              inputId="donanteSi"
-              (ngModelChange)="onFieldChange('donanteExclusiva', $event)"
-            ></p-radioButton>
-            <label for="donanteSi" class="mr-4">Sí</label>
-            <p-radioButton
-              name="donanteExclusiva"
-              [value]="0"
-              [(ngModel)]="donanteExclusiva"
-              inputId="donanteNo"
-              (ngModelChange)="onFieldChange('donanteExclusiva', $event)"
-            ></p-radioButton>
-            <label for="donanteNo">No</label>
-          </div>
-          <small class="error-message" *ngIf="formErrors['donanteExclusiva']">
-            {{ formErrors['donanteExclusiva'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Departamento <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="departamento"
-            name="departamento"
-            required
-            (ngModelChange)="onFieldChange('departamento', $event)"
-            [class.ng-invalid]="formErrors['departamento']"
-          />
-          <small class="error-message" *ngIf="formErrors['departamento']">
-            {{ formErrors['departamento'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Dirección <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="direccion"
-            name="direccion"
-            required
-            (ngModelChange)="onFieldChange('direccion', $event)"
-            [class.ng-invalid]="formErrors['direccion']"
-          />
-          <small class="error-message" *ngIf="formErrors['direccion']">
-            {{ formErrors['direccion'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Nombre del hijo <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="nombreHijo"
-            name="nombreHijo"
-            required
-            (ngModelChange)="onFieldChange('nombreHijo', $event)"
-            [class.ng-invalid]="formErrors['nombreHijo']"
-          />
-          <small class="error-message" *ngIf="formErrors['nombreHijo']">
-            {{ formErrors['nombreHijo'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>EPS <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="eps"
-            name="eps"
-            required
-            (ngModelChange)="onFieldChange('eps', $event)"
-            [class.ng-invalid]="formErrors['eps']"
-          />
-          <small class="error-message" *ngIf="formErrors['eps']">
-            {{ formErrors['eps'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Ciudad <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="ciudad"
-            name="ciudad"
-            required
-            (ngModelChange)="onFieldChange('ciudad', $event)"
-            [class.ng-invalid]="formErrors['ciudad']"
-          />
-          <small class="error-message" *ngIf="formErrors['ciudad']">
-            {{ formErrors['ciudad'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Recolección en el domicilio <span class="required">*</span></label>
-          <div class="flex items-center gap-4">
-            <p-radioButton
-              name="recoleccionDomicilio"
-              [value]="1"
-              [(ngModel)]="recoleccionDomicilio"
-              inputId="recoleccionSi"
-              (ngModelChange)="onFieldChange('recoleccionDomicilio', $event)"
-            ></p-radioButton>
-            <label for="recoleccionSi" class="mr-4">Sí</label>
-            <p-radioButton
-              name="recoleccionDomicilio"
-              [value]="0"
-              [(ngModel)]="recoleccionDomicilio"
-              inputId="recoleccionNo"
-              (ngModelChange)="onFieldChange('recoleccionDomicilio', $event)"
-            ></p-radioButton>
-            <label for="recoleccionNo">No</label>
-          </div>
-          <small class="error-message" *ngIf="formErrors['recoleccionDomicilio']">
-            {{ formErrors['recoleccionDomicilio'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Peso del bebé (gramos) <span class="required">*</span></label>
-          <input
-            pInputText
-            type="number"
-            [(ngModel)]="pesoBebe"
-            name="pesoBebe"
-            required
-            min="0"
-            (ngModelChange)="onFieldChange('pesoBebe', $event)"
-            [class.ng-invalid]="formErrors['pesoBebe']"
-          />
-          <small class="error-message" *ngIf="formErrors['pesoBebe']">
-            {{ formErrors['pesoBebe'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Edad <span class="required">*</span></label>
-          <input
-            pInputText
-            type="number"
-            [(ngModel)]="edad"
-            name="edad"
-            required
-            min="1"
-            (ngModelChange)="onFieldChange('edad', $event)"
-            [class.ng-invalid]="formErrors['edad']"
-          />
-          <small class="error-message" *ngIf="formErrors['edad']">
-            {{ formErrors['edad'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Documento de identidad <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="documento"
-            name="documento"
-            required
-            maxlength="10"
-            (input)="onDocumentInput($event, 10)"
-            (ngModelChange)="onFieldChange('documento', $event)"
-            [class.ng-invalid]="formErrors['documento']"
-          />
-          <small class="error-message" *ngIf="formErrors['documento']">
-            {{ formErrors['documento'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Código de donante</label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="codDonante"
-            name="codDonante"
-            [disabled]="true"
-            (input)="onNumberInput($event)"
-            (ngModelChange)="onFieldChange('codDonante', $event)"
-            [class.ng-invalid]="formErrors['codDonante']"
-          />
-          <small class="error-message" *ngIf="formErrors['codDonante']">
-            {{ formErrors['codDonante'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Tipo de donante <span class="required">*</span></label>
-          <div class="flex items-center gap-4">
-            <p-radioButton
-              name="donante_EoI"
-              value="externa"
-              [(ngModel)]="donante_EoI"
-              inputId="donanteExterna"
-              (ngModelChange)="onFieldChange('donante_EoI', $event)"
-            ></p-radioButton>
-            <label for="donanteExterna" class="mr-4">Donante externa</label>
-            <p-radioButton
-              name="donante_EoI"
-              value="interna"
-              [(ngModel)]="donante_EoI"
-              inputId="donanteInterna"
-              (ngModelChange)="onFieldChange('donante_EoI', $event)"
-            ></p-radioButton>
-            <label for="donanteInterna">Donante interna</label>
-          </div>
-          <small class="error-message" *ngIf="formErrors['donante_EoI']">
-            {{ formErrors['donante_EoI'] }}
-          </small>
-        </div>
-  
-        <div>
-          <label>Capacitada en <span class="required">*</span></label>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="capacitacion"
-            name="capacitacion"
-            required
-            (ngModelChange)="onFieldChange('capacitacion', $event)"
-            [class.ng-invalid]="formErrors['capacitacion']"
-          />
-          <small class="error-message" *ngIf="formErrors['capacitacion']">
-            {{ formErrors['capacitacion'] }}
-          </small>
-        </div>
-      </form>
-    </p-accordion-content>
-  </p-accordion-panel>
+        <small class="error-message" *ngIf="formErrors['donante_EoI']">
+          {{ formErrors['donante_EoI'] }}
+        </small>
+      </div>
+
+      <div>
+        <label>Capacitada en <span class="required">*</span></label>
+        <input pInputText type="text" [(ngModel)]="capacitacion" name="capacitacion" required
+          (ngModelChange)="onFieldChange('capacitacion', $event)" [class.ng-invalid]="formErrors['capacitacion']" />
+        <small class="error-message" *ngIf="formErrors['capacitacion']">
+          {{ formErrors['capacitacion'] }}
+        </small>
+      </div>
+    </form>
+  </p-accordion-content>
+</p-accordion-panel>
 }

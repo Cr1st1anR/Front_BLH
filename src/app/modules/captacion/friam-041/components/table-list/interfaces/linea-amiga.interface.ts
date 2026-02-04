@@ -1,6 +1,6 @@
 export interface lineaAmigaData {
     idMadrePotencial?: number;
-    infoMadre?:number;
+    infoMadre?: number;
     entidad: string;
     nombre: string;
     apellido: string;
@@ -41,5 +41,5 @@ export interface empleados {
 export interface ApiResponse {
     status: number;
     statusmsg: string;
-    data: [] ;
-  }
+    data: [];
+}

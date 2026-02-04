@@ -48,7 +48,6 @@ export class ControlTemperaturaTableComponent implements OnInit {
     ciclo: ''
   };
 
-
   readonly loading: LoadingState = {
     main: false,
     empleados: false,
@@ -66,6 +65,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
   opcionesResponsables: ResponsableOption[] = [];
   opcionesLotes: LoteOption[] = [];
+  private isInitialLoad = true;
 
   headersControlTemperatura: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '180px', tipo: 'date' },
@@ -165,7 +165,11 @@ export class ControlTemperaturaTableComponent implements OnInit {
         next: (registros: ControlTemperaturaBackendResponse[]) => {
           this.dataOriginal = this.transformarDatosBackend(registros);
           this.dataFiltered = [...this.dataOriginal];
-          this.mostrarMensajeExitosoCarga();
+
+          if (!this.isInitialLoad) {
+            this.mostrarMensajeExitosoCarga();
+          }
+
           this.loading.main = false;
           resolve();
         },
@@ -423,7 +427,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
     }
 
     this.guardarEstadoOriginal(dataRow);
-    this.inicializarCamposAuxiliares(dataRow); // Inicializar campos auxiliares
+    this.inicializarCamposAuxiliares(dataRow);
     this.editingRow = dataRow;
 
     if (!dataRow.isNew) {
@@ -432,7 +436,6 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   onRowEditSave(dataRow: ControlTemperaturaData, index: number, event: MouseEvent): void {
-    // Procesar las horas auxiliares antes de validar
     this.procesarHorasAuxiliares(dataRow);
 
     if (!this.validarCamposRequeridos(dataRow)) {
@@ -440,7 +443,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
       return;
     }
 
-    if (!this.validarHoras(dataRow)) {
+    if (dataRow.horaInicio && dataRow.horaFinalizacion && !this.validarHoras(dataRow)) {
       this.mostrarMensaje('error', 'Error', 'La hora de finalización debe ser posterior a la hora de inicio');
       return;
     }
@@ -477,14 +480,11 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
         let mensajeError = 'Error al guardar el registro';
 
-        // La estructura del error es: { status: 500, statusmsg: "...", error: "mensaje" }
         if (httpErrorResponse.error?.error) {
           mensajeError = httpErrorResponse.error.error;
         } else if (httpErrorResponse.status === 500 && httpErrorResponse.error?.statusmsg) {
-          // Si es error 500, usar el mensaje del backend
           mensajeError = httpErrorResponse.error.error || 'Error interno del servidor';
         } else {
-          // Fallback para otros tipos de error
           mensajeError = httpErrorResponse.message || 'Error al guardar el registro';
         }
 
@@ -506,7 +506,6 @@ export class ControlTemperaturaTableComponent implements OnInit {
 
         let mensajeError = 'Error al actualizar el registro';
 
-        // Verificar si hay mensaje específico del backend
         if (error.error?.error) {
           mensajeError = error.error.error;
         } else if (error.error?.message) {
@@ -527,21 +526,18 @@ export class ControlTemperaturaTableComponent implements OnInit {
   private prepararDatosParaCreacion(dataRow: ControlTemperaturaData): DatosBackendParaCreacion | null {
     if (!this.validarDatosBasicos(dataRow)) return null;
 
-    // Buscar los IDs reales del lote y ciclo
     const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
     if (!loteInfo) {
       this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
       return null;
     }
 
-    // Para obtener el ID del ciclo, necesitamos buscarlo por número de ciclo
     const cicloId = loteInfo.cicloId;
     if (!cicloId) {
       this.mostrarMensaje('error', 'Error', 'No se encontró información del ciclo');
       return null;
     }
 
-    // Para obtener el ID del lote, necesitamos buscarlo por número de lote
     const loteId = loteInfo.loteId;
     if (!loteId) {
       this.mostrarMensaje('error', 'Error', 'No se encontró información del lote');
@@ -559,7 +555,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
       loteId: { id: loteId },
       cicloId: { id: cicloId },
       hora_inicio: dataRow.horaInicio,
-      hora_finalizacio: dataRow.horaFinalizacion,
+      hora_finalizacio: dataRow.horaFinalizacion || '',
       responsableId: { id: empleado.id_empleado },
       observaciones: dataRow.observaciones || ''
     };
@@ -568,7 +564,6 @@ export class ControlTemperaturaTableComponent implements OnInit {
   private prepararDatosParaActualizacion(dataRow: ControlTemperaturaData): DatosBackendParaActualizacion | null {
     if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
 
-    // Buscar los IDs reales del lote y ciclo (mismo proceso que en creación)
     const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
     if (!loteInfo) {
       this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
@@ -598,7 +593,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
       loteId: { id: loteId },
       cicloId: { id: cicloId },
       hora_inicio: dataRow.horaInicio,
-      hora_finalizacio: dataRow.horaFinalizacion,
+      hora_finalizacio: dataRow.horaFinalizacion || '',
       responsableId: { id: empleado.id_empleado },
       observaciones: dataRow.observaciones || ''
     };
@@ -612,13 +607,12 @@ export class ControlTemperaturaTableComponent implements OnInit {
       dataRow.lote?.trim() &&
       dataRow.ciclo?.trim() &&
       dataRow.horaInicio?.trim() &&
-      dataRow.horaFinalizacion?.trim() &&
       dataRow.responsable?.trim()
     );
   }
 
   private validarHoras(dataRow: ControlTemperaturaData): boolean {
-    if (!dataRow.horaInicio || !dataRow.horaFinalizacion) return false;
+    if (!dataRow.horaInicio || !dataRow.horaFinalizacion) return true;
 
     const [horaIni, minIni] = dataRow.horaInicio.split(':').map(Number);
     const [horaFin, minFin] = dataRow.horaFinalizacion.split(':').map(Number);
@@ -695,10 +689,8 @@ export class ControlTemperaturaTableComponent implements OnInit {
   // ============= UTILIDADES DE ESTADO =============
 
   isCampoEditable(campo: string, rowData: ControlTemperaturaData): boolean {
-    // El ciclo nunca es editable
     if (campo === 'ciclo') return false;
 
-    // El lote solo es editable en registros nuevos
     if (campo === 'lote') {
       return rowData.isNew === true;
     }
@@ -739,6 +731,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
+    this.isInitialLoad = false;
     this.filtrarPorFecha(filtro);
   }
 

@@ -1,0 +1,57 @@
+<div class="card flex justify-center">
+  <p-dialog header="DOSIFICACIONES" [modal]="true" [(visible)]="visible" [style]="{ width: '90rem' }"
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true" (onHide)="closeDialog()"
+    [draggable]="false">
+
+    <p-toast position="top-right" key="tr" />
+
+    @if (loading) {
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+      <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+        [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+    </div>
+    }
+
+    <div class="dialog-content">
+      @if (ingresoLechePasteurizadaData) {
+      <div class="info-frasco mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="font-semibold text-blue-800">Frasco:</span>
+            <span class="ml-2">{{ ingresoLechePasteurizadaData.n_frasco }}</span>
+          </div>
+          <div>
+            <span class="font-semibold text-blue-800">Volumen Total:</span>
+            <span class="ml-2">{{ ingresoLechePasteurizadaData.volumen }} ML</span>
+          </div>
+          <div>
+            <span class="font-semibold text-green-800">Volumen Dosificado:</span>
+            <span class="ml-2">{{ calcularVolumenTotal() }} ML</span>
+          </div>
+          <div>
+            <span class="font-semibold" [ngClass]="{
+              'text-orange-800': obtenerVolumenRestante() > 0,
+              'text-green-800': obtenerVolumenRestante() === 0,
+              'text-red-800': obtenerVolumenRestante() < 0
+            }">Volumen Restante:</span>
+            <span class="ml-2" [ngClass]="{
+              'text-orange-600': obtenerVolumenRestante() > 0,
+              'text-green-600': obtenerVolumenRestante() === 0,
+              'text-red-600': obtenerVolumenRestante() < 0
+            }">{{ obtenerVolumenRestante() }} ML</span>
+          </div>
+        </div>
+      </div>
+      }
+
+      <div class="flex justify-start items-center mb-2">
+        <shared-new-register-button (nuevoRegistro)="crearNuevoRegistro()" [disabled]="hasNewRowInEditing" />
+      </div>
+
+      <dosificaciones-table [ingresoLechePasteurizadaData]="ingresoLechePasteurizadaData"
+        (editingStateChanged)="onEditingStateChanged($event)" />
+    </div>
+
+  </p-dialog>
+</div>

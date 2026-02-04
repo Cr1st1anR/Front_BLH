@@ -182,42 +182,42 @@ export class ControlTemperaturaTableComponent implements OnInit {
   // ============= TRANSFORMACIÓN DE DATOS =============
 
   private transformarDatosBackend(registros: ControlTemperaturaBackendResponse[]): ControlTemperaturaData[] {
-  return registros.map((registro: ControlTemperaturaBackendResponse) => {
-    const data: ControlTemperaturaData = {
-      id: registro.id,
-      fecha: this.parsearFechaDesdeBackend(registro.fecha),
-      lote: `LT-${registro.lote.numeroLote.toString().padStart(3, '0')}`,
-      ciclo: `C${registro.ciclo.numeroCiclo}`,
-      horaInicio: registro.hora_inicio,
-      horaFinalizacion: registro.hora_finalizacio,
-      observaciones: registro.observaciones || '',
-      responsable: registro.responsable.nombre,
-      empleado_info: {
-        id: registro.responsable.id,
-        nombre: registro.responsable.nombre,
-        cargo: registro.responsable.cargo,
-        telefono: registro.responsable.telefono,
-        correo: registro.responsable.correo
-      },
-      id_empleado: registro.responsable.id,
-      horaInicio_aux: null,
-      horaFinalizacion_aux: null,
-      // Agregar información original para las actualizaciones
-      loteOriginal: registro.lote,
-      cicloOriginal: registro.ciclo
-    };
+    return registros.map((registro: ControlTemperaturaBackendResponse) => {
+      const data: ControlTemperaturaData = {
+        id: registro.id,
+        fecha: this.parsearFechaDesdeBackend(registro.fecha),
+        lote: `LT-${registro.lote.numeroLote.toString().padStart(3, '0')}`,
+        ciclo: `C${registro.ciclo.numeroCiclo}`,
+        horaInicio: registro.hora_inicio,
+        horaFinalizacion: registro.hora_finalizacio,
+        observaciones: registro.observaciones || '',
+        responsable: registro.responsable.nombre,
+        empleado_info: {
+          id: registro.responsable.id,
+          nombre: registro.responsable.nombre,
+          cargo: registro.responsable.cargo,
+          telefono: registro.responsable.telefono,
+          correo: registro.responsable.correo
+        },
+        id_empleado: registro.responsable.id,
+        horaInicio_aux: null,
+        horaFinalizacion_aux: null,
+        // Agregar información original para las actualizaciones
+        loteOriginal: registro.lote,
+        cicloOriginal: registro.ciclo
+      };
 
-    // Inicializar campos auxiliares de hora
-    if (data.horaInicio) {
-      data.horaInicio_aux = this.convertirHoraADate(data.horaInicio);
-    }
-    if (data.horaFinalizacion) {
-      data.horaFinalizacion_aux = this.convertirHoraADate(data.horaFinalizacion);
-    }
+      // Inicializar campos auxiliares de hora
+      if (data.horaInicio) {
+        data.horaInicio_aux = this.convertirHoraADate(data.horaInicio);
+      }
+      if (data.horaFinalizacion) {
+        data.horaFinalizacion_aux = this.convertirHoraADate(data.horaFinalizacion);
+      }
 
-    return data;
-  });
-}
+      return data;
+    });
+  }
 
   // ============= UTILIDADES =============
 
@@ -465,167 +465,144 @@ export class ControlTemperaturaTableComponent implements OnInit {
   }
 
   private guardarNuevoRegistro(dataRow: ControlTemperaturaData, rowElement: HTMLTableRowElement): void {
-  const datosBackend = this.prepararDatosParaCreacion(dataRow);
-  if (!datosBackend) return;
+    const datosBackend = this.prepararDatosParaCreacion(dataRow);
+    if (!datosBackend) return;
 
-  this.controlTemperaturaService.postControlTemperatura(datosBackend).subscribe({
-    next: (response) => {
-      this.procesarRespuestaCreacion(response, dataRow, rowElement);
-    },
-    error: (httpErrorResponse) => {
-      console.error('Error al guardar:', httpErrorResponse);
+    this.controlTemperaturaService.postControlTemperatura(datosBackend).subscribe({
+      next: (response) => {
+        this.procesarRespuestaCreacion(response, dataRow, rowElement);
+      },
+      error: (httpErrorResponse) => {
+        console.error('Error al guardar:', httpErrorResponse);
 
-      let mensajeError = 'Error al guardar el registro';
+        let mensajeError = 'Error al guardar el registro';
 
-      // La estructura del error es: { status: 500, statusmsg: "...", error: "mensaje" }
-      if (httpErrorResponse.error?.error) {
-        mensajeError = httpErrorResponse.error.error;
-      } else if (httpErrorResponse.status === 500 && httpErrorResponse.error?.statusmsg) {
-        // Si es error 500, usar el mensaje del backend
-        mensajeError = httpErrorResponse.error.error || 'Error interno del servidor';
-      } else {
-        // Fallback para otros tipos de error
-        mensajeError = httpErrorResponse.message || 'Error al guardar el registro';
+        // La estructura del error es: { status: 500, statusmsg: "...", error: "mensaje" }
+        if (httpErrorResponse.error?.error) {
+          mensajeError = httpErrorResponse.error.error;
+        } else if (httpErrorResponse.status === 500 && httpErrorResponse.error?.statusmsg) {
+          // Si es error 500, usar el mensaje del backend
+          mensajeError = httpErrorResponse.error.error || 'Error interno del servidor';
+        } else {
+          // Fallback para otros tipos de error
+          mensajeError = httpErrorResponse.message || 'Error al guardar el registro';
+        }
+
+        this.mostrarMensaje('error', 'Error', mensajeError);
       }
-
-      this.mostrarMensaje('error', 'Error', mensajeError);
-    }
-  });
-}
+    });
+  }
 
   private actualizarRegistroExistente(dataRow: ControlTemperaturaData, rowElement: HTMLTableRowElement): void {
-  const datosBackend = this.prepararDatosParaActualizacion(dataRow);
-  if (!datosBackend) return;
+    const datosBackend = this.prepararDatosParaActualizacion(dataRow);
+    if (!datosBackend) return;
 
-  this.controlTemperaturaService.putControlTemperatura(dataRow.id!, datosBackend).subscribe({
-    next: (response) => {
-      this.procesarRespuestaActualizacion(dataRow, rowElement);
-    },
-    error: (error) => {
-      console.error('Error al actualizar:', error);
+    this.controlTemperaturaService.putControlTemperatura(dataRow.id!, datosBackend).subscribe({
+      next: (response) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement);
+      },
+      error: (error) => {
+        console.error('Error al actualizar:', error);
 
-      let mensajeError = 'Error al actualizar el registro';
+        let mensajeError = 'Error al actualizar el registro';
 
-      // Verificar si hay mensaje específico del backend
-      if (error.error?.error) {
-        mensajeError = error.error.error;
-      } else if (error.error?.message) {
-        mensajeError = error.error.message;
-      } else if (error.message) {
-        mensajeError = error.message;
-      } else if (typeof error.error === 'string') {
-        mensajeError = error.error;
-      } else if (error.error?.details?.includes('Duplicate entry')) {
-        mensajeError = 'Este lote ya está siendo utilizado. Seleccione un lote diferente.';
+        // Verificar si hay mensaje específico del backend
+        if (error.error?.error) {
+          mensajeError = error.error.error;
+        } else if (error.error?.message) {
+          mensajeError = error.error.message;
+        } else if (error.message) {
+          mensajeError = error.message;
+        } else if (typeof error.error === 'string') {
+          mensajeError = error.error;
+        } else if (error.error?.details?.includes('Duplicate entry')) {
+          mensajeError = 'Este lote ya está siendo utilizado. Seleccione un lote diferente.';
+        }
+
+        this.mostrarMensaje('error', 'Error', mensajeError);
       }
-
-      this.mostrarMensaje('error', 'Error', mensajeError);
-    }
-  });
-}
+    });
+  }
 
   private prepararDatosParaCreacion(dataRow: ControlTemperaturaData): DatosBackendParaCreacion | null {
-  if (!this.validarDatosBasicos(dataRow)) return null;
+    if (!this.validarDatosBasicos(dataRow)) return null;
 
-  // Buscar los IDs reales del lote y ciclo
-  const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
-  if (!loteInfo) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
-    return null;
+    // Buscar los IDs reales del lote y ciclo
+    const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
+    if (!loteInfo) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
+      return null;
+    }
+
+    // Para obtener el ID del ciclo, necesitamos buscarlo por número de ciclo
+    const cicloId = loteInfo.cicloId;
+    if (!cicloId) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del ciclo');
+      return null;
+    }
+
+    // Para obtener el ID del lote, necesitamos buscarlo por número de lote
+    const loteId = loteInfo.loteId;
+    if (!loteId) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del lote');
+      return null;
+    }
+
+    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+    if (!empleado?.id_empleado) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del empleado seleccionado');
+      return null;
+    }
+
+    return {
+      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+      loteId: { id: loteId },
+      cicloId: { id: cicloId },
+      hora_inicio: dataRow.horaInicio,
+      hora_finalizacio: dataRow.horaFinalizacion,
+      responsableId: { id: empleado.id_empleado },
+      observaciones: dataRow.observaciones || ''
+    };
   }
-
-  // Para obtener el ID del ciclo, necesitamos buscarlo por número de ciclo
-  const cicloId = this.obtenerIdCicloPorNumero(loteInfo.numeroCiclo);
-  if (!cicloId) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del ciclo');
-    return null;
-  }
-
-  // Para obtener el ID del lote, necesitamos buscarlo por número de lote
-  const loteId = this.obtenerIdLotePorNumero(loteInfo.numeroLote);
-  if (!loteId) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del lote');
-    return null;
-  }
-
-  const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
-  if (!empleado?.id_empleado) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del empleado seleccionado');
-    return null;
-  }
-
-  return {
-    fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-    loteId: { id: loteId },
-    cicloId: { id: cicloId },
-    hora_inicio: dataRow.horaInicio,
-    hora_finalizacio: dataRow.horaFinalizacion,
-    responsableId: { id: empleado.id_empleado },
-    observaciones: dataRow.observaciones || ''
-  };
-}
 
   private prepararDatosParaActualizacion(dataRow: ControlTemperaturaData): DatosBackendParaActualizacion | null {
-  if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
+    if (!dataRow.id || !this.validarDatosBasicos(dataRow)) return null;
 
-  // Buscar los IDs reales del lote y ciclo (mismo proceso que en creación)
-  const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
-  if (!loteInfo) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
-    return null;
+    // Buscar los IDs reales del lote y ciclo (mismo proceso que en creación)
+    const loteInfo = this.opcionesLotes.find(lote => lote.value === dataRow.lote);
+    if (!loteInfo) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del lote seleccionado');
+      return null;
+    }
+
+    const cicloId = loteInfo.cicloId;
+    if (!cicloId) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del ciclo');
+      return null;
+    }
+
+    const loteId = loteInfo.loteId;
+    if (!loteId) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del lote');
+      return null;
+    }
+
+    const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
+    if (!empleado?.id_empleado) {
+      this.mostrarMensaje('error', 'Error', 'No se encontró información del empleado seleccionado');
+      return null;
+    }
+
+    return {
+      fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
+      loteId: { id: loteId },
+      cicloId: { id: cicloId },
+      hora_inicio: dataRow.horaInicio,
+      hora_finalizacio: dataRow.horaFinalizacion,
+      responsableId: { id: empleado.id_empleado },
+      observaciones: dataRow.observaciones || ''
+    };
   }
-
-  const cicloId = this.obtenerIdCicloPorNumero(loteInfo.numeroCiclo);
-  if (!cicloId) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del ciclo');
-    return null;
-  }
-
-  const loteId = this.obtenerIdLotePorNumero(loteInfo.numeroLote);
-  if (!loteId) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del lote');
-    return null;
-  }
-
-  const empleado = this.opcionesResponsables.find(emp => emp.value === dataRow.responsable);
-  if (!empleado?.id_empleado) {
-    this.mostrarMensaje('error', 'Error', 'No se encontró información del empleado seleccionado');
-    return null;
-  }
-
-  return {
-    fecha: this.formatearFechaParaAPI(dataRow.fecha as Date),
-    loteId: { id: loteId },
-    cicloId: { id: cicloId },
-    hora_inicio: dataRow.horaInicio,
-    hora_finalizacio: dataRow.horaFinalizacion,
-    responsableId: { id: empleado.id_empleado },
-    observaciones: dataRow.observaciones || ''
-  };
-}
-
-private obtenerIdLotePorNumero(numeroLote: number): number | null {
-  // Para registros existentes, usar la información original
-  if (this.editingRow && !this.editingRow.isNew && this.editingRow.loteOriginal) {
-    return this.editingRow.loteOriginal.id;
-  }
-
-  // Para nuevos registros, buscar en las opciones de lotes usando el número
-  const loteInfo = this.opcionesLotes.find(lote => lote.numeroLote === numeroLote);
-  return loteInfo?.loteId || null;
-}
-
-private obtenerIdCicloPorNumero(numeroCiclo: number): number | null {
-  // Para registros existentes, usar la información original
-  if (this.editingRow && !this.editingRow.isNew && this.editingRow.cicloOriginal) {
-    return this.editingRow.cicloOriginal.id;
-  }
-
-  // Para nuevos registros, buscar en las opciones de lotes usando el número de ciclo
-  const loteInfo = this.opcionesLotes.find(lote => lote.numeroCiclo === numeroCiclo);
-  return loteInfo?.cicloId || null;
-}
-
 
   // ============= VALIDACIONES =============
 

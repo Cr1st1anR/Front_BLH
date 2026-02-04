@@ -70,7 +70,7 @@ export class DistribucionLecheProcesadaService {
 
   getAllFrascosPasteurizados(): Observable<FrascoOption[]> {
     return this.http.get<ApiResponse<any[]>>(
-      `${environment.ApiBLH}/getAllFrascosPasteurizados`,
+      `${environment.ApiBLH}/frascos-pasteurizados-distribucion`,
       { observe: 'response' }
     ).pipe(
       map(response => {
@@ -80,17 +80,30 @@ export class DistribucionLecheProcesadaService {
 
         return response.body.data
           .filter(frasco => frasco.activo)
-          .map(frasco => ({
-            label: `LHP 25 ${frasco.numeroFrasco}`,
-            value: `LHP 25 ${frasco.numeroFrasco}`,
-            id_frasco: frasco.id,
-            numeroFrasco: frasco.numeroFrasco,
-            año: new Date(frasco.controlReenvase.fecha).getFullYear(),
-            calorias: frasco.controlReenvase?.seleccionClasificacion?.crematocrito?.kcal || 0,
-            acidezDornic: frasco.controlReenvase?.seleccionClasificacion?.acidezDornic?.resultado || 0,
-            gaveta: frasco.entradasSalidasPasteurizada?.gaveta || 0
-          }))
-          .sort((a, b) => a.numeroFrasco - b.numeroFrasco);
+          .map(frasco => {
+            const fechaPasteurizacion = frasco.controlReenvase?.fecha
+              ? new Date(frasco.controlReenvase.fecha)
+              : new Date();
+
+            const añoPasteurizacion = fechaPasteurizacion.getFullYear().toString().slice(-2);
+
+            return {
+              label: `LHP ${añoPasteurizacion} ${frasco.numeroFrasco}`,
+              value: `LHP ${añoPasteurizacion} ${frasco.numeroFrasco}`,
+              id_frasco: frasco.id,
+              numeroFrasco: frasco.numeroFrasco,
+              año: fechaPasteurizacion.getFullYear(),
+              calorias: frasco.controlReenvase?.seleccionClasificacion?.crematocrito?.kcal || 0,
+              acidezDornic: frasco.controlReenvase?.seleccionClasificacion?.acidezDornic?.resultado || 0,
+              gaveta: frasco.entradasSalidasPasteurizada?.gaveta || 0
+            };
+          })
+          .sort((a, b) => {
+            if (a.año !== b.año) {
+              return b.año - a.año;
+            }
+            return b.numeroFrasco - a.numeroFrasco;
+          });
       }),
       catchError((error: HttpErrorResponse) => {
         if (error.status === 204) {

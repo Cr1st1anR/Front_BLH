@@ -122,7 +122,6 @@ export class TableControlLecheCrudaComponent implements OnInit {
         this.procesarEmpleados(response.empleados);
         this.procesarDatosControl(response.controlData);
         this.loading = false;
-        this.mostrarMensajeCarga(response.controlData.length > 0);
       },
       error: (error) => {
         this.manejarErrorCarga(error);

@@ -134,7 +134,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   private transformarFrascosDesdeAPI(frascos: FrascoPasteurizadoBackend[]): FrascoOption[] {
-    return frascos.map((frasco: FrascoPasteurizadoBackend) => {
+    const frascosTransformados = frascos.map((frasco: FrascoPasteurizadoBackend) => {
       const fechaControl = frasco.controlReenvase?.fecha ? new Date(frasco.controlReenvase.fecha) : null;
       const añoPasteurizacion = fechaControl?.getFullYear() || new Date().getFullYear();
       const añoCorto = añoPasteurizacion.toString().slice(-2);
@@ -158,6 +158,18 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
         año: añoPasteurizacion,
         fecha_dispensacion: fechaDispensacion
       };
+    });
+
+    // Ordenar de forma descendente por año y número de frasco (más recientes primero)
+    return frascosTransformados.sort((a, b) => {
+      // Primero ordenar por año descendente
+      if (a.año !== b.año) {
+        return b.año - a.año;
+      }
+      // Si el año es el mismo, ordenar por número de frasco descendente
+      const numFrascoA = parseInt(a.label.split(' ')[2]) || 0;
+      const numFrascoB = parseInt(b.label.split(' ')[2]) || 0;
+      return numFrascoB - numFrascoA;
     });
   }
 
@@ -250,6 +262,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       );
       rowData.n_frasco = '';
       rowData.id_frasco = null;
+      rowData.id_madre_donante = null;
       rowData.n_donante = '';
       rowData.volumen = '';
       rowData.acidez_dornic = '';
@@ -266,6 +279,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
     if (frasco) {
       rowData.id_frasco = frasco.id_frasco;
+      rowData.id_madre_donante = frasco.id_madre_donante; // Asegurar que se guarde
       rowData.n_donante = frasco.n_donante;
       rowData.volumen = frasco.volumen;
       rowData.acidez_dornic = frasco.acidez_dornic;
@@ -273,7 +287,10 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       rowData.lote = frasco.lote;
 
       // Establecer fecha de dispensación desde el frasco
-      const fechaDispensacion = new Date(frasco.fecha_dispensacion);
+      const fechaStr = frasco.fecha_dispensacion;
+      const [año, mes, dia] = fechaStr.split('T')[0].split('-');
+      const fechaDispensacion = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia), 12, 0, 0, 0);
+
       rowData.fecha_dispensacion = fechaDispensacion;
       rowData.fecha_vencimiento = this.calcularFechaVencimiento(fechaDispensacion);
       rowData.fecha_hora_deshiele = new Date(fechaDispensacion);
@@ -281,10 +298,16 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   onTipoLecheSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
-    const tipoLeche = this.extraerValorEvento(event);
-    if (!tipoLeche) return;
+    const valorSeleccionado = this.extraerValorEvento(event);
+    if (!valorSeleccionado) return;
 
-    rowData.tipo_leche = tipoLeche;
+    // Buscar si el valor es un code (M, T, C) o un label (Madura, Transición, Calostro)
+    const opcion = this.opcionesTipoLeche.find(t => t.value === valorSeleccionado || t.label === valorSeleccionado);
+
+    // Guardar el label para mostrarlo correctamente
+    if (opcion) {
+      rowData.tipo_leche = opcion.label;
+    }
   }
 
   onDosificacionesClick(rowData: IngresoLechePasteurizadaData, event: Event): void {
@@ -508,8 +531,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: IngresoLechePasteurizadaData): boolean {
     return this.editingRow !== null && (
-      (this.editingRow._uid && this.editingRow._uid === rowData._uid) ||
-      (this.editingRow.id === rowData.id)
+      (this.editingRow._uid && this.editingRow._uid === rowData._uid) || (this.editingRow.id === rowData.id)
     );
   }
 
@@ -521,7 +543,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ============= FILTROS =============
+  // ============= FILTROS ===============
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
     this.aplicarFiltros();
@@ -555,14 +577,11 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
   private aplicarFiltrosBusquedaTexto(datos: IngresoLechePasteurizadaData[]): IngresoLechePasteurizadaData[] {
     return datos.filter(item => {
-      const cumpleFrasco = !this.filtrosBusqueda.n_frasco ||
-        item.n_frasco?.toLowerCase().includes(this.filtrosBusqueda.n_frasco.toLowerCase());
+      const cumpleFrasco = !this.filtrosBusqueda.n_frasco || item.n_frasco?.toLowerCase().includes(this.filtrosBusqueda.n_frasco.toLowerCase());
 
-      const cumpleDonante = !this.filtrosBusqueda.n_donante ||
-        item.n_donante?.toLowerCase().includes(this.filtrosBusqueda.n_donante.toLowerCase());
+      const cumpleDonante = !this.filtrosBusqueda.n_donante || item.n_donante?.toLowerCase().includes(this.filtrosBusqueda.n_donante.toLowerCase());
 
-      const cumpleLote = !this.filtrosBusqueda.lote ||
-        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+      const cumpleLote = !this.filtrosBusqueda.lote || item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
 
       return cumpleFrasco && cumpleDonante && cumpleLote;
     });
@@ -595,7 +614,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     }
   }
 
-  // ============= MENSAJES =============
+  // ============= MENSAJES ========================
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
       severity,
@@ -611,7 +630,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       dataRow.n_frasco?.trim() &&
       dataRow.tipo_leche?.trim() &&
       dataRow.id_frasco &&
-      dataRow.id_madre_donante &&
+      dataRow.id_madre_donante && dataRow.id_madre_donante &&
       dataRow.fecha_dispensacion
     );
   }
@@ -625,9 +644,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     const rowId = this.getRowId(dataRow);
     if (this.clonedData[rowId]) {
       this.dataFiltered[index] = this.clonedData[rowId];
-      const originalIndex = this.dataOriginal.findIndex(item =>
-        item.id === this.clonedData[rowId].id || item._uid === this.clonedData[rowId]._uid
-      );
+      const originalIndex = this.dataOriginal.findIndex(item => item.id === this.clonedData[rowId].id || item._uid === this.clonedData[rowId]._uid);
       if (originalIndex !== -1) {
         this.dataOriginal[originalIndex] = this.clonedData[rowId];
       }
@@ -636,8 +653,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   private eliminarRegistroTemporal(dataRow: IngresoLechePasteurizadaData): void {
-    const predicate = (item: IngresoLechePasteurizadaData) =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew);
+    const predicate = (item: IngresoLechePasteurizadaData) => item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew);
 
     const indexFiltered = this.dataFiltered.findIndex(predicate);
     if (indexFiltered !== -1) {

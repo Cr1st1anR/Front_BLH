@@ -71,9 +71,16 @@
           @else if (col.field === 'tipo_leche') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select [(ngModel)]="rowData.tipo_leche" [options]="opcionesTipoLeche" optionLabel="label"
-                optionValue="value" placeholder="Seleccione tipo" (onChange)="onTipoLecheSeleccionado($event, rowData)"
-                appendTo="body" class="w-full" [showClear]="true">
+              <p-select
+                [(ngModel)]="rowData.tipo_leche"
+                [options]="opcionesTipoLeche"
+                optionLabel="label"
+                optionValue="label"
+                placeholder="Seleccione tipo"
+                (onChange)="onTipoLecheSeleccionado($event, rowData)"
+                appendTo="body"
+                class="w-full"
+                [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">

@@ -165,6 +165,9 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   cargarDatosPorMesYAnio(mes: number, anio: number): void {
     this.loading.main = true;
 
+    // Guardar el filtro actual
+    this.filtroFecha = { month: mes, year: anio };
+
     this.ingresoLecheService.getIngresosPorMesYAnio(mes, anio).subscribe({
       next: (response: ApiResponseIngresoLeche) => {
         if (response?.data && Array.isArray(response.data)) {
@@ -175,6 +178,9 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
           this.dataFiltered = [];
         }
         this.loading.main = false;
+
+        // Mostrar notificación después de cargar los datos
+        this.mostrarNotificacionFiltro();
       },
       error: (error: any) => {
         console.error('Error al cargar ingresos:', error);
@@ -512,7 +518,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
     this.aplicarFiltros();
-    this.mostrarNotificacionFiltro();
+    // NO llamar a mostrarNotificacionFiltro() aquí porque ya se llama en cargarDatosPorMesYAnio
   }
 
   isTableInitialized(): boolean {

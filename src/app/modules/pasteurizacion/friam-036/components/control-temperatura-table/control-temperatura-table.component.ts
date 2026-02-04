@@ -190,7 +190,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
       const data: ControlTemperaturaData = {
         id: registro.id,
         fecha: this.parsearFechaDesdeBackend(registro.fecha),
-        lote: `LT-${registro.lote.numeroLote.toString().padStart(3, '0')}`,
+        lote: `LT-${registro.lote.numeroLote}`,
         ciclo: `C${registro.ciclo.numeroCiclo}`,
         horaInicio: registro.hora_inicio,
         horaFinalizacion: registro.hora_finalizacio,
@@ -206,12 +206,10 @@ export class ControlTemperaturaTableComponent implements OnInit {
         id_empleado: registro.responsable.id,
         horaInicio_aux: null,
         horaFinalizacion_aux: null,
-        // Agregar información original para las actualizaciones
         loteOriginal: registro.lote,
         cicloOriginal: registro.ciclo
       };
 
-      // Inicializar campos auxiliares de hora
       if (data.horaInicio) {
         data.horaInicio_aux = this.convertirHoraADate(data.horaInicio);
       }

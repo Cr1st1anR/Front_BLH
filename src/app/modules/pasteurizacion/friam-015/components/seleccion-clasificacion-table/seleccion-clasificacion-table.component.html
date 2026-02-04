@@ -22,8 +22,7 @@
             @for (linea of col.header.split('\n'); track $index) {
             <span>{{ linea }}</span>
             @if ($index
-            < col.header.split('\n').length - 1) { <br />
-            }
+            < col.header.split('\n').length - 1) { <br /> }
             }
             } @else {
             @if (col.header.includes('\n')) {
@@ -136,6 +135,30 @@
             </ng-template>
             <ng-template pTemplate="output">
               {{ rowData.nombre_auxiliar || 'Sin auxiliar' }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'n_frascos_pasteurizados') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData[col.field]" class="w-full" min="0"
+                placeholder="Ingrese cantidad" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || 0 }}
+            </ng-template>
+          </p-cellEditor>
+          }
+
+          @else if (col.field === 'volumen_pasteurizado') {
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="number" [(ngModel)]="rowData[col.field]" class="w-full" min="0" step="0.01"
+                placeholder="Ingrese volumen" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ rowData[col.field] || '' }}
             </ng-template>
           </p-cellEditor>
           }

@@ -92,8 +92,8 @@ export class SeleccionClasificacionTableComponent implements OnInit {
     { header: 'CREMATOCRITO\n(KCAL/L)', field: 'crematocrito', width: '90px', tipo: 'eye', vertical: true },
     { header: 'NOMBRE DEL\nPROFESIONAL', field: 'nombre_profesional', width: '200px', tipo: 'select', vertical: false },
     { header: 'NOMBRE DE\nAUXILIAR', field: 'nombre_auxiliar', width: '200px', tipo: 'select', vertical: false },
-    { header: 'N. FRASCOS\nPASTEURIZADOS', field: 'n_frascos_pasteurizados', width: '150px', tipo: 'number', vertical: false },
-    { header: 'VOLUMEN', field: 'volumen_pasteurizado', width: '120px', tipo: 'text', vertical: false },
+    { header: 'N. FRASCOS\nPASTEURIZADOS', field: 'n_frascos_pasteurizados', width: '150px', tipo: 'number_editable', vertical: false },
+    { header: 'VOLUMEN', field: 'volumen_pasteurizado', width: '120px', tipo: 'number_editable', vertical: false },
     { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'readonly_date', vertical: false },
     { header: 'OBSERVACIONES', field: 'observaciones', width: '200px', tipo: 'text', vertical: false },
     { header: 'CICLO', field: 'ciclo', width: '100px', tipo: 'text', vertical: false },
@@ -454,8 +454,12 @@ export class SeleccionClasificacionTableComponent implements OnInit {
 
   private prepararInfoSeleccionClasificacion(dataRow: SeleccionClasificacionData, esRegistroCompleto: boolean): any {
     const infoData: any = {
-      numeroFrascosPasteurizados: dataRow.n_frascos_pasteurizados || null,
-      volumen: dataRow.volumen_pasteurizado ? parseFloat(dataRow.volumen_pasteurizado) : null,
+      numeroFrascosPasteurizados: dataRow.n_frascos_pasteurizados !== null && dataRow.n_frascos_pasteurizados !== undefined
+        ? Number(dataRow.n_frascos_pasteurizados)
+        : null,
+      volumen: dataRow.volumen_pasteurizado && dataRow.volumen_pasteurizado.toString().trim() !== ''
+        ? parseFloat(dataRow.volumen_pasteurizado.toString())
+        : null,
       fechaVencimiento: this.formatearFechaParaAPI(dataRow.fecha_vencimiento as Date),
       observaciones: dataRow.observaciones || null,
       loteCultivos: dataRow.n_lote_medios_cultivo || null,
@@ -659,6 +663,8 @@ export class SeleccionClasificacionTableComponent implements OnInit {
       'fecha',
       'nombre_profesional',
       'nombre_auxiliar',
+      'n_frascos_pasteurizados',
+      'volumen_pasteurizado',
       'observaciones',
       'n_lote_medios_cultivo',
       'fecha_vencimiento_cultivos'

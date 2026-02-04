@@ -194,7 +194,14 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
   private transformarDatosDesdeAPI(datos: IngresoLechePasteurizadaBackendResponse[]): IngresoLechePasteurizadaData[] {
     return datos.map((item: IngresoLechePasteurizadaBackendResponse) => {
-      const fechaDispensacion = item.fechaDispensacion ? new Date(item.fechaDispensacion) : null;
+      // Corregir el manejo de la fecha para evitar problemas de zona horaria
+      let fechaDispensacion: Date | null = null;
+      if (item.fechaDispensacion) {
+        const fechaStr = item.fechaDispensacion.toString();
+        const [año, mes, dia] = fechaStr.split('T')[0].split('-');
+        fechaDispensacion = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia), 12, 0, 0, 0);
+      }
+
       const fechaVencimiento = fechaDispensacion ? this.calcularFechaVencimiento(fechaDispensacion) : null;
 
       const fechaControl = item.frascoPasteurizado?.controlReenvase?.fecha ?

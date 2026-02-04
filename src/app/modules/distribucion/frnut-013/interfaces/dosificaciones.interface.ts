@@ -5,15 +5,37 @@ export interface DosificacionData {
   volumen_dosificado: string;
   medico_nutricionista: string;
   quien_dosificado: string;
-  id_empleado_dosificador?: number | null;
   id_ingreso_leche_pasteurizada?: number | null;
   isNew?: boolean;
   _uid?: string;
 }
 
+export interface DosificacionBackendRequest {
+  nombre: string;
+  cama: number;
+  volumenDosificado: number;
+  medico: string;
+  dosificador: string;
+  ingresoLechePasteurizada: number;
+}
+
+export interface DosificacionBackendResponse {
+  id: number;
+  nombre: string;
+  cama: number;
+  volumenDosificado: number;
+  medico: string;
+  dosificador: string;
+}
+
+export interface ApiResponseDosificaciones {
+  status: number;
+  statusmsg: string;
+  data: DosificacionBackendResponse[];
+}
+
 export interface LoadingStateDosificaciones {
   main: boolean;
-  empleados: boolean;
   saving: boolean;
 }
 
@@ -22,13 +44,6 @@ export interface TableColumnDosificaciones {
   field: string;
   width: string;
   tipo: string;
-}
-
-export interface EmpleadoOption {
-  label: string;
-  value: string;
-  id_empleado: number;
-  cargo?: string;
 }
 
 export type TipoMensajeDosificaciones = 'success' | 'error' | 'warn' | 'info';

@@ -89,13 +89,11 @@
           @else if (col.field === 'quien_dosificado') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select [(ngModel)]="rowData.quien_dosificado" [options]="opcionesEmpleados" optionLabel="label"
-                optionValue="value" placeholder="Seleccione empleado"
-                (onChange)="onEmpleadoSeleccionado($event, rowData)" appendTo="body" class="w-full" [showClear]="true">
-              </p-select>
+              <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full"
+                placeholder="Ingrese nombre del dosificador" />
             </ng-template>
             <ng-template pTemplate="output">
-              {{ rowData.quien_dosificado || 'Sin empleado' }}
+              {{ rowData[col.field] || 'Sin dosificador' }}
             </ng-template>
           </p-cellEditor>
           }

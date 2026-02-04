@@ -10,11 +10,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { DosificacionesService } from '../../services/dosificaciones.service';
 import type {
   DosificacionData,
+  DosificacionBackendRequest,
+  DosificacionBackendResponse,
+  ApiResponseDosificaciones,
   LoadingStateDosificaciones,
   TableColumnDosificaciones,
-  EmpleadoOption,
   TipoMensajeDosificaciones
 } from '../../interfaces/dosificaciones.interface';
 import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-leche-pasteurizada.interface';
@@ -41,13 +44,11 @@ import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-lech
 export class DosificacionesTableComponent implements OnInit, OnChanges {
 
   @Input() ingresoLechePasteurizadaData: IngresoLechePasteurizadaData | null = null;
-  @Input() opcionesEmpleados: EmpleadoOption[] = [];
 
   @ViewChild('tableDosificaciones') table!: Table;
 
   readonly loading: LoadingStateDosificaciones = {
     main: false,
-    empleados: false,
     saving: false
   };
 
@@ -63,65 +64,63 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     { header: 'CAMA', field: 'cama', width: '120px', tipo: 'text' },
     { header: 'VOLUMEN\nDOSIFICADO', field: 'volumen_dosificado', width: '150px', tipo: 'text' },
     { header: 'MÉDICO O NUTRICIONISTA\nQUE ORDENA', field: 'medico_nutricionista', width: '220px', tipo: 'text' },
-    { header: 'QUIEN DOSIFICÓ', field: 'quien_dosificado', width: '200px', tipo: 'select' },
+    { header: 'QUIEN DOSIFICÓ', field: 'quien_dosificado', width: '200px', tipo: 'text' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
 
   constructor(
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly dosificacionesService: DosificacionesService
   ) { }
 
   ngOnInit(): void {
-    this.cargarDosificacionesMock();
+    // Inicialización sin datos mock
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['ingresoLechePasteurizadaData']?.currentValue) {
-      // Aquí cargarías las dosificaciones reales desde el backend
-      // Por ahora usaremos mock
+      const idIngreso = this.ingresoLechePasteurizadaData?.id;
+      if (idIngreso) {
+        this.cargarDosificaciones(idIngreso);
+      }
     }
   }
 
-  // ============= CARGAR DOSIFICACIONES MOCK =============
-  private cargarDosificacionesMock(): void {
-    // Crear 2 registros de ejemplo
-    this.dataDosificaciones = [
-      {
-        id: 1,
-        nombre_recien_nacido: 'Juan Pérez García',
-        cama: '312',
-        volumen_dosificado: '50',
-        medico_nutricionista: 'Dr. Carlos Mendoza',
-        quien_dosificado: '',
-        id_empleado_dosificador: null,
-        isNew: false
+  // ============= CARGAR DOSIFICACIONES DESDE API =============
+  private cargarDosificaciones(idIngreso: number): void {
+    this.loading.main = true;
+
+    this.dosificacionesService.getDosificacionesByIngresoId(idIngreso).subscribe({
+      next: (response: ApiResponseDosificaciones) => {
+        if (response?.data && Array.isArray(response.data)) {
+          this.dataDosificaciones = this.transformarDosificacionesDesdeAPI(response.data);
+        } else {
+          this.dataDosificaciones = [];
+        }
+        this.loading.main = false;
       },
-      {
-        id: 2,
-        nombre_recien_nacido: 'María López Rodríguez',
-        cama: '315',
-        volumen_dosificado: '45',
-        medico_nutricionista: 'Dra. Ana Martínez',
-        quien_dosificado: '',
-        id_empleado_dosificador: null,
-        isNew: false
+      error: (error: any) => {
+        console.error('Error al cargar dosificaciones:', error);
+        this.dataDosificaciones = [];
+        this.loading.main = false;
       }
-    ];
+    });
+  }
+
+  private transformarDosificacionesDesdeAPI(datos: DosificacionBackendResponse[]): DosificacionData[] {
+    return datos.map((item: DosificacionBackendResponse) => ({
+      id: item.id,
+      nombre_recien_nacido: item.nombre,
+      cama: item.cama.toString(),
+      volumen_dosificado: item.volumenDosificado.toString(),
+      medico_nutricionista: item.medico,
+      quien_dosificado: item.dosificador,
+      id_ingreso_leche_pasteurizada: this.ingresoLechePasteurizadaData?.id || null,
+      isNew: false
+    }));
   }
 
   // ============= EVENTOS DE SELECCIÓN =============
-  onEmpleadoSeleccionado(event: any, rowData: DosificacionData): void {
-    const empleado = this.extraerValorEvento(event);
-    if (!empleado) return;
-
-    rowData.quien_dosificado = empleado;
-
-    const empleadoSeleccionado = this.opcionesEmpleados.find(emp => emp.value === empleado);
-    if (empleadoSeleccionado?.id_empleado) {
-      rowData.id_empleado_dosificador = empleadoSeleccionado.id_empleado;
-    }
-  }
-
   private extraerValorEvento(event: any): string {
     if (event?.value) return event.value;
     if (typeof event === 'string') return event;
@@ -153,7 +152,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       volumen_dosificado: '',
       medico_nutricionista: '',
       quien_dosificado: '',
-      id_empleado_dosificador: null,
       id_ingreso_leche_pasteurizada: this.ingresoLechePasteurizadaData?.id || null,
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
@@ -216,20 +214,51 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
   private guardarNuevoRegistro(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
     this.loading.saving = true;
 
-    // Simulación de guardado (mock)
-    setTimeout(() => {
-      dataRow.id = Date.now();
-      this.procesarRespuestaCreacion(dataRow, rowElement);
-    }, 500);
+    const requestData = this.transformarABackendRequestDosificacion(dataRow);
+
+    this.dosificacionesService.postDosificacion(requestData).subscribe({
+      next: (response: any) => {
+        if (response?.data?.id) {
+          dataRow.id = response.data.id;
+        }
+        this.procesarRespuestaCreacion(dataRow, rowElement);
+        // Recargar dosificaciones
+        if (this.ingresoLechePasteurizadaData?.id) {
+          this.cargarDosificaciones(this.ingresoLechePasteurizadaData.id);
+        }
+      },
+      error: (error: any) => {
+        console.error('Error al crear dosificación:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudo crear la dosificación');
+        this.loading.saving = false;
+      }
+    });
   }
 
   private actualizarRegistroExistente(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
+    if (!dataRow.id) {
+      this.mostrarMensaje('error', 'Error', 'No se puede actualizar un registro sin ID');
+      return;
+    }
+
     this.loading.saving = true;
 
-    // Simulación de actualización (mock)
-    setTimeout(() => {
-      this.procesarRespuestaActualizacion(dataRow, rowElement);
-    }, 500);
+    const requestData = this.transformarABackendRequestDosificacion(dataRow);
+
+    this.dosificacionesService.putDosificacion(dataRow.id, requestData).subscribe({
+      next: (response: any) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement);
+        // Recargar dosificaciones
+        if (this.ingresoLechePasteurizadaData?.id) {
+          this.cargarDosificaciones(this.ingresoLechePasteurizadaData.id);
+        }
+      },
+      error: (error: any) => {
+        console.error('Error al actualizar dosificación:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudo actualizar la dosificación');
+        this.loading.saving = false;
+      }
+    });
   }
 
   private eliminarRegistroTemporal(dataRow: DosificacionData): void {
@@ -372,5 +401,16 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       key: 'tr',
       life
     });
+  }
+
+  private transformarABackendRequestDosificacion(dataRow: DosificacionData): DosificacionBackendRequest {
+    return {
+      nombre: dataRow.nombre_recien_nacido,
+      cama: parseInt(dataRow.cama) || 0,
+      volumenDosificado: parseFloat(dataRow.volumen_dosificado) || 0,
+      medico: dataRow.medico_nutricionista,
+      dosificador: dataRow.quien_dosificado,
+      ingresoLechePasteurizada: this.ingresoLechePasteurizadaData?.id || 0
+    };
   }
 }

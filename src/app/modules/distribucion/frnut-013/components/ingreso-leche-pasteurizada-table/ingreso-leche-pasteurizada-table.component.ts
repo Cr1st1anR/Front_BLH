@@ -114,7 +114,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     this.cargarFrascos();
   }
 
-  // ============= CARGAR FRASCOS DESDE API =============
   private cargarFrascos(): void {
     this.loading.frascos = true;
 
@@ -160,20 +159,16 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       };
     });
 
-    // Ordenar de forma descendente por año y número de frasco (más recientes primero)
     return frascosTransformados.sort((a, b) => {
-      // Primero ordenar por año descendente
       if (a.año !== b.año) {
         return b.año - a.año;
       }
-      // Si el año es el mismo, ordenar por número de frasco descendente
       const numFrascoA = parseInt(a.label.split(' ')[2]) || 0;
       const numFrascoB = parseInt(b.label.split(' ')[2]) || 0;
       return numFrascoB - numFrascoA;
     });
   }
 
-  // ============= CARGAR DATOS DESDE API =============
   cargarDatosPorMesYAnio(mes: number, anio: number): void {
     this.loading.main = true;
 
@@ -191,7 +186,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
         }
         this.loading.main = false;
 
-        // Mostrar notificación después de cargar los datos
         this.mostrarNotificacionFiltro();
       },
       error: (error: any) => {
@@ -206,7 +200,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
   private transformarDatosDesdeAPI(datos: IngresoLechePasteurizadaBackendResponse[]): IngresoLechePasteurizadaData[] {
     return datos.map((item: IngresoLechePasteurizadaBackendResponse) => {
-      // Corregir el manejo de la fecha para evitar problemas de zona horaria
       let fechaDispensacion: Date | null = null;
       if (item.fechaDispensacion) {
         const fechaStr = item.fechaDispensacion.toString();
@@ -247,7 +240,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     const frascoSeleccionado = this.extraerValorEvento(event);
     if (!frascoSeleccionado) return;
 
-    // Validar que el frasco no esté ya registrado
     const frascoYaRegistrado = this.dataOriginal.some(item =>
       item.n_frasco === frascoSeleccionado &&
       item.id !== rowData.id &&
@@ -279,14 +271,13 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
     if (frasco) {
       rowData.id_frasco = frasco.id_frasco;
-      rowData.id_madre_donante = frasco.id_madre_donante; // Asegurar que se guarde
+      rowData.id_madre_donante = frasco.id_madre_donante;
       rowData.n_donante = frasco.n_donante;
       rowData.volumen = frasco.volumen;
       rowData.acidez_dornic = frasco.acidez_dornic;
       rowData.calorias = frasco.calorias;
       rowData.lote = frasco.lote;
 
-      // Establecer fecha de dispensación desde el frasco
       const fechaStr = frasco.fecha_dispensacion;
       const [año, mes, dia] = fechaStr.split('T')[0].split('-');
       const fechaDispensacion = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia), 12, 0, 0, 0);
@@ -301,10 +292,8 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     const valorSeleccionado = this.extraerValorEvento(event);
     if (!valorSeleccionado) return;
 
-    // Buscar si el valor es un code (M, T, C) o un label (Madura, Transición, Calostro)
     const opcion = this.opcionesTipoLeche.find(t => t.value === valorSeleccionado || t.label === valorSeleccionado);
 
-    // Guardar el label para mostrarlo correctamente
     if (opcion) {
       rowData.tipo_leche = opcion.label;
     }
@@ -338,7 +327,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     return fechaVencimiento;
   }
 
-  // ============= CREAR NUEVO REGISTRO =============
   crearNuevoRegistro(): void {
     if (this.hasNewRowInEditing) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar el registro actual antes de crear uno nuevo');
@@ -388,7 +376,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
-  // ============= CRUD OPERATIONS =============
   onRowEditInit(dataRow: IngresoLechePasteurizadaData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -467,7 +454,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   private transformarABackendRequest(dataRow: IngresoLechePasteurizadaData): IngresoLechePasteurizadaBackendRequest {
-    // Convertir la fecha a formato YYYY-MM-DD
     let fechaDispensacion = '';
     if (dataRow.fecha_dispensacion instanceof Date) {
       fechaDispensacion = dataRow.fecha_dispensacion.toISOString().split('T')[0];
@@ -475,7 +461,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
       fechaDispensacion = dataRow.fecha_dispensacion.split('T')[0];
     }
 
-    // Obtener el código de tipo de leche (M, T, C)
     const tipoLecheOption = this.opcionesTipoLeche.find(t => t.label === dataRow.tipo_leche);
     const tipoLeche = tipoLecheOption?.value || dataRow.tipo_leche;
 
@@ -487,14 +472,12 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     };
   }
 
-  // Agregar este método para recargar los datos después de guardar:
   private recargarDatos(): void {
     if (this.filtroFecha) {
       this.cargarDatosPorMesYAnio(this.filtroFecha.month, this.filtroFecha.year);
     }
   }
 
-  // Modificar procesarRespuestaCreacion para recargar datos:
   private procesarRespuestaCreacion(dataRow: IngresoLechePasteurizadaData, rowElement: HTMLTableRowElement): void {
     dataRow.isNew = false;
     delete dataRow._uid;
@@ -506,11 +489,9 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
     this.mostrarMensaje('success', 'Éxito', 'Registro creado exitosamente');
 
-    // Recargar los datos para reflejar cambios del backend
     this.recargarDatos();
   }
 
-  // Modificar procesarRespuestaActualizacion para recargar datos:
   private procesarRespuestaActualizacion(dataRow: IngresoLechePasteurizadaData, rowElement: HTMLTableRowElement): void {
     const rowId = this.getRowId(dataRow);
     delete this.clonedData[rowId];
@@ -520,7 +501,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
     this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
 
-    // Recargar los datos para reflejar cambios del backend
     this.recargarDatos();
   }
 
@@ -547,7 +527,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
     this.aplicarFiltros();
-    // NO llamar a mostrarNotificacionFiltro() aquí porque ya se llama en cargarDatosPorMesYAnio
   }
 
   isTableInitialized(): boolean {
@@ -614,7 +593,6 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     }
   }
 
-  // ============= MENSAJES ========================
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
       severity,

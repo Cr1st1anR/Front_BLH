@@ -33,7 +33,6 @@
         @for (col of columns; track $index) {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
-          <!-- NOMBRE DEL RECIÉN NACIDO -->
           @if (col.field === 'nombre_recien_nacido') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -46,7 +45,6 @@
           </p-cellEditor>
           }
 
-          <!-- CAMA -->
           @else if (col.field === 'cama') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -59,7 +57,6 @@
           </p-cellEditor>
           }
 
-          <!-- VOLUMEN DOSIFICADO -->
           @else if (col.field === 'volumen_dosificado') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -72,7 +69,6 @@
           </p-cellEditor>
           }
 
-          <!-- MÉDICO O NUTRICIONISTA QUE ORDENA -->
           @else if (col.field === 'medico_nutricionista') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -85,7 +81,6 @@
           </p-cellEditor>
           }
 
-          <!-- QUIEN DOSIFICÓ - SELECT -->
           @else if (col.field === 'quien_dosificado') {
           <p-cellEditor>
             <ng-template pTemplate="input">
@@ -98,7 +93,6 @@
           </p-cellEditor>
           }
 
-          <!-- ACCIONES -->
           @else if (col.field === 'acciones') {
           <div class="flex items-center justify-center gap-2">
             <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded

@@ -118,13 +118,11 @@ export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewI
       return;
     }
 
-    // Solo cargar datos del mes actual (ya no llamamos a filtrarPorFecha)
     this.tableComponent.cargarDatosPorMesYAnio(
       this.filtroMesActualPendiente.month,
       this.filtroMesActualPendiente.year
     );
 
-    // Guardar el filtro en la tabla sin aplicar filtros adicionales
     this.tableComponent.filtroFecha = this.filtroMesActualPendiente;
 
     this.isInitialized = true;

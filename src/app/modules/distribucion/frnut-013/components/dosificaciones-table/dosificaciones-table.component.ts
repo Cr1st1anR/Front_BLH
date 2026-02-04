@@ -77,7 +77,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    // Inicialización sin datos mock
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -89,7 +88,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     }
   }
 
-  // ============= CARGAR DOSIFICACIONES DESDE API =============
   private cargarDosificaciones(idIngreso: number): void {
     this.loading.main = true;
 
@@ -123,14 +121,12 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     }));
   }
 
-  // ============= EVENTOS DE SELECCIÓN =============
   private extraerValorEvento(event: any): string {
     if (event?.value) return event.value;
     if (typeof event === 'string') return event;
     return '';
   }
 
-  // ============= CREAR NUEVO REGISTRO =============
   crearNuevoRegistro(): void {
     if (this.hasNewRowInEditing) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar el registro actual antes de crear uno nuevo');
@@ -171,12 +167,11 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.editingRow = registro;
     setTimeout(() => {
       this.table.initRowEdit(registro);
-      this.editingStateChanged.emit(true); // Emitir evento
+      this.editingStateChanged.emit(true);
     }, 100);
     this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
-  // ============= CRUD OPERATIONS =============
   onRowEditInit(dataRow: DosificacionData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -185,7 +180,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
 
     this.guardarEstadoOriginal(dataRow);
     this.editingRow = dataRow;
-    this.editingStateChanged.emit(true); // Emitir evento
+    this.editingStateChanged.emit(true);
   }
 
   onRowEditSave(dataRow: DosificacionData, index: number, event: MouseEvent): void {
@@ -194,7 +189,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Validar que la suma de volúmenes no exceda el volumen del frasco
     if (!this.validarVolumenTotal(dataRow)) {
       return;
     }
@@ -216,7 +210,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       this.restaurarEstadoOriginal(dataRow, index);
     }
     this.editingRow = null;
-    this.editingStateChanged.emit(false); // Emitir evento
+    this.editingStateChanged.emit(false);
   }
 
   private guardarNuevoRegistro(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
@@ -230,7 +224,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
           dataRow.id = response.data.id;
         }
         this.procesarRespuestaCreacion(dataRow, rowElement);
-        // Recargar dosificaciones
         if (this.ingresoLechePasteurizadaData?.id) {
           this.cargarDosificaciones(this.ingresoLechePasteurizadaData.id);
         }
@@ -256,7 +249,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.dosificacionesService.putDosificacion(dataRow.id, requestData).subscribe({
       next: (response: any) => {
         this.procesarRespuestaActualizacion(dataRow, rowElement);
-        // Recargar dosificaciones
         if (this.ingresoLechePasteurizadaData?.id) {
           this.cargarDosificaciones(this.ingresoLechePasteurizadaData.id);
         }
@@ -302,10 +294,8 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
       return false;
     }
 
-    // Calcular suma de volúmenes de todas las dosificaciones
     let sumaVolumenes = 0;
     this.dataDosificaciones.forEach(dosificacion => {
-      // Si es el registro actual que estamos editando/creando, usar el nuevo valor
       const volumenStr = dosificacion._uid === dataRowActual._uid || dosificacion.id === dataRowActual.id
         ? dataRowActual.volumen_dosificado
         : dosificacion.volumen_dosificado;
@@ -351,7 +341,7 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Dosificación registrada exitosamente');
-    this.editingStateChanged.emit(false); // Emitir evento
+    this.editingStateChanged.emit(false);
   }
 
   private procesarRespuestaActualizacion(dataRow: DosificacionData, rowElement: HTMLTableRowElement): void {
@@ -362,14 +352,13 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Dosificación actualizada exitosamente');
-    this.editingStateChanged.emit(false); // Emitir evento
+    this.editingStateChanged.emit(false);
   }
 
   private getRowId(dataRow: DosificacionData): string {
     return dataRow._uid || dataRow.id?.toString() || 'unknown';
   }
 
-  // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: DosificacionData): boolean {
     return this.editingRow !== null && (
       (this.editingRow._uid && this.editingRow._uid === rowData._uid) ||
@@ -385,7 +374,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ============= CÁLCULOS =============
   calcularVolumenTotal(): number {
     return this.dataDosificaciones.reduce((total, dosificacion) => {
       const volumen = parseFloat(dosificacion.volumen_dosificado || '0');
@@ -402,7 +390,6 @@ export class DosificacionesTableComponent implements OnInit, OnChanges {
     return volumenFrasco - volumenDosificado;
   }
 
-  // ============= MENSAJES =============
   private mostrarMensaje(severity: TipoMensajeDosificaciones, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
       severity,

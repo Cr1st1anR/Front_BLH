@@ -22,7 +22,7 @@ import type { IngresoLechePasteurizadaData } from '../../interfaces/ingreso-lech
   templateUrl: './dosificaciones-dialog.component.html',
   styleUrl: './dosificaciones-dialog.component.scss',
   providers: [MessageService],
-  changeDetection: ChangeDetectionStrategy.OnPush // Agregar esta línea
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DosificacionesDialogComponent implements OnInit, OnChanges {
 
@@ -41,7 +41,6 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    // Inicialización
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -52,7 +51,6 @@ export class DosificacionesDialogComponent implements OnInit, OnChanges {
     }
   }
 
-  // Método para manejar el evento del componente hijo usando setTimeout
   onEditingStateChanged(isEditing: boolean): void {
     setTimeout(() => {
       this.hasNewRowInEditing = isEditing;

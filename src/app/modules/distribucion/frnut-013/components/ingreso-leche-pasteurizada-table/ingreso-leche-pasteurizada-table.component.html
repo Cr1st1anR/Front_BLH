@@ -33,7 +33,6 @@
         @for (col of columns; track $index) {
         <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
-          <!-- FECHA DISPENSACIÓN - SOLO LECTURA -->
           @if (col.field === 'fecha_dispensacion') {
           <span>
             @if (rowData[col.field]) {
@@ -44,21 +43,12 @@
           </span>
           }
 
-          <!-- N° FRASCO - SELECT -->
           @else if (col.field === 'n_frasco') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select
-                [(ngModel)]="rowData.n_frasco"
-                [options]="opcionesFrascos"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleccione frasco"
-                (onChange)="onFrascoSeleccionado($event, rowData)"
-                appendTo="body"
-                class="w-full"
-                [showClear]="true"
-                [disabled]="!rowData.isNew">
+              <p-select [(ngModel)]="rowData.n_frasco" [options]="opcionesFrascos" optionLabel="label"
+                optionValue="value" placeholder="Seleccione frasco" (onChange)="onFrascoSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true" [disabled]="!rowData.isNew">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
@@ -67,20 +57,12 @@
           </p-cellEditor>
           }
 
-          <!-- TIPO LECHE - SELECT -->
           @else if (col.field === 'tipo_leche') {
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <p-select
-                [(ngModel)]="rowData.tipo_leche"
-                [options]="opcionesTipoLeche"
-                optionLabel="label"
-                optionValue="label"
-                placeholder="Seleccione tipo"
-                (onChange)="onTipoLecheSeleccionado($event, rowData)"
-                appendTo="body"
-                class="w-full"
-                [showClear]="true">
+              <p-select [(ngModel)]="rowData.tipo_leche" [options]="opcionesTipoLeche" optionLabel="label"
+                optionValue="label" placeholder="Seleccione tipo" (onChange)="onTipoLecheSeleccionado($event, rowData)"
+                appendTo="body" class="w-full" [showClear]="true">
               </p-select>
             </ng-template>
             <ng-template pTemplate="output">
@@ -89,7 +71,6 @@
           </p-cellEditor>
           }
 
-          <!-- FECHA VENCIMIENTO - SOLO LECTURA -->
           @else if (col.field === 'fecha_vencimiento') {
           <span>
             @if (rowData.fecha_vencimiento) {
@@ -100,7 +81,6 @@
           </span>
           }
 
-          <!-- FECHA/HORA DESHIELE - SOLO LECTURA (SOLO FECHA) -->
           @else if (col.field === 'fecha_hora_deshiele') {
           <span>
             @if (rowData.fecha_hora_deshiele) {
@@ -111,7 +91,6 @@
           </span>
           }
 
-          <!-- DOSIFICACIONES - ICONO OJO -->
           @else if (col.field === 'dosificaciones') {
           <div class="flex justify-center">
             <button pButton pRipple type="button" icon="pi pi-eye"
@@ -121,9 +100,9 @@
           </div>
           }
 
-          <!-- COLUMNAS READONLY -->
           @else if (col.tipo === 'readonly' || col.tipo === 'readonly_date') {
-          @if (col.field === 'fecha_dispensacion' || col.field === 'fecha_vencimiento' || col.field === 'fecha_hora_deshiele') {
+          @if (col.field === 'fecha_dispensacion' || col.field === 'fecha_vencimiento' || col.field ===
+          'fecha_hora_deshiele') {
           <span>
             @if (rowData[col.field]) {
             {{ rowData[col.field] | date:'dd/MM/yyyy' }}
@@ -138,7 +117,6 @@
           }
           }
 
-          <!-- ACCIONES -->
           @else if (col.field === 'acciones') {
           <div class="flex items-center justify-center gap-2">
             <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
@@ -156,7 +134,6 @@
           </div>
           }
 
-          <!-- OTRAS COLUMNAS -->
           @else {
           <span>{{ rowData[col.field] }}</span>
           }

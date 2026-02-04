@@ -69,6 +69,7 @@ export class ControlReenvaseTableComponent implements OnInit {
   opcionesResponsables: ResponsableOption[] = [];
   opcionesDonantes: DonanteOption[] = [];
   frascosFiltrados: FrascoOption[] = [];
+  private isInitialLoad = true;
 
   headersControlReenvase: TableColumn[] = [
     { header: 'FECHA', field: 'fecha', width: '120px', tipo: 'date' },
@@ -172,7 +173,11 @@ export class ControlReenvaseTableComponent implements OnInit {
         next: (registros) => {
           this.dataOriginal = this.transformarDatosBackend(registros);
           this.dataFiltered = [...this.dataOriginal];
-          this.mostrarMensajeExitosoCarga();
+
+          if (!this.isInitialLoad) {
+            this.mostrarMensajeExitosoCarga();
+          }
+
           this.loading.main = false;
           resolve();
         },
@@ -838,6 +843,7 @@ export class ControlReenvaseTableComponent implements OnInit {
   }
 
   aplicarFiltroInicialConNotificacion(filtro: FiltroFecha | null): void {
+    this.isInitialLoad = false;
     this.filtrarPorFecha(filtro);
   }
 

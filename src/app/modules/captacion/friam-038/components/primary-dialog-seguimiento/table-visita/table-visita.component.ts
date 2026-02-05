@@ -119,6 +119,10 @@ export class TableVisitaComponent implements OnInit, OnChanges {
     }
 
     const { fechaParaAPI, fechaParaMostrar } = this.procesarFecha(rowData.fecha_visita);
+
+    const fechaOriginal = this.clonedVisitas[rowData.id_visita as string]?.fecha_visita;
+    const huboModificacion = fechaParaMostrar !== fechaOriginal;
+
     rowData.fecha_visita = fechaParaMostrar;
 
     const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLTableRowElement;
@@ -126,6 +130,12 @@ export class TableVisitaComponent implements OnInit, OnChanges {
     if (rowData.isNew) {
       this.guardarNuevaVisita(fechaParaAPI);
     } else {
+      if (!huboModificacion) {
+        delete this.clonedVisitas[rowData.id_visita as string];
+        this.editingRow = null;
+        this.table.saveRowEdit(rowData, rowElement);
+        return;
+      }
       this.actualizarVisitaExistente(rowData, fechaParaAPI, rowElement);
     }
   }
@@ -209,6 +219,21 @@ export class TableVisitaComponent implements OnInit, OnChanges {
       return {
         fechaParaAPI: `${year}-${month}-${day}`,
         fechaParaMostrar: `${day}/${month}/${year}`
+      };
+    }
+
+    if (typeof fecha === 'string' && fecha.includes('/')) {
+      const [day, month, year] = fecha.split('/');
+      return {
+        fechaParaAPI: `${year}-${month}-${day}`,
+        fechaParaMostrar: fecha
+      };
+    }
+
+    if (typeof fecha === 'string' && fecha.includes('-')) {
+      return {
+        fechaParaAPI: fecha,
+        fechaParaMostrar: this.formatearFechaParaMostrar(fecha)
       };
     }
 

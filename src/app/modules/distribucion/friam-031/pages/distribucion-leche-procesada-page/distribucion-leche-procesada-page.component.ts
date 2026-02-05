@@ -80,6 +80,7 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private idDistribucionActual: number | null = null;
   private mesAnoActual: { year: number; month: number } | null = null;
+  private cargaInicialCompletada: boolean = false;
 
   private readonly tipoEdadMap: Record<string, string> = {
     'Madura': 'M',
@@ -135,11 +136,18 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
     if (this.mesAnoActual) {
       setTimeout(() => {
         this.cargarDistribucionesPorMes(this.mesAnoActual!);
+        this.cargaInicialCompletada = true;
       }, 500);
     }
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
+    if (!this.cargaInicialCompletada) {
+      if (filtro.year === this.mesAnoActual?.year && filtro.month === this.mesAnoActual?.month) {
+        return;
+      }
+    }
+
     this.mesAnoActual = filtro;
     this.limpiarSeleccion();
     this.cargarDistribucionesPorMes(filtro);
@@ -156,7 +164,6 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
 
   private cargarDistribucionesPorMes(filtro: { year: number; month: number }): void {
     this.loading.fechas = true;
-
     this.opcionesDistribuciones = [];
 
     this.distribucionService.getDistribucionesPorMes(filtro.month, filtro.year).subscribe({
@@ -288,11 +295,17 @@ export class DistribucionLecheProcesadaPageComponent implements OnInit, AfterVie
       parseInt(fechaParts[2])
     );
 
+    const fechaPasteurizacion = frasco.controlReenvase?.fecha
+      ? new Date(frasco.controlReenvase.fecha)
+      : new Date();
+
+    const añoPasteurizacion = fechaPasteurizacion.getFullYear().toString().slice(-2);
+
     return {
       id: info.id,
       fecha: fechaLocal,
       vol_distribuido: info.volumenDistribuido.toString(),
-      n_frasco_leche_procesada: `LHP 25 ${frasco.numeroFrasco}`,
+      n_frasco_leche_procesada: `LHP ${añoPasteurizacion} ${frasco.numeroFrasco}`,
       id_frasco_leche_procesada: frasco.id,
       calorias: frasco.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
       acidez_dornic: frasco.controlReenvase.seleccionClasificacion.acidezDornic.resultado.toString(),

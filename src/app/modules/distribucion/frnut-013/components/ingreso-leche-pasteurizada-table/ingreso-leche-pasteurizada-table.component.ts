@@ -11,8 +11,13 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { IngresoLechePasteurizadaService } from '../../services/ingreso-leche-pasteurizada.service';
 import type {
   IngresoLechePasteurizadaData,
+  IngresoLechePasteurizadaBackendRequest,
+  IngresoLechePasteurizadaBackendResponse,
+  FrascoPasteurizadoBackend,
+  ApiResponseIngresoLeche,
   LoadingState,
   TableColumn,
   FiltroFecha,
@@ -71,9 +76,9 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
 
   opcionesFrascos: FrascoOption[] = [];
   opcionesTipoLeche: TipoLecheOption[] = [
-    { label: 'Madura', value: 'Madura' },
-    { label: 'Transición', value: 'Transición' },
-    { label: 'Calostro', value: 'Calostro' }
+    { label: 'Madura', value: 'M' },
+    { label: 'Transición', value: 'T' },
+    { label: 'Calostro', value: 'C' }
   ];
 
   private readonly mesesDelAno = [
@@ -82,7 +87,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   ] as const;
 
   headersIngresoLeche: TableColumn[] = [
-    { header: 'FECHA\nDISPENSACIÓN', field: 'fecha_dispensacion', width: '150px', tipo: 'date' },
+    { header: 'FECHA\nDISPENSACIÓN', field: 'fecha_dispensacion', width: '150px', tipo: 'readonly' },
     { header: 'N° FRASCO', field: 'n_frasco', width: '150px', tipo: 'select' },
     { header: 'N°\nDONANTE', field: 'n_donante', width: '120px', tipo: 'readonly' },
     { header: 'VOLUMEN\n(ML)', field: 'volumen', width: '120px', tipo: 'readonly' },
@@ -91,7 +96,7 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
     { header: 'TIPO LECHE', field: 'tipo_leche', width: '150px', tipo: 'select' },
     { header: 'LOTE', field: 'lote', width: '100px', tipo: 'readonly' },
     { header: 'FECHA DE\nVENCIMIENTO', field: 'fecha_vencimiento', width: '150px', tipo: 'readonly_date' },
-    { header: 'FECHA/HORA\nDESHIELE', field: 'fecha_hora_deshiele', width: '170px', tipo: 'readonly_datetime' },
+    { header: 'FECHA/HORA\nDESHIELE', field: 'fecha_hora_deshiele', width: '170px', tipo: 'readonly_date' },
     { header: 'DOSIFICACIONES', field: 'dosificaciones', width: '150px', tipo: 'eye' },
     { header: 'ACCIONES', field: 'acciones', width: '120px', tipo: 'actions' }
   ];
@@ -101,196 +106,208 @@ export class IngresoLechePasteurizadaTableComponent implements OnInit {
   }
 
   constructor(
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly ingresoLecheService: IngresoLechePasteurizadaService
   ) { }
 
   ngOnInit(): void {
-  this.cargarFrascosMock();
-  this.cargarDatosMock();
-}
+    this.cargarFrascos();
+  }
 
-  // ============= CARGAR FRASCOS MOCK =============
-  private cargarDatosMock(): void {
-  const fechaActual = new Date();
-  const fechaVencimiento1 = this.calcularFechaVencimiento(fechaActual);
+  private cargarFrascos(): void {
+    this.loading.frascos = true;
 
-  const fecha2 = new Date();
-  fecha2.setDate(fecha2.getDate() - 3);
-  const fechaVencimiento2 = this.calcularFechaVencimiento(fecha2);
+    this.ingresoLecheService.getFrascosPasteurizados().subscribe({
+      next: (response: any) => {
+        if (response?.data && Array.isArray(response.data)) {
+          this.opcionesFrascos = this.transformarFrascosDesdeAPI(response.data);
+        }
+        this.loading.frascos = false;
+      },
+      error: (error: any) => {
+        console.error('Error al cargar frascos:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los frascos disponibles');
+        this.loading.frascos = false;
+      }
+    });
+  }
 
-  const añoCorto = fechaActual.getFullYear().toString().slice(-2);
+  private transformarFrascosDesdeAPI(frascos: FrascoPasteurizadoBackend[]): FrascoOption[] {
+    const frascosTransformados = frascos.map((frasco: FrascoPasteurizadoBackend) => {
+      const fechaControl = frasco.controlReenvase?.fecha ? new Date(frasco.controlReenvase.fecha) : null;
+      const añoPasteurizacion = fechaControl?.getFullYear() || new Date().getFullYear();
+      const añoCorto = añoPasteurizacion.toString().slice(-2);
 
-  this.dataOriginal = [
-    {
-      id: 1,
-      fecha_dispensacion: fechaActual,
-      n_frasco: `LHP ${añoCorto} 1`,
-      id_frasco: 1,
-      n_donante: '001',
-      volumen: '150',
-      acidez_dornic: '3.5',
-      calorias: '680',
-      tipo_leche: 'Madura',
-      lote: '101',
-      fecha_vencimiento: fechaVencimiento1,
-      fecha_hora_deshiele: new Date(fechaActual),
-      isNew: false
-    },
-    {
-      id: 2,
-      fecha_dispensacion: fecha2,
-      n_frasco: `LHP ${añoCorto} 2`,
-      id_frasco: 2,
-      n_donante: '002',
-      volumen: '200',
-      acidez_dornic: '3.8',
-      calorias: '720',
-      tipo_leche: 'Transición',
-      lote: '102',
-      fecha_vencimiento: fechaVencimiento2,
-      fecha_hora_deshiele: new Date(fecha2),
-      isNew: false
-    }
-  ];
+      const fechaDispensacion = frasco.entradasSalidasPasteurizada?.fechaSalida ||
+                                 frasco.controlReenvase?.fecha ||
+                                 new Date().toISOString().split('T')[0];
 
-  this.dataFiltered = [...this.dataOriginal];
-}
+      const idMadreDonante = frasco.controlReenvase?.madreDonante?.id || 0;
 
-private cargarFrascosMock(): void {
-  const añoActual = new Date().getFullYear();
-  const añoCorto = añoActual.toString().slice(-2);
+      return {
+        label: `LHP ${añoCorto} ${frasco.numeroFrasco}`,
+        value: `LHP ${añoCorto} ${frasco.numeroFrasco}`,
+        id_frasco: frasco.id,
+        id_madre_donante: idMadreDonante,
+        n_donante: idMadreDonante.toString(),
+        volumen: frasco.volumen?.toString() || '0',
+        acidez_dornic: frasco.controlReenvase?.seleccionClasificacion?.acidezDornic?.resultado?.toString() || '0',
+        calorias: frasco.controlReenvase?.seleccionClasificacion?.crematocrito?.kcal?.toString() || '0',
+        lote: frasco.controlReenvase?.lote?.numeroLote?.toString() || '',
+        año: añoPasteurizacion,
+        fecha_dispensacion: fechaDispensacion
+      };
+    });
 
-  const mockFrascos: FrascoOption[] = [
-    {
-      label: `LHP ${añoCorto} 1`,
-      value: `LHP ${añoCorto} 1`,
-      id_frasco: 1,
-      n_donante: '001',
-      volumen: '150',
-      acidez_dornic: '3.5',
-      calorias: '680',
-      lote: '101',
-      año: añoActual
-    },
-    {
-      label: `LHP ${añoCorto} 2`,
-      value: `LHP ${añoCorto} 2`,
-      id_frasco: 2,
-      n_donante: '002',
-      volumen: '200',
-      acidez_dornic: '3.8',
-      calorias: '720',
-      lote: '102',
-      año: añoActual
-    },
-    {
-      label: `LHP ${añoCorto} 3`,
-      value: `LHP ${añoCorto} 3`,
-      id_frasco: 3,
-      n_donante: '003',
-      volumen: '175',
-      acidez_dornic: '3.6',
-      calorias: '700',
-      lote: '103',
-      año: añoActual
-    },
-    {
-      label: `LHP ${añoCorto} 4`,
-      value: `LHP ${añoCorto} 4`,
-      id_frasco: 4,
-      n_donante: '004',
-      volumen: '180',
-      acidez_dornic: '3.4',
-      calorias: '690',
-      lote: '104',
-      año: añoActual
-    },
-    {
-      label: `LHP ${añoCorto} 5`,
-      value: `LHP ${añoCorto} 5`,
-      id_frasco: 5,
-      n_donante: '005',
-      volumen: '190',
-      acidez_dornic: '3.7',
-      calorias: '710',
-      lote: '105',
-      año: añoActual
-    }
-  ];
+    return frascosTransformados.sort((a, b) => {
+      if (a.año !== b.año) {
+        return b.año - a.año;
+      }
+      const numFrascoA = parseInt(a.label.split(' ')[2]) || 0;
+      const numFrascoB = parseInt(b.label.split(' ')[2]) || 0;
+      return numFrascoB - numFrascoA;
+    });
+  }
 
-  this.opcionesFrascos = mockFrascos;
-}
+  cargarDatosPorMesYAnio(mes: number, anio: number): void {
+    this.loading.main = true;
+
+    // Guardar el filtro actual
+    this.filtroFecha = { month: mes, year: anio };
+
+    this.ingresoLecheService.getIngresosPorMesYAnio(mes, anio).subscribe({
+      next: (response: ApiResponseIngresoLeche) => {
+        if (response?.data && Array.isArray(response.data)) {
+          this.dataOriginal = this.transformarDatosDesdeAPI(response.data);
+          this.dataFiltered = [...this.dataOriginal];
+        } else {
+          this.dataOriginal = [];
+          this.dataFiltered = [];
+        }
+        this.loading.main = false;
+
+        this.mostrarNotificacionFiltro();
+      },
+      error: (error: any) => {
+        console.error('Error al cargar ingresos:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los registros');
+        this.dataOriginal = [];
+        this.dataFiltered = [];
+        this.loading.main = false;
+      }
+    });
+  }
+
+  private transformarDatosDesdeAPI(datos: IngresoLechePasteurizadaBackendResponse[]): IngresoLechePasteurizadaData[] {
+    return datos.map((item: IngresoLechePasteurizadaBackendResponse) => {
+      let fechaDispensacion: Date | null = null;
+      if (item.fechaDispensacion) {
+        const fechaStr = item.fechaDispensacion.toString();
+        const [año, mes, dia] = fechaStr.split('T')[0].split('-');
+        fechaDispensacion = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia), 12, 0, 0, 0);
+      }
+
+      const fechaVencimiento = fechaDispensacion ? this.calcularFechaVencimiento(fechaDispensacion) : null;
+
+      const fechaControl = item.frascoPasteurizado?.controlReenvase?.fecha ?
+        new Date(item.frascoPasteurizado.controlReenvase.fecha) : null;
+      const añoPasteurizacion = fechaControl?.getFullYear() || new Date().getFullYear();
+      const añoCorto = añoPasteurizacion.toString().slice(-2);
+
+      const tipoLecheLabel = this.opcionesTipoLeche.find(t => t.value === item.tipo)?.label || item.tipo;
+
+      return {
+        id: item.id,
+        fecha_dispensacion: fechaDispensacion,
+        n_frasco: `LHP ${añoCorto} ${item.frascoPasteurizado.numeroFrasco}`,
+        id_frasco: item.frascoPasteurizado.id,
+        id_madre_donante: item.madreDonante.id,
+        n_donante: item.madreDonante.id.toString(),
+        volumen: item.frascoPasteurizado.volumen.toString(),
+        acidez_dornic: item.frascoPasteurizado.controlReenvase.seleccionClasificacion.acidezDornic.resultado.toString(),
+        calorias: item.frascoPasteurizado.controlReenvase.seleccionClasificacion.crematocrito.kcal.toString(),
+        tipo_leche: tipoLecheLabel,
+        lote: item.frascoPasteurizado.controlReenvase.lote.numeroLote.toString(),
+        fecha_vencimiento: fechaVencimiento,
+        fecha_hora_deshiele: fechaDispensacion,
+        isNew: false
+      };
+    });
+  }
 
   // ============= EVENTOS DE SELECCIÓN =============
   onFrascoSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
-  const frascoSeleccionado = this.extraerValorEvento(event);
-  if (!frascoSeleccionado) return;
+    const frascoSeleccionado = this.extraerValorEvento(event);
+    if (!frascoSeleccionado) return;
 
-  // Validar que el frasco no esté ya registrado
-  const frascoYaRegistrado = this.dataOriginal.some(item =>
-    item.n_frasco === frascoSeleccionado &&
-    item.id !== rowData.id &&
-    !item.isNew
-  );
-
-  if (frascoYaRegistrado) {
-    this.mostrarMensaje(
-      'error',
-      'Frasco No Disponible',
-      `El frasco ${frascoSeleccionado} ya ha sido utilizado en otro registro`
+    const frascoYaRegistrado = this.dataOriginal.some(item =>
+      item.n_frasco === frascoSeleccionado &&
+      item.id !== rowData.id &&
+      !item.isNew
     );
-    rowData.n_frasco = '';
-    rowData.id_frasco = null;
-    rowData.n_donante = '';
-    rowData.volumen = '';
-    rowData.acidez_dornic = '';
-    rowData.calorias = '';
-    rowData.lote = '';
-    return;
-  }
 
-  rowData.n_frasco = frascoSeleccionado;
-
-  const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
-  if (frasco) {
-    rowData.id_frasco = frasco.id_frasco;
-    rowData.n_donante = frasco.n_donante;
-    rowData.volumen = frasco.volumen;
-    rowData.acidez_dornic = frasco.acidez_dornic;
-    rowData.calorias = frasco.calorias;
-    rowData.lote = frasco.lote;
-  }
-}
-
-  onTipoLecheSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
-    const tipoLeche = this.extraerValorEvento(event);
-    if (!tipoLeche) return;
-
-    rowData.tipo_leche = tipoLeche;
-  }
-
-  onFechaDispensacionChanged(rowData: IngresoLechePasteurizadaData): void {
-    if (rowData.fecha_dispensacion) {
-      // Calcular fecha de vencimiento (6 meses)
-      rowData.fecha_vencimiento = this.calcularFechaVencimiento(rowData.fecha_dispensacion as Date);
-
-      // Establecer fecha/hora deshiele igual a fecha dispensación
-      rowData.fecha_hora_deshiele = new Date(rowData.fecha_dispensacion);
-    } else {
+    if (frascoYaRegistrado) {
+      this.mostrarMensaje(
+        'error',
+        'Frasco No Disponible',
+        `El frasco ${frascoSeleccionado} ya ha sido utilizado en otro registro`
+      );
+      rowData.n_frasco = '';
+      rowData.id_frasco = null;
+      rowData.id_madre_donante = null;
+      rowData.n_donante = '';
+      rowData.volumen = '';
+      rowData.acidez_dornic = '';
+      rowData.calorias = '';
+      rowData.lote = '';
+      rowData.fecha_dispensacion = null;
       rowData.fecha_vencimiento = null;
       rowData.fecha_hora_deshiele = null;
+      return;
+    }
+
+    rowData.n_frasco = frascoSeleccionado;
+
+    const frasco = this.opcionesFrascos.find(f => f.value === frascoSeleccionado);
+    if (frasco) {
+      rowData.id_frasco = frasco.id_frasco;
+      rowData.id_madre_donante = frasco.id_madre_donante;
+      rowData.n_donante = frasco.n_donante;
+      rowData.volumen = frasco.volumen;
+      rowData.acidez_dornic = frasco.acidez_dornic;
+      rowData.calorias = frasco.calorias;
+      rowData.lote = frasco.lote;
+
+      const fechaStr = frasco.fecha_dispensacion;
+      const [año, mes, dia] = fechaStr.split('T')[0].split('-');
+      const fechaDispensacion = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia), 12, 0, 0, 0);
+
+      rowData.fecha_dispensacion = fechaDispensacion;
+      rowData.fecha_vencimiento = this.calcularFechaVencimiento(fechaDispensacion);
+      rowData.fecha_hora_deshiele = new Date(fechaDispensacion);
+    }
+  }
+
+  onTipoLecheSeleccionado(event: any, rowData: IngresoLechePasteurizadaData): void {
+    const valorSeleccionado = this.extraerValorEvento(event);
+    if (!valorSeleccionado) return;
+
+    const opcion = this.opcionesTipoLeche.find(t => t.value === valorSeleccionado || t.label === valorSeleccionado);
+
+    if (opcion) {
+      rowData.tipo_leche = opcion.label;
     }
   }
 
   onDosificacionesClick(rowData: IngresoLechePasteurizadaData, event: Event): void {
-  event.stopPropagation();
+    event.stopPropagation();
 
-  if (this.isAnyRowEditing()) {
-    return;
+    if (this.isAnyRowEditing()) {
+      return;
+    }
+
+    this.dosificacionesClick.emit(rowData);
   }
-
-  this.dosificacionesClick.emit(rowData);
-}
 
   private extraerValorEvento(event: any): string {
     if (event?.value) return event.value;
@@ -310,7 +327,6 @@ private cargarFrascosMock(): void {
     return fechaVencimiento;
   }
 
-  // ============= CREAR NUEVO REGISTRO =============
   crearNuevoRegistro(): void {
     if (this.hasNewRowInEditing) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar el registro actual antes de crear uno nuevo');
@@ -328,22 +344,20 @@ private cargarFrascosMock(): void {
   }
 
   private crearRegistroVacio(): IngresoLechePasteurizadaData {
-    const fechaActual = new Date();
-    const fechaVencimiento = this.calcularFechaVencimiento(fechaActual);
-
     return {
       id: null,
-      fecha_dispensacion: fechaActual,
+      fecha_dispensacion: null,
       n_frasco: '',
       id_frasco: null,
+      id_madre_donante: null,
       n_donante: '',
       volumen: '',
       acidez_dornic: '',
       calorias: '',
       tipo_leche: '',
       lote: '',
-      fecha_vencimiento: fechaVencimiento,
-      fecha_hora_deshiele: new Date(fechaActual),
+      fecha_vencimiento: null,
+      fecha_hora_deshiele: null,
       _uid: `tmp_${this.tempIdCounter--}`,
       isNew: true
     };
@@ -362,7 +376,6 @@ private cargarFrascosMock(): void {
     this.mostrarMensaje('info', 'Información', 'Se ha creado un nuevo registro. Complete los campos requeridos.');
   }
 
-  // ============= CRUD OPERATIONS =============
   onRowEditInit(dataRow: IngresoLechePasteurizadaData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -401,57 +414,67 @@ private cargarFrascosMock(): void {
   private guardarNuevoRegistro(dataRow: IngresoLechePasteurizadaData, rowElement: HTMLTableRowElement): void {
     this.loading.saving = true;
 
-    // Simulación de guardado (mock)
-    setTimeout(() => {
-      dataRow.id = Date.now();
-      this.procesarRespuestaCreacion(dataRow, rowElement);
-    }, 500);
+    const requestData = this.transformarABackendRequest(dataRow);
+
+    this.ingresoLecheService.postIngresoLechePasteurizada(requestData).subscribe({
+      next: (response: any) => {
+        if (response?.data?.id) {
+          dataRow.id = response.data.id;
+        }
+        this.procesarRespuestaCreacion(dataRow, rowElement);
+      },
+      error: (error: any) => {
+        console.error('Error al crear registro:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudo crear el registro');
+        this.loading.saving = false;
+      }
+    });
   }
 
   private actualizarRegistroExistente(dataRow: IngresoLechePasteurizadaData, rowElement: HTMLTableRowElement): void {
+    if (!dataRow.id) {
+      this.mostrarMensaje('error', 'Error', 'No se puede actualizar un registro sin ID');
+      return;
+    }
+
     this.loading.saving = true;
 
-    // Simulación de actualización (mock)
-    setTimeout(() => {
-      this.procesarRespuestaActualizacion(dataRow, rowElement);
-    }, 500);
+    const requestData = this.transformarABackendRequest(dataRow);
+
+    this.ingresoLecheService.putIngresoLechePasteurizada(dataRow.id, requestData).subscribe({
+      next: (response: any) => {
+        this.procesarRespuestaActualizacion(dataRow, rowElement);
+      },
+      error: (error: any) => {
+        console.error('Error al actualizar registro:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudo actualizar el registro');
+        this.loading.saving = false;
+      }
+    });
   }
 
-  private eliminarRegistroTemporal(dataRow: IngresoLechePasteurizadaData): void {
-    const predicate = (item: IngresoLechePasteurizadaData) =>
-      item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew);
-
-    const originalIndex = this.dataOriginal.findIndex(predicate);
-    if (originalIndex !== -1) this.dataOriginal.splice(originalIndex, 1);
-
-    const filteredIndex = this.dataFiltered.findIndex(predicate);
-    if (filteredIndex !== -1) {
-      this.dataFiltered.splice(filteredIndex, 1);
-      this.dataFiltered = [...this.dataFiltered];
+  private transformarABackendRequest(dataRow: IngresoLechePasteurizadaData): IngresoLechePasteurizadaBackendRequest {
+    let fechaDispensacion = '';
+    if (dataRow.fecha_dispensacion instanceof Date) {
+      fechaDispensacion = dataRow.fecha_dispensacion.toISOString().split('T')[0];
+    } else if (typeof dataRow.fecha_dispensacion === 'string') {
+      fechaDispensacion = dataRow.fecha_dispensacion.split('T')[0];
     }
+
+    const tipoLecheOption = this.opcionesTipoLeche.find(t => t.label === dataRow.tipo_leche);
+    const tipoLeche = tipoLecheOption?.value || dataRow.tipo_leche;
+
+    return {
+      fechaDispensacion: fechaDispensacion,
+      tipo: tipoLeche,
+      frascoPasteurizado: { id: dataRow.id_frasco! },
+      madreDonante: { id: dataRow.id_madre_donante! }
+    };
   }
 
-  private validarCamposRequeridos(dataRow: IngresoLechePasteurizadaData): boolean {
-    return !!(
-      dataRow.fecha_dispensacion &&
-      dataRow.n_frasco?.trim() &&
-      dataRow.tipo_leche?.trim() &&
-      dataRow.n_donante?.trim() &&
-      dataRow.volumen?.trim() &&
-      dataRow.lote?.trim()
-    );
-  }
-
-  private guardarEstadoOriginal(dataRow: IngresoLechePasteurizadaData): void {
-    const rowId = this.getRowId(dataRow);
-    this.clonedData[rowId] = { ...dataRow };
-  }
-
-  private restaurarEstadoOriginal(dataRow: IngresoLechePasteurizadaData, index: number): void {
-    const rowId = this.getRowId(dataRow);
-    if (this.clonedData[rowId]) {
-      this.dataFiltered[index] = this.clonedData[rowId];
-      delete this.clonedData[rowId];
+  private recargarDatos(): void {
+    if (this.filtroFecha) {
+      this.cargarDatosPorMesYAnio(this.filtroFecha.month, this.filtroFecha.year);
     }
   }
 
@@ -465,6 +488,8 @@ private cargarFrascosMock(): void {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Registro creado exitosamente');
+
+    this.recargarDatos();
   }
 
   private procesarRespuestaActualizacion(dataRow: IngresoLechePasteurizadaData, rowElement: HTMLTableRowElement): void {
@@ -475,6 +500,8 @@ private cargarFrascosMock(): void {
     this.loading.saving = false;
 
     this.mostrarMensaje('success', 'Éxito', 'Registro actualizado exitosamente');
+
+    this.recargarDatos();
   }
 
   private getRowId(dataRow: IngresoLechePasteurizadaData): string {
@@ -484,8 +511,7 @@ private cargarFrascosMock(): void {
   // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: IngresoLechePasteurizadaData): boolean {
     return this.editingRow !== null && (
-      (this.editingRow._uid && this.editingRow._uid === rowData._uid) ||
-      (this.editingRow.id === rowData.id)
+      (this.editingRow._uid && this.editingRow._uid === rowData._uid) || (this.editingRow.id === rowData.id)
     );
   }
 
@@ -497,11 +523,10 @@ private cargarFrascosMock(): void {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ============= FILTROS =============
+  // ============= FILTROS ===============
   filtrarPorFecha(filtro: FiltroFecha | null): void {
     this.filtroFecha = filtro;
     this.aplicarFiltros();
-    this.mostrarNotificacionFiltro();
   }
 
   isTableInitialized(): boolean {
@@ -531,14 +556,11 @@ private cargarFrascosMock(): void {
 
   private aplicarFiltrosBusquedaTexto(datos: IngresoLechePasteurizadaData[]): IngresoLechePasteurizadaData[] {
     return datos.filter(item => {
-      const cumpleFrasco = !this.filtrosBusqueda.n_frasco ||
-        item.n_frasco?.toLowerCase().includes(this.filtrosBusqueda.n_frasco.toLowerCase());
+      const cumpleFrasco = !this.filtrosBusqueda.n_frasco || item.n_frasco?.toLowerCase().includes(this.filtrosBusqueda.n_frasco.toLowerCase());
 
-      const cumpleDonante = !this.filtrosBusqueda.n_donante ||
-        item.n_donante?.toLowerCase().includes(this.filtrosBusqueda.n_donante.toLowerCase());
+      const cumpleDonante = !this.filtrosBusqueda.n_donante || item.n_donante?.toLowerCase().includes(this.filtrosBusqueda.n_donante.toLowerCase());
 
-      const cumpleLote = !this.filtrosBusqueda.lote ||
-        item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
+      const cumpleLote = !this.filtrosBusqueda.lote || item.lote?.toLowerCase().includes(this.filtrosBusqueda.lote.toLowerCase());
 
       return cumpleFrasco && cumpleDonante && cumpleLote;
     });
@@ -571,7 +593,6 @@ private cargarFrascosMock(): void {
     }
   }
 
-  // ============= MENSAJES =============
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
       severity,
@@ -580,5 +601,47 @@ private cargarFrascosMock(): void {
       key: 'tr',
       life
     });
+  }
+
+  private validarCamposRequeridos(dataRow: IngresoLechePasteurizadaData): boolean {
+    return !!(
+      dataRow.n_frasco?.trim() &&
+      dataRow.tipo_leche?.trim() &&
+      dataRow.id_frasco &&
+      dataRow.id_madre_donante && dataRow.id_madre_donante &&
+      dataRow.fecha_dispensacion
+    );
+  }
+
+  private guardarEstadoOriginal(dataRow: IngresoLechePasteurizadaData): void {
+    const rowId = this.getRowId(dataRow);
+    this.clonedData[rowId] = { ...dataRow };
+  }
+
+  private restaurarEstadoOriginal(dataRow: IngresoLechePasteurizadaData, index: number): void {
+    const rowId = this.getRowId(dataRow);
+    if (this.clonedData[rowId]) {
+      this.dataFiltered[index] = this.clonedData[rowId];
+      const originalIndex = this.dataOriginal.findIndex(item => item.id === this.clonedData[rowId].id || item._uid === this.clonedData[rowId]._uid);
+      if (originalIndex !== -1) {
+        this.dataOriginal[originalIndex] = this.clonedData[rowId];
+      }
+      delete this.clonedData[rowId];
+    }
+  }
+
+  private eliminarRegistroTemporal(dataRow: IngresoLechePasteurizadaData): void {
+    const predicate = (item: IngresoLechePasteurizadaData) => item._uid === dataRow._uid || (item.id === dataRow.id && dataRow.isNew);
+
+    const indexFiltered = this.dataFiltered.findIndex(predicate);
+    if (indexFiltered !== -1) {
+      this.dataFiltered.splice(indexFiltered, 1);
+      this.dataFiltered = [...this.dataFiltered];
+    }
+
+    const indexOriginal = this.dataOriginal.findIndex(predicate);
+    if (indexOriginal !== -1) {
+      this.dataOriginal.splice(indexOriginal, 1);
+    }
   }
 }

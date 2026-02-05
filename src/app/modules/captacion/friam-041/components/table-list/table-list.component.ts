@@ -236,6 +236,15 @@ export class TableListComponent implements OnInit {
         next: (data) => {
           this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
           this.dataTableLienaAmiga[this.dataTableLienaAmiga.length - 1].fechaNacimiento = this.ageCalculate((this.dataTableLienaAmiga.filter((item) => item.idMadrePotencial === undefined)[0].fechaNacimiento as Date));
+
+          const responseData = data.data as any;
+          if (responseData) {
+            dataRow.idMadrePotencial = responseData.id;
+            if (responseData.infoMadre) {
+              dataRow.infoMadre = typeof responseData.infoMadre === 'object' ? responseData.infoMadre.id : responseData.infoMadre;
+            }
+          }
+
           this.table.saveRowEdit(dataRow, rowElement);
         },
         error: (error) => {

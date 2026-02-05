@@ -114,6 +114,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
   requiredFields: string[] = ['id_madre_donante'];
   private readonly componentId = 'table-casa';
   private editingStateSubscription: Subscription | null = null;
+  allMadresDonantes: MadresDonantes[] = []; // Lista completa de madres donantes
 
   constructor(
     private messageService: MessageService,
@@ -163,9 +164,10 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     return this._primaryService.getMadresDonantes().pipe(
       tap((data) => {
         if (data && data.data && data.data.length > 0) {
-          this.headerTableCasasVisita[1].options = data.data;
-          // this.dataLoaded.emit(true);
+          this.allMadresDonantes = data.data;
+          this.updateAvailableMadres();
         } else {
+          this.allMadresDonantes = [];
           this.headerTableCasasVisita[1].options = [];
           this.messageService.add({
             severity: 'info',
@@ -173,7 +175,6 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
             detail: 'No hay madres donantes registradas en el sistema.',
             life: 3000
           });
-          // this.dataLoaded.emit(false);
         }
       })
     );
@@ -185,6 +186,8 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
         if (data) {
           // asegurar el tipo real de data.data para TypeScript
           this.dataTableCasas = this.formatData(data.data as casasVisitaData[]);
+          // Actualizar madres disponibles después de cargar los datos
+          this.updateAvailableMadres();
           if (this.dataTableCasas.length > 0) {
             this.messageService.add({
               severity: 'success',
@@ -289,7 +292,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     this.selectedRow = null;
   }
 
-  onRowEditSave(dataRow: any, index: number, event: MouseEvent) {    
+  onRowEditSave(dataRow: any, index: number, event: MouseEvent) {
     const rowElement = (event.currentTarget as HTMLElement).closest(
       'tr'
     ) as HTMLTableRowElement;
@@ -336,6 +339,8 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
           this.hasNewRowInEditing = false;
           this.editingRow = null;
           this.editingStateService.cancelEditing();
+          // Actualizar madres disponibles después de guardar
+          this.updateAvailableMadres();
         },
         error: (error) => {
           this.messageService.add({
@@ -460,5 +465,69 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
       this.editingStateSubscription.unsubscribe();
     }
     this.editingStateService.unregisterCancelCallback(this.componentId);
+  }
+
+  /**
+   * Actualiza la lista de madres donantes disponibles
+   * Filtra las madres que ya tienen registros en la tabla
+   */
+  updateAvailableMadres(): void {
+    if (!this.allMadresDonantes || this.allMadresDonantes.length === 0) {
+      this.headerTableCasasVisita[1].options = [];
+      return;
+    }
+
+    // Obtener IDs de madres donantes que ya están en la tabla
+    const madresEnUso = new Set<number>();
+    this.dataTableCasas.forEach(row => {
+      const madreId = typeof row.id_madre_donante === 'object'
+        ? row.id_madre_donante?.id_madre_donante
+        : row.id_madre_donante;
+
+      if (madreId !== null && madreId !== undefined) {
+        madresEnUso.add(madreId);
+      }
+    });
+
+    // Filtrar madres que no están en uso
+    const madresDisponibles = this.allMadresDonantes.filter(
+      madre => !madresEnUso.has(madre.id_madre_donante)
+    );
+
+    this.headerTableCasasVisita[1].options = madresDisponibles;
+  }
+
+  /**
+   * Obtiene las opciones disponibles para una fila específica en edición
+   * Incluye la madre actual de la fila si existe
+   */
+  getAvailableOptionsForRow(rowData: any): MadresDonantes[] {
+    if (!this.allMadresDonantes || this.allMadresDonantes.length === 0) {
+      return [];
+    }
+
+    const currentMadreId = typeof rowData.id_madre_donante === 'object'
+      ? rowData.id_madre_donante?.id_madre_donante
+      : rowData.id_madre_donante;
+
+    // Obtener IDs de madres en uso, excluyendo la actual
+    const madresEnUso = new Set<number>();
+    this.dataTableCasas.forEach(row => {
+      // Saltar la fila actual
+      if (row._uid === rowData._uid) return;
+
+      const madreId = typeof row.id_madre_donante === 'object'
+        ? row.id_madre_donante?.id_madre_donante
+        : row.id_madre_donante;
+
+      if (madreId !== null && madreId !== undefined) {
+        madresEnUso.add(madreId);
+      }
+    });
+
+    // Filtrar madres disponibles
+    return this.allMadresDonantes.filter(
+      madre => !madresEnUso.has(madre.id_madre_donante) || madre.id_madre_donante === currentMadreId
+    );
   }
 }

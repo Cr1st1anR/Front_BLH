@@ -61,7 +61,7 @@ export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewI
   }
 
   onMonthPickerChange(filtro: { year: number; month: number }): void {
-    this.tableComponent?.filtrarPorFecha(filtro);
+    this.tableComponent?.cargarDatosPorMesYAnio(filtro.month, filtro.year);
   }
 
   aplicarFiltros(): void {
@@ -118,7 +118,13 @@ export class IngresoLechePasteurizadaPageComponent implements OnInit, AfterViewI
       return;
     }
 
-    this.tableComponent.aplicarFiltroInicialConNotificacion(this.filtroMesActualPendiente);
+    this.tableComponent.cargarDatosPorMesYAnio(
+      this.filtroMesActualPendiente.month,
+      this.filtroMesActualPendiente.year
+    );
+
+    this.tableComponent.filtroFecha = this.filtroMesActualPendiente;
+
     this.isInitialized = true;
     this.filtroMesActualPendiente = null;
   }

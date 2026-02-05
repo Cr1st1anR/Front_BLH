@@ -62,6 +62,7 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   private tempIdCounter = -1;
   private madreSeleccionada: MadreOption | null = null;
   private responsableSeleccionado: ResponsableOption | null = null;
+  private isInitialLoad = true;
 
   readonly headersEntregaLecheCruda = [
     { header: 'FECHA', field: 'fecha', width: '170px', tipo: 'date' },
@@ -167,7 +168,10 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
             this.dataEntregaLecheCrudaFiltered = [];
           }
 
-          this.showSuccessMessageInitial();
+          if (!this.isInitialLoad) {
+            this.showSuccessMessageInitial();
+          }
+
           this.loading = false;
         },
         error: (error) => this.handleError(error)
@@ -207,6 +211,7 @@ export class EntregaLecheCrudaTableComponent implements OnInit {
   }
 
   aplicarFiltroInicialConNotificacion(filtro: { year: number; month: number } | null): void {
+    this.isInitialLoad = false;
     this.aplicarFiltroConNotificacion(filtro);
   }
 

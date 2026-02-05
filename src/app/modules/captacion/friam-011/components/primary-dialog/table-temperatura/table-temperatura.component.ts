@@ -52,12 +52,17 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
 
   @ViewChildren(Table) primeNgTables!: QueryList<Table>;
 
+  // Constants
+  private readonly MAX_TEMPERATURAS = 10;
+  private readonly BASIC_FIELDS = ['horaSalida', 'temperaturaSalida', 'horaLlegada', 'temperaturaLlegada'] as const;
+
+  // State
   cajaTables: CajaTable[] = [];
   globalCajaCounter: number = 1;
   isAnyTableEditing: boolean = false;
   hasNewEmptyCaja: boolean = false;
   temperaturasRuta: TemperaturaRutas[] = [];
-  dataRuta: any = {} as ResponseDataRuta;
+  dataRuta: ResponseDataRuta = {} as ResponseDataRuta;
   tableAuxCaja: CajaTable[] = [];
 
   requiredFields: string[] = ['caja'];
@@ -78,7 +83,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     this.initComponent(changes);
   }
 
-  async initComponent(changes?: SimpleChanges, flat: boolean = false): Promise<void>{
+  async initComponent(changes?: SimpleChanges, flat: boolean = false): Promise<void> {
     if (
       (changes && changes['dataRutaRecoleccion'] &&
         changes['dataRutaRecoleccion'].currentValue) || flat
@@ -97,18 +102,13 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   loadDataRuta(idRuta: number): Observable<ApiResponse | null> {
     return this._primaryService.getRutaRecoleccionById(idRuta).pipe(
       tap((data) => {
-        if (data) {
-          this.dataRuta = data.data;
+        if (data?.data) {
+          this.dataRuta = data.data as unknown as ResponseDataRuta;
         }
       }),
       catchError((error) => {
-        this.messageService.add({
-          severity: 'danger',
-          summary: 'Error',
-          detail: 'Hubo un error al obtener datos',
-          key: 'tr',
-          life: 3000,
-        });
+        console.error('Error al obtener ruta:', error);
+        this.showErrorMessage('Hubo un error al obtener datos de la ruta');
         return of(null);
       })
     );
@@ -126,13 +126,13 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         }
       }),
       catchError((error) => {
-        this.messageService.add({
-          severity: 'danger',
-          summary: 'Error',
-          detail: 'Hubo un error al obtener datos',
-          key: 'tr',
-          life: 3000,
-        });
+        // this.messageService.add({
+        //   severity: 'danger',
+        //   summary: 'Error',
+        //   detail: 'Hubo un error al obtener datos',
+        //   key: 'tr',
+        //   life: 3000,
+        // });
         return of(null);
       })
     );
@@ -140,53 +140,60 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   loadDataTemperaturaRuta(idRuta: number): Observable<ApiResponse | null> {
     return this._primaryService.getTemperaturaRuta(idRuta).pipe(
       tap((data) => {
-        if (data.data) {
+        if (data?.data) {
           this.temperaturasRuta = data.data;
         }
       }),
       catchError((error) => {
-        this.messageService.add({
-          severity: 'danger',
-          summary: 'Error',
-          detail: 'Hubo un error al obtener datos',
-          key: 'tr',
-          life: 3000,
-        });
+        console.error('Error al obtener temperatura ruta:', error);
+        this.showErrorMessage('Hubo un error al obtener datos de temperatura');
         return of(null);
       })
-    )
+    );
   }
   formatData(data: TemperaturaData[]): void {
     this.cajaTables = [];
     this.globalCajaCounter = 1;
     const cajaGroupsOne = this.groupDataByCaja(data);
     const cajaGroupsTwo = this.groupDataByTemperaturaRuta(this.temperaturasRuta);
+
+    // Crear un Set con los números de caja ya procesados
+    const cajasProcessed = new Set<number>();
+
+    // Procesar cajas del grupo uno (datos de temperatura por casa)
     if (data.length > 0) {
-      cajaGroupsOne.forEach((cajaData, index) => {
-        const cajaTable = this.createTableForCaja(this.globalCajaCounter, cajaData, true);
-        this.cajaTables.push(cajaTable);
-        this.globalCajaCounter++;
+      cajaGroupsOne.forEach((cajaData) => {
+        const cajaNumber = cajaData[0]?.caja || this.globalCajaCounter;
+        if (!cajasProcessed.has(cajaNumber)) {
+          const cajaTable = this.createTableForCaja(cajaNumber, cajaData, true);
+          this.cajaTables.push(cajaTable);
+          cajasProcessed.add(cajaNumber);
+          this.globalCajaCounter = Math.max(this.globalCajaCounter, cajaNumber + 1);
+        }
       });
-    }
-    this.globalCajaCounter = 1;
-    if (cajaGroupsOne.length != cajaGroupsTwo.length && cajaGroupsTwo.length > 0) {
-      cajaGroupsTwo.forEach((cajaData, index) => {
-        const cajaTable = this.createTableForCaja(this.globalCajaCounter, cajaData, false);
-        this.cajaTables.push(cajaTable);
-        this.globalCajaCounter++;
-      });
-    }
-    this.globalCajaCounter = data[data.length - 1]?.caja || 1;
-    if (data.length > 0) {
-      this.globalCajaCounter++;
     }
 
+    // Procesar cajas del grupo dos (temperatura de ruta) solo si no están ya procesadas
+    if (cajaGroupsTwo.length > 0) {
+      cajaGroupsTwo.forEach((cajaData) => {
+        const cajaNumber = cajaData[0]?.numeroCaja || this.globalCajaCounter;
+        if (!cajasProcessed.has(cajaNumber)) {
+          const cajaTable = this.createTableForCaja(cajaNumber, cajaData, false);
+          this.cajaTables.push(cajaTable);
+          cajasProcessed.add(cajaNumber);
+          this.globalCajaCounter = Math.max(this.globalCajaCounter, cajaNumber + 1);
+        }
+      });
+    }
+
+    // Eliminar duplicados por si acaso
     const unique = this.cajaTables.filter(
       (obj, index, self) =>
         index === self.findIndex(o => o.cajaNumber === obj.cajaNumber)
     );
-    this.cajaTables = unique;
-    this.tableAuxCaja = JSON.parse(JSON.stringify(unique));
+
+    this.cajaTables = unique.sort((a, b) => a.cajaNumber - b.cajaNumber);
+    this.tableAuxCaja = JSON.parse(JSON.stringify(this.cajaTables));
   }
 
   groupDataByTemperaturaRuta(data: TemperaturaRutas[]): TemperaturaRutas[][] {
@@ -241,28 +248,22 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       },
       { header: 'ACCIONES', field: 'acciones', width: '200px' },
     ];
-    const tempFilter = this.temperaturasRuta.filter(x => x.numeroCaja === cajaNumber)[0];
+
+    const tempFilter = this.temperaturasRuta.find(x => x.numeroCaja === cajaNumber);
     const dataRow: any = {
-      id: tempFilter?.id || null,
+      id: tempFilter?.id ?? null,
       caja: cajaNumber,
       horaSalida: null,
       temperaturaSalida: null,
       horaLlegada: null,
       temperaturaLlegada: null,
     };
-    if (temperaturaData.length > 0) {
-      dataRow.horaSalida = this.dataRuta.horaSalida || null;
-      dataRow.temperaturaSalida = tempFilter.temperaturaSalida != null
-        ? parseFloat(
-          (tempFilter.temperaturaSalida?.toString() ?? '').split('°')[0]
-        )
-        : null;
-      dataRow.horaLlegada = this.dataRuta.horaLlegada || null;
-      dataRow.temperaturaLlegada = tempFilter.temperaturaLlegada != null
-        ? parseFloat(
-          (tempFilter.temperaturaLlegada?.toString() ?? '').split('°')[0]
-        )
-        : null;
+
+    if (temperaturaData.length > 0 && tempFilter) {
+      dataRow.horaSalida = this.dataRuta.horaSalida ?? null;
+      dataRow.temperaturaSalida = this.parseTemperatura(tempFilter.temperaturaSalida);
+      dataRow.horaLlegada = this.dataRuta.horaLlegada ?? null;
+      dataRow.temperaturaLlegada = this.parseTemperatura(tempFilter.temperaturaLlegada);
     }
     const tempHeaders: any[] = [];
     if (temperaturaData.length > 0 && flat) {
@@ -275,9 +276,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
           nCasa: index + 1,
         };
         tempHeaders.push(tempHeader);
-        (dataRow as any)[tempHeader.field] = temp.temperatura;
-        (dataRow as any)["id_" + tempHeader.field] = temp.id;
-
+        dataRow[tempHeader.field] = temp.temperatura;
+        dataRow[`id_${tempHeader.field}`] = temp.id;
       });
     }
 
@@ -305,39 +305,45 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
   }
   agregarNuevaCaja() {
     if (this.isAnyTableEditing) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar o cancelar la edición actual antes de crear una nueva caja',
-        key: 'tr',
-        life: 3000,
-      });
+      this.showWarningMessage('Debe guardar o cancelar la edición actual antes de crear una nueva caja');
       return;
     }
 
     if (this.hasNewEmptyCaja) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe guardar algún dato en la caja actual o cancelarla antes de crear una nueva',
-        key: 'tr',
-        life: 3000,
-      });
+      this.showWarningMessage('Debe guardar algún dato en la caja actual o cancelarla antes de crear una nueva');
       return;
     }
+
+    // Validar que la última caja tenga hora de salida y temperatura de salida
+    if (this.cajaTables.length > 0) {
+      const lastTable = this.cajaTables[this.cajaTables.length - 1];
+      const lastRow = lastTable.data[0];
+
+      if (!lastRow.horaSalida || lastRow.horaSalida === null) {
+        this.showWarningMessage('Debe ingresar la hora de salida en la caja anterior antes de crear una nueva');
+        return;
+      }
+
+      if (!lastRow.temperaturaSalida || lastRow.temperaturaSalida === null) {
+        this.showWarningMessage('Debe ingresar la temperatura de salida en la caja anterior antes de crear una nueva');
+        return;
+      }
+    }
+
     const newTable = this.createTableForCaja(this.globalCajaCounter, []);
     this.cajaTables.push(newTable);
     this.globalCajaCounter++;
 
-    this.hasNewEmptyCaja = false;
+    this.hasNewEmptyCaja = true; // Marcar que hay una caja nueva vacía
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Nueva Caja',
-      detail: `Caja ${newTable.cajaNumber} creada. Haga clic en el lápiz para editarla.`,
-      key: 'tr',
-      life: 3000,
-    });
+    this.showSuccessMessage(`Caja ${newTable.cajaNumber} creada. Haga clic en el lápiz para editarla.`);
+
+    // Activar automáticamente el modo edición de la nueva caja
+    setTimeout(() => {
+      const tableIndex = this.cajaTables.length - 1;
+      const dataRow = newTable.data[0];
+      this.onRowEditInit(dataRow, 0, tableIndex);
+    }, 100);
   }
   isNewCajaButtonDisabled(): boolean {
     return this.isAnyTableEditing || this.hasNewEmptyCaja;
@@ -364,13 +370,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     const hasTemperatureData = table.numeroTemperaturas > 0;
 
     if (!hasBasicData && !hasTemperatureData && !table.isAddingTemperature) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe completar al menos un campo antes de guardar.',
-        key: 'tr',
-        life: 3000,
-      });
+      this.showWarningMessage('Debe completar al menos un campo antes de guardar.');
       return;
     }
 
@@ -379,13 +379,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         this.isFieldInvalid(field, dataRow, table)
       );
       if (invalidField) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Advertencia',
-          detail: `El campo "${invalidField}" es obligatorio.`,
-          key: 'tr',
-          life: 3000,
-        });
+        this.showWarningMessage(`El campo "${invalidField}" es obligatorio.`);
         return;
       }
     }
@@ -396,16 +390,35 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       const temperatureValue = (dataRow as any)[temperatureField];
 
       if (!temperatureValue || temperatureValue === null || temperatureValue === '') {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Advertencia',
-          detail: 'Debe ingresar un valor para la nueva temperatura o cancelar la operación.',
-          key: 'tr',
-          life: 3000,
-        });
+        this.showWarningMessage('Debe ingresar un valor para la nueva temperatura o cancelar la operación.');
         return;
       }
     }
+
+    // Validar que si se ingresa hora de salida, también se ingrese temperatura de salida
+    if (dataRow.horaSalida && (!dataRow.temperaturaSalida || dataRow.temperaturaSalida === null)) {
+      this.showWarningMessage('Debe ingresar la temperatura de salida cuando ingresa la hora de salida.');
+      return;
+    }
+
+    // Validar que si se ingresa temperatura de salida, también se ingrese hora de salida
+    if (dataRow.temperaturaSalida && (!dataRow.horaSalida || dataRow.horaSalida === null)) {
+      this.showWarningMessage('Debe ingresar la hora de salida cuando ingresa la temperatura de salida.');
+      return;
+    }
+
+    // Validar que si se ingresa hora de llegada, también se ingrese temperatura de llegada
+    if (dataRow.horaLlegada && (!dataRow.temperaturaLlegada || dataRow.temperaturaLlegada === null)) {
+      this.showWarningMessage('Debe ingresar la temperatura de llegada cuando ingresa la hora de llegada.');
+      return;
+    }
+
+    // Validar que si se ingresa temperatura de llegada, también se ingrese hora de llegada
+    if (dataRow.temperaturaLlegada && (!dataRow.horaLlegada || dataRow.horaLlegada === null)) {
+      this.showWarningMessage('Debe ingresar la hora de llegada cuando ingresa la temperatura de llegada.');
+      return;
+    }
+
 
     // CONSTRUCCION BODY PARA GUARDAR LOS CAMBIOS
     const tablaOrigi = this.cajaTables[tableIndex].data[0];
@@ -525,7 +538,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       // CORRECCIÓN CRÍTICA: Restaurar TODOS los valores del clonedRow original
       if (table.clonedRow) {
         // Restaurar campos básicos
-        const basicFields = ['caja', 'hora_salida', 't_salida', 'hora_llegada', 't_llegada'];
+        const basicFields = ['caja', 'horaSalida', 'temperaturaSalida', 'horaLlegada', 'temperaturaLlegada'];
         basicFields.forEach(field => {
           if (table.clonedRow!.hasOwnProperty(field)) {
             (dataRow as any)[field] = (table.clonedRow as any)[field];
@@ -533,7 +546,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         });
 
         // Restaurar todas las temperaturas existentes
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= this.MAX_TEMPERATURAS; i++) {
           const tempField = `temperature_${i}`;
           if (table.clonedRow!.hasOwnProperty(tempField)) {
             (dataRow as any)[tempField] = (table.clonedRow as any)[tempField];
@@ -542,7 +555,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       }
 
       // Verificar si debe eliminar caja vacía
-      const hasBasicData = dataRow.hora_salida || dataRow.t_salida || dataRow.hora_llegada || dataRow.t_llegada;
+      const hasBasicData = dataRow.horaSalida || dataRow.temperaturaSalida || dataRow.horaLlegada || dataRow.temperaturaLlegada;
       const hasTemperatureData = table.numeroTemperaturas > 0;
 
       if (!hasBasicData && !hasTemperatureData && table.cajaNumber === this.globalCajaCounter - 1) {
@@ -555,7 +568,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     } else {
       // CASO: Cancelar edición normal
       const isNewEmptyTable = table.cajaNumber === this.globalCajaCounter - 1;
-      const hasAnyData = dataRow.hora_salida || dataRow.t_salida || dataRow.hora_llegada || dataRow.t_llegada || table.numeroTemperaturas > 0;
+      const hasAnyData = dataRow.horaSalida || dataRow.temperaturaSalida || dataRow.horaLlegada || dataRow.temperaturaLlegada || table.numeroTemperaturas > 0;
 
       if (isNewEmptyTable && !hasAnyData) {
         this.hasNewEmptyCaja = false;
@@ -568,7 +581,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       // CORRECCIÓN CRÍTICA: Restaurar valores originales correctamente
       if (table.clonedRow) {
         // Restaurar campos básicos
-        const basicFields = ['caja', 'hora_salida', 't_salida', 'hora_llegada', 't_llegada'];
+        const basicFields = ['caja', 'horaSalida', 'temperaturaSalida', 'horaLlegada', 'temperaturaLlegada'];
         basicFields.forEach(field => {
           if (table.clonedRow!.hasOwnProperty(field)) {
             (dataRow as any)[field] = (table.clonedRow as any)[field];
@@ -576,7 +589,7 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
         });
 
         // Restaurar todas las temperaturas existentes
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= this.MAX_TEMPERATURAS; i++) {
           const tempField = `temperature_${i}`;
           if (table.clonedRow!.hasOwnProperty(tempField)) {
             (dataRow as any)[tempField] = (table.clonedRow as any)[tempField];
@@ -730,8 +743,8 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
     const dataRow = table.data[0];
     let ultimaTemperatura = 0;
 
-    for (let i = 1; i <= 10; i++) {
-      if ((dataRow as any)[`temperature_${i}`] !== undefined) {
+    for (let i = 1; i <= this.MAX_TEMPERATURAS; i++) {
+      if (dataRow[`temperature_${i}`] !== undefined) {
         ultimaTemperatura = i;
       }
     }
@@ -842,7 +855,43 @@ export class TableTemperaturaComponent implements OnInit, OnChanges, AfterViewIn
       }
     }
     return false;
+  }
 
+  // Helper methods
+  private parseTemperatura(temperatura: any): number | null {
+    if (temperatura == null) return null;
+    const tempStr = temperatura.toString().split('°')[0];
+    return parseFloat(tempStr) || null;
+  }
+
+  private showErrorMessage(detail: string): void {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail,
+      key: 'tr',
+      life: 3000,
+    });
+  }
+
+  private showSuccessMessage(detail: string): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Éxito',
+      detail,
+      key: 'tr',
+      life: 3000,
+    });
+  }
+
+  private showWarningMessage(detail: string): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Advertencia',
+      detail,
+      key: 'tr',
+      life: 3000,
+    });
   }
 }
 

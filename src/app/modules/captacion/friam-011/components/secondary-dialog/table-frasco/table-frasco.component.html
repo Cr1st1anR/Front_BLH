@@ -4,7 +4,7 @@
   [disabled]="!!hasNewRowInEditing || !!editingRow"></new-register-frasco>
 
 <p-table #tableFrascos [value]="dataTableFrascosLeche" [scrollable]="true" [tableStyle]="{ 'min-width': '50rem' }"
-  [columns]="headersTableFrascosLeche" editMode="row" dataKey="id_frascos_recolectados">
+  [columns]="headersTableFrascosLeche" editMode="row" dataKey="_uid">
   <ng-template #header let-columns>
     <tr>
       @for (col of columns; track $index) {
@@ -24,7 +24,8 @@
             @switch (col.tipo) {
             @case ("date") {
             <p-datepicker appendTo="body" [(ngModel)]="rowData[col.field]" [iconDisplay]="'input'" [showIcon]="true"
-              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }" dateFormat="dd/mm/yy" />
+              inputId="icondisplay" [ngClass]="{ 'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData) }"
+              dateFormat="dd/mm/yy" />
             }
             @case ("text") {
             <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]"

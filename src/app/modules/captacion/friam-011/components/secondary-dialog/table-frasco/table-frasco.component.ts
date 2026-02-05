@@ -50,14 +50,15 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
   @ViewChild('tableFrascos') table!: Table;
 
   selectedRow: FrascosLeche[] | null = [];
-  editingRow: FrascosLeche | null = null;
+  editingRow: any | null = null; // Cambiar a any para permitir _uid
   hasNewRowInEditing: boolean = false;
-  dataTableFrascosLeche: FrascosLeche[] = [];
+  dataTableFrascosLeche: any[] = [];
   dataCongeladores: Congeladores[] = [];
-  clonedTableFrascos: { [s: number]: FrascosLeche } = {};
+  clonedTableFrascos: { [s: string]: any } = {}; // Cambiar a string para usar _uid
   loading: boolean = false;
   private readonly componentId = 'table-frasco';
   private editingStateSubscription: Subscription | null = null;
+  private tempIdCounter = -1; // Contador para IDs temporales
   requiredFields: string[] = [
     'frasco',
     'volumen',
@@ -112,7 +113,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     private messageService: MessageService,
     private _secondaryDialogServices: secondaryDialogServices,
     private editingStateService: EditingStateService
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['frascosData'] && changes['frascosData'].currentValue) {
@@ -201,10 +202,13 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     );
   }
 
-  formatData(data: FrascosLeche[]): FrascosLeche[] {
+  formatData(data: FrascosLeche[]): any[] {
     return data.map((item: FrascosLeche) => {
       return {
         ...item,
+        _uid: item.id_frascos_recolectados !== null && item.id_frascos_recolectados !== undefined
+          ? `f_${item.id_frascos_recolectados}`
+          : `tmp_${this.tempIdCounter--}`,
         frasco: 1,
         fecha_de_extraccion: item.fecha_de_extraccion
           ? new Date(item.fecha_de_extraccion)
@@ -222,7 +226,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     });
   }
 
-  onRowEditInit(dataRow: FrascosLeche): void {
+  onRowEditInit(dataRow: any): void {
     if (
       this.hasNewRowInEditing &&
       this.editingRow &&
@@ -239,13 +243,10 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
       this.editingRow = null;
       this.hasNewRowInEditing = false;
     }
-    this.editingStateService.startEditing(
-      this.componentId,
-      dataRow.id_frascos_recolectados
-    );
-    this.clonedTableFrascos[dataRow.id_frascos_recolectados as number] = {
-      ...dataRow,
-    };
+
+    const uid = dataRow._uid;
+    this.editingStateService.startEditing(this.componentId, uid);
+    this.clonedTableFrascos[uid] = { ...dataRow };
     this.editingRow = dataRow;
   }
 
@@ -321,7 +322,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
           }
           try {
             this.table.saveRowEdit(dataRow, rowElement);
-          } catch (err) {}
+          } catch (err) { }
           delete this.clonedTableFrascos[idToUpdate];
         },
         error: (err) => {
@@ -343,15 +344,18 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     }
   }
 
-  onRowEditCancel(dataRow: FrascosLeche, index: number): void {
+  onRowEditCancel(dataRow: any, index: number): void {
+    const uid = dataRow._uid;
+
     if (dataRow.id_frascos_recolectados === null) {
       this.dataTableFrascosLeche.splice(index, 1);
       this.dataTableFrascosLeche = [...this.dataTableFrascosLeche];
       this.hasNewRowInEditing = false;
     } else {
-      this.dataTableFrascosLeche[index] =
-        this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
-      delete this.clonedTableFrascos[dataRow.id_frascos_recolectados as number];
+      if (uid && this.clonedTableFrascos[uid]) {
+        this.dataTableFrascosLeche[index] = this.clonedTableFrascos[uid];
+        delete this.clonedTableFrascos[uid];
+      }
     }
     this.editingRow = null;
     this.editingStateService.cancelEditing();
@@ -385,6 +389,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     }
 
     const nuevoRegistro: any = {
+      _uid: `tmp_${this.tempIdCounter--}`,
       id_frascos_recolectados: null,
       frasco: 1,
       volumen: null,
@@ -431,27 +436,19 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
     if (this.editingRow && this.table) {
       try {
         this.table.cancelRowEdit(this.editingRow);
-      } catch (error) {}
+      } catch (error) { }
 
       const index = this.dataTableFrascosLeche.findIndex(
         (row) => row === this.editingRow
       );
       if (index !== -1) {
+        const uid = this.editingRow._uid;
         if (this.editingRow.id_frascos_recolectados === null) {
           this.dataTableFrascosLeche.splice(index, 1);
         } else {
-          if (
-            this.clonedTableFrascos[
-              this.editingRow.id_frascos_recolectados as number
-            ]
-          ) {
-            this.dataTableFrascosLeche[index] =
-              this.clonedTableFrascos[
-                this.editingRow.id_frascos_recolectados as number
-              ];
-            delete this.clonedTableFrascos[
-              this.editingRow.id_frascos_recolectados as number
-            ];
+          if (uid && this.clonedTableFrascos[uid]) {
+            this.dataTableFrascosLeche[index] = this.clonedTableFrascos[uid];
+            delete this.clonedTableFrascos[uid];
           }
         }
       }

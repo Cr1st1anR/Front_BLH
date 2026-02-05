@@ -41,12 +41,12 @@ export class PosiblesDonantesTableComponent implements OnInit {
 
   headersTablePosiblesDonantes: any[] = [
     { header: 'COD. DONANTE', field: 'codDonante', width: '150px', tipo: 'text' },
-    { header: 'FECHA REGISTRO', field: 'fechaRegistro', width: '200px', tipo: 'text' },
-    { header: 'NOMBRES', field: 'nombre', width: '200px', tipo: 'text' },
-    { header: 'APELLIDOS', field: 'apellido', width: '200px', tipo: 'text' },
-    { header: 'NO. DOC', field: 'documento', width: '200px', tipo: 'number' },
-    { header: 'LABORATORIO', field: 'laboratorio', width: '200px', tipo: 'text' },
-    { header: 'REPORTE', field: 'reporte', width: '150px', tipo: 'action' },
+    { header: 'FECHA REGISTRO', field: 'fechaRegistro', width: '150px', tipo: 'text' },
+    { header: 'NOMBRES', field: 'nombre', width: '180px', tipo: 'text' },
+    { header: 'APELLIDOS', field: 'apellido', width: '180px', tipo: 'text' },
+    { header: 'NO. DOC', field: 'documento', width: '150px', tipo: 'number' },
+    { header: 'LABORATORIO', field: 'laboratorio', width: '150px', tipo: 'text' },
+    { header: 'REPORTE', field: 'reporte', width: '100px', tipo: 'action' },
   ];
 
   dataRegistroDonante: any[] = [];
@@ -177,11 +177,15 @@ export class PosiblesDonantesTableComponent implements OnInit {
 
       const labVencido = fechaVencimientoProxima ? this.isLabVencimientoCercano(fechaVencimientoProxima) : false;
 
+      const fechaRegistroFormateada = flat.fecha_registro
+        ? this.formatDateToDDMMYYYY(flat.fecha_registro as string)
+        : '';
+
       this.dataRegistroDonante[index] = {
         ...item,
         MadreDonante: flat.madreDonante || null,
         codDonante: flat.madreDonante ? flat.madreDonante.id : null,
-        fechaRegistro: flat.fecha_registro ? (flat.fecha_registro as string).toString().split('T')[0] : '',
+        fechaRegistro: fechaRegistroFormateada,
         nombre: flat.infoMadre.nombre,
         apellido: flat.infoMadre.apellido,
         documento: flat.infoMadre.documento,

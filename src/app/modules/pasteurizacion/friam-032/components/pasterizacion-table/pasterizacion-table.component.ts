@@ -67,9 +67,21 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     return añoCompleto.toString().slice(-2);
   }
 
-  private generarCodigoLHP(id: number): string {
-    const añoActual = this.obtenerAñoActualCorto();
-    return `LHP ${añoActual} ${id}`;
+  private generarCodigoLHP(id: number, fecha?: Date | string | null): string {
+    let año: string;
+
+    if (fecha) {
+      const fechaParseada = fecha instanceof Date ? fecha : new Date(fecha);
+      if (!isNaN(fechaParseada.getTime())) {
+        año = fechaParseada.getFullYear().toString().slice(-2);
+      } else {
+        año = this.obtenerAñoActualCorto();
+      }
+    } else {
+      año = this.obtenerAñoActualCorto();
+    }
+
+    return `LHP ${año} ${id}`;
   }
 
   private extraerIdDeCodigoLHP(codigoCompleto: string): number | null {
@@ -181,9 +193,11 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
 
   private transformarDatosBackendAFrontend(datosBackend: PasterizacionBackendResponse[]): PasterizacionData[] {
     return datosBackend.map(item => {
+      const fechaControlReenvase = item.controlReenvase?.fecha || null;
+
       return {
         id: item.id,
-        no_frasco_pasterizacion: item.numeroFrasco ? this.generarCodigoLHP(item.numeroFrasco) : '',
+        no_frasco_pasterizacion: item.numeroFrasco ? this.generarCodigoLHP(item.numeroFrasco, fechaControlReenvase) : '',
         id_frasco_pasterizacion: item.numeroFrasco,
         volumen_frasco_pasterizacion: item.volumen ? item.volumen.toString() : '0',
         observaciones_pasterizacion: item.observaciones || '',
@@ -350,7 +364,8 @@ export class PasterizacionTableComponent implements OnInit, OnChanges {
     dataRow.id = response.id;
 
     if (response.numeroFrasco) {
-      dataRow.no_frasco_pasterizacion = this.generarCodigoLHP(response.numeroFrasco);
+      const fechaControlReenvase = response.controlReenvase?.fecha || null;
+      dataRow.no_frasco_pasterizacion = this.generarCodigoLHP(response.numeroFrasco, fechaControlReenvase);
       dataRow.id_frasco_pasterizacion = response.numeroFrasco;
     }
 

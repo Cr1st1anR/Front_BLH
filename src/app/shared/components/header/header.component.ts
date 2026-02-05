@@ -7,6 +7,6 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-    @Input() title: string = 'REGISTRO DE LÍNEA AMIGA (FRIAM 041)'; // Valor por defecto
+    @Input() title: string = 'REGISTRO DE LÍNEA AMIGA (FRIAM-041)';
 
 }

@@ -36,7 +36,7 @@
       <tr>
         @for (col of columns; track $index) {
         <th class="grid-lines" [ngStyle]="{ 'min-width': col.width }">
-          {{ col.header }}
+          <span [innerHTML]="col.header"></span>
         </th>
         }
       </tr>
@@ -102,6 +102,7 @@
                 [showIcon]="true"
                 inputId="icondisplay"
                 [disabled]="true"
+                dateFormat="dd/mm/yy"
                 [ngClass]="{
                   'ng-invalid ng-dirty': isFieldInvalid(col.field, rowData)
                 }"
@@ -135,6 +136,7 @@
                 [showIcon]="true"
                 [disabled]="true"
                 inputId="icondisplay"
+                dateFormat="dd/mm/yy"
               />
               } @else if (col.tipo == "time") {
               <p-datepicker

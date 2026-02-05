@@ -75,30 +75,103 @@ export class ExamenesLaboratorioComponent implements ExamenesLaboratorioData, On
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['datosPrecargados'] && changes['datosPrecargados'].currentValue.id) {
+    if (changes['datosPrecargados'] &&
+      changes['datosPrecargados'].currentValue &&
+      changes['datosPrecargados'].currentValue.id) {
       this.formatForm();
       this.visible = true;
     }
   }
 
   formatForm() {
-    this.fechaRegistroLab = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaRegistro + 'T00:00:00') : null;
-    this.vdrl = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[0].resultado : null;
-    this.fechaVencimientoVdrl = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.laboratorio[0].fechaVencimiento + 'T00:00:00') : null;
-    this.hbsag = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[1].resultado : null;
-    this.fechaVencimientoHbsag = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.laboratorio[1].fechaVencimiento + 'T00:00:00') : null;
-    this.hiv = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[2].resultado : null;
-    this.fechaVencimientoHiv = this.datosPrecargados.madreDonante ? new Date(this.datosPrecargados.laboratorio[2].fechaVencimiento + 'T00:00:00') : null;
-    this.docVdrl = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[0].documento : '';
-    this.docHbsag = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[1].documento : '';
-    this.docHiv = this.datosPrecargados.madreDonante ? this.datosPrecargados.laboratorio[2].documento : '';
-    this.hemoglobina = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.hemoglobina : null;
-    this.hematocrito = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.hematocrito : null;
-    this.transfusiones = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.transfuciones : null;
-    this.enfermedadesGestacion = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.enfermedadesGestacion : '';
-    this.fuma = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.fuma : null;
-    this.alcohol = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.examenesPrenatal.alcohol : null;
+    if (this.datosPrecargados?.madreDonante &&
+      this.datosPrecargados?.laboratorio &&
+      this.datosPrecargados.laboratorio.length > 0) {
 
+      const fechaRegistroStr = this.datosPrecargados.laboratorio[0]?.fechaRegistro ||
+        this.datosPrecargados.laboratorio[1]?.fechaRegistro ||
+        this.datosPrecargados.laboratorio[2]?.fechaRegistro;
+
+      if (fechaRegistroStr && typeof fechaRegistroStr === 'string' && fechaRegistroStr.trim() !== '') {
+        const fechaParts = fechaRegistroStr.split('-');
+        if (fechaParts.length === 3) {
+          const year = parseInt(fechaParts[0], 10);
+          const month = parseInt(fechaParts[1], 10) - 1;
+          const day = parseInt(fechaParts[2], 10);
+          this.fechaRegistroLab = new Date(year, month, day);
+        } else {
+          this.fechaRegistroLab = new Date(fechaRegistroStr);
+        }
+      } else {
+        this.fechaRegistroLab = new Date();
+      }
+
+      if (this.datosPrecargados.laboratorio[0]) {
+        this.vdrl = this.datosPrecargados.laboratorio[0].resultado;
+
+        const fechaVencVdrl = this.datosPrecargados.laboratorio[0].fechaVencimiento;
+        if (fechaVencVdrl && typeof fechaVencVdrl === 'string' && fechaVencVdrl.trim() !== '') {
+          const parts = fechaVencVdrl.split('-');
+          if (parts.length === 3) {
+            this.fechaVencimientoVdrl = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          }
+        } else {
+          this.fechaVencimientoVdrl = null;
+        }
+
+        this.docVdrl = this.datosPrecargados.laboratorio[0].documento || '';
+        if (this.docVdrl) {
+          this.fileNames.vdrl = this.docVdrl + '.pdf';
+        }
+      }
+
+      if (this.datosPrecargados.laboratorio[1]) {
+        this.hbsag = this.datosPrecargados.laboratorio[1].resultado;
+
+        const fechaVencHbsag = this.datosPrecargados.laboratorio[1].fechaVencimiento;
+        if (fechaVencHbsag && typeof fechaVencHbsag === 'string' && fechaVencHbsag.trim() !== '') {
+          const parts = fechaVencHbsag.split('-');
+          if (parts.length === 3) {
+            this.fechaVencimientoHbsag = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          }
+        } else {
+          this.fechaVencimientoHbsag = null;
+        }
+
+        this.docHbsag = this.datosPrecargados.laboratorio[1].documento || '';
+        if (this.docHbsag) {
+          this.fileNames.hbsag = this.docHbsag + '.pdf';
+        }
+      }
+
+      if (this.datosPrecargados.laboratorio[2]) {
+        this.hiv = this.datosPrecargados.laboratorio[2].resultado;
+
+        const fechaVencHiv = this.datosPrecargados.laboratorio[2].fechaVencimiento;
+        if (fechaVencHiv && typeof fechaVencHiv === 'string' && fechaVencHiv.trim() !== '') {
+          const parts = fechaVencHiv.split('-');
+          if (parts.length === 3) {
+            this.fechaVencimientoHiv = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          }
+        } else {
+          this.fechaVencimientoHiv = null;
+        }
+
+        this.docHiv = this.datosPrecargados.laboratorio[2].documento || '';
+        if (this.docHiv) {
+          this.fileNames.hiv = this.docHiv + '.pdf';
+        }
+      }
+    }
+
+    if (this.datosPrecargados?.madreDonante?.examenesPrenatal) {
+      this.hemoglobina = this.datosPrecargados.madreDonante.examenesPrenatal.hemoglobina;
+      this.hematocrito = this.datosPrecargados.madreDonante.examenesPrenatal.hematocrito;
+      this.transfusiones = this.datosPrecargados.madreDonante.examenesPrenatal.transfuciones;
+      this.enfermedadesGestacion = this.datosPrecargados.madreDonante.examenesPrenatal.enfermedadesGestacion || '';
+      this.fuma = this.datosPrecargados.madreDonante.examenesPrenatal.fuma;
+      this.alcohol = this.datosPrecargados.madreDonante.examenesPrenatal.alcohol;
+    }
   }
 
   validateField(fieldName: string, value: any): string {

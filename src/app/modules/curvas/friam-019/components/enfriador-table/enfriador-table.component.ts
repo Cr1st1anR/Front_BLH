@@ -118,7 +118,7 @@ export class EnfriadorTableComponent implements OnInit {
 
   onRowEditSave(dataRow: EnfriadorData, index: number, event: MouseEvent): void {
     if (!this.validarCamposRequeridos(dataRow)) {
-      this.mostrarMensaje('error', 'Error', 'Por favor complete todos los campos de temperatura');
+      this.mostrarMensaje('error', 'Error', 'Complete al menos una fase completa (T° Frasco Testigo y T° Agua)');
       return;
     }
 
@@ -167,14 +167,49 @@ export class EnfriadorTableComponent implements OnInit {
   }
 
   private validarCamposRequeridos(dataRow: EnfriadorData): boolean {
-    return !!(
+    // ✅ CAMBIO: Validar que al menos UNA fase esté completa
+    const fase1Completa = !!(
       dataRow.t_frasco_testigo_1?.trim() &&
-      dataRow.t_agua_1?.trim() &&
+      dataRow.t_agua_1?.trim()
+    );
+
+    const fase2Completa = !!(
       dataRow.t_frasco_testigo_2?.trim() &&
-      dataRow.t_agua_2?.trim() &&
+      dataRow.t_agua_2?.trim()
+    );
+
+    const fase3Completa = !!(
       dataRow.t_frasco_testigo_3?.trim() &&
       dataRow.t_agua_3?.trim()
     );
+
+    // Al menos una fase debe estar completa
+    const alMenosUnaFaseCompleta = fase1Completa || fase2Completa || fase3Completa;
+
+    if (!alMenosUnaFaseCompleta) {
+      return false;
+    }
+
+    // ✅ VALIDACIÓN ADICIONAL: Si hay datos en una fase, debe estar completa
+    // Fase 1: Si tiene frasco o agua, debe tener ambos
+    const fase1Valida = !!(
+      (!dataRow.t_frasco_testigo_1?.trim() && !dataRow.t_agua_1?.trim()) ||
+      (dataRow.t_frasco_testigo_1?.trim() && dataRow.t_agua_1?.trim())
+    );
+
+    // Fase 2: Si tiene frasco o agua, debe tener ambos
+    const fase2Valida = !!(
+      (!dataRow.t_frasco_testigo_2?.trim() && !dataRow.t_agua_2?.trim()) ||
+      (dataRow.t_frasco_testigo_2?.trim() && dataRow.t_agua_2?.trim())
+    );
+
+    // Fase 3: Si tiene frasco o agua, debe tener ambos
+    const fase3Valida = !!(
+      (!dataRow.t_frasco_testigo_3?.trim() && !dataRow.t_agua_3?.trim()) ||
+      (dataRow.t_frasco_testigo_3?.trim() && dataRow.t_agua_3?.trim())
+    );
+
+    return fase1Valida && fase2Valida && fase3Valida;
   }
 
   private guardarEstadoOriginal(dataRow: EnfriadorData): void {

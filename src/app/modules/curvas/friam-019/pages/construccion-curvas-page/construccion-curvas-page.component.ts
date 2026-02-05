@@ -86,7 +86,9 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     temperatura_agua: '',
     fecha: null,
     responsable: '',
-    id_responsable: null
+    id_responsable: null,
+    responsable2: '',
+    id_responsable2: null
   };
 
   resumenPasteurizador: ResumenPasteurizador = {
@@ -442,7 +444,9 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
       temperatura_agua: '',
       fecha: null,
       responsable: '',
-      id_responsable: null
+      id_responsable: null,
+      responsable2: '',
+      id_responsable2: null
     };
 
     this.resumenPasteurizador = {

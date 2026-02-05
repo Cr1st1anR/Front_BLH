@@ -164,9 +164,20 @@
         <div class="form-field-group">
           <label class="field-label">
             <i class="pi pi-user text-purple-500"></i>
-            RESPONSABLE
+            RESPONSABLE 1
           </label>
           <p-select [(ngModel)]="datosCurva.responsable" [options]="opcionesResponsables" optionLabel="label"
+            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
+            [loading]="loading.responsables">
+          </p-select>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-user text-indigo-500"></i>
+            RESPONSABLE 2
+          </label>
+          <p-select [(ngModel)]="datosCurva.responsable2" [options]="opcionesResponsables" optionLabel="label"
             optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
             [loading]="loading.responsables">
           </p-select>
@@ -264,7 +275,8 @@
   </div>
 
   <!-- BOTONES DE GUARDADO GLOBAL -->
-  <div class="form-actions-bottom" [hidden]="!mostrarFormulario || (dataPasteurizador.length === 0 && dataEnfriador.length === 0)">
+  <div class="form-actions-bottom"
+    [hidden]="!mostrarFormulario || (dataPasteurizador.length === 0 && dataEnfriador.length === 0)">
     <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
       class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()"
       [disabled]="loading.saving">

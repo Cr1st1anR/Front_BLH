@@ -13,6 +13,8 @@ export interface DatosCurva {
   fecha: string | Date | null;
   responsable: string;
   id_responsable?: number | null;
+  responsable2?: string;
+  id_responsable2?: number | null;
 }
 
 export interface PasteurizadorData {

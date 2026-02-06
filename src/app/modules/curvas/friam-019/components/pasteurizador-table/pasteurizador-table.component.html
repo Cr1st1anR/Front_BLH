@@ -1,0 +1,86 @@
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+    [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+</div>
+}
+
+<p-table #tablePasteurizador [value]="dataPasteurizador" [scrollable]="true" scrollHeight="400px"
+  [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id" editMode="row">
+
+  <ng-template #header>
+    <tr>
+      <th [attr.colspan]="headersPasteurizador.length + 1" class="text-center group-header">
+        <div class="header-text-wrapper">
+          <span class="header-line">DETERMINACIÓN DEL TIEMPO DE PRECALENTAMIENTO</span>
+          <span class="header-line">APUNTE LA TEMPERATURA DEL TERMÓMETRO CERTIFICADO (PASTEURIZADOR)</span>
+        </div>
+      </th>
+    </tr>
+
+    <tr>
+      @for (col of headersPasteurizador; track $index) {
+      <th [style.width]="col.width" [style.min-width]="col.width" class="column-header">
+        @if (col.header.includes('\n')) {
+        @for (linea of col.header.split('\n'); track $index) {
+        <span style="display: block;">{{ linea }}</span>
+        }
+        } @else {
+        {{ col.header }}
+        }
+      </th>
+      }
+
+      <th style="width: 120px; min-width: 120px;" class="column-header">ACCIONES</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-rowData let-editing="editing" let-rowIndex="rowIndex">
+    <tr [pEditableRow]="rowData">
+      @for (col of headersPasteurizador; track $index) {
+      <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
+
+        @if (col.tipo === 'readonly') {
+        <span class="font-semibold text-blue-600">{{ rowData[col.field] }}</span>
+        }
+
+        @else {
+        <p-cellEditor>
+          <ng-template pTemplate="input">
+            <input pInputText type="text" [(ngModel)]="rowData[col.field]" class="w-full text-center"
+              placeholder="Ej: 20" />
+          </ng-template>
+          <ng-template pTemplate="output">
+            {{ rowData[col.field] || 'Sin datos' }}
+          </ng-template>
+        </p-cellEditor>
+        }
+
+      </td>
+      }
+
+      <td style="width: 120px; min-width: 120px;">
+        <div class="flex items-center justify-center gap-2">
+          <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
+            severity="secondary" (click)="onRowEditInit(rowData)" [disabled]="isEditButtonDisabled(rowData)"
+            pTooltip="Editar" tooltipPosition="top">
+          </button>
+
+          <button *ngIf="editing" pButton pRipple type="button" icon="pi pi-check" text rounded severity="success"
+            (click)="onRowEditSave(rowData, rowIndex, $event)" pTooltip="Guardar" tooltipPosition="top">
+          </button>
+
+          <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
+            severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
+          </button>
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+@if (!dataPasteurizador || dataPasteurizador.length === 0) {
+<p class="text-gray-400 text-center italic mt-4">No hay datos para mostrar</p>
+}

@@ -1,0 +1,283 @@
+<app-header [title]="'CONSTRUCCIÓN DE CURVAS DE PENETRACIÓN DE CALOR Y ENFRIAMIENTO (FRIAM-019)'" />
+
+<p-toast position="top-right" key="tr" />
+
+@if (loading.main || loading.saving) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+  <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-lg shadow-xl">
+    <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration="2s"
+      [style]="{ width: '70px', height: '70px' }"></p-progress-spinner>
+    @if (loading.saving) {
+    <span class="text-lg font-semibold text-gray-700">{{ esActualizacion ? 'Actualizando datos...' : 'Guardando
+      datos...' }}</span>
+    }
+  </div>
+</div>
+}
+
+<div class="container-page">
+  <div class="search-section">
+    <div class="search-row">
+      <span class="font-semibold text-gray-700 search-label">BUSCAR CURVA POR VOLUMEN:</span>
+
+      <input pInputText type="text" [(ngModel)]="volumenBusqueda" (input)="onVolumenInput()"
+        placeholder="Ingrese volumen" class="w-48" />
+
+      @if (opcionesVolumenes.length > 0) {
+      <p-select [(ngModel)]="volumenSeleccionado" [options]="opcionesVolumenes" optionLabel="label" optionValue="value"
+        placeholder="Seleccione una curva" (onChange)="onVolumenSeleccionado($event)" appendTo="body" class="w-80"
+        [showClear]="true" [loading]="loading.volumenes">
+      </p-select>
+      }
+
+      <button pButton pRipple type="button" icon="pi pi-plus" label="Nueva Curva"
+        class="new-distribution-button p-button-sm" (click)="crearNuevaCurva()"
+        [disabled]="loading.main || loading.saving">
+      </button>
+
+      @if (loading.volumenes) {
+      <div class="flex items-center gap-2 ml-4">
+        <p-progress-spinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progress-spinner>
+        <span class="text-sm text-gray-500">Buscando curvas...</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="form-section" [hidden]="!mostrarFormulario">
+    <p-divider align="center" type="solid">
+      <div class="inline-flex items-center">
+        <i class="pi pi-info-circle mr-2" style="color: #224186;"></i>
+        <b style="color: #224186;">DATOS GENERALES DE LA CURVA</b>
+      </div>
+    </p-divider>
+
+    <div class="form-card datos-curva-card">
+      <div class="card-header-custom">
+        <i class="pi pi-clipboard" style="color: #224186;"></i>
+        <span class="card-title">Información General</span>
+      </div>
+
+      <div class="form-fields-grid-general">
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-hashtag text-blue-600"></i>
+            N° DE FRASCOS
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.numero_frascos" placeholder="Ingrese número de frascos"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-box text-purple-600"></i>
+            TIPO DE FRASCO
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.tipo_frasco" placeholder="Ingrese tipo de frasco"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-chart-line text-orange-600"></i>
+            VOLUMEN
+          </label>
+          <div class="p-inputgroup">
+            <input pInputText type="text" [(ngModel)]="datosCurva.volumen" placeholder="c.c." class="w-full" />
+          </div>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-gauge text-red-600"></i>
+            TERMÓMETRO TIPO
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.termometro_tipo"
+            placeholder="Ingrese tipo de termómetro" class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-tag text-green-600"></i>
+            MARCA
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.marca" placeholder="Ingrese marca" class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-shield text-indigo-600"></i>
+            CERTIFICADO DE CALIBRACIÓN
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.certificado_calibracion"
+            placeholder="Ingrese certificado" class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-chart-bar text-cyan-600"></i>
+            NIVEL AGUA PASTEURIZADOR
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.nivel_agua_pasteurizador" placeholder="Ingrese nivel"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-sun text-yellow-600"></i>
+            TEMPERATURA DEL EQUIPO
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.temperatura_equipo" placeholder="Ingrese temperatura"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-chart-bar text-teal-600"></i>
+            NIVEL AGUA ENFRIADOR
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.nivel_agua_enfriador" placeholder="Ingrese nivel"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-bolt text-blue-500"></i>
+            TEMPERATURA DEL AGUA
+          </label>
+          <input pInputText type="text" [(ngModel)]="datosCurva.temperatura_agua" placeholder="Ingrese temperatura"
+            class="w-full" />
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-calendar text-pink-600"></i>
+            FECHA
+          </label>
+          <p-datepicker [(ngModel)]="datosCurva.fecha" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy"
+            placeholder="Seleccione fecha" appendTo="body" class="w-full">
+          </p-datepicker>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-user text-purple-500"></i>
+            RESPONSABLE 1
+          </label>
+          <p-select [(ngModel)]="datosCurva.responsable" [options]="opcionesResponsables" optionLabel="label"
+            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
+            [loading]="loading.responsables" (onChange)="onResponsable1Change($event)">
+          </p-select>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">
+            <i class="pi pi-user text-indigo-500"></i>
+            RESPONSABLE 2
+          </label>
+          <p-select [(ngModel)]="datosCurva.responsable2" [options]="opcionesResponsables" optionLabel="label"
+            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
+            [loading]="loading.responsables" (onChange)="onResponsable2Change($event)">
+          </p-select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
+    <div class="inline-flex items-center">
+      <b style="color: #224186;">PASTEURIZADOR</b>
+    </div>
+  </p-divider>
+
+  <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
+    <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroPasteurizador()"
+      [disabled]="hasNewRowInEditingPasteurizador" />
+  </div>
+
+  <div class="table-wrapper" [hidden]="!mostrarFormulario">
+    <pasteurizador-table />
+  </div>
+
+  <div class="resumen-card" [hidden]="!mostrarFormulario">
+    <div class="resumen-nota">
+      SE INICIA CON 5°C EL FRASCO TESTIGO. SE MEZCLA CADA 5 MINUTOS
+    </div>
+    <div class="resumen-fields">
+      <div class="form-field-group">
+        <label class="field-label">
+          <i class="pi pi-chart-line text-blue-600"></i>
+          PROMEDIO PRECALENTAMIENTO:
+        </label>
+        <input pInputText type="text" [(ngModel)]="resumenPasteurizador.promedio_precalentamiento"
+          placeholder="Ingrese promedio" class="w-full" />
+      </div>
+
+      <div class="form-field-group">
+        <label class="field-label">
+          <i class="pi pi-clock text-orange-600"></i>
+          MINUTOS:
+        </label>
+        <input pInputText type="text" [(ngModel)]="resumenPasteurizador.minutos" placeholder="Ingrese minutos"
+          class="w-full" />
+      </div>
+    </div>
+  </div>
+
+  <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
+    <div class="inline-flex items-center">
+      <b style="color: #224186;">ENFRIADOR</b>
+    </div>
+  </p-divider>
+
+  <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
+    <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroEnfriador()"
+      [disabled]="hasNewRowInEditingEnfriador" />
+  </div>
+
+  <div class="table-wrapper" [hidden]="!mostrarFormulario">
+    <enfriador-table />
+  </div>
+
+  <div class="resumen-card" [hidden]="!mostrarFormulario">
+    <div class="resumen-nota">
+      ALCOHOL AL 96%: 80 PARTES DE AGUA DESIONIZADA Y 20 PARTES ALCOHOL
+    </div>
+    <div class="resumen-fields">
+      <div class="form-field-group">
+        <label class="field-label">
+          <i class="pi pi-chart-line text-blue-600"></i>
+          PROMEDIO PRECALENTAMIENTO:
+        </label>
+        <input pInputText type="text" [(ngModel)]="resumenEnfriador.promedio_precalentamiento"
+          placeholder="Ingrese promedio" class="w-full" />
+      </div>
+
+      <div class="form-field-group">
+        <label class="field-label">
+          <i class="pi pi-clock text-orange-600"></i>
+          MINUTOS:
+        </label>
+        <input pInputText type="text" [(ngModel)]="resumenEnfriador.minutos" placeholder="Ingrese minutos"
+          class="w-full" />
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions-bottom"
+    [hidden]="!mostrarFormulario || (dataPasteurizador.length === 0 && dataEnfriador.length === 0)">
+    <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"
+      class="clear-form-button-small p-button-outlined p-button-sm" (click)="limpiarFormulario()"
+      [disabled]="loading.saving">
+    </button>
+
+    <button pButton pRipple type="button" [label]="obtenerTextoBotonGuardar()"
+      [icon]="esActualizacion ? 'pi pi-sync' : 'pi pi-save'" class="save-form-button-small p-button-sm"
+      (click)="guardarOActualizarDatos()" [disabled]="!puedeGuardar() || loading.saving">
+    </button>
+  </div>
+
+  <p class="text-gray-400 text-center italic mt-8" [hidden]="mostrarFormulario">
+    Ingrese un volumen para buscar curvas existentes, o cree una nueva curva para comenzar
+  </p>
+</div>

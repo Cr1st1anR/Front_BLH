@@ -22,6 +22,10 @@ export const HOMEROUTES: Routes = [
       {
         path: 'distribucion',
         loadChildren: () => import('../distribucion/distribucion.routes').then((c) => c.DISTRIBUCION_ROUTES)
+      },
+      {
+        path: 'curvas',
+        loadChildren: () => import('../curvas/curvas.routes').then((c) => c.CURVAS_ROUTES)
       }
     ]
   }

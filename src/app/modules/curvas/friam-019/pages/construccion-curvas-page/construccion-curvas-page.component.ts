@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -9,11 +9,13 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DividerModule } from 'primeng/divider';
 import { DatePickerModule } from 'primeng/datepicker';
+import { HttpClientModule } from '@angular/common/http';
 
 import { HeaderComponent } from "src/app/shared/components/header/header.component";
 import { NewRegisterButtonComponent } from "src/app/shared/components/new-register-button/new-register-button.component";
 import { PasteurizadorTableComponent } from '../../components/pasteurizador-table/pasteurizador-table.component';
 import { EnfriadorTableComponent } from '../../components/enfriador-table/enfriador-table.component';
+import { ConstruccionCurvasService } from '../../services/construccion-curvas.service';
 
 import type {
   DatosCurva,
@@ -25,7 +27,9 @@ import type {
   OpcionVolumenCurva,
   ResponsableOption,
   TipoMensaje,
-  PayloadCurvaCompleta
+  PayloadCurvaCompletaAPI,
+  MuestraAPI,
+  CurvaDetalleResponse
 } from '../../interfaces/construccion-curvas.interface';
 
 @Component({
@@ -44,13 +48,17 @@ import type {
     ButtonModule,
     InputTextModule,
     DividerModule,
-    DatePickerModule
+    DatePickerModule,
+    HttpClientModule
   ],
   templateUrl: './construccion-curvas-page.component.html',
   styleUrl: './construccion-curvas-page.component.scss',
   providers: [MessageService]
 })
 export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
+
+  private readonly curvasService = inject(ConstruccionCurvasService);
+  private readonly messageService = inject(MessageService);
 
   @ViewChild(PasteurizadorTableComponent)
   pasteurizadorTableComponent!: PasteurizadorTableComponent;
@@ -106,72 +114,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
   private idCurvaActual: number | null = null;
 
-  // ✅ MOCK: Base de datos simulada
-  private mockDatabase = {
-    curvas: [
-      {
-        id: 1,
-        volumen: '100',
-        fecha: new Date(2025, 11, 15),
-        datosCurva: {
-          id: 1,
-          numero_frascos: '5',
-          tipo_frasco: 'Tipo A',
-          volumen: '100',
-          termometro_tipo: 'Digital',
-          marca: 'Marca X',
-          certificado_calibracion: 'CERT-2025-001',
-          nivel_agua_pasteurizador: '80',
-          temperatura_equipo: '62.5',
-          nivel_agua_enfriador: '75',
-          temperatura_agua: '5',
-          fecha: new Date(2025, 11, 15),
-          responsable: 'Juan Pérez',
-          id_responsable: 1
-        },
-        registrosPasteurizador: [
-          { id: 1, tiempo: '0', t_frasco_testigo_1: '20', t_agua_1: '62', tiempo_2: '0', t_frasco_testigo_2: '20', t_agua_2: '62', tiempo_3: '0', t_frasco_testigo_3: '20', t_agua_3: '62' },
-          { id: 2, tiempo: '1', t_frasco_testigo_1: '25', t_agua_1: '62.5', tiempo_2: '1', t_frasco_testigo_2: '25', t_agua_2: '62.5', tiempo_3: '1', t_frasco_testigo_3: '25', t_agua_3: '62.5' }
-        ],
-        resumenPasteurizador: { promedio_precalentamiento: '22.5', minutos: '30' },
-        registrosEnfriador: [
-          { id: 1, tiempo: '0', t_frasco_testigo_1: '62', t_agua_1: '5', tiempo_2: '0', t_frasco_testigo_2: '62', t_agua_2: '5', tiempo_3: '0', t_frasco_testigo_3: '62', t_agua_3: '5' }
-        ],
-        resumenEnfriador: { promedio_precalentamiento: '10', minutos: '15' }
-      },
-      {
-        id: 2,
-        volumen: '150',
-        fecha: new Date(2025, 11, 20),
-        datosCurva: {
-          id: 2,
-          numero_frascos: '8',
-          tipo_frasco: 'Tipo B',
-          volumen: '150',
-          termometro_tipo: 'Análogo',
-          marca: 'Marca Y',
-          certificado_calibracion: 'CERT-2025-002',
-          nivel_agua_pasteurizador: '85',
-          temperatura_equipo: '63',
-          nivel_agua_enfriador: '80',
-          temperatura_agua: '4',
-          fecha: new Date(2025, 11, 20),
-          responsable: 'María García',
-          id_responsable: 2
-        },
-        registrosPasteurizador: [],
-        resumenPasteurizador: { promedio_precalentamiento: '', minutos: '' },
-        registrosEnfriador: [],
-        resumenEnfriador: { promedio_precalentamiento: '', minutos: '' }
-      }
-    ],
-    responsables: [
-      { id: 1, nombre: 'Juan Pérez' },
-      { id: 2, nombre: 'María García' },
-      { id: 3, nombre: 'Carlos Rodríguez' }
-    ]
-  };
-
   get hasNewRowInEditingPasteurizador(): boolean {
     return this.pasteurizadorTableComponent?.isAnyRowEditing() ?? false;
   }
@@ -188,10 +130,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     return this.enfriadorTableComponent?.dataEnfriador || [];
   }
 
-  constructor(
-    private readonly messageService: MessageService
-  ) { }
-
   ngOnInit(): void {
     this.cargarResponsables();
     this.mostrarMensaje('info', 'Información', 'Ingrese un volumen para buscar curvas existentes o cree una nueva');
@@ -201,20 +139,28 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     // Las tablas siempre están en el DOM gracias a [hidden]
   }
 
+  // ============= CARGAR RESPONSABLES DESDE LA API =============
   private cargarResponsables(): void {
     this.loading.responsables = true;
 
-    setTimeout(() => {
-      this.opcionesResponsables = this.mockDatabase.responsables.map(resp => ({
-        label: resp.nombre,
-        value: resp.nombre,
-        id: resp.id
-      }));
-
-      this.loading.responsables = false;
-    }, 300);
+    this.curvasService.obtenerEmpleados().subscribe({
+      next: (response) => {
+        this.opcionesResponsables = response.data.map(empleado => ({
+          label: empleado.nombre,
+          value: empleado.nombre,
+          id: empleado.id
+        }));
+        this.loading.responsables = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar responsables:', error);
+        this.mostrarMensaje('error', 'Error', 'No se pudieron cargar los responsables');
+        this.loading.responsables = false;
+      }
+    });
   }
 
+  // ============= BÚSQUEDA POR VOLUMEN =============
   onVolumenInput(): void {
     if (this.volumenDebounceTimer) {
       clearTimeout(this.volumenDebounceTimer);
@@ -238,29 +184,41 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   private buscarPorVolumen(volumen: string): void {
     this.loading.volumenes = true;
 
-    setTimeout(() => {
-      const curvasFiltradas = this.mockDatabase.curvas.filter(curva =>
-        curva.volumen === volumen
-      );
+    this.curvasService.buscarCurvasPorVolumen(Number(volumen)).subscribe({
+      next: (response) => {
+        const curvas = response.data;
 
-      curvasFiltradas.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
+        // ✅ Función helper para parsear fecha sin problema de zona horaria
+        const parsearFechaSinZonaHoraria = (fechaString: string): Date => {
+          const [año, mes, dia] = fechaString.split('-').map(Number);
+          return new Date(año, mes - 1, dia); // Crea fecha en zona horaria local
+        };
 
-      this.opcionesVolumenes = curvasFiltradas.map(curva => ({
-        label: `${curva.volumen} c.c. - ${this.formatearFecha(curva.fecha)}`,
-        value: curva.fecha.toISOString(),
-        fecha: curva.fecha,
-        id_registro: curva.id,
-        volumen: curva.volumen
-      }));
+        this.opcionesVolumenes = curvas.map(curva => {
+          const fechaObj = parsearFechaSinZonaHoraria(curva.fecha);
+          return {
+            label: `${curva.volumen} c.c. - ${this.formatearFecha(fechaObj)}`,
+            value: curva.id.toString(),
+            fecha: fechaObj,
+            id_registro: curva.id,
+            volumen: curva.volumen.toString()
+          };
+        });
 
-      this.loading.volumenes = false;
+        this.loading.volumenes = false;
 
-      if (this.opcionesVolumenes.length > 0) {
-        this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
-      } else {
-        this.mostrarMensaje('warn', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
+        if (this.opcionesVolumenes.length > 0) {
+          this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
+        } else {
+          this.mostrarMensaje('warn', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
+        }
+      },
+      error: (error) => {
+        console.error('Error al buscar curvas:', error);
+        this.loading.volumenes = false;
+        this.mostrarMensaje('error', 'Error', 'Error al buscar curvas por volumen');
       }
-    }, 300);
+    });
   }
 
   private formatearFecha(fecha: Date): string {
@@ -270,21 +228,18 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     return `${dia}/${mes}/${año}`;
   }
 
+  // ============= SELECCIONAR VOLUMEN Y CARGAR DATOS =============
   onVolumenSeleccionado(event: any): void {
-    const volumenSel = event.value;
-    if (!volumenSel) {
+    const idCurvaSeleccionada = event.value;
+    if (!idCurvaSeleccionada) {
       this.limpiarFormulario();
       return;
     }
 
-    const opcionSeleccionada = this.opcionesVolumenes.find(opt => opt.value === volumenSel);
-    if (!opcionSeleccionada) return;
-
-    this.cargarDatosCurva(opcionSeleccionada.id_registro!);
+    this.cargarDatosCurva(Number(idCurvaSeleccionada));
   }
 
   private cargarDatosCurva(idCurva: number): void {
-    // Verificar que las tablas existen
     if (!this.pasteurizadorTableComponent || !this.enfriadorTableComponent) {
       this.mostrarMensaje('error', 'Error', 'Las tablas no están listas. Por favor, recargue la página.');
       return;
@@ -292,33 +247,120 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
     this.loading.main = true;
 
-    setTimeout(() => {
-      const curva = this.mockDatabase.curvas.find(c => c.id === idCurva);
+    this.curvasService.obtenerCurvaPorId(idCurva).subscribe({
+      next: (response) => {
+        const curvaDetalle = response.data[0];
 
-      if (!curva) {
+        if (!curvaDetalle) {
+          this.loading.main = false;
+          this.mostrarMensaje('error', 'Error', 'No se encontró la curva seleccionada');
+          return;
+        }
+
+        // ✅ Función helper para parsear fecha sin problema de zona horaria
+        const parsearFechaSinZonaHoraria = (fechaString: string): Date => {
+          const [año, mes, dia] = fechaString.split('-').map(Number);
+          return new Date(año, mes - 1, dia); // Crea fecha en zona horaria local
+        };
+
+        // Mapear datos de la curva
+        this.datosCurva = {
+          id: curvaDetalle.id,
+          numero_frascos: curvaDetalle.numeroFrascos.toString(),
+          tipo_frasco: curvaDetalle.tipoFrasco,
+          volumen: curvaDetalle.volumen.toString(),
+          termometro_tipo: curvaDetalle.tipoTermometro,
+          marca: curvaDetalle.marca,
+          certificado_calibracion: curvaDetalle.certificado,
+          nivel_agua_pasteurizador: curvaDetalle.aguaPasteurizador.toString(),
+          temperatura_equipo: curvaDetalle.temperaturaEquipo.toString(),
+          nivel_agua_enfriador: curvaDetalle.aguaEnfriador.toString(),
+          temperatura_agua: curvaDetalle.temperaturaAgua.toString(),
+          fecha: parsearFechaSinZonaHoraria(curvaDetalle.fecha),
+          responsable: curvaDetalle.responsableOne.nombre,
+          id_responsable: curvaDetalle.responsableOne.id,
+          responsable2: curvaDetalle.responsableTwo?.nombre || '',
+          id_responsable2: curvaDetalle.responsableTwo?.id || null
+        };
+
+        // Resumen Pasteurizador
+        this.resumenPasteurizador = {
+          promedio_precalentamiento: curvaDetalle.promedioPasteurizador.toString(),
+          minutos: curvaDetalle.minutosPasteurizador.toString()
+        };
+
+        // Resumen Enfriador
+        this.resumenEnfriador = {
+          promedio_precalentamiento: curvaDetalle.promedioEnfriador.toString(),
+          minutos: curvaDetalle.minutosEnfriador.toString()
+        };
+
+        // Convertir muestras agrupadas por tiempo
+        const registrosPasteurizador = this.convertirMuestrasARegistros(curvaDetalle.pasteurizadores);
+        const registrosEnfriador = this.convertirMuestrasARegistros(curvaDetalle.enfriadores);
+
+        // Cargar datos en las tablas
+        this.pasteurizadorTableComponent.cargarDatosExternos(registrosPasteurizador);
+        this.enfriadorTableComponent.cargarDatosExternos(registrosEnfriador);
+
+        this.idCurvaActual = idCurva;
+        this.esActualizacion = true;
+        this.mostrarFormulario = true;
         this.loading.main = false;
-        this.mostrarMensaje('error', 'Error', 'No se encontró la curva seleccionada');
-        return;
+
+        this.mostrarMensaje('success', 'Datos cargados', `Se han cargado los datos de la curva con volumen ${curvaDetalle.volumen} c.c.`);
+      },
+      error: (error) => {
+        console.error('Error al cargar curva:', error);
+        this.loading.main = false;
+        this.mostrarMensaje('error', 'Error', 'No se pudo cargar la curva seleccionada');
       }
-
-      // Cargar datos
-      this.datosCurva = { ...curva.datosCurva };
-      this.resumenPasteurizador = { ...curva.resumenPasteurizador };
-      this.resumenEnfriador = { ...curva.resumenEnfriador };
-
-      // Cargar datos en las tablas
-      this.pasteurizadorTableComponent.cargarDatosExternos(curva.registrosPasteurizador);
-      this.enfriadorTableComponent.cargarDatosExternos(curva.registrosEnfriador);
-
-      this.idCurvaActual = idCurva;
-      this.esActualizacion = true;
-      this.mostrarFormulario = true;
-      this.loading.main = false;
-
-      this.mostrarMensaje('success', 'Datos cargados', `Se han cargado los datos de la curva con volumen ${curva.volumen} c.c.`);
-    }, 300);
+    });
   }
 
+  /**
+   * Convierte las muestras de la API (agrupadas por tiempo) a registros de tabla
+   * Cada registro tiene 3 fases (muestra 1, 2, 3) con el mismo tiempo
+   */
+  private convertirMuestrasARegistros(muestras: MuestraAPI[]): PasteurizadorData[] | EnfriadorData[] {
+    // Agrupar muestras por tiempo
+    const muestrasPorTiempo = muestras.reduce((acc, muestra) => {
+      const tiempo = muestra.tiempo.toString();
+      if (!acc[tiempo]) {
+        acc[tiempo] = [];
+      }
+      acc[tiempo].push(muestra);
+      return acc;
+    }, {} as Record<string, MuestraAPI[]>);
+
+    // Convertir cada grupo de muestras en un registro
+    const registros: PasteurizadorData[] = [];
+
+    Object.keys(muestrasPorTiempo)
+      .sort((a, b) => Number(a) - Number(b))
+      .forEach(tiempo => {
+        const muestrasGrupo = muestrasPorTiempo[tiempo].sort((a, b) => a.muestra - b.muestra);
+
+        const registro: PasteurizadorData = {
+          id: muestrasGrupo[0]?.id || null,
+          tiempo: tiempo,
+          t_frasco_testigo_1: muestrasGrupo[0]?.frascoTestigo?.toString() || '',
+          t_agua_1: muestrasGrupo[0]?.agua?.toString() || '',
+          tiempo_2: tiempo,
+          t_frasco_testigo_2: muestrasGrupo[1]?.frascoTestigo?.toString() || '',
+          t_agua_2: muestrasGrupo[1]?.agua?.toString() || '',
+          tiempo_3: tiempo,
+          t_frasco_testigo_3: muestrasGrupo[2]?.frascoTestigo?.toString() || '',
+          t_agua_3: muestrasGrupo[2]?.agua?.toString() || ''
+        };
+
+        registros.push(registro);
+      });
+
+    return registros;
+  }
+
+  // ============= CREAR NUEVA CURVA =============
   crearNuevaCurva(): void {
     if (this.pasteurizadorTableComponent?.isAnyRowEditing() || this.enfriadorTableComponent?.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual');
@@ -337,6 +379,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     this.mostrarMensaje('info', 'Nueva curva', 'Complete los datos de la curva y agregue registros');
   }
 
+  // ============= CREAR NUEVOS REGISTROS EN TABLAS =============
   crearNuevoRegistroPasteurizador(): void {
     this.pasteurizadorTableComponent?.crearNuevoRegistro();
   }
@@ -345,9 +388,10 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     this.enfriadorTableComponent?.crearNuevoRegistro();
   }
 
+  // ============= GUARDAR O ACTUALIZAR =============
   guardarOActualizarDatos(): void {
     if (!this.validarFormulario()) {
-      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos de la curva');
+      this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos obligatorios de la curva');
       return;
     }
 
@@ -356,13 +400,13 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const payload = this.prepararPayloadCompleto();
+    const payload = this.prepararPayloadParaAPI();
     if (!payload) {
-      this.mostrarMensaje('error', 'Error', 'Error al preparar los datos');
+      this.mostrarMensaje('error', 'Error', 'Error al preparar los datos para enviar');
       return;
     }
 
-    this.enviarDatosCompletos(payload);
+    this.enviarDatosAAPI(payload);
   }
 
   private validarFormulario(): boolean {
@@ -378,45 +422,128 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
       this.datosCurva.nivel_agua_enfriador?.trim() &&
       this.datosCurva.temperatura_agua?.trim() &&
       this.datosCurva.fecha &&
-      this.datosCurva.responsable?.trim()
+      this.datosCurva.id_responsable
     );
   }
 
-  private prepararPayloadCompleto(): PayloadCurvaCompleta | null {
+  /**
+   * Convierte los datos del formulario al formato esperado por la API
+   */
+  private prepararPayloadParaAPI(): PayloadCurvaCompletaAPI | null {
     try {
-      const payload: PayloadCurvaCompleta = {
-        datosCurva: {
-          ...(this.esActualizacion && this.datosCurva.id ? { id: this.datosCurva.id } : {}),
-          ...this.datosCurva
-        },
-        registrosPasteurizador: this.dataPasteurizador,
-        resumenPasteurizador: this.resumenPasteurizador,
-        registrosEnfriador: this.dataEnfriador,
-        resumenEnfriador: this.resumenEnfriador
+      // Convertir registros de tabla a muestras API
+      const pasteurizadores = this.convertirRegistrosAMuestras(this.dataPasteurizador);
+      const enfriadores = this.convertirRegistrosAMuestras(this.dataEnfriador);
+
+      // Formatear fecha
+      let fechaFormateada = '';
+      if (this.datosCurva.fecha instanceof Date) {
+        const año = this.datosCurva.fecha.getFullYear();
+        const mes = (this.datosCurva.fecha.getMonth() + 1).toString().padStart(2, '0');
+        const dia = this.datosCurva.fecha.getDate().toString().padStart(2, '0');
+        fechaFormateada = `${año}-${mes}-${dia}`;
+      }
+
+      const payload: PayloadCurvaCompletaAPI = {
+        numeroFrasco: Number(this.datosCurva.numero_frascos),
+        tipoFrasco: this.datosCurva.tipo_frasco,
+        tipoTermometro: this.datosCurva.termometro_tipo,
+        marca: this.datosCurva.marca,
+        certificado: this.datosCurva.certificado_calibracion,
+        aguaPasteurizador: Number(this.datosCurva.nivel_agua_pasteurizador),
+        temperaturaEquipo: Number(this.datosCurva.temperatura_equipo),
+        volumen: Number(this.datosCurva.volumen),
+        aguaEnfriador: Number(this.datosCurva.nivel_agua_enfriador),
+        temperaturaAgua: Number(this.datosCurva.temperatura_agua),
+        fecha: fechaFormateada,
+        promedioPasteurizador: Number(this.resumenPasteurizador.promedio_precalentamiento),
+        minutosPasteurizador: Number(this.resumenPasteurizador.minutos),
+        promedioEnfriador: Number(this.resumenEnfriador.promedio_precalentamiento),
+        minutosEnfriador: Number(this.resumenEnfriador.minutos),
+        responsableOne: this.datosCurva.id_responsable!,
+        responsableTwo: this.datosCurva.id_responsable2 || this.datosCurva.id_responsable!,
+        pasteurizadores,
+        enfriadores
       };
 
       return payload;
     } catch (error) {
+      console.error('Error al preparar payload:', error);
       return null;
     }
   }
 
-  private enviarDatosCompletos(payload: PayloadCurvaCompleta): void {
+  /**
+   * Convierte los registros de la tabla (con 3 fases) a muestras de la API
+   */
+  private convertirRegistrosAMuestras(registros: PasteurizadorData[] | EnfriadorData[]): MuestraAPI[] {
+    const muestras: MuestraAPI[] = [];
+
+    registros.forEach(registro => {
+      const tiempo = Number(registro.tiempo);
+
+      // Muestra 1 (si tiene datos)
+      if (registro.t_frasco_testigo_1?.trim() && registro.t_agua_1?.trim()) {
+        muestras.push({
+          ...(registro.id ? { id: registro.id } : {}),
+          tiempo,
+          frascoTestigo: Number(registro.t_frasco_testigo_1),
+          agua: Number(registro.t_agua_1),
+          muestra: 1
+        });
+      }
+
+      // Muestra 2 (si tiene datos)
+      if (registro.t_frasco_testigo_2?.trim() && registro.t_agua_2?.trim()) {
+        muestras.push({
+          tiempo,
+          frascoTestigo: Number(registro.t_frasco_testigo_2),
+          agua: Number(registro.t_agua_2),
+          muestra: 2
+        });
+      }
+
+      // Muestra 3 (si tiene datos)
+      if (registro.t_frasco_testigo_3?.trim() && registro.t_agua_3?.trim()) {
+        muestras.push({
+          tiempo,
+          frascoTestigo: Number(registro.t_frasco_testigo_3),
+          agua: Number(registro.t_agua_3),
+          muestra: 3
+        });
+      }
+    });
+
+    return muestras;
+  }
+
+  private enviarDatosAAPI(payload: PayloadCurvaCompletaAPI): void {
     this.loading.saving = true;
 
-    setTimeout(() => {
-      this.loading.saving = false;
-      const mensaje = this.esActualizacion
-        ? 'Todos los datos han sido actualizados exitosamente'
-        : 'Todos los datos han sido guardados exitosamente';
+    const request = this.esActualizacion && this.idCurvaActual
+      ? this.curvasService.actualizarCurva(this.idCurvaActual, payload)
+      : this.curvasService.crearCurva(payload);
 
-      this.mostrarMensaje('success', 'Éxito', mensaje);
-      this.esActualizacion = true;
+    request.subscribe({
+      next: (response) => {
+        this.loading.saving = false;
+        const mensaje = this.esActualizacion
+          ? 'Curva actualizada exitosamente'
+          : 'Curva creada exitosamente';
 
-      if (!this.idCurvaActual) {
-        this.idCurvaActual = Date.now();
+        this.mostrarMensaje('success', 'Éxito', mensaje);
+        this.esActualizacion = true;
+
+        if (!this.esActualizacion && response.data?.id) {
+          this.idCurvaActual = response.data.id;
+        }
+      },
+      error: (error) => {
+        console.error('Error al guardar curva:', error);
+        this.loading.saving = false;
+        this.mostrarMensaje('error', 'Error', 'No se pudo guardar la curva. Por favor, intente nuevamente');
       }
-    }, 1500);
+    });
   }
 
   puedeGuardar(): boolean {
@@ -429,6 +556,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     return this.esActualizacion ? 'Actualizar' : 'Guardar';
   }
 
+  // ============= LIMPIAR FORMULARIO =============
   limpiarFormulario(): void {
     this.datosCurva = {
       id: null,

@@ -91,3 +91,81 @@ export interface PayloadCurvaCompleta {
 }
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
+
+// ========== INTERFACES DE LA API ==========
+
+export interface ApiResponse<T> {
+  status: number;
+  statusmsg: string;
+  data: T;
+}
+
+export interface CurvaVolumenResponse {
+  id: number;
+  volumen: number;
+  fecha: string;
+}
+
+export interface MuestraAPI {
+  id?: number;
+  tiempo: number;
+  frascoTestigo: number;
+  agua: number;
+  muestra: number;
+}
+
+export interface EmpleadoResponse {
+  id: number;
+  nombre: string;
+  cargo: string;
+  telefono: number;
+  correo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CurvaDetalleResponse {
+  id: number;
+  numeroFrascos: number;
+  tipoFrasco: string;
+  tipoTermometro: string;
+  marca: string;
+  certificado: string;
+  aguaPasteurizador: number;
+  temperaturaEquipo: number;
+  volumen: number;
+  aguaEnfriador: number;
+  temperaturaAgua: number;
+  fecha: string;
+  promedioPasteurizador: number;
+  minutosPasteurizador: number;
+  promedioEnfriador: number;
+  minutosEnfriador: number;
+  pasteurizadores: MuestraAPI[];
+  enfriadores: MuestraAPI[];
+  responsableOne: EmpleadoResponse;
+  responsableTwo: EmpleadoResponse | null;
+}
+
+export interface PayloadCurvaCompletaAPI {
+  id?: number;
+  numeroFrasco: number;
+  tipoFrasco: string;
+  tipoTermometro: string;
+  marca: string;
+  certificado: string;
+  aguaPasteurizador: number;
+  temperaturaEquipo: number;
+  volumen: number;
+  aguaEnfriador: number;
+  temperaturaAgua: number;
+  fecha: string;
+  promedioPasteurizador: number;
+  minutosPasteurizador: number;
+  promedioEnfriador: number;
+  minutosEnfriador: number;
+  responsableOne: number;
+  responsableTwo: number;
+  pasteurizadores: MuestraAPI[];
+  enfriadores: MuestraAPI[];
+}

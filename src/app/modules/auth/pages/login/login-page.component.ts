@@ -9,94 +9,104 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { timeout } from 'rxjs';
 
 @Component({
-  imports: [FormsModule,RouterModule,ToastModule,ProgressSpinnerModule],
+  imports: [FormsModule, RouterModule, ToastModule, ProgressSpinnerModule],
   selector: 'app-login',
   templateUrl: './login-page.component.html',
-  providers:[AuthService, MessageService]
+  providers: [AuthService, MessageService],
+  styles: [`
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px white inset !important;
+      -webkit-text-fill-color: #000000 !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+  `]
 })
 
 export class LoginPageComponent {
 
-  usuario:string = '' ;
-  password:string = '' ; 
+  usuario: string = '';
+  password: string = '';
   loading = false;
 
 
   constructor
-  (
-    private _authService: AuthService,
-    private _mesageServices: MessageService,
-    private _router: Router
-  ){
+    (
+      private _authService: AuthService,
+      private _mesageServices: MessageService,
+      private _router: Router
+    ) {
 
   }
 
-  onAuthenticated(){
+  onAuthenticated() {
 
-    if(this.verificatedInputs()){
+    if (this.verificatedInputs()) {
       this.loading = true;
-      const body = {usuario:this.usuario,password: this.password}
+      const body = { usuario: this.usuario, password: this.password }
       this._authService.postAuthenticated(body)
-      .pipe(timeout(10000))
-      .subscribe({
-        next:(res:Auth) => {
-          if(res){
-            this.loading = false;
-            this._router.navigate(['/blh'])
-            this._mesageServices.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: 'Bienvenido '+ res.user.usuario,
-              key: 'tr',
-              life: 3000
-            });
+        .pipe(timeout(10000))
+        .subscribe({
+          next: (res: Auth) => {
+            if (res) {
+              this.loading = false;
+              this._router.navigate(['/blh'])
+              this._mesageServices.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Bienvenido ' + res.user.usuario,
+                key: 'tr',
+                life: 3000
+              });
+            }
+          },
+          error: (error) => {
+            if (error.status === 401) {
+              this.loading = false;
+              this._mesageServices.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Usuario o Contraseña incorrectos',
+                key: 'tr',
+                life: 3000
+              });
+            }
+            else {
+              this.loading = false;
+              this._mesageServices.add({
+                severity: 'error',
+                summary: 'Error de red',
+                detail: 'Ocurrió un error al procesar la solicitud.',
+                key: 'tr',
+                life: 3000
+              })
+            }
           }
-        },
-        error:(error) => {
-          if (error.status === 401) {
-            this.loading = false;
-            this._mesageServices.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Usuario o Contraseña incorrectos',
-              key: 'tr',
-              life: 3000
-            });
-          }
-          else {
-            this.loading = false;
-            this._mesageServices.add({
-              severity: 'error',
-              summary: 'Error de red',
-              detail: 'Ocurrió un error al procesar la solicitud.',
-              key: 'tr',
-              life: 3000
-            })
-          }
-        }
 
-      })
+        })
     }
   }
 
-  verificatedInputs():boolean{
+  verificatedInputs(): boolean {
 
-    let msg:string = ''
-    let flat:boolean = true;
-    if(this.usuario === ''){
+    let msg: string = ''
+    let flat: boolean = true;
+    if (this.usuario === '') {
       msg += " usuario";
       flat = false;
     }
-    if(this.password === ''){
+    if (this.password === '') {
       msg += " contraseña";
       flat = false;
     }
 
-    if(msg.length > 0){
+    if (msg.length > 0) {
       this._mesageServices.add({
         severity: 'warn',
         summary: 'Advertencia',
-        detail: 'Ingrese' +msg,
+        detail: 'Ingrese' + msg,
         key: 'tr',
         life: 3000
       });

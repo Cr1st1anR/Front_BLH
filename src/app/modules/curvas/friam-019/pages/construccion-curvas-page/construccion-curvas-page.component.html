@@ -166,9 +166,17 @@
             <i class="pi pi-user text-purple-500"></i>
             RESPONSABLE 1
           </label>
-          <p-select [(ngModel)]="datosCurva.responsable" [options]="opcionesResponsables" optionLabel="label"
-            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
-            [loading]="loading.responsables">
+          <p-select
+            [(ngModel)]="datosCurva.responsable"
+            [options]="opcionesResponsables"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione responsable"
+            appendTo="body"
+            class="w-full"
+            [showClear]="true"
+            [loading]="loading.responsables"
+            (onChange)="onResponsable1Change($event)">
           </p-select>
         </div>
 
@@ -177,9 +185,17 @@
             <i class="pi pi-user text-indigo-500"></i>
             RESPONSABLE 2
           </label>
-          <p-select [(ngModel)]="datosCurva.responsable2" [options]="opcionesResponsables" optionLabel="label"
-            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
-            [loading]="loading.responsables">
+          <p-select
+            [(ngModel)]="datosCurva.responsable2"
+            [options]="opcionesResponsables"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione responsable"
+            appendTo="body"
+            class="w-full"
+            [showClear]="true"
+            [loading]="loading.responsables"
+            (onChange)="onResponsable2Change($event)">
           </p-select>
         </div>
       </div>

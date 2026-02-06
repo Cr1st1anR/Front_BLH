@@ -603,4 +603,21 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({ severity, summary, detail, key: 'tr', life });
   }
+
+  // ============= MANEJADORES DE CAMBIO DE RESPONSABLES =============
+  onResponsable1Change(event: any): void {
+    const responsableSeleccionado = this.opcionesResponsables.find(r => r.value === event.value);
+    if (responsableSeleccionado) {
+      this.datosCurva.responsable = responsableSeleccionado.value;
+      this.datosCurva.id_responsable = responsableSeleccionado.id;
+    }
+  }
+
+  onResponsable2Change(event: any): void {
+    const responsableSeleccionado = this.opcionesResponsables.find(r => r.value === event.value);
+    if (responsableSeleccionado) {
+      this.datosCurva.responsable2 = responsableSeleccionado.value;
+      this.datosCurva.id_responsable2 = responsableSeleccionado.id;
+    }
+  }
 }

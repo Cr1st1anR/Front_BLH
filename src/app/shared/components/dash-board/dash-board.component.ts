@@ -6,12 +6,15 @@ import { Drawer, DrawerModule } from 'primeng/drawer';
 import { MenubarModule } from 'primeng/menubar';
 import { RippleModule } from 'primeng/ripple';
 import { StyleClassModule } from 'primeng/styleclass';
+import { CommonModule } from '@angular/common';
+
 interface MenuBarItems {
   icon?: string;
   label: string;
   route?: string;
   subLabel?: string;
   items?: MenuBarItems[];
+  isOpen?: boolean;
 }
 
 @Component({
@@ -24,6 +27,7 @@ interface MenuBarItems {
     StyleClassModule,
     RippleModule,
     RouterLink,
+    CommonModule,
   ],
   templateUrl: './dash-board.component.html',
   styleUrl: './dash-board.component.scss',
@@ -40,10 +44,12 @@ export class DashBoardComponent {
       icon: 'fa-solid fa-house',
       route: '/blh',
       items: [],
+      isOpen: false,
     },
     {
       label: 'Captacion',
       icon: 'fa-solid fa-users-viewfinder',
+      isOpen: false,
       items: [
         {
           label: 'Registro de linea amiga',
@@ -90,6 +96,7 @@ export class DashBoardComponent {
     {
       label: 'Pasteurizacion',
       icon: 'fa-solid fa-flask-vial',
+      isOpen: false,
       items: [
         {
           label: 'Control de reenvase red colombiana de bancos de leche humana',
@@ -121,6 +128,7 @@ export class DashBoardComponent {
     {
       label: 'Liberacion',
       icon: 'fa-solid fa-clipboard-list',
+      isOpen: false,
       items: [
         {
           label: 'Control de entradas y salidas de leche humana extraida pasteurizada',
@@ -132,6 +140,7 @@ export class DashBoardComponent {
     {
       label: 'Distribucion',
       icon: 'fa-solid fa-share',
+      isOpen: false,
       items: [
         {
           label: 'Distribución de leche humana procesada blh',
@@ -148,6 +157,7 @@ export class DashBoardComponent {
     {
       label: 'Curvas',
       icon: 'fa-solid fa-chart-area',
+      isOpen: false,
       items: [
         {
           label: 'Construcción de curvas de penetración de calor y enfriamiento',
@@ -160,11 +170,30 @@ export class DashBoardComponent {
 
   constructor(private router: Router) { }
 
-  closeCallback(e: any): void {
-    console.log(e);
+  toggleModule(item: MenuBarItems): void {
+    if (item.items && item.items.length > 0) {
+      this.menuBarItems.forEach(menuItem => {
+        if (menuItem !== item) {
+          menuItem.isOpen = false;
+        }
+      });
 
+      item.isOpen = !item.isOpen;
+    } else {
+      this.menuBarItems.forEach(menuItem => {
+        menuItem.isOpen = false;
+      });
+    }
+  }
+
+  shouldShowSubitems(item: MenuBarItems): boolean {
+    return item.isOpen ?? false;
+  }
+
+  closeCallback(e: any): void {
     this.drawerRef.close(e);
   }
+
   onSelect(item: any) {
     this.selectedItem = item;
   }

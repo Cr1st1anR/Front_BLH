@@ -5,39 +5,41 @@
     </ng-template>
     <ng-template pTemplate="end">
       <p-avatar icon="pi pi-user" class="mr-2" shape="circle"></p-avatar>
-      <p-button icon="pi pi-sign-out" label="Salir" (onClick)="singOut()"></p-button>
+      <p-button icon="pi pi-sign-out" label="" (onClick)="singOut()"></p-button>
     </ng-template>
   </p-menubar>
 </div>
-
 
 <p-drawer #drawerRef [(visible)]="visible">
   <ng-template #headless>
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-center px-6 pt-4">
-        <img src="assets/logoBLH.svg" alt="" />
+        <img src="assets/logoBLH.svg" alt="Logo BLH" />
       </div>
       <div class="overflow-y-auto">
         <ul class="p-4 overflow-hidden">
           @for (item of menuBarItems; track $index) {
           <li>
-            <a pRipple pStyleClass="@next" toggleClass="hidden" enterFromClass="hidden"
-              enterActiveClass="animate-slidedown" leaveToClass="hidden" leaveActiveClass="animate-slideup"
-              class="flex items-center cursor-pointer w-full"
-              [routerLink]="item.items && item.items.length ? null : item.route">
+            <a pRipple class="flex items-center cursor-pointer w-full"
+              [routerLink]="item.items && item.items.length ? null : item.route" [attr.aria-expanded]="item.isOpen"
+              (click)="toggleModule(item)">
               <i class="{{ item.icon }}"></i>
               <span class="ml-2">{{ item.label }}</span>
               @if (item.items && item.items.length) {
-              <i class="pi pi-chevron-down ml-auto"></i>
+              <i class="pi pi-chevron-down ml-auto" [class.rotate-180]="item.isOpen"></i>
               }
-
             </a>
+
             @if (item.items && item.items.length) {
-            <ul class="hidden overflow-y-hidden transition-all duration-300 ease-in-out">
+            <ul class="submenu-container" [class.submenu-open]="item.isOpen">
               @for (subItem of item.items; track $index) {
               <li class="">
-                <a class="flex items-center cursor-pointer" [routerLink]="subItem.route" routerLinkActive="active">
+                <a class="flex items-center cursor-pointer" [routerLink]="subItem.route" routerLinkActive="active"
+                  (click)="visible = false">
                   <span class="">{{ subItem.label }}</span>
+                  @if (subItem.subLabel) {
+                  <span class="text-xs text-gray-500 ml-2">{{ subItem.subLabel }}</span>
+                  }
                 </a>
               </li>
               }

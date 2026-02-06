@@ -1,0 +1,596 @@
+// ============================================
+// VARIABLES Y TEMA
+// ============================================
+$primary-color: #224186;
+$primary-hover: #1a3366;
+$primary-active: #0d1b33;
+$secondary-color: #456dc4;
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$bg-white: #ffffff;
+$bg-light: #f9fafb;
+$bg-hover: #f3f4f6;
+$bg-active: #e5e7eb;
+$border-color: #e5e7eb;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ============================================
+// HEADER MENUBAR
+// ============================================
+.fixed {
+  box-shadow: $shadow-md;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.95);
+
+  ::ng-deep .p-menubar {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0;
+
+    .p-menubar-root-list {
+      align-items: center;
+      gap: 1rem;
+    }
+
+    // Botón hamburguesa
+    .p-button {
+      width: 2.75rem;
+      height: 2.75rem;
+      background-color: $primary-color;
+      border: none;
+      border-radius: 0.5rem;
+      transition: $transition-base;
+      box-shadow: $shadow-sm;
+
+      &:hover:not(:disabled) {
+        background-color: $primary-hover;
+        transform: scale(1.05);
+        box-shadow: $shadow-md;
+      }
+
+      &:active:not(:disabled) {
+        background-color: $primary-active;
+        transform: scale(0.98);
+      }
+
+      &:focus {
+        outline: 2px solid rgba($primary-color, 0.3);
+        outline-offset: 2px;
+      }
+
+      .pi {
+        font-size: 1.25rem;
+        color: $bg-white;
+      }
+    }
+  }
+}
+
+// Avatar y botón salir en menubar
+::ng-deep {
+  .p-menubar-end {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .p-avatar {
+      width: 2.75rem;
+      height: 2.75rem;
+      background: linear-gradient(
+        135deg,
+        $primary-color 0%,
+        $secondary-color 100%
+      );
+      color: $bg-white;
+      box-shadow: $shadow-sm;
+      transition: $transition-base;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: $shadow-md;
+      }
+
+      .pi {
+        font-size: 1.1rem;
+      }
+    }
+
+    // Botón Salir
+    .p-button {
+      background-color: transparent;
+      border: 1px solid $border-color;
+      color: $text-primary;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      transition: $transition-base;
+
+      &:hover:not(:disabled) {
+        background-color: #fee2e2;
+        border-color: #fca5a5;
+        color: #991b1b;
+      }
+
+      &:active:not(:disabled) {
+        background-color: #fecaca;
+        transform: scale(0.98);
+      }
+
+      &:focus {
+        outline: 2px solid rgba(#dc2626, 0.3);
+        outline-offset: 2px;
+      }
+
+      .pi {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
+
+// ============================================
+// DRAWER (MENÚ LATERAL)
+// ============================================
+::ng-deep .p-drawer {
+  .p-drawer-header {
+    display: none;
+  }
+
+  .p-drawer-content {
+    background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  // Container principal
+  .flex.flex-col.h-full {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Logo section
+  .flex.items-center.justify-center {
+    padding: 2rem 1.5rem;
+    background: linear-gradient(
+      135deg,
+      $primary-color 0%,
+      $secondary-color 100%
+    );
+    box-shadow: $shadow-md;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+
+    img {
+      max-height: 60px;
+      width: auto;
+      filter: brightness(0) invert(1);
+      transition: $transition-base;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  // Contenedor de scroll del menú
+  .overflow-y-auto {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.5rem 0;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($primary-color, 0.2);
+      border-radius: 4px;
+      transition: $transition-base;
+
+      &:hover {
+        background: rgba($primary-color, 0.4);
+      }
+    }
+  }
+
+  // Lista principal del menú
+  ul.p-4 {
+    padding: 0 1rem;
+    list-style: none;
+    margin: 0;
+
+    > li {
+      margin-bottom: 0.5rem;
+
+      // Link principal
+      > a {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-radius: 0.75rem;
+        color: $text-primary;
+        font-weight: 500;
+        font-size: 0.9375rem;
+        transition: $transition-base;
+        cursor: pointer;
+        gap: 0.75rem;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 4px;
+          background: $primary-color;
+          transform: scaleY(0);
+          transition: $transition-base;
+        }
+
+        i {
+          font-size: 1.125rem;
+          min-width: 1.5rem;
+          text-align: center;
+          color: $text-secondary;
+          transition: $transition-base;
+        }
+
+        span {
+          flex: 1;
+          line-height: 1.4;
+        }
+
+        .pi-chevron-down {
+          font-size: 0.875rem;
+          min-width: auto;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        &:hover {
+          background: linear-gradient(
+            90deg,
+            rgba($primary-color, 0.08) 0%,
+            transparent 100%
+          );
+          color: $primary-color;
+          transform: translateX(4px);
+
+          &::before {
+            transform: scaleY(1);
+          }
+
+          i {
+            color: $primary-color;
+            transform: scale(1.1);
+          }
+        }
+
+        &:active {
+          transform: translateX(2px) scale(0.98);
+        }
+
+        &:focus-visible {
+          outline: 2px solid rgba($primary-color, 0.4);
+          outline-offset: 2px;
+          background: rgba($primary-color, 0.05);
+        }
+
+        // Estado activo/seleccionado
+        &.active {
+          background: linear-gradient(
+            90deg,
+            rgba($primary-color, 0.12) 0%,
+            rgba($primary-color, 0.04) 100%
+          );
+          color: $primary-color;
+          font-weight: 600;
+
+          &::before {
+            transform: scaleY(1);
+          }
+
+          i {
+            color: $primary-color;
+          }
+        }
+      }
+
+      // Submenú
+      .submenu-container {
+        margin: 0.5rem 0 0 0;
+        padding: 0;
+        list-style: none;
+        border-left: 2px solid $border-color;
+        margin-left: 1.75rem;
+        max-height: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.3s ease,
+          padding 0.3s ease;
+        opacity: 0;
+
+        &.submenu-open {
+          max-height: 2000px;
+          opacity: 1;
+          padding: 0.5rem 0 0.5rem 2.75rem;
+        }
+
+        li {
+          margin-bottom: 0.25rem;
+
+          a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: $text-secondary;
+            font-size: 0.875rem;
+            font-weight: 400;
+            transition: $transition-base;
+            cursor: pointer;
+            line-height: 1.4;
+            position: relative;
+
+            &::before {
+              content: "";
+              position: absolute;
+              left: -2.75rem;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: $border-color;
+              transition: $transition-base;
+            }
+
+            span {
+              display: block;
+            }
+
+            &:hover {
+              background: rgba($primary-color, 0.06);
+              color: $primary-color;
+              transform: translateX(4px);
+
+              &::before {
+                background: $primary-color;
+                transform: translateY(-50%) scale(1.3);
+              }
+            }
+
+            &:active {
+              transform: translateX(2px) scale(0.98);
+            }
+
+            &:focus-visible {
+              outline: 2px solid rgba($primary-color, 0.3);
+              outline-offset: 2px;
+            }
+
+            &.active {
+              background: rgba($primary-color, 0.1);
+              color: $primary-color;
+              font-weight: 500;
+
+              &::before {
+                background: $primary-color;
+                transform: translateY(-50%) scale(1.5);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Clase auxiliar para rotación del chevron
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+// ============================================
+// RESPONSIVE DESIGN
+// ============================================
+
+// Tablet (768px - 1024px)
+@media (max-width: 1024px) {
+  ::ng-deep .p-drawer {
+    width: 280px !important;
+
+    ul.p-4 > li > a {
+      font-size: 0.875rem;
+      padding: 0.75rem 0.875rem;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    ul.p-4 ul li a {
+      font-size: 0.8125rem;
+      padding: 0.625rem 0.875rem;
+    }
+  }
+}
+
+// Móvil (max-width: 768px)
+@media (max-width: 768px) {
+  .fixed ::ng-deep .p-menubar {
+    padding: 0.625rem 1rem;
+
+    .p-button {
+      width: 2.5rem;
+      height: 2.5rem;
+
+      .pi {
+        font-size: 1.125rem;
+      }
+    }
+  }
+
+  ::ng-deep {
+    .p-menubar-end {
+      gap: 0.75rem;
+
+      .p-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+
+        .pi {
+          font-size: 1rem;
+        }
+      }
+
+      .p-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+
+        span {
+          display: none;
+        }
+
+        .pi {
+          margin-right: 0;
+        }
+      }
+    }
+
+    .p-drawer {
+      width: 85vw !important;
+      max-width: 320px !important;
+
+      .flex.items-center.justify-center {
+        padding: 1.5rem 1rem;
+
+        img {
+          max-height: 50px;
+        }
+      }
+
+      ul.p-4 {
+        padding: 0 0.75rem;
+
+        > li > a {
+          font-size: 0.875rem;
+          padding: 0.75rem 0.875rem;
+          gap: 0.625rem;
+
+          i {
+            font-size: 1rem;
+            min-width: 1.25rem;
+          }
+        }
+
+        ul {
+          padding-left: 2.5rem;
+          margin-left: 1.5rem;
+
+          li a {
+            font-size: 0.8125rem;
+            padding: 0.625rem 0.875rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Móvil pequeño (max-width: 480px)
+@media (max-width: 480px) {
+  ::ng-deep .p-drawer {
+    width: 90vw !important;
+    max-width: 100% !important;
+  }
+}
+
+// ============================================
+// ANIMACIONES PERSONALIZADAS
+// ============================================
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+::ng-deep .p-drawer-left .p-drawer-content {
+  animation: slideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ============================================
+// MEJORAS DE ACCESIBILIDAD
+// ============================================
+::ng-deep {
+  // Focus visible para navegación con teclado
+  *:focus-visible {
+    outline: 2px solid rgba($primary-color, 0.4);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  // Reducir animaciones para usuarios con preferencias de movimiento reducido
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  // Alto contraste para mejor legibilidad
+  @media (prefers-contrast: high) {
+    .p-drawer {
+      ul.p-4 > li > a {
+        border: 1px solid transparent;
+
+        &:hover,
+        &.active {
+          border-color: $primary-color;
+        }
+      }
+    }
+  }
+}
+
+// ============================================
+// ESTADOS DE CARGA Y INTERACCIÓN
+// ============================================
+::ng-deep {
+  .p-drawer {
+    ul.p-4 > li > a {
+      &[aria-busy="true"] {
+        opacity: 0.6;
+        cursor: wait;
+        pointer-events: none;
+      }
+
+      &[aria-disabled="true"] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+    }
+  }
+}

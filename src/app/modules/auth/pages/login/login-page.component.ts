@@ -9,56 +9,41 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { timeout } from 'rxjs';
 
 @Component({
-  imports: [FormsModule, RouterModule, ToastModule, ProgressSpinnerModule],
   selector: 'app-login',
+  imports: [FormsModule, RouterModule, ToastModule, ProgressSpinnerModule],
   templateUrl: './login-page.component.html',
+  styleUrl: './login-page.component.scss',
   providers: [AuthService, MessageService],
-  styles: [`
-    input:-webkit-autofill,
-    input:-webkit-autofill:hover,
-    input:-webkit-autofill:focus,
-    input:-webkit-autofill:active {
-      -webkit-box-shadow: 0 0 0 30px white inset !important;
-      -webkit-text-fill-color: #000000 !important;
-      transition: background-color 5000s ease-in-out 0s;
-    }
-  `]
 })
-
 export class LoginPageComponent {
-
   usuario: string = '';
   password: string = '';
   loading = false;
 
-
-  constructor
-    (
-      private _authService: AuthService,
-      private _mesageServices: MessageService,
-      private _router: Router
-    ) {
-
-  }
+  constructor(
+    private _authService: AuthService,
+    private _mesageServices: MessageService,
+    private _router: Router
+  ) { }
 
   onAuthenticated() {
-
     if (this.verificatedInputs()) {
       this.loading = true;
-      const body = { usuario: this.usuario, password: this.password }
-      this._authService.postAuthenticated(body)
+      const body = { usuario: this.usuario, password: this.password };
+      this._authService
+        .postAuthenticated(body)
         .pipe(timeout(10000))
         .subscribe({
           next: (res: Auth) => {
             if (res) {
               this.loading = false;
-              this._router.navigate(['/blh'])
+              this._router.navigate(['/blh']);
               this._mesageServices.add({
                 severity: 'success',
                 summary: 'Éxito',
                 detail: 'Bienvenido ' + res.user.usuario,
                 key: 'tr',
-                life: 3000
+                life: 3000,
               });
             }
           },
@@ -70,35 +55,32 @@ export class LoginPageComponent {
                 summary: 'Error',
                 detail: 'Usuario o Contraseña incorrectos',
                 key: 'tr',
-                life: 3000
+                life: 3000,
               });
-            }
-            else {
+            } else {
               this.loading = false;
               this._mesageServices.add({
                 severity: 'error',
                 summary: 'Error de red',
                 detail: 'Ocurrió un error al procesar la solicitud.',
                 key: 'tr',
-                life: 3000
-              })
+                life: 3000,
+              });
             }
-          }
-
-        })
+          },
+        });
     }
   }
 
   verificatedInputs(): boolean {
-
-    let msg: string = ''
+    let msg: string = '';
     let flat: boolean = true;
     if (this.usuario === '') {
-      msg += " usuario";
+      msg += ' usuario';
       flat = false;
     }
     if (this.password === '') {
-      msg += " contraseña";
+      msg += ' contraseña';
       flat = false;
     }
 
@@ -108,10 +90,10 @@ export class LoginPageComponent {
         summary: 'Advertencia',
         detail: 'Ingrese' + msg,
         key: 'tr',
-        life: 3000
+        life: 3000,
       });
     }
 
-    return flat
+    return flat;
   }
 }

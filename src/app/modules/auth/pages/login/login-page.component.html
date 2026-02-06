@@ -8,7 +8,6 @@
 }
 
 <form (ngSubmit)="onAuthenticated()">
-
   <div class="flex items-center justify-center min-h-screen bg-white relative">
     <div class="absolute top-0 left-0 w-full h-full overflow-hidden">
       <div class="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-800 rounded-bl-full"></div>
@@ -16,6 +15,7 @@
       <div class="absolute bottom-0 left-0 w-1/4 h-1/4 bg-green-600 rounded-tr-full"></div>
       <div class="absolute bottom-0 left-0 w-1/6 h-1/6 bg-green-700 rounded-tr-full"></div>
     </div>
+
     <div class="relative z-10 flex flex-col items-center bg-white p-12 rounded-lg shadow-lg w-96">
       <div class="flex items-center justify-center mb-8">
         <img alt="logoHUDN.svg" class="h-24 mr-4" src="assets/logoHUDN.svg" />
@@ -26,7 +26,6 @@
           <i class="fa-solid fa-user text-gray-400 mr-2"> </i>
           <input class="w-full outline-none placeholder-gray-500 focus:placeholder-transparent" placeholder="USUARIO"
             type="text" [(ngModel)]="usuario" required name="usuario" />
-
         </div>
         <div class="flex items-center border border-gray-300 rounded p-3">
           <i class="fa-solid fa-lock text-gray-400 mr-2"> </i>
@@ -38,6 +37,15 @@
         INICIAR SESION
       </button>
     </div>
-  </div>
 
+    <!-- Footer de créditos -->
+    <div class="login-footer">
+      <div class="credits-info">
+        <i class="fa-solid fa-code"></i>
+        <span>Desarrollado por <strong>Cristhian Rengifo</strong> y <strong>Luis Rosero</strong></span>
+        <span class="separator">•</span>
+        <span class="university">Universidad de Nariño</span>
+      </div>
+    </div>
+  </div>
 </form>

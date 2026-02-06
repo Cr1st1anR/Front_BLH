@@ -399,6 +399,54 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
   }
+
+  // Footer del drawer
+  .drawer-footer {
+    margin-top: auto;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(
+      135deg,
+      rgba($primary-color, 0.05) 0%,
+      rgba($secondary-color, 0.03) 100%
+    );
+    border-top: 1px solid $border-color;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+
+    .version-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: $text-secondary;
+      font-weight: 500;
+      flex-wrap: wrap;
+
+      .pi {
+        font-size: 1rem;
+        color: $primary-color;
+      }
+
+      span {
+        line-height: 1.4;
+      }
+
+      .version-badge {
+        background: linear-gradient(
+          135deg,
+          $primary-color 0%,
+          $secondary-color 100%
+        );
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        box-shadow: $shadow-sm;
+      }
+    }
+  }
 }
 
 // Clase auxiliar para rotación del chevron

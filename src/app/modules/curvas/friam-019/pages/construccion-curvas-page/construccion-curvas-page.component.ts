@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, inject } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -55,7 +55,7 @@ import type {
   styleUrl: './construccion-curvas-page.component.scss',
   providers: [MessageService]
 })
-export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
+export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly curvasService = inject(ConstruccionCurvasService);
   private readonly messageService = inject(MessageService);
@@ -79,6 +79,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
   volumenSeleccionado: string = '';
 
   private volumenDebounceTimer: any = null;
+  private busquedaTimeoutTimer: any = null; // ✅ NUEVO: Timer para timeout de búsqueda
 
   datosCurva: DatosCurva = {
     id: null,
@@ -139,6 +140,16 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
     // Las tablas siempre están en el DOM gracias a [hidden]
   }
 
+  ngOnDestroy(): void {
+    // Cancelar timers previos
+    if (this.volumenDebounceTimer) {
+      clearTimeout(this.volumenDebounceTimer);
+    }
+    if (this.busquedaTimeoutTimer) {
+      clearTimeout(this.busquedaTimeoutTimer);
+    }
+  }
+
   // ============= CARGAR RESPONSABLES DESDE LA API =============
   private cargarResponsables(): void {
     this.loading.responsables = true;
@@ -162,13 +173,18 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
   // ============= BÚSQUEDA POR VOLUMEN =============
   onVolumenInput(): void {
+    // Cancelar timers previos
     if (this.volumenDebounceTimer) {
       clearTimeout(this.volumenDebounceTimer);
+    }
+    if (this.busquedaTimeoutTimer) {
+      clearTimeout(this.busquedaTimeoutTimer);
     }
 
     if (!this.volumenBusqueda.trim()) {
       this.opcionesVolumenes = [];
       this.limpiarSeleccion();
+      this.loading.volumenes = false; // ✅ Asegurar que se oculte el spinner
       return;
     }
 
@@ -186,12 +202,20 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
 
     this.curvasService.buscarCurvasPorVolumen(Number(volumen)).subscribe({
       next: (response) => {
+        this.loading.volumenes = false;
+
+        // ✅ CAMBIO: Verificar si response o data es null/undefined
+        if (!response || !response.data || response.data.length === 0) {
+          this.opcionesVolumenes = [];
+          this.mostrarMensaje('info', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
+          return;
+        }
+
         const curvas = response.data;
 
-        // ✅ Función helper para parsear fecha sin problema de zona horaria
         const parsearFechaSinZonaHoraria = (fechaString: string): Date => {
           const [año, mes, dia] = fechaString.split('-').map(Number);
-          return new Date(año, mes - 1, dia); // Crea fecha en zona horaria local
+          return new Date(año, mes - 1, dia);
         };
 
         this.opcionesVolumenes = curvas.map(curva => {
@@ -205,18 +229,18 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit {
           };
         });
 
-        this.loading.volumenes = false;
-
-        if (this.opcionesVolumenes.length > 0) {
-          this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
-        } else {
-          this.mostrarMensaje('warn', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
-        }
+        this.mostrarMensaje('success', 'Resultados encontrados', `Se encontraron ${this.opcionesVolumenes.length} curva${this.opcionesVolumenes.length > 1 ? 's' : ''} con volumen ${volumen} c.c.`);
       },
       error: (error) => {
-        console.error('Error al buscar curvas:', error);
         this.loading.volumenes = false;
-        this.mostrarMensaje('error', 'Error', 'Error al buscar curvas por volumen');
+
+        if (error.status === 204) {
+          this.opcionesVolumenes = [];
+          this.mostrarMensaje('info', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
+        } else {
+          console.error('Error al buscar curvas:', error);
+          this.mostrarMensaje('error', 'Error', 'Error al buscar curvas por volumen');
+        }
       }
     });
   }

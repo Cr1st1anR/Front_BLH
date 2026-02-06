@@ -16,7 +16,6 @@
 }
 
 <div class="container-page">
-  <!-- SECCIÓN DE BÚSQUEDA Y FILTROS -->
   <div class="search-section">
     <div class="search-row">
       <span class="font-semibold text-gray-700 search-label">BUSCAR CURVA POR VOLUMEN:</span>
@@ -45,7 +44,6 @@
     </div>
   </div>
 
-  <!-- CARD DE DATOS GENERALES DE LA CURVA -->
   <div class="form-section" [hidden]="!mostrarFormulario">
     <p-divider align="center" type="solid">
       <div class="inline-flex items-center">
@@ -166,17 +164,9 @@
             <i class="pi pi-user text-purple-500"></i>
             RESPONSABLE 1
           </label>
-          <p-select
-            [(ngModel)]="datosCurva.responsable"
-            [options]="opcionesResponsables"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccione responsable"
-            appendTo="body"
-            class="w-full"
-            [showClear]="true"
-            [loading]="loading.responsables"
-            (onChange)="onResponsable1Change($event)">
+          <p-select [(ngModel)]="datosCurva.responsable" [options]="opcionesResponsables" optionLabel="label"
+            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
+            [loading]="loading.responsables" (onChange)="onResponsable1Change($event)">
           </p-select>
         </div>
 
@@ -185,42 +175,30 @@
             <i class="pi pi-user text-indigo-500"></i>
             RESPONSABLE 2
           </label>
-          <p-select
-            [(ngModel)]="datosCurva.responsable2"
-            [options]="opcionesResponsables"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccione responsable"
-            appendTo="body"
-            class="w-full"
-            [showClear]="true"
-            [loading]="loading.responsables"
-            (onChange)="onResponsable2Change($event)">
+          <p-select [(ngModel)]="datosCurva.responsable2" [options]="opcionesResponsables" optionLabel="label"
+            optionValue="value" placeholder="Seleccione responsable" appendTo="body" class="w-full" [showClear]="true"
+            [loading]="loading.responsables" (onChange)="onResponsable2Change($event)">
           </p-select>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== SECCIÓN PASTEURIZADOR ==================== -->
   <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
     <div class="inline-flex items-center">
       <b style="color: #224186;">PASTEURIZADOR</b>
     </div>
   </p-divider>
 
-  <!-- BOTÓN NUEVO REGISTRO PASTEURIZADOR -->
   <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroPasteurizador()"
       [disabled]="hasNewRowInEditingPasteurizador" />
   </div>
 
-  <!-- ✅ TABLA SIEMPRE EN EL DOM -->
   <div class="table-wrapper" [hidden]="!mostrarFormulario">
     <pasteurizador-table />
   </div>
 
-  <!-- CARD RESUMEN PASTEURIZADOR -->
   <div class="resumen-card" [hidden]="!mostrarFormulario">
     <div class="resumen-nota">
       SE INICIA CON 5°C EL FRASCO TESTIGO. SE MEZCLA CADA 5 MINUTOS
@@ -246,25 +224,21 @@
     </div>
   </div>
 
-  <!-- ==================== SECCIÓN ENFRIADOR ==================== -->
   <p-divider align="center" type="solid" class="mt-6" [hidden]="!mostrarFormulario">
     <div class="inline-flex items-center">
       <b style="color: #224186;">ENFRIADOR</b>
     </div>
   </p-divider>
 
-  <!-- BOTÓN NUEVO REGISTRO ENFRIADOR -->
   <div class="nuevo-registro-container" [hidden]="!mostrarFormulario">
     <shared-new-register-button (nuevoRegistro)="crearNuevoRegistroEnfriador()"
       [disabled]="hasNewRowInEditingEnfriador" />
   </div>
 
-  <!-- ✅ TABLA SIEMPRE EN EL DOM -->
   <div class="table-wrapper" [hidden]="!mostrarFormulario">
     <enfriador-table />
   </div>
 
-  <!-- CARD RESUMEN ENFRIADOR -->
   <div class="resumen-card" [hidden]="!mostrarFormulario">
     <div class="resumen-nota">
       ALCOHOL AL 96%: 80 PARTES DE AGUA DESIONIZADA Y 20 PARTES ALCOHOL
@@ -290,7 +264,6 @@
     </div>
   </div>
 
-  <!-- BOTONES DE GUARDADO GLOBAL -->
   <div class="form-actions-bottom"
     [hidden]="!mostrarFormulario || (dataPasteurizador.length === 0 && dataEnfriador.length === 0)">
     <button pButton pRipple type="button" label="Limpiar" icon="pi pi-refresh"

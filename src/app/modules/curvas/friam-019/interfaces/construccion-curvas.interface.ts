@@ -92,8 +92,6 @@ export interface PayloadCurvaCompleta {
 
 export type TipoMensaje = 'success' | 'error' | 'warn' | 'info';
 
-// ========== INTERFACES DE LA API ==========
-
 export interface ApiResponse<T> {
   status: number;
   statusmsg: string;

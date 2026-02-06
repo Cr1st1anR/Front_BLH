@@ -69,10 +69,8 @@ export class EnfriadorTableComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Componente listo
   }
 
-  // ============= CREAR NUEVO REGISTRO =============
   crearNuevoRegistro(): void {
     if (this.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de crear un nuevo registro.');
@@ -105,7 +103,6 @@ export class EnfriadorTableComponent implements OnInit {
     };
   }
 
-  // ============= CRUD OPERATIONS =============
   onRowEditInit(dataRow: EnfriadorData): void {
     if (this.isAnyRowEditing() && !this.isEditing(dataRow)) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual antes de editar otra fila.');
@@ -167,7 +164,6 @@ export class EnfriadorTableComponent implements OnInit {
   }
 
   private validarCamposRequeridos(dataRow: EnfriadorData): boolean {
-    // ✅ CAMBIO: Validar que al menos UNA fase esté completa
     const fase1Completa = !!(
       dataRow.t_frasco_testigo_1?.trim() &&
       dataRow.t_agua_1?.trim()
@@ -183,27 +179,22 @@ export class EnfriadorTableComponent implements OnInit {
       dataRow.t_agua_3?.trim()
     );
 
-    // Al menos una fase debe estar completa
     const alMenosUnaFaseCompleta = fase1Completa || fase2Completa || fase3Completa;
 
     if (!alMenosUnaFaseCompleta) {
       return false;
     }
 
-    // ✅ VALIDACIÓN ADICIONAL: Si hay datos en una fase, debe estar completa
-    // Fase 1: Si tiene frasco o agua, debe tener ambos
     const fase1Valida = !!(
       (!dataRow.t_frasco_testigo_1?.trim() && !dataRow.t_agua_1?.trim()) ||
       (dataRow.t_frasco_testigo_1?.trim() && dataRow.t_agua_1?.trim())
     );
 
-    // Fase 2: Si tiene frasco o agua, debe tener ambos
     const fase2Valida = !!(
       (!dataRow.t_frasco_testigo_2?.trim() && !dataRow.t_agua_2?.trim()) ||
       (dataRow.t_frasco_testigo_2?.trim() && dataRow.t_agua_2?.trim())
     );
 
-    // Fase 3: Si tiene frasco o agua, debe tener ambos
     const fase3Valida = !!(
       (!dataRow.t_frasco_testigo_3?.trim() && !dataRow.t_agua_3?.trim()) ||
       (dataRow.t_frasco_testigo_3?.trim() && dataRow.t_agua_3?.trim())
@@ -248,7 +239,6 @@ export class EnfriadorTableComponent implements OnInit {
     return dataRow.id?.toString() || 'new';
   }
 
-  // ============= UTILIDADES DE ESTADO =============
   isEditing(rowData: EnfriadorData): boolean {
     return this.editingRow !== null && this.editingRow.id === rowData.id;
   }
@@ -261,24 +251,15 @@ export class EnfriadorTableComponent implements OnInit {
     return this.isAnyRowEditing() && !this.isEditing(rowData);
   }
 
-  // ============= MÉTODOS PÚBLICOS PARA EL COMPONENTE PADRE =============
-
-  /**
-   * Carga datos externos en la tabla
-   */
   cargarDatosExternos(datos: EnfriadorData[]): void {
     this.dataEnfriador = datos;
 
-    // Actualizar el contador de tiempo basado en el último valor
     if (datos.length > 0) {
       const ultimoTiempo = parseInt(datos[datos.length - 1].tiempo);
       this.contadorTiempo = isNaN(ultimoTiempo) ? datos.length : ultimoTiempo + 1;
     }
   }
 
-  /**
-   * Limpia todos los datos de la tabla
-   */
   limpiarDatos(): void {
     this.dataEnfriador = [];
     this.editingRow = null;
@@ -287,14 +268,10 @@ export class EnfriadorTableComponent implements OnInit {
     this.contadorTiempo = 0;
   }
 
-  /**
-   * Valida si un registro está completo
-   */
   validarRegistroCompleto(registro: EnfriadorData): boolean {
     return this.validarCamposRequeridos(registro);
   }
 
-  // ============= MENSAJES =============
   private mostrarMensaje(severity: TipoMensaje, summary: string, detail: string, life: number = 3000): void {
     this.messageService.add({
       severity,

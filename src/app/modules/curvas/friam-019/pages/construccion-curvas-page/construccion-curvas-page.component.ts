@@ -28,8 +28,7 @@ import type {
   ResponsableOption,
   TipoMensaje,
   PayloadCurvaCompletaAPI,
-  MuestraAPI,
-  CurvaDetalleResponse
+  MuestraAPI
 } from '../../interfaces/construccion-curvas.interface';
 
 @Component({
@@ -79,7 +78,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
   volumenSeleccionado: string = '';
 
   private volumenDebounceTimer: any = null;
-  private busquedaTimeoutTimer: any = null; // ✅ NUEVO: Timer para timeout de búsqueda
+  private busquedaTimeoutTimer: any = null;
 
   datosCurva: DatosCurva = {
     id: null,
@@ -137,11 +136,9 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
   }
 
   ngAfterViewInit(): void {
-    // Las tablas siempre están en el DOM gracias a [hidden]
   }
 
   ngOnDestroy(): void {
-    // Cancelar timers previos
     if (this.volumenDebounceTimer) {
       clearTimeout(this.volumenDebounceTimer);
     }
@@ -150,7 +147,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     }
   }
 
-  // ============= CARGAR RESPONSABLES DESDE LA API =============
   private cargarResponsables(): void {
     this.loading.responsables = true;
 
@@ -171,9 +167,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     });
   }
 
-  // ============= BÚSQUEDA POR VOLUMEN =============
   onVolumenInput(): void {
-    // Cancelar timers previos
     if (this.volumenDebounceTimer) {
       clearTimeout(this.volumenDebounceTimer);
     }
@@ -184,7 +178,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     if (!this.volumenBusqueda.trim()) {
       this.opcionesVolumenes = [];
       this.limpiarSeleccion();
-      this.loading.volumenes = false; // ✅ Asegurar que se oculte el spinner
+      this.loading.volumenes = false;
       return;
     }
 
@@ -204,7 +198,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
       next: (response) => {
         this.loading.volumenes = false;
 
-        // ✅ CAMBIO: Verificar si response o data es null/undefined
         if (!response || !response.data || response.data.length === 0) {
           this.opcionesVolumenes = [];
           this.mostrarMensaje('info', 'Sin resultados', `No se encontraron curvas con volumen ${volumen} c.c.`);
@@ -252,7 +245,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     return `${dia}/${mes}/${año}`;
   }
 
-  // ============= SELECCIONAR VOLUMEN Y CARGAR DATOS =============
   onVolumenSeleccionado(event: any): void {
     const idCurvaSeleccionada = event.value;
     if (!idCurvaSeleccionada) {
@@ -281,13 +273,11 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
           return;
         }
 
-        // ✅ Función helper para parsear fecha sin problema de zona horaria
         const parsearFechaSinZonaHoraria = (fechaString: string): Date => {
           const [año, mes, dia] = fechaString.split('-').map(Number);
-          return new Date(año, mes - 1, dia); // Crea fecha en zona horaria local
+          return new Date(año, mes - 1, dia);
         };
 
-        // Mapear datos de la curva
         this.datosCurva = {
           id: curvaDetalle.id,
           numero_frascos: curvaDetalle.numeroFrascos.toString(),
@@ -307,23 +297,19 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
           id_responsable2: curvaDetalle.responsableTwo?.id || null
         };
 
-        // Resumen Pasteurizador
         this.resumenPasteurizador = {
           promedio_precalentamiento: curvaDetalle.promedioPasteurizador.toString(),
           minutos: curvaDetalle.minutosPasteurizador.toString()
         };
 
-        // Resumen Enfriador
         this.resumenEnfriador = {
           promedio_precalentamiento: curvaDetalle.promedioEnfriador.toString(),
           minutos: curvaDetalle.minutosEnfriador.toString()
         };
 
-        // Convertir muestras agrupadas por tiempo
         const registrosPasteurizador = this.convertirMuestrasARegistros(curvaDetalle.pasteurizadores);
         const registrosEnfriador = this.convertirMuestrasARegistros(curvaDetalle.enfriadores);
 
-        // Cargar datos en las tablas
         this.pasteurizadorTableComponent.cargarDatosExternos(registrosPasteurizador);
         this.enfriadorTableComponent.cargarDatosExternos(registrosEnfriador);
 
@@ -342,12 +328,7 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     });
   }
 
-  /**
-   * Convierte las muestras de la API (agrupadas por tiempo) a registros de tabla
-   * Cada registro tiene 3 fases (muestra 1, 2, 3) con el mismo tiempo
-   */
   private convertirMuestrasARegistros(muestras: MuestraAPI[]): PasteurizadorData[] | EnfriadorData[] {
-    // Agrupar muestras por tiempo
     const muestrasPorTiempo = muestras.reduce((acc, muestra) => {
       const tiempo = muestra.tiempo.toString();
       if (!acc[tiempo]) {
@@ -357,7 +338,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
       return acc;
     }, {} as Record<string, MuestraAPI[]>);
 
-    // Convertir cada grupo de muestras en un registro
     const registros: PasteurizadorData[] = [];
 
     Object.keys(muestrasPorTiempo)
@@ -384,7 +364,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     return registros;
   }
 
-  // ============= CREAR NUEVA CURVA =============
   crearNuevaCurva(): void {
     if (this.pasteurizadorTableComponent?.isAnyRowEditing() || this.enfriadorTableComponent?.isAnyRowEditing()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Debe guardar o cancelar la edición actual');
@@ -403,7 +382,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     this.mostrarMensaje('info', 'Nueva curva', 'Complete los datos de la curva y agregue registros');
   }
 
-  // ============= CREAR NUEVOS REGISTROS EN TABLAS =============
   crearNuevoRegistroPasteurizador(): void {
     this.pasteurizadorTableComponent?.crearNuevoRegistro();
   }
@@ -412,7 +390,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     this.enfriadorTableComponent?.crearNuevoRegistro();
   }
 
-  // ============= GUARDAR O ACTUALIZAR =============
   guardarOActualizarDatos(): void {
     if (!this.validarFormulario()) {
       this.mostrarMensaje('warn', 'Advertencia', 'Por favor complete todos los campos obligatorios de la curva');
@@ -450,16 +427,11 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     );
   }
 
-  /**
-   * Convierte los datos del formulario al formato esperado por la API
-   */
   private prepararPayloadParaAPI(): PayloadCurvaCompletaAPI | null {
     try {
-      // Convertir registros de tabla a muestras API
       const pasteurizadores = this.convertirRegistrosAMuestras(this.dataPasteurizador);
       const enfriadores = this.convertirRegistrosAMuestras(this.dataEnfriador);
 
-      // Formatear fecha
       let fechaFormateada = '';
       if (this.datosCurva.fecha instanceof Date) {
         const año = this.datosCurva.fecha.getFullYear();
@@ -497,16 +469,12 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     }
   }
 
-  /**
-   * Convierte los registros de la tabla (con 3 fases) a muestras de la API
-   */
   private convertirRegistrosAMuestras(registros: PasteurizadorData[] | EnfriadorData[]): MuestraAPI[] {
     const muestras: MuestraAPI[] = [];
 
     registros.forEach(registro => {
       const tiempo = Number(registro.tiempo);
 
-      // Muestra 1 (si tiene datos)
       if (registro.t_frasco_testigo_1?.trim() && registro.t_agua_1?.trim()) {
         muestras.push({
           ...(registro.id ? { id: registro.id } : {}),
@@ -517,7 +485,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
         });
       }
 
-      // Muestra 2 (si tiene datos)
       if (registro.t_frasco_testigo_2?.trim() && registro.t_agua_2?.trim()) {
         muestras.push({
           tiempo,
@@ -527,7 +494,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
         });
       }
 
-      // Muestra 3 (si tiene datos)
       if (registro.t_frasco_testigo_3?.trim() && registro.t_agua_3?.trim()) {
         muestras.push({
           tiempo,
@@ -580,7 +546,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     return this.esActualizacion ? 'Actualizar' : 'Guardar';
   }
 
-  // ============= LIMPIAR FORMULARIO =============
   limpiarFormulario(): void {
     this.datosCurva = {
       id: null,
@@ -628,7 +593,6 @@ export class ConstruccionCurvasPageComponent implements OnInit, AfterViewInit, O
     this.messageService.add({ severity, summary, detail, key: 'tr', life });
   }
 
-  // ============= MANEJADORES DE CAMBIO DE RESPONSABLES =============
   onResponsable1Change(event: any): void {
     const responsableSeleccionado = this.opcionesResponsables.find(r => r.value === event.value);
     if (responsableSeleccionado) {

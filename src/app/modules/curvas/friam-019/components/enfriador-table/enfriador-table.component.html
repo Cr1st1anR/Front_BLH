@@ -11,7 +11,6 @@
   [tableStyle]="{ 'min-width': '100%' }" selectionMode="single" dataKey="id" editMode="row">
 
   <ng-template #header>
-    <!-- FILA 1: TÍTULO GRUPAL -->
     <tr>
       <th [attr.colspan]="headersEnfriador.length + 1" class="text-center group-header">
         <div class="header-text-wrapper">
@@ -21,7 +20,6 @@
       </th>
     </tr>
 
-    <!-- FILA 2: HEADERS INDIVIDUALES -->
     <tr>
       @for (col of headersEnfriador; track $index) {
       <th [style.width]="col.width" [style.min-width]="col.width" class="column-header">
@@ -35,7 +33,6 @@
       </th>
       }
 
-      <!-- COLUMNA ACCIONES -->
       <th style="width: 120px; min-width: 120px;" class="column-header">ACCIONES</th>
     </tr>
   </ng-template>
@@ -43,15 +40,12 @@
   <ng-template #body let-rowData let-editing="editing" let-rowIndex="rowIndex">
     <tr [pEditableRow]="rowData">
       @for (col of headersEnfriador; track $index) {
-      <td [style.width]="col.width" [style.min-width]="col.width"
-        (click)="editing ? $event.stopPropagation() : null">
+      <td [style.width]="col.width" [style.min-width]="col.width" (click)="editing ? $event.stopPropagation() : null">
 
-        <!-- COLUMNAS DE TIEMPO (SOLO LECTURA) -->
         @if (col.tipo === 'readonly') {
         <span class="font-semibold text-cyan-600">{{ rowData[col.field] }}</span>
         }
 
-        <!-- COLUMNAS EDITABLES -->
         @else {
         <p-cellEditor>
           <ng-template pTemplate="input">
@@ -67,7 +61,6 @@
       </td>
       }
 
-      <!-- ACCIONES -->
       <td style="width: 120px; min-width: 120px;">
         <div class="flex items-center justify-center gap-2">
           <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" text rounded
@@ -80,8 +73,7 @@
           </button>
 
           <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" text rounded
-            severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar"
-            tooltipPosition="top">
+            severity="danger" (click)="onRowEditCancel(rowData, rowIndex)" pTooltip="Cancelar" tooltipPosition="top">
           </button>
         </div>
       </td>

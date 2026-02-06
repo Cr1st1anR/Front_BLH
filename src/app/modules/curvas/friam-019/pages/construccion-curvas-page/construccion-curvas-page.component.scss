@@ -31,7 +31,6 @@
   flex-shrink: 0;
 }
 
-// Estilos específicos para los elementos de búsqueda
 ::ng-deep {
   .search-row {
     input[type="text"] {
@@ -133,56 +132,54 @@
   }
 }
 
-// Cards de resumen más compactas
 .resumen-card {
   width: 100%;
-  margin-top: 0.75rem; // ✅ Reducido de 1rem
-  margin-bottom: 1rem; // ✅ Reducido de 1.5rem
-  padding: 1rem; // ✅ Reducido de 1.5rem
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #fff5e6 0%, #ffe0b3 100%);
-  border-radius: 8px; // ✅ Reducido de 10px
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); // ✅ Sombra más sutil
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 2px solid #ffc966;
 }
 
 .resumen-nota {
   text-align: center;
-  font-size: 0.85rem; // ✅ Reducido de 0.95rem
+  font-size: 0.85rem;
   font-weight: 700;
   color: #6b4423;
-  margin-bottom: 0.75rem; // ✅ Reducido de 1rem
-  padding: 0.5rem; // ✅ Reducido de 0.75rem
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.7);
-  border-radius: 6px; // ✅ Reducido de 8px
+  border-radius: 6px;
   border: 1px solid #ffb84d;
-  line-height: 1.3; // ✅ Agregado para compactar
+  line-height: 1.3;
 }
 
 .resumen-fields {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem; // ✅ Reducido de 1rem
+  gap: 0.75rem;
 
   .form-field-group {
-    gap: 0.35rem; // ✅ Menos espacio entre label e input
+    gap: 0.35rem;
 
     .field-label {
-      font-size: 0.8rem; // ✅ Labels más pequeños
-      margin-bottom: 0; // ✅ Sin margen inferior
+      font-size: 0.8rem;
+      margin-bottom: 0;
 
       i {
-        font-size: 0.8rem; // ✅ Iconos más pequeños
+        font-size: 0.8rem;
       }
     }
 
     input {
-      padding: 0.4rem 0.5rem; // ✅ Inputs más compactos
+      padding: 0.4rem 0.5rem;
       font-size: 0.875rem;
     }
   }
 }
 
-// Wrapper para la tabla que mantiene el ancho completo
 .table-wrapper {
   width: 100%;
   margin-bottom: 1rem;
@@ -193,7 +190,6 @@
   }
 }
 
-// Contenedor para el botón de nuevo registro
 .nuevo-registro-container {
   width: 100%;
   padding: 0;
@@ -202,7 +198,6 @@
   justify-content: flex-start;
 }
 
-// Botones de guardado global
 .form-actions-bottom {
   display: flex;
   justify-content: flex-end;
@@ -267,7 +262,6 @@
   }
 }
 
-// Responsive
 @media (max-width: 1400px) {
   .form-fields-grid-general {
     grid-template-columns: repeat(3, 1fr);
@@ -281,15 +275,15 @@
 
   .resumen-fields {
     grid-template-columns: 1fr;
-    gap: 0.5rem; // ✅ Aún más compacto en tablets
+    gap: 0.5rem;
   }
 
   .resumen-card {
-    padding: 0.75rem; // ✅ Menos padding en tablets
+    padding: 0.75rem;
   }
 
   .resumen-nota {
-    font-size: 0.8rem; // ✅ Más pequeño en tablets
+    font-size: 0.8rem;
     padding: 0.4rem;
   }
 
@@ -325,13 +319,13 @@
   }
 
   .resumen-card {
-    padding: 0.75rem; // ✅ Menos padding en móviles
+    padding: 0.75rem;
     margin-top: 0.5rem;
     margin-bottom: 0.75rem;
   }
 
   .resumen-nota {
-    font-size: 0.75rem; // ✅ Más pequeño en móviles
+    font-size: 0.75rem;
     padding: 0.4rem;
     margin-bottom: 0.5rem;
   }

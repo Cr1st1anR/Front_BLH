@@ -234,7 +234,7 @@ export class TableListComponent implements OnInit {
     if (dataRow.idMadrePotencial === undefined) {
       this._lineaAmigaService.postDataLineaAmiga(body).subscribe({
         next: (data) => {
-          this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos guardados', key: 'tr', life: 3000 });
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Datos guardados', key: 'tr', life: 3000 });
           this.dataTableLienaAmiga[this.dataTableLienaAmiga.length - 1].fechaNacimiento = this.ageCalculate((this.dataTableLienaAmiga.filter((item) => item.idMadrePotencial === undefined)[0].fechaNacimiento as Date));
 
           const responseData = data.data as any;
@@ -254,7 +254,7 @@ export class TableListComponent implements OnInit {
     } else {
       this._lineaAmigaService.putDataLineaAmiga(body).subscribe({
         next: (data) => {
-          this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Datos actualizados', key: 'tr', life: 3000 });
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Datos actualizados', key: 'tr', life: 3000 });
           dataRow.fechaNacimiento = this.ageCalculate((newDataRow.fechaNacimiento as Date));
           this.table.saveRowEdit(dataRow, rowElement);
         },

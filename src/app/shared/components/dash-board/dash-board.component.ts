@@ -47,7 +47,7 @@ export class DashBoardComponent {
       isOpen: false,
     },
     {
-      label: 'Captacion',
+      label: 'Captación',
       icon: 'fa-solid fa-users-viewfinder',
       isOpen: false,
       items: [
@@ -72,11 +72,11 @@ export class DashBoardComponent {
           route: '/blh/captacion/visitas-domiciliarias-seguimiento',
         },
         {
-          label: 'Control de entradas y salidas de leche humana extraida cruda',
+          label: 'Control de entradas y salidas de leche humana extraída cruda',
           route: '/blh/captacion/control-leche-cruda'
         },
         {
-          label: 'Registro de leche materna extraida en sala de extracción de blh',
+          label: 'Registro de leche materna extraída en sala de extracción de blh',
           route: '/blh/captacion/registro-leche-extraida',
         },
         {
@@ -86,7 +86,7 @@ export class DashBoardComponent {
       ],
     },
     {
-      label: 'Pasteurizacion',
+      label: 'Pasteurización',
       icon: 'fa-solid fa-flask-vial',
       isOpen: false,
       items: [
@@ -95,7 +95,7 @@ export class DashBoardComponent {
           route: '/blh/pasteurizacion/control-reenvase',
         },
         {
-          label: 'Seleccion y clasificacion de leche humana extraida cruda',
+          label: 'Selección y clasificación de leche humana extraída cruda',
           route: '/blh/pasteurizacion/seleccion-clasificacion-leche-cruda',
         },
         {
@@ -107,24 +107,24 @@ export class DashBoardComponent {
           route: '/blh/pasteurizacion/registro-no-conformidades',
         },
         {
-          label: 'Relación de control de calidad microbiologico y liberacion de producto',
+          label: 'Relación de control de calidad microbiológico y liberación de producto',
           route: '/blh/pasteurizacion/control-calidad-microbiologico-liberacion',
         },
       ],
     },
     {
-      label: 'Liberacion',
+      label: 'Liberación',
       icon: 'fa-solid fa-clipboard-list',
       isOpen: false,
       items: [
         {
-          label: 'Control de entradas y salidas de leche humana extraida pasteurizada',
+          label: 'Control de entradas y salidas de leche humana extraída pasteurizada',
           route: '/blh/liberacion/entradas-salidas-pasteurizada',
         },
       ],
     },
     {
-      label: 'Distribucion',
+      label: 'Distribución',
       icon: 'fa-solid fa-share',
       isOpen: false,
       items: [

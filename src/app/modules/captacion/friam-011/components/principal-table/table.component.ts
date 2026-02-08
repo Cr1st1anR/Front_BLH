@@ -141,7 +141,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     private messageService: MessageService,
     private editingStateService: EditingStateService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loading = true;
@@ -318,7 +318,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
           dataRow.id_ruta = data.data["id"];
           this.messageService.add({
             severity: 'success',
-            summary: 'Exito',
+            summary: 'Éxito',
             detail: 'Datos guardados',
             key: 'tr',
             life: 3000,
@@ -340,7 +340,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
         next: (data) => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Exito',
+            summary: 'Éxito',
             detail: 'Datos actualizados',
             key: 'tr',
             life: 3000,
@@ -468,7 +468,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     if (this.editingRow && this.table) {
       try {
         this.table.cancelRowEdit(this.editingRow);
-      } catch (error) {}
+      } catch (error) { }
       const index = this.dataTableRutaRecoleccion.findIndex(
         (row) => row === this.editingRow
       );
@@ -482,7 +482,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
           ) {
             this.dataTableRutaRecoleccion[index] =
               this.clonedTableRutaRecoleccion[
-                this.editingRow.id_ruta as number
+              this.editingRow.id_ruta as number
               ];
             delete this.clonedTableRutaRecoleccion[
               this.editingRow.id_ruta as number

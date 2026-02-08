@@ -284,7 +284,7 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
           next: (data) => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Exito',
+              summary: 'Éxito',
               detail: 'Datos guardados',
               key: 'tr',
               life: 3000,

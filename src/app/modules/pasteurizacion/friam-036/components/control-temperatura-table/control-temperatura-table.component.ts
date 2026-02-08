@@ -73,7 +73,7 @@ export class ControlTemperaturaTableComponent implements OnInit {
     { header: 'CICLO', field: 'ciclo', width: '100px', tipo: 'text' },
     { header: 'HORA\nINICIO', field: 'horaInicio', width: '150px', tipo: 'time' },
     { header: 'CALENTAMIENTO - VARIACIÓN DE\nTEMPERATURA (ºC) (BAÑO MARIA)', field: 'calentamiento', width: '200px', tipo: 'button' },
-    { header: 'ENFRIAMIENTO - VARIACION DE\nTEMPERATURA (ºC) (ENFRIADOR)', field: 'enfriamiento', width: '200px', tipo: 'button' },
+    { header: 'ENFRIAMIENTO - VARIACIÓN DE\nTEMPERATURA (ºC) (ENFRIADOR)', field: 'enfriamiento', width: '200px', tipo: 'button' },
     { header: 'HORA\nFINALIZACIÓN', field: 'horaFinalizacion', width: '150px', tipo: 'time' },
     { header: 'OBSERVACIONES', field: 'observaciones', width: '200px', tipo: 'text' },
     { header: 'RESPONSABLE', field: 'responsable', width: '150px', tipo: 'select' },

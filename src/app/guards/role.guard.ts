@@ -33,12 +33,12 @@ export class RoleGuard implements CanActivate {
         }
 
         // Verificar si el token ha expirado
-        if (this.authService.isTokenExpired()) {
-            console.warn('RoleGuard: Token expirado, redirigiendo al login');
-            this.authService.logout();
-            this.router.navigate(['/']);
-            return false;
-        }
+        // if (this.authService.isTokenExpired()) {
+        //     console.warn('RoleGuard: Token expirado, redirigiendo al login');
+        //     this.authService.logout();
+        //     this.router.navigate(['/']);
+        //     return false;
+        // }
 
         // Obtener los roles requeridos de la configuración de la ruta
         const expectedRoles = route.data['roles'] as Array<string>;

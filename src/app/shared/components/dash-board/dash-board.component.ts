@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -7,6 +7,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { RippleModule } from 'primeng/ripple';
 import { StyleClassModule } from 'primeng/styleclass';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../modules/auth/services/auth.service';
 
 interface MenuBarItems {
   icon?: string;
@@ -15,6 +16,7 @@ interface MenuBarItems {
   subLabel?: string;
   items?: MenuBarItems[];
   isOpen?: boolean;
+  roles?: string[]; // Roles permitidos para ver esta opción
 }
 
 @Component({
@@ -32,24 +34,30 @@ interface MenuBarItems {
   templateUrl: './dash-board.component.html',
   styleUrl: './dash-board.component.scss',
 })
-export class DashBoardComponent {
+export class DashBoardComponent implements OnInit {
   @ViewChild('drawerRef') drawerRef!: Drawer;
 
   showFiller = false;
   visible: boolean = false;
   selectedItem: any = null;
-  menuBarItems: MenuBarItems[] = [
+  userRole: string | null = null;
+  username: string | null = null;
+
+  // Menú completo con roles especificados
+  allMenuItems: MenuBarItems[] = [
     {
       label: 'Inicio',
       icon: 'fa-solid fa-house',
       route: '/blh',
       items: [],
       isOpen: false,
+      roles: ['Administrador', 'Auxiliar'], // Todos pueden ver inicio
     },
     {
       label: 'Captación',
       icon: 'fa-solid fa-users-viewfinder',
       isOpen: false,
+      roles: ['Administrador', 'Auxiliar'], // Ambos roles
       items: [
         {
           label: 'Registro de linea amiga',
@@ -89,6 +97,7 @@ export class DashBoardComponent {
       label: 'Pasteurización',
       icon: 'fa-solid fa-flask-vial',
       isOpen: false,
+      roles: ['Administrador'], // Solo administradores
       items: [
         {
           label: 'Control de reenvase red colombiana de bancos de leche humana',
@@ -116,6 +125,7 @@ export class DashBoardComponent {
       label: 'Liberación',
       icon: 'fa-solid fa-clipboard-list',
       isOpen: false,
+      roles: ['Administrador'], // Solo administradores
       items: [
         {
           label: 'Control de entradas y salidas de leche humana extraída pasteurizada',
@@ -127,6 +137,7 @@ export class DashBoardComponent {
       label: 'Distribución',
       icon: 'fa-solid fa-share',
       isOpen: false,
+      roles: ['Administrador'], // Solo administradores
       items: [
         {
           label: 'Distribución de leche humana procesada blh',
@@ -142,6 +153,7 @@ export class DashBoardComponent {
       label: 'Curvas',
       icon: 'fa-solid fa-chart-area',
       isOpen: false,
+      roles: ['Administrador'], // Solo administradores
       items: [
         {
           label: 'Construcción de curvas de penetración de calor y enfriamiento',
@@ -151,7 +163,42 @@ export class DashBoardComponent {
     },
   ];
 
-  constructor(private router: Router) { }
+  // Menú filtrado según el rol del usuario
+  menuBarItems: MenuBarItems[] = [];
+
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) { }
+
+  ngOnInit() {
+    // Obtener información del usuario desde el token
+    this.userRole = this.authService.getRoleFromToken();
+    this.username = this.authService.getUsernameFromToken();
+
+    // Filtrar el menú según el rol
+    this.filterMenuByRole();
+  }
+
+  /**
+   * Filtra las opciones del menú según el rol del usuario
+   */
+  filterMenuByRole() {
+    if (!this.userRole) {
+      this.menuBarItems = [];
+      return;
+    }
+
+    this.menuBarItems = this.allMenuItems.filter(item => {
+      // Si no se especificaron roles, mostrar a todos
+      if (!item.roles || item.roles.length === 0) {
+        return true;
+      }
+
+      // Verificar si el rol del usuario está en los roles permitidos
+      return item.roles.includes(this.userRole!);
+    });
+  }
 
   toggleModule(item: MenuBarItems): void {
     if (item.items && item.items.length > 0) {

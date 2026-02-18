@@ -1,6 +1,5 @@
 export interface MedicamentosData {
   medicamentos: string;
-  ningunMedicamento: boolean;
   psicoactivos: string;
   recibioEducacion: string;
   responsableRegistro: string;

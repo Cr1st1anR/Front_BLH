@@ -5,13 +5,8 @@
       <div>
         <label class="font-bold">Medicamentos: <span class="required">*</span></label>
         <input pInputText type="text" class="w-full" [(ngModel)]="medicamentos"
-          name="medicamentos" [disabled]="ningunMedicamento" required
+          name="medicamentos" required
           (ngModelChange)="onFieldChange('medicamentos', $event)" [class.ng-invalid]="formErrors['medicamentos']" />
-        <div class="flex items-center mt-2">
-          <label class="mr-2">Ninguno:</label>
-          <p-checkbox binary="true" [(ngModel)]="ningunMedicamento" name="ningunMedicamento" inputId="ningunMedicamento"
-            (ngModelChange)="onNingunMedicamentoChange()"></p-checkbox>
-        </div>
         <small class="error-message" *ngIf="formErrors['medicamentos']">
           {{ formErrors['medicamentos'] }}
         </small>
@@ -64,13 +59,10 @@
             </button>
           </div>
         </div>
-        <small class="error-message" *ngIf="formErrors['firmaAcompanante']">
-          {{ formErrors['firmaAcompanante'] }}
-        </small>
       </div>
 
       <div>
-        <label class="font-bold">Donante apta: <span class="required">*</span></label>
+        <label class="font-bold">Donante apta:</label>
         <div class="flex items-center gap-4 mt-2">
           <p-radioButton name="donanteApta" [value]="1" [(ngModel)]="donanteApta" inputId="aptaSi"
             (ngModelChange)="onFieldChange('donanteApta', $event)"></p-radioButton>
@@ -79,9 +71,6 @@
             (ngModelChange)="onFieldChange('donanteApta', $event)"></p-radioButton>
           <label for="aptaNo">No</label>
         </div>
-        <small class="error-message" *ngIf="formErrors['donanteApta']">
-          {{ formErrors['donanteApta'] }}
-        </small>
       </div>
 
       <div class="col-span-2">
@@ -93,13 +82,13 @@
       </div>
 
       <div>
-        <label class="font-bold">FIRMA DEL DONANTE: <span class="required">*</span></label>
+        <label class="font-bold">FIRMA DEL DONANTE:</label>
         <div>
           <canvas #canvasDonante width="350" height="120" style="
                 border: 1px solid #ccc;
                 border-radius: 8px;
                 touch-action: none;
-              " [class.canvas-invalid]="formErrors['firmaDonante']"></canvas>
+              "></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaDonante()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -107,19 +96,16 @@
             </button>
           </div>
         </div>
-        <small class="error-message" *ngIf="formErrors['firmaDonante']">
-          {{ formErrors['firmaDonante'] }}
-        </small>
       </div>
 
       <div>
-        <label class="font-bold">PROFESIONAL RESPONSABLE: <span class="required">*</span></label>
+        <label class="font-bold">PROFESIONAL RESPONSABLE:</label>
         <div>
           <canvas #canvasProfesional width="350" height="120" style="
                 border: 1px solid #ccc;
                 border-radius: 8px;
                 touch-action: none;
-              " [class.canvas-invalid]="formErrors['profesionalResponsable']"></canvas>
+              "></canvas>
           <div class="mt-2 flex gap-2">
             <button type="button" (click)="clearFirmaProfesional()"
               class="p-1 px-2 bg-gray-200 rounded border border-gray-300">
@@ -127,9 +113,6 @@
             </button>
           </div>
         </div>
-        <small class="error-message" *ngIf="formErrors['profesionalResponsable']">
-          {{ formErrors['profesionalResponsable'] }}
-        </small>
       </div>
     </form>
   </p-accordion-content>

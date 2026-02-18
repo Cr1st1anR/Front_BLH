@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'primeng/accordion';
-import { Checkbox } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { RadioButton } from 'primeng/radiobutton';
 import SignaturePad from 'signature_pad';
@@ -28,7 +27,6 @@ import { MessageService } from 'primeng/api';
   imports: [
     FormsModule,
     AccordionModule,
-    Checkbox,
     InputTextModule,
     RadioButton,
     SelectModule,
@@ -48,7 +46,6 @@ export class MedicamentosComponent
   canvasProfesionalRef!: ElementRef<HTMLCanvasElement>;
 
   medicamentos: string = '';
-  ningunMedicamento: boolean = false;
   psicoactivos: string = '';
   recibioEducacion: string = '';
   responsableRegistro: string = '';
@@ -70,7 +67,6 @@ export class MedicamentosComponent
   constructor(
     private messageService: MessageService,
     private _registroDonanteService: RegistroDonanteService) {
-
   }
 
   ngOnInit(): void {
@@ -164,11 +160,8 @@ export class MedicamentosComponent
   validateField(fieldName: string, value: any): string {
     switch (fieldName) {
       case 'medicamentos':
-        if (this.ningunMedicamento) {
-          return '';
-        }
         return !value || value.trim() === ''
-          ? 'Debe especificar los medicamentos o marcar "Ninguno"'
+          ? 'Este campo es obligatorio'
           : '';
 
       case 'psicoactivos':
@@ -181,17 +174,13 @@ export class MedicamentosComponent
         return !value ? 'Debe seleccionar un responsable del registro' : '';
 
       case 'donanteApta':
-        return value === null ? 'Debe seleccionar una opcion' : '';
+        return '';
 
-      // case 'firmaDonante':
-      //   return !value || value.trim() === ''
-      //     ? 'La firma del donante es obligatoria'
-      //     : '';
+      case 'firmaDonante':
+        return '';
 
-      // case 'profesionalResponsable':
-      //   return !value || value.trim() === ''
-      //     ? 'La firma del profesional responsable es obligatoria'
-      //     : '';
+      case 'profesionalResponsable':
+        return '';
 
       case 'firmaAcompanante':
         return '';
@@ -210,9 +199,6 @@ export class MedicamentosComponent
       'psicoactivos',
       'recibioEducacion',
       'selectedEmpleado',
-      'donanteApta',
-      'firmaDonante',
-      'profesionalResponsable',
     ];
 
     fieldsToValidate.forEach((field) => {
@@ -237,15 +223,6 @@ export class MedicamentosComponent
     }
   }
 
-  onNingunMedicamentoChange(): void {
-    if (this.ningunMedicamento) {
-      this.medicamentos = '';
-      delete this.formErrors['medicamentos'];
-    } else {
-      this.onFieldChange('medicamentos', this.medicamentos);
-    }
-  }
-
   getFormData() {
     if (!this.validateForm()) {
       throw new Error(
@@ -256,7 +233,6 @@ export class MedicamentosComponent
     return {
       id: this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.medicamento.id : null,
       medicamentos: this.medicamentos,
-      ningunMedicamento: this.ningunMedicamento,
       psicoactivos: this.psicoactivos,
       recibioEducacion: this.recibioEducacion,
       responsableRegistro: this.responsableRegistro,

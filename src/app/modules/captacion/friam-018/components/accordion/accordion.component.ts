@@ -174,7 +174,6 @@ export class AccordionComponent implements OnInit, OnDestroy {
           direccion: datosInscripcion.direccion,
           nombre: datosInscripcion.nombre,
           eps: datosInscripcion.eps,
-          // nombreHijo: datosInscripcion.nombreHijo,
           documento: datosInscripcion.documento,
           departamento: datosInscripcion.departamento,
           fechaParto: historiaGestacion.fechaParto?.toISOString().split('T')[0],
@@ -228,14 +227,27 @@ export class AccordionComponent implements OnInit, OnDestroy {
                 life: 2500,
               });
             } else {
-              throw new Error(response.statusmsg || 'Error al guardar los datos');
+              this.saving = false;
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: response.statusmsg || 'Error al guardar los datos',
+                key: 'tr',
+                life: 3000,
+              });
+              return;
             }
-
             this.router.navigate(['/blh/captacion/registro-donante-blh']);
-
           },
           error: (error) => {
-            throw error;
+            this.saving = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error instanceof Error ? error.message : 'Error al guardar los datos',
+              key: 'tr',
+              life: 3000,
+            });
           },
         });
     } catch (error) {

@@ -144,7 +144,7 @@ export class DashBoardComponent implements OnInit {
           route: '/blh/distribucion/distribucion-leche-procesada',
         },
         {
-          label: 'Registro de ingreso de leche humana pasteurizada',
+          label: 'Registro de ingreso de leche humana pasteurizada a sala de pasteurizacion',
           route: '/blh/distribucion/ingreso-leche-pasteurizada',
         },
       ],

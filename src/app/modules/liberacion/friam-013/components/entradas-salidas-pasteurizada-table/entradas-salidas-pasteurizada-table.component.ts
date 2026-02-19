@@ -380,9 +380,9 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   private mapearDatosParaBackend(rowData: EntradasSalidasPasteurizadaData): PutEntradasSalidasRequest {
     return {
       gaveta: parseInt(rowData.n_gaveta) || 0,
-      fechaSalida: this.convertirFechaParaBackend(rowData.fecha_salida),
+      fechaSalida: rowData.fecha_salida ? this.convertirFechaParaBackend(rowData.fecha_salida) : null,
       responsableEntrada: rowData.id_empleado_entrada || 0,
-      responsableSalida: rowData.id_empleado_salida || 0
+      responsableSalida: rowData.id_empleado_salida || null
     };
   }
 
@@ -408,8 +408,6 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
   private validarCamposRequeridos(dataRow: EntradasSalidasPasteurizadaData): boolean {
     const gavetaValida = !!(dataRow.n_gaveta?.trim() && !isNaN(parseInt(dataRow.n_gaveta)));
     const responsableEntradaValido = !!(dataRow.responsable_entrada?.trim() && dataRow.id_empleado_entrada);
-    const responsableSalidaValido = !!(dataRow.responsable_salida?.trim() && dataRow.id_empleado_salida);
-    const fechaSalidaValida = !!dataRow.fecha_salida;
 
     if (!gavetaValida) {
       this.mostrarMensaje('error', 'Error', 'La gaveta debe ser un número válido');
@@ -421,13 +419,16 @@ export class EntradasSalidasPasteurizadaTableComponent implements OnInit {
       return false;
     }
 
-    if (!fechaSalidaValida) {
-      this.mostrarMensaje('error', 'Error', 'Debe seleccionar una fecha de salida');
+    const tieneFechaSalida = !!dataRow.fecha_salida;
+    const tieneResponsableSalida = !!(dataRow.responsable_salida?.trim() && dataRow.id_empleado_salida);
+
+    if (tieneFechaSalida && !tieneResponsableSalida) {
+      this.mostrarMensaje('error', 'Error', 'Si ingresa fecha de salida, debe seleccionar un responsable de salida');
       return false;
     }
 
-    if (!responsableSalidaValido) {
-      this.mostrarMensaje('error', 'Error', 'Debe seleccionar un responsable de salida');
+    if (tieneResponsableSalida && !tieneFechaSalida) {
+      this.mostrarMensaje('error', 'Error', 'Si selecciona un responsable de salida, debe ingresar una fecha de salida');
       return false;
     }
 

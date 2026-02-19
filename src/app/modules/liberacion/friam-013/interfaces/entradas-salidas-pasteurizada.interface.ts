@@ -147,8 +147,8 @@ export interface EmpleadoBackend {
 
 export interface PutEntradasSalidasRequest {
   gaveta: number;
-  fechaSalida: string;
-  responsableSalida: number;
+  fechaSalida: string | null;
+  responsableSalida: number | null;
   responsableEntrada: number;
 }
 

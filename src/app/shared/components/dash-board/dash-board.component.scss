@@ -242,56 +242,86 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // ============================================
-// DIÁLOGO DE CONFIRMACIÓN PERSONALIZADO
+// DIÁLOGO DE CONFIRMACIÓN PERSONALIZADO - REDISEÑADO
 // ============================================
 ::ng-deep .custom-confirm-dialog {
   border-radius: 1rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  border: 1px solid $border-color;
 
   .p-dialog-header {
-    background: linear-gradient(
-      135deg,
-      $primary-color 0%,
-      $secondary-color 100%
-    );
-    color: white;
-    padding: 1.5rem;
-    border-bottom: none;
+    background: $bg-white;
+    color: $text-primary;
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid $border-color;
 
     .p-dialog-title {
       font-weight: 600;
       font-size: 1.125rem;
+      color: $text-primary;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+
+      &::before {
+        content: "";
+        width: 4px;
+        height: 24px;
+        background: linear-gradient(
+          180deg,
+          $primary-color 0%,
+          $secondary-color 100%
+        );
+        border-radius: 2px;
+      }
     }
 
     .p-dialog-header-icon {
-      color: white;
+      color: $text-secondary;
+      width: 2rem;
+      height: 2rem;
+      transition: $transition-base;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.15);
+        background: $bg-hover;
+        color: $text-primary;
+        transform: rotate(90deg);
       }
     }
   }
 
   .p-dialog-content {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem;
+    background: $bg-white;
 
     .p-confirm-dialog-icon {
-      font-size: 3rem;
+      font-size: 2.5rem;
       color: #f59e0b;
       margin-bottom: 1rem;
+      background: rgba(245, 158, 11, 0.1);
+      width: 4rem;
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .p-confirm-dialog-message {
-      font-size: 1rem;
-      color: $text-primary;
+      font-size: 0.9375rem;
+      color: $text-secondary;
       line-height: 1.6;
+      text-align: center;
+      margin-top: 0.75rem;
     }
   }
 
   .p-dialog-footer {
-    padding: 1rem 1.5rem;
-    background: $bg-light;
+    padding: 1rem 1.5rem 1.25rem;
+    background: $bg-white;
     border-top: 1px solid $border-color;
     gap: 0.75rem;
     display: flex;
@@ -302,10 +332,12 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       padding: 0.625rem 1.5rem;
       border-radius: 0.5rem;
       transition: $transition-base;
+      font-size: 0.875rem;
 
       &.p-button-danger {
         background: #dc2626;
         border-color: #dc2626;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 
         &:hover {
           background: #b91c1c;
@@ -316,13 +348,24 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:active {
           transform: translateY(0);
+          box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);
         }
       }
 
       &.p-button-outlined {
+        background: transparent;
+        border: 1px solid $border-color;
+        color: $text-secondary;
+
         &:hover {
           background: $bg-hover;
+          border-color: $text-secondary;
+          color: $text-primary;
           transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0);
         }
       }
     }
@@ -764,26 +807,42 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   ::ng-deep .custom-confirm-dialog {
     width: 90vw !important;
-    max-width: 400px;
+    max-width: 380px;
 
     .p-dialog-header {
-      padding: 1.25rem;
+      padding: 1rem 1.25rem 0.875rem;
+
+      .p-dialog-title {
+        font-size: 1rem;
+
+        &::before {
+          height: 20px;
+        }
+      }
     }
 
     .p-dialog-content {
-      padding: 1.5rem 1.25rem;
+      padding: 1.25rem;
 
       .p-confirm-dialog-icon {
-        font-size: 2.5rem;
+        font-size: 2rem;
+        width: 3.5rem;
+        height: 3.5rem;
+      }
+
+      .p-confirm-dialog-message {
+        font-size: 0.875rem;
       }
     }
 
     .p-dialog-footer {
+      padding: 0.875rem 1.25rem 1rem;
       flex-direction: column;
       gap: 0.5rem;
 
       .p-button {
         width: 100%;
+        justify-content: center;
       }
     }
   }

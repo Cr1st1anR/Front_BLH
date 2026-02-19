@@ -182,7 +182,7 @@ export class MedicamentosComponent
         return !value ? 'Debe seleccionar un responsable del registro' : '';
 
       case 'donanteApta':
-        return '';
+        return value === null || value === undefined ? 'Debe indicar si la donante es apta' : '';
 
       case 'firmaDonante':
         return '';
@@ -207,6 +207,7 @@ export class MedicamentosComponent
       'psicoactivos',
       'recibioEducacion',
       'selectedEmpleado',
+      'donanteApta',
     ];
 
     fieldsToValidate.forEach((field) => {

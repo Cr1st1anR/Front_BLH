@@ -410,6 +410,11 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
   }
 
   formatInputBody(body: FrascosLeche) {
+    const casaVisitaId = this.frascosData?.id_casa_visita ?? null;
+    const madreDonante = typeof this.frascosData?.id_madre_donante === 'object'
+      ? (this.frascosData?.id_madre_donante as any)?.id_madre_donante
+      : this.frascosData?.id_madre_donante;
+
     return {
       volumen: body.volumen,
       fechaDeExtraccion: body.fecha_de_extraccion
@@ -417,13 +422,12 @@ export class TableFrascoComponent implements OnChanges, OnDestroy {
         : null,
       termo: body.termo,
       gaveta: body.gaveta,
-      // si el campo id_congelador es un objeto, enviar su id
       congelador:
         body.id_congelador && typeof body.id_congelador === 'object'
           ? (body.id_congelador as any).id
           : body.id_congelador,
-      casaVisita: this.frascosData?.id_casa_visita,
-      madreDonante: this.frascosData?.id_madre_donante["id_madre_donante"],
+      casaVisita: casaVisitaId,
+      madreDonante: madreDonante,
       recoleccion: 1
     };
   }

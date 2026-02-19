@@ -190,9 +190,6 @@ export class DashBoardComponent implements OnInit {
     this.initUserMenu();
   }
 
-  /**
-   * Inicializa el menú de usuario con estructura simplificada
-   */
   initUserMenu() {
     this.userMenuItems = [
       {
@@ -218,9 +215,6 @@ export class DashBoardComponent implements OnInit {
     console.log('User menu initialized:', this.userMenuItems);
   }
 
-  /**
-   * Muestra el diálogo de confirmación antes de cerrar sesión
-   */
   confirmLogout() {
     console.log('confirmLogout called');
     this.confirmationService.confirm({
@@ -284,9 +278,6 @@ export class DashBoardComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  /**
-   * Obtiene las iniciales del usuario para mostrar en el avatar
-   */
   getUserInitials(): string {
     if (!this.username) return 'U';
 
@@ -297,19 +288,16 @@ export class DashBoardComponent implements OnInit {
     return this.username.substring(0, 2).toUpperCase();
   }
 
-  /**
-   * Obtiene un color consistente basado en el nombre de usuario
-   */
   getAvatarColor(): string {
     if (!this.username) return '#224186';
 
     const colors = [
-      '#224186', // Azul institucional
-      '#456dc4', // Azul claro
-      '#2563eb', // Azul
-      '#7c3aed', // Púrpura
-      '#059669', // Verde
-      '#dc2626', // Rojo
+      '#224186',
+      '#456dc4',
+      '#2563eb',
+      '#7c3aed',
+      '#059669',
+      '#dc2626',
     ];
 
     const index = this.username.length % colors.length;

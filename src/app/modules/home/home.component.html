@@ -1,10 +1,52 @@
 <app-dash-board />
 <router-outlet />
 
-
 @if (router.url === '/blh') {
-  <div class="relative h-[90vh] flex items-center justify-center">
-    <img src="assets/logoBLH.svg" alt="Logo Watermark" class="absolute opacity-20 w-[25vw] h-auto" />
-    <div class="absolute top-4 right-4"></div>
+  <div class="home-container">
+    <!-- Contenido principal -->
+    <div class="welcome-content">
+      <h1 class="welcome-title">Bienvenido al Sistema</h1>
+      <h2 class="welcome-subtitle">Banco de Leche Humana</h2>
+      <p class="welcome-description">
+        Hospital Universitario Departamental de Nariño
+      </p>
+
+      <!-- Cards de información -->
+      <div class="info-cards">
+        <div class="info-card">
+          <i class="fa-solid fa-droplet card-icon"></i>
+          <h3>Donación</h3>
+          <p>Gestión integral de donantes y recolección de leche humana</p>
+        </div>
+
+        <div class="info-card">
+          <i class="fa-solid fa-vial card-icon"></i>
+          <h3>Pasteurización</h3>
+          <p>Control de calidad y procesamiento seguro</p>
+        </div>
+
+        <div class="info-card">
+          <i class="fa-solid fa-heart-pulse card-icon"></i>
+          <h3>Distribución</h3>
+          <p>Entrega segura a pacientes que lo necesitan</p>
+        </div>
+      </div>
+
+      <!-- Estadísticas rápidas -->
+      <div class="quick-stats">
+        <div class="stat-item">
+          <i class="fa-solid fa-users"></i>
+          <span class="stat-label">Gestión de donantes</span>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-flask"></i>
+          <span class="stat-label">Control de calidad</span>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-chart-line"></i>
+          <span class="stat-label">Seguimiento continuo</span>
+        </div>
+      </div>
+    </div>
   </div>
 }

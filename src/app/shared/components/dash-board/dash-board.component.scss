@@ -19,116 +19,311 @@ $transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
 // ============================================
-// HEADER MENUBAR
+// HEADER MENUBAR MEJORADO
 // ============================================
 .fixed {
-  box-shadow: $shadow-md;
-  backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid rgba(34, 65, 134, 0.08);
 
-  ::ng-deep .p-menubar {
+  ::ng-deep .custom-menubar {
     background: transparent;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 0;
 
     .p-menubar-root-list {
+      display: flex;
       align-items: center;
-      gap: 1rem;
+      width: 100%;
     }
 
-    // Botón hamburguesa
-    .p-button {
+    // Botón hamburguesa mejorado
+    .menu-toggle-btn {
       width: 2.75rem;
       height: 2.75rem;
-      background-color: $primary-color;
-      border: none;
-      border-radius: 0.5rem;
       transition: $transition-base;
-      box-shadow: $shadow-sm;
 
-      &:hover:not(:disabled) {
-        background-color: $primary-hover;
+      &:hover {
+        background-color: rgba($primary-color, 0.08) !important;
         transform: scale(1.05);
-        box-shadow: $shadow-md;
       }
 
-      &:active:not(:disabled) {
-        background-color: $primary-active;
-        transform: scale(0.98);
-      }
-
-      &:focus {
-        outline: 2px solid rgba($primary-color, 0.3);
-        outline-offset: 2px;
+      &:active {
+        transform: scale(0.95);
       }
 
       .pi {
         font-size: 1.25rem;
-        color: $bg-white;
+        color: $primary-color;
+      }
+    }
+
+    // Logo y título
+    .app-title {
+      animation: slideInFromLeft 0.4s ease-out;
+
+      img {
+        transition: $transition-base;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .text-primary {
+        color: $primary-color;
+        letter-spacing: -0.025em;
+      }
+    }
+
+    // Contenedor de usuario
+    .user-info-desktop {
+      animation: fadeIn 0.4s ease-out;
+      padding-right: 0.75rem;
+      border-right: 1px solid $border-color;
+      margin-right: 0.75rem;
+
+      span:first-child {
+        color: $text-primary;
+        font-weight: 600;
+      }
+
+      span:last-child {
+        color: $text-secondary;
+        font-size: 0.75rem;
+        text-transform: capitalize;
+      }
+    }
+
+    // Avatar de usuario
+    .user-avatar-container {
+      position: relative;
+
+      .user-avatar {
+        transition: $transition-base;
+        box-shadow: $shadow-sm;
+        font-weight: 600;
+        font-size: 0.9375rem;
+
+        &:hover {
+          transform: scale(1.08);
+          box-shadow: $shadow-md;
+        }
+
+        &:active {
+          transform: scale(1);
+        }
       }
     }
   }
 }
 
-// Avatar y botón salir en menubar
-::ng-deep {
-  .p-menubar-end {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+// ============================================
+// MENÚ POPUP DE USUARIO - SIMPLIFICADO
+// ============================================
+::ng-deep .user-menu-popup {
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid $border-color;
+  border-radius: 0.75rem;
+  min-width: 240px;
+  animation: slideDown 0.3s ease-out;
 
-    .p-avatar {
-      width: 2.75rem;
-      height: 2.75rem;
+  .p-menu-list {
+    padding: 0.5rem;
+  }
+
+  // Item de información del usuario
+  .p-menuitem.user-info-item {
+    .p-menuitem-content {
       background: linear-gradient(
         135deg,
-        $primary-color 0%,
-        $secondary-color 100%
+        rgba($primary-color, 0.08) 0%,
+        rgba($secondary-color, 0.05) 100%
       );
-      color: $bg-white;
-      box-shadow: $shadow-sm;
-      transition: $transition-base;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      margin-bottom: 0.5rem;
+      cursor: default !important;
+      pointer-events: none;
 
-      &:hover {
-        transform: scale(1.05);
-        box-shadow: $shadow-md;
-      }
+      .p-menuitem-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0;
+        background: transparent !important;
+        cursor: default !important;
 
-      .pi {
-        font-size: 1.1rem;
+        &:hover {
+          background: transparent !important;
+        }
+
+        .p-menuitem-icon {
+          color: $primary-color;
+          font-size: 1.125rem;
+        }
+
+        .p-menuitem-text {
+          font-weight: 600;
+          color: $text-primary;
+          font-size: 0.9375rem;
+          flex: 1;
+        }
+
+        .p-menuitem-badge {
+          background: $primary-color;
+          color: white;
+          font-size: 0.6875rem;
+          padding: 0.25rem 0.625rem;
+          border-radius: 0.375rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+        }
       }
     }
+  }
 
-    // Botón Salir
-    .p-button {
-      background-color: transparent;
-      border: 1px solid $border-color;
-      color: $text-primary;
-      padding: 0.625rem 1.25rem;
+  // Item de cerrar sesión
+  .p-menuitem.logout-item {
+    .p-menuitem-content {
       border-radius: 0.5rem;
-      font-weight: 500;
-      font-size: 0.9375rem;
+
+      .p-menuitem-link {
+        color: #dc2626 !important;
+        transition: $transition-base;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center;
+        gap: 0.75rem;
+
+        &:hover {
+          background: rgba(220, 38, 38, 0.08) !important;
+          color: #991b1b !important;
+
+          .p-menuitem-icon {
+            transform: translateX(2px);
+          }
+        }
+
+        &:active {
+          background: rgba(220, 38, 38, 0.15) !important;
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+        }
+
+        .p-menuitem-icon {
+          color: #dc2626 !important;
+          transition: $transition-base;
+          font-size: 1rem;
+        }
+
+        .p-menuitem-text {
+          color: #dc2626 !important;
+          font-weight: 500;
+          font-size: 0.9375rem;
+        }
+      }
+    }
+  }
+
+  .p-menuitem-separator {
+    border-top: 1px solid $border-color;
+    margin: 0.5rem 0;
+  }
+}
+
+// ============================================
+// DIÁLOGO DE CONFIRMACIÓN PERSONALIZADO
+// ============================================
+::ng-deep .custom-confirm-dialog {
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+
+  .p-dialog-header {
+    background: linear-gradient(
+      135deg,
+      $primary-color 0%,
+      $secondary-color 100%
+    );
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+
+    .p-dialog-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .p-dialog-header-icon {
+      color: white;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+
+  .p-dialog-content {
+    padding: 2rem 1.5rem;
+
+    .p-confirm-dialog-icon {
+      font-size: 3rem;
+      color: #f59e0b;
+      margin-bottom: 1rem;
+    }
+
+    .p-confirm-dialog-message {
+      font-size: 1rem;
+      color: $text-primary;
+      line-height: 1.6;
+    }
+  }
+
+  .p-dialog-footer {
+    padding: 1rem 1.5rem;
+    background: $bg-light;
+    border-top: 1px solid $border-color;
+    gap: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+
+    .p-button {
+      font-weight: 600;
+      padding: 0.625rem 1.5rem;
+      border-radius: 0.5rem;
       transition: $transition-base;
 
-      &:hover:not(:disabled) {
-        background-color: #fee2e2;
-        border-color: #fca5a5;
-        color: #991b1b;
+      &.p-button-danger {
+        background: #dc2626;
+        border-color: #dc2626;
+
+        &:hover {
+          background: #b91c1c;
+          border-color: #b91c1c;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
       }
 
-      &:active:not(:disabled) {
-        background-color: #fecaca;
-        transform: scale(0.98);
-      }
-
-      &:focus {
-        outline: 2px solid rgba(#dc2626, 0.3);
-        outline-offset: 2px;
-      }
-
-      .pi {
-        margin-right: 0.5rem;
+      &.p-button-outlined {
+        &:hover {
+          background: $bg-hover;
+          transform: translateY(-1px);
+        }
       }
     }
   }
@@ -455,11 +650,65 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // ============================================
+// ANIMACIONES ADICIONALES
+// ============================================
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ============================================
 // RESPONSIVE DESIGN
 // ============================================
 
-// Tablet (768px - 1024px)
+// Tablet (max-width: 1024px)
 @media (max-width: 1024px) {
+  .fixed ::ng-deep .custom-menubar {
+    .user-info-desktop {
+      display: none !important;
+    }
+
+    .app-title {
+      .flex-col {
+        span:last-child {
+          display: none;
+        }
+      }
+    }
+  }
+
+  ::ng-deep .user-menu-popup {
+    .user-info-item {
+      padding: 0.75rem !important;
+    }
+  }
+
   ::ng-deep .p-drawer {
     width: 280px !important;
 
@@ -481,46 +730,65 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
 // Móvil (max-width: 768px)
 @media (max-width: 768px) {
-  .fixed ::ng-deep .p-menubar {
-    padding: 0.625rem 1rem;
+  .fixed {
+    ::ng-deep .custom-menubar {
+      padding: 0.625rem 1rem;
 
-    .p-button {
-      width: 2.5rem;
-      height: 2.5rem;
+      .app-title {
+        display: none !important;
+      }
 
-      .pi {
-        font-size: 1.125rem;
+      .menu-toggle-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+
+        .pi {
+          font-size: 1.125rem;
+        }
+      }
+
+      .user-avatar {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+    }
+  }
+
+  ::ng-deep .user-menu-popup {
+    min-width: 200px;
+
+    .user-info-item {
+      padding: 0.75rem !important;
+    }
+  }
+
+  ::ng-deep .custom-confirm-dialog {
+    width: 90vw !important;
+    max-width: 400px;
+
+    .p-dialog-header {
+      padding: 1.25rem;
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem 1.25rem;
+
+      .p-confirm-dialog-icon {
+        font-size: 2.5rem;
+      }
+    }
+
+    .p-dialog-footer {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .p-button {
+        width: 100%;
       }
     }
   }
 
   ::ng-deep {
-    .p-menubar-end {
-      gap: 0.75rem;
-
-      .p-avatar {
-        width: 2.5rem;
-        height: 2.5rem;
-
-        .pi {
-          font-size: 1rem;
-        }
-      }
-
-      .p-button {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-
-        span {
-          display: none;
-        }
-
-        .pi {
-          margin-right: 0;
-        }
-      }
-    }
-
     .p-drawer {
       width: 85vw !important;
       max-width: 320px !important;
@@ -567,24 +835,6 @@ $transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 90vw !important;
     max-width: 100% !important;
   }
-}
-
-// ============================================
-// ANIMACIONES PERSONALIZADAS
-// ============================================
-@keyframes slideInFromLeft {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-::ng-deep .p-drawer-left .p-drawer-content {
-  animation: slideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // ============================================

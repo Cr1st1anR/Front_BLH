@@ -8,6 +8,12 @@ import { RippleModule } from 'primeng/ripple';
 import { StyleClassModule } from 'primeng/styleclass';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../modules/auth/services/auth.service';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { BadgeModule } from 'primeng/badge';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface MenuBarItems {
   icon?: string;
@@ -16,7 +22,7 @@ interface MenuBarItems {
   subLabel?: string;
   items?: MenuBarItems[];
   isOpen?: boolean;
-  roles?: string[]; // Roles permitidos para ver esta opción
+  roles?: string[];
 }
 
 @Component({
@@ -30,9 +36,14 @@ interface MenuBarItems {
     RippleModule,
     RouterLink,
     CommonModule,
+    ConfirmDialogModule,
+    MenuModule,
+    BadgeModule,
+    TooltipModule,
   ],
   templateUrl: './dash-board.component.html',
   styleUrl: './dash-board.component.scss',
+  providers: [ConfirmationService],
 })
 export class DashBoardComponent implements OnInit {
   @ViewChild('drawerRef') drawerRef!: Drawer;
@@ -42,8 +53,9 @@ export class DashBoardComponent implements OnInit {
   selectedItem: any = null;
   userRole: string | null = null;
   username: string | null = null;
+  userMenuVisible: boolean = false;
+  userMenuItems: MenuItem[] = [];
 
-  // Menú completo con roles especificados
   allMenuItems: MenuBarItems[] = [
     {
       label: 'Inicio',
@@ -51,16 +63,16 @@ export class DashBoardComponent implements OnInit {
       route: '/blh',
       items: [],
       isOpen: false,
-      roles: ['Administrador', 'Auxiliar'], // Todos pueden ver inicio
+      roles: ['Administrador', 'Auxiliar'],
     },
     {
       label: 'Captación',
       icon: 'fa-solid fa-users-viewfinder',
       isOpen: false,
-      roles: ['Administrador', 'Auxiliar'], // Ambos roles
+      roles: ['Administrador', 'Auxiliar'],
       items: [
         {
-          label: 'Registro de linea amiga',
+          label: 'Registro de línea amiga',
           route: '/blh/captacion/registro-linea-amiga',
         },
         {
@@ -97,7 +109,7 @@ export class DashBoardComponent implements OnInit {
       label: 'Pasteurización',
       icon: 'fa-solid fa-flask-vial',
       isOpen: false,
-      roles: ['Administrador'], // Solo administradores
+      roles: ['Administrador'],
       items: [
         {
           label: 'Control de reenvase red colombiana de bancos de leche humana',
@@ -125,7 +137,7 @@ export class DashBoardComponent implements OnInit {
       label: 'Liberación',
       icon: 'fa-solid fa-clipboard-list',
       isOpen: false,
-      roles: ['Administrador'], // Solo administradores
+      roles: ['Administrador'],
       items: [
         {
           label: 'Control de entradas y salidas de leche humana extraída pasteurizada',
@@ -137,14 +149,14 @@ export class DashBoardComponent implements OnInit {
       label: 'Distribución',
       icon: 'fa-solid fa-share',
       isOpen: false,
-      roles: ['Administrador'], // Solo administradores
+      roles: ['Administrador'],
       items: [
         {
           label: 'Distribución de leche humana procesada blh',
           route: '/blh/distribucion/distribucion-leche-procesada',
         },
         {
-          label: 'Registro de ingreso de leche humana pasteurizada a sala de pasteurizacion',
+          label: 'Registro de ingreso de leche humana pasteurizada a sala de pasteurización',
           route: '/blh/distribucion/ingreso-leche-pasteurizada',
         },
       ],
@@ -153,7 +165,7 @@ export class DashBoardComponent implements OnInit {
       label: 'Curvas',
       icon: 'fa-solid fa-chart-area',
       isOpen: false,
-      roles: ['Administrador'], // Solo administradores
+      roles: ['Administrador'],
       items: [
         {
           label: 'Construcción de curvas de penetración de calor y enfriamiento',
@@ -163,26 +175,68 @@ export class DashBoardComponent implements OnInit {
     },
   ];
 
-  // Menú filtrado según el rol del usuario
   menuBarItems: MenuBarItems[] = [];
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private confirmationService: ConfirmationService
   ) { }
 
   ngOnInit() {
-    // Obtener información del usuario desde el token
     this.userRole = this.authService.getRoleFromToken();
     this.username = this.authService.getUsernameFromToken();
-
-    // Filtrar el menú según el rol
     this.filterMenuByRole();
+    this.initUserMenu();
   }
 
   /**
-   * Filtra las opciones del menú según el rol del usuario
+   * Inicializa el menú de usuario con estructura simplificada
    */
+  initUserMenu() {
+    this.userMenuItems = [
+      {
+        label: this.username || 'Usuario',
+        icon: 'pi pi-user',
+        disabled: true,
+        badge: this.userRole || undefined,
+        styleClass: 'user-info-item'
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Cerrar Sesión',
+        icon: 'pi pi-sign-out',
+        styleClass: 'logout-item',
+        command: () => {
+          this.confirmLogout();
+        }
+      }
+    ];
+
+    console.log('User menu initialized:', this.userMenuItems);
+  }
+
+  /**
+   * Muestra el diálogo de confirmación antes de cerrar sesión
+   */
+  confirmLogout() {
+    console.log('confirmLogout called');
+    this.confirmationService.confirm({
+      header: '¿Cerrar sesión?',
+      message: '¿Está seguro que desea cerrar su sesión actual?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cerrar sesión',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-outlined p-button-secondary',
+      accept: () => {
+        this.singOut();
+      }
+    });
+  }
+
   filterMenuByRole() {
     if (!this.userRole) {
       this.menuBarItems = [];
@@ -190,12 +244,9 @@ export class DashBoardComponent implements OnInit {
     }
 
     this.menuBarItems = this.allMenuItems.filter(item => {
-      // Si no se especificaron roles, mostrar a todos
       if (!item.roles || item.roles.length === 0) {
         return true;
       }
-
-      // Verificar si el rol del usuario está en los roles permitidos
       return item.roles.includes(this.userRole!);
     });
   }
@@ -229,7 +280,39 @@ export class DashBoardComponent implements OnInit {
   }
 
   singOut() {
-    localStorage.removeItem('token');
+    this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  /**
+   * Obtiene las iniciales del usuario para mostrar en el avatar
+   */
+  getUserInitials(): string {
+    if (!this.username) return 'U';
+
+    const parts = this.username.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return this.username.substring(0, 2).toUpperCase();
+  }
+
+  /**
+   * Obtiene un color consistente basado en el nombre de usuario
+   */
+  getAvatarColor(): string {
+    if (!this.username) return '#224186';
+
+    const colors = [
+      '#224186', // Azul institucional
+      '#456dc4', // Azul claro
+      '#2563eb', // Azul
+      '#7c3aed', // Púrpura
+      '#059669', // Verde
+      '#dc2626', // Rojo
+    ];
+
+    const index = this.username.length % colors.length;
+    return colors[index];
   }
 }

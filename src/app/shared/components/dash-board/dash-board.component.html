@@ -1,11 +1,63 @@
-<div class="fixed top-0 left-0 w-full z-50 bg-white shadow">
-  <p-menubar>
-    <ng-template pTemplate="start" let-item>
-      <p-button (click)="visible = true" icon="pi pi-bars" />
+<p-confirmDialog styleClass="custom-confirm-dialog"></p-confirmDialog>
+
+<div class="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
+  <p-menubar styleClass="custom-menubar">
+    <ng-template pTemplate="start">
+      <div class="flex items-center gap-4">
+        <!-- Botón hamburguesa -->
+        <p-button
+          (click)="visible = true"
+          icon="pi pi-bars"
+          [rounded]="true"
+          severity="secondary"
+          [text]="true"
+          styleClass="menu-toggle-btn"
+          pTooltip="Abrir menú"
+          tooltipPosition="bottom"
+        />
+
+        <!-- Logo y título (visible en desktop) -->
+        <div class="app-title hidden md:flex items-center gap-3">
+          <img src="assets/logoBLH.svg" alt="Logo BLH" class="h-10" />
+          <div class="flex flex-col">
+            <span class="font-bold text-lg text-primary">Banco de Leche Humana</span>
+            <span class="text-xs text-gray-500">Hospital Universitario Departamental de Nariño</span>
+          </div>
+        </div>
+      </div>
     </ng-template>
+
     <ng-template pTemplate="end">
-      <p-avatar icon="pi pi-user" class="mr-2" shape="circle"></p-avatar>
-      <p-button icon="pi pi-sign-out" label="" (onClick)="singOut()"></p-button>
+      <div class="flex items-center gap-3">
+        <!-- Info del usuario (visible en desktop) -->
+        <div class="user-info-desktop hidden lg:flex flex-col items-end">
+          <span class="font-semibold text-sm text-gray-800">{{ username }}</span>
+          <span class="text-xs text-gray-500">{{ userRole }}</span>
+        </div>
+
+        <!-- Avatar con menú -->
+        <div class="user-avatar-container relative">
+          <p-avatar
+            [label]="getUserInitials()"
+            [style]="{ 'background-color': getAvatarColor(), 'color': 'white' }"
+            shape="circle"
+            size="large"
+            styleClass="cursor-pointer user-avatar"
+            (click)="userMenu.toggle($event)"
+            pTooltip="Menú de usuario"
+            tooltipPosition="bottom"
+          />
+
+          <!-- ✅ Menú popup corregido -->
+          <p-menu
+            #userMenu
+            [model]="userMenuItems"
+            [popup]="true"
+            appendTo="body"
+            styleClass="user-menu-popup"
+          ></p-menu>
+        </div>
+      </div>
     </ng-template>
   </p-menubar>
 </div>

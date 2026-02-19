@@ -74,7 +74,10 @@ export class PrimaryDialogComponent implements OnChanges {
   }
 
   openDialogFrascosL(data: casasVisitaData) {
-    this.selectedCasaNo = data;
+    this.selectedCasaNo = null;
+    setTimeout(() => {
+      this.selectedCasaNo = { ...data };
+    }, 0);
   }
 
   onClosedDialogPrimary() {

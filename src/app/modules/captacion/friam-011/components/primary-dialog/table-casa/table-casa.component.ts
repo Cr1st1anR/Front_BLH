@@ -111,7 +111,7 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
   selectedCasaNo: number | null = null;
   frascosData: any[] = [];
   loading: boolean = false;
-  requiredFields: string[] = ['id_madre_donante'];
+  requiredFields: string[] = ['id_madre_donante', 'numero_casa'];
   private readonly componentId = 'table-casa';
   private editingStateSubscription: Subscription | null = null;
   allMadresDonantes: MadresDonantes[] = []; // Lista completa de madres donantes
@@ -266,7 +266,21 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
       this.selectedRow = [];
       return;
     }
-    this.openDialogFrascosL.emit(event.data);
+    const updatedRow = this.dataTableCasas.find(r => r._uid === event.data._uid) || event.data;
+
+    if (!updatedRow.id_casa_visita) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Esta casa no tiene un ID válido. Por favor recargue la página.',
+        key: 'tr',
+        life: 3000,
+      });
+      this.selectedRow = [];
+      return;
+    }
+
+    this.openDialogFrascosL.emit(updatedRow);
     this.selectedRow = [];
   }
 
@@ -317,12 +331,25 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
     if (dataRow.id_casa_visita === undefined || dataRow.id_casa_visita === null) {
       this._primaryService.postDataCasasVisitas(bodyFormat).subscribe({
         next: (res) => {
-          // si backend devuelve id, asignarlo sin tocar _uid
-          let created: any = (res as any)?.data;
-          // si el backend retorna lista, tomar el primer elemento
+          console.log('Respuesta POST casa:', JSON.stringify(res));
+
+          let created: any = res?.data;
           if (Array.isArray(created)) created = created[0];
-          if (created && created.id_casa_visita !== undefined) {
-            dataRow.id_casa_visita = created.id_casa_visita;
+
+          console.log('created:', created);
+
+          const newId = created?.id_casa_visita ?? created?.id ?? null;
+
+          if (newId !== null && newId !== undefined) {
+            const idx = this.dataTableCasas.findIndex((r) => r._uid === uid);
+            if (idx !== -1) {
+              this.dataTableCasas[idx].id_casa_visita = newId;
+              this.dataTableCasas[idx]._uid = `c_${newId}`;
+              dataRow.id_casa_visita = newId;
+              dataRow._uid = `c_${newId}`;
+            }
+          } else {
+            console.warn('No se pudo obtener id_casa_visita de la respuesta:', res);
           }
           this.messageService.add({
             severity: 'success',
@@ -332,14 +359,12 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
             life: 3000,
           });
           this.table.saveRowEdit(dataRow, rowElement);
-          // limpieza: eliminar clon asociado al _uid
           if (uid && this.clonedTableCasasVisita[uid]) {
             delete this.clonedTableCasasVisita[uid];
           }
           this.hasNewRowInEditing = false;
           this.editingRow = null;
           this.editingStateService.cancelEditing();
-          // Actualizar madres disponibles después de guardar
           this.updateAvailableMadres();
         },
         error: (error) => {
@@ -350,7 +375,6 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
             key: 'tr',
             life: 3000,
           });
-          // dejar en edición para reintentar
         },
       });
     } else {
@@ -419,7 +443,9 @@ export class TableCasaComponent implements OnChanges, OnInit, OnDestroy {
         typeof body.id_madre_donante === 'object'
           ? body.id_madre_donante?.id_madre_donante
           : body.id_madre_donante,
-      numeroCasa: Number(body.numero_casa) || null,
+      numeroCasa: body.numero_casa !== null && body.numero_casa !== undefined && body.numero_casa !== ''
+        ? Number(body.numero_casa)
+        : null,
       ruta: this.dataRutaRecoleccion?.id_ruta || null,
       observacion: body.observacion || null,
     };

@@ -239,7 +239,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       ciudad: rowData.ciudad
     };
 
-    const fechaVisita = this.formatDateForPdf(rowData.fecha_visita);
+    const fechaVisita = this.formatDateForPdf(rowData.fecha_visita_raw ?? rowData.fecha_visita);
 
     const preguntasCondicionesFisicas = this.mapRespuestasToPreguntas(
       visitaData.respuestas,
@@ -273,7 +273,29 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
 
   private formatDateForPdf(fechaString: string) {
     try {
-      const fecha = new Date(fechaString);
+      let fecha: Date;
+
+      if (typeof fechaString === 'string' && fechaString.includes('/')) {
+        const parts = fechaString.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const year = parseInt(parts[2], 10);
+          fecha = new Date(year, month, day);
+        } else {
+          return { day: '', month: '', year: '' };
+        }
+      } else {
+        const parts = (fechaString as string).split('-');
+        if (parts.length === 3) {
+          fecha = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        } else {
+          fecha = new Date(fechaString);
+        }
+      }
+
+      if (isNaN(fecha.getTime())) return { day: '', month: '', year: '' };
+
       return {
         day: fecha.getDate().toString().padStart(2, '0'),
         month: fecha.toLocaleDateString('es-ES', { month: 'long' }),
@@ -409,6 +431,7 @@ export class VisitaDomiciliariaTableComponent implements OnInit {
       celular: item.infoMadre.celular,
       ciudad: item.infoMadre.ciudad,
       fecha_visita: this.formatDateToDDMMYYYY(item.fecha_visita),
+      fecha_visita_raw: item.fecha_visita,
       edad: this.ageCalculate(item.infoMadre.fechaNacimiento),
     }));
   }

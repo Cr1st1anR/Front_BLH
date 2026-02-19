@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // ============================================
 // VARIABLES
 // ============================================
@@ -96,7 +98,7 @@ input:-webkit-autofill:active {
 
         // ✅ Solo hover, sin efecto en focus
         &:hover {
-          border-color: lighten($primary-green, 15%);
+          border-color: color.adjust($primary-green, $lightness: 15%);
           box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.1);
         }
 

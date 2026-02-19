@@ -126,9 +126,17 @@ export class MedicamentosComponent
     this.psicoactivos = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.medicamento.psicoactivos : '';
     this.recibioEducacion = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.recibioEducacion! : '';
     this.donanteApta = this.datosPrecargados.madreDonante ? this.datosPrecargados.madreDonante.donanteApta : null;
-    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaAcompañante!, 'Acompanante');
-    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaDonante!, 'Donante');
-    this.mostrarFirma(this.datosPrecargados.madreDonante?.firmaProfesional!, 'Profesional');
+    const firmaAcompananteGuardada = this.datosPrecargados.madreDonante?.firmaAcompañante ?? '';
+    const firmaDonanteguardada = this.datosPrecargados.madreDonante?.firmaDonante ?? '';
+    const firmaProfesionalGuardada = this.datosPrecargados.madreDonante?.firmaProfesional ?? '';
+
+    this.firmaAcompanante = firmaAcompananteGuardada;
+    this.firmaDonante = firmaDonanteguardada;
+    this.profesionalResponsable = firmaProfesionalGuardada;
+
+    this.mostrarFirma(firmaAcompananteGuardada, 'Acompanante');
+    this.mostrarFirma(firmaDonanteguardada, 'Donante');
+    this.mostrarFirma(firmaProfesionalGuardada, 'Profesional');
   }
 
   loadDataEmpleados(): Observable<ApiResponse | null> {

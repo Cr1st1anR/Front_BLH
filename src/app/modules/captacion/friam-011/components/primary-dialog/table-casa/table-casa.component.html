@@ -23,10 +23,29 @@
             @switch (col.tipo) { @case ("text") {
             <input [type]="col.tipo" pInputText [(ngModel)]="rowData[col.field]" [disabled]="col.disable" />
             } @case ("select") {
-            <p-select [checkmark]="true" [filter]="true" filterBy="id_madre_donante" appendTo="body"
-              [options]="getAvailableOptionsForRow(rowData)" [(ngModel)]="rowData[col.field]" [checkmark]="true"
-              [optionLabel]="col.label" [showClear]="true" [placeholder]="col.placeholder" class="w-full md:w-56"
-              (onChange)="fillText($event, rowIndex)" />
+            <p-select [checkmark]="true" [filter]="true" filterBy="id_madre_donante,nombre,apellido,documento"
+              appendTo="body" [options]="getAvailableOptionsForRow(rowData)" [(ngModel)]="rowData[col.field]"
+              [checkmark]="true" [optionLabel]="col.label" [showClear]="true" [placeholder]="col.placeholder"
+              class="w-full md:w-56" (onChange)="fillText($event, rowIndex)">
+
+              <ng-template #selectedItem let-selectedOption>
+                @if (selectedOption) {
+                <span>{{ selectedOption.id_madre_donante }}</span>
+                } @else {
+                <span>Seleccione una madre</span>
+                }
+              </ng-template>
+
+              <ng-template #item let-madre>
+                <div class="flex flex-col">
+                  <span class="font-medium">{{ madre.id_madre_donante }}</span>
+                  <small class="text-gray-500">{{ madre.nombre }} {{ madre.apellido }}</small>
+                  @if (madre.documento) {
+                  <small class="text-gray-400">Doc: {{ madre.documento }}</small>
+                  }
+                </div>
+              </ng-template>
+            </p-select>
             } }
           </ng-template>
           <ng-template #output>
